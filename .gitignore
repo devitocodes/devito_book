@@ -45,4 +45,3 @@ sphinx-rootdir
 Trash
 #iPython notebook extra files
 *.dlog
-*.tar.gz
