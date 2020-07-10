@@ -1,7 +1,0 @@
-name: waves-fdm
-channels:
-  - conda
-dependencies:
-  - matplotlib
-  - numpy
-  - devito
