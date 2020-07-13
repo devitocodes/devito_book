@@ -1,22 +1,20 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Devito Book
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
+  # Trigger the workflow on push or pull request,
+  # but only for the master branch
   push:
-    branches: [ master ]
+    branches:
+      - master
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  tutorials:
+    name: Tutorials
     runs-on: ubuntu-latest
-    
+
     env:
       DEVITO_ARCH: gcc-7
       DEVITO_LANGUAGE: "openmp"
@@ -47,4 +45,4 @@ jobs:
         pip install matplotlib
     - name: Tests in examples
       shell: bash -l {0}
-      run: py.test --cov --cov-config=.coveragerc --cov-report=xml fdm-devito-notebooks/
+      run: py.test --cov --cov-config=.coveragerc --cov-report=xml fdm-devito-notebooks/waves/
