@@ -1,3 +1,4 @@
+import devito
 from devito import Grid
 
 def gridTest():
