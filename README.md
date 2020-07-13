@@ -1,3 +1,5 @@
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/devitocodes/devito_book/master)
+
 ## fdm-book
 
 Resources for the book *The Craft of Finite Difference Computing with Partial Differential Equations* by Hans Petter Langtangen and Svein Linge.
