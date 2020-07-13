@@ -4,4 +4,6 @@ channels:
 dependencies:
   - matplotlib
   - numpy
-  - devito
+  - pip
+  - pip:
+    - devito
