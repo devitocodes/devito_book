@@ -1,9 +1,8 @@
-name: waves-fdm
+name: devito-book
 channels:
+  - defaults
   - conda
 dependencies:
-  - matplotlib
-  - numpy
   - pip
   - pip:
-    - devito
+    - -r file:requirements.txt
