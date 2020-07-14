@@ -79,9 +79,6 @@
     <li class="">
       <a href="markdown.html">Markdown Files</a>
     </li>
-    <li class="">
-      <a href="notebooks.html">Content with notebooks</a>
-    </li>
   </ul>
   </li>
 </ul>
@@ -611,19 +608,22 @@ algorithm.</p>
         <span class="c1"># Switch variables before next step</span>
         <span class="n">u_nm1</span><span class="p">[:],</span> <span class="n">u_n</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">u_n</span><span class="p">,</span> <span class="n">u</span>
 
-
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>hello
+</pre></div>
+</div>
 <div class="stderr docutils container">
 <pre class="stderr literal-block">&lt;&gt;:16: SyntaxWarning: 'int' object is not callable; perhaps you missed a comma?
 &lt;&gt;:26: SyntaxWarning: 'int' object is not callable; perhaps you missed a comma?
 &lt;&gt;:16: SyntaxWarning: 'int' object is not callable; perhaps you missed a comma?
 &lt;&gt;:26: SyntaxWarning: 'int' object is not callable; perhaps you missed a comma?
-&lt;ipython-input-1-2b3c21bc04a6&gt;:16: SyntaxWarning: 'int' object is not callable; perhaps you missed a comma?
+&lt;ipython-input-1-7ef34df919f3&gt;:16: SyntaxWarning: 'int' object is not callable; perhaps you missed a comma?
   0.5*C**2(u_n[i+1] - 2*u_n[i] + u_n[i-1])
-&lt;ipython-input-1-2b3c21bc04a6&gt;:26: SyntaxWarning: 'int' object is not callable; perhaps you missed a comma?
+&lt;ipython-input-1-7ef34df919f3&gt;:26: SyntaxWarning: 'int' object is not callable; perhaps you missed a comma?
   C**2(u_n[i+1] - 2*u_n[i] + u_n[i-1])
 </pre>
 </div>

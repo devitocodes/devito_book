@@ -473,7 +473,7 @@ def simple_wave_equation(x, t):
         # Switch variables before next step
         u_nm1[:], u_n[:] = u_n, u
 
-
+print("hello")
 
 
 # Verification

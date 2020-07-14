@@ -22,11 +22,12 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
+        pip install --user git+https://github.com/devitocodes/devito.git
 
     # Build the book
     - name: Build the book
       run: |
-        jb build /fdm-jupyter-book
+        jupyter-book build fdm-jupyter-book
 
     # Push the book's HTML to github-pages
     - name: GitHub Pages action
