@@ -13,3 +13,4 @@ click
 codecov
 pytest-cov
 devito
+jupyter-book
