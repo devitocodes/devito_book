@@ -28,8 +28,7 @@ jobs:
       matrix:
         name: [tutos-ubuntu-gcc-py37,
           tutos-osx-gcc-py37,
-          tutos-osx-clang-py37,
-          tutos-docker-gcc-py36]
+          tutos-osx-clang-py37]
 
         include:
           - name: tutos-ubuntu-gcc-py37
@@ -47,17 +46,11 @@ jobs:
             compiler: clang
             language: "C"
 
-          - name: tutos-docker-gcc-py36
-            os: ubuntu-latest
-            compiler: gcc
-            language: "openmp"
-
     steps:
     - name: Checkout devito_book
       uses: actions/checkout@v1
 
     - name: Set up Python 3.7
-      if: matrix.name != 'tutos-docker-gcc-py36'
       uses: actions/setup-python@v1
       with:
         python-version: 3.7
@@ -77,9 +70,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install matplotlib
-    - name: Waves notebooks
+        pip install --user git+https://github.com/devitocodes/devito.git
+    - name: Waves notebooks (2.1 to 2.5)
       run: |
-        $RUN_CMD py.test --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/waves
+        $RUN_CMD py.test --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/waves/wave1D_fd1.ipynb fdm-devito-notebooks/waves/wave1D_prog.ipynb
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.6
       with:

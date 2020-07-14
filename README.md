@@ -1,4 +1,5 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/devitocodes/devito_book/master)
+![Devito Book](https://github.com/devitocodes/devito_book/workflows/Devito%20Book/badge.svg)
 
 ## fdm-book
 
