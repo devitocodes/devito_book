@@ -73,7 +73,7 @@ jobs:
         pip install --user git+https://github.com/devitocodes/devito.git
     - name: Waves notebooks (2.1 to 2.5)
       run: |
-        $RUN_CMD py.test --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/waves/wave1D_fd1.ipynb fdm-devito-notebooks/waves/wave1D_prog.ipynb
+        $RUN_CMD py.test --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/waves/wave1D_fd1.ipynb
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.6
       with:
