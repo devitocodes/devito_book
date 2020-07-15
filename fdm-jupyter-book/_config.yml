@@ -1,7 +1,14 @@
 # Book settings
-title: My sample book
-author: The Jupyter Book Community
-logo: logo.png
+title: The Devito Book # The title of the book. Will be placed in the left navbar.
+author: The Devito Project Community # The author of the book
+logo: devito_logo.png # A path to the book logo
+
+repository:
+  url: https://github.com/devitocodes/devito_book # The URL to your book's repository
+html:
+  use_repository_button: true # Whether to add a link to your repository button
+  home_page_in_navbar: true  # Whether to include your home page in the left Navigation Bar
+
 
 baseurl: "/devito_book" # the subpath of your site, e.g. /blog. If there is no subpath for your site, use an empty string ""
 url: "https://devitocodes.github.io" # the base hostname & protocol for your site, e.g. http://example.com

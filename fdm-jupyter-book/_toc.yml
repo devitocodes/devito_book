@@ -1,4 +1,3 @@
 - file: index
-- file: content
-  sections:
-    - file: notebooks/wave/wave1D_fd1
+- header: Wave equations
+- file: notebooks/wave/wave1D_fd1
