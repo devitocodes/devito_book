@@ -3,6 +3,9 @@ title: My sample book
 author: The Jupyter Book Community
 logo: logo.png
 
+baseurl: "/devito_book" # the subpath of your site, e.g. /blog. If there is no subpath for your site, use an empty string ""
+url: "https://devitocodes.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+
 latex:
   latex_documents:
     targetname: book.tex
