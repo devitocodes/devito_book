@@ -1,4 +1,4 @@
-- file: intro
+- file: index
 - file: content
   sections:
     - file: waves/wave1D_fd1
