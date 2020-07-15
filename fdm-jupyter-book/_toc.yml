@@ -1,6 +1,4 @@
 - file: intro
 - file: content
   sections:
-    - file: wave1D_fd1
-    - file: markdown
-    - file: notebooks
+    - file: waves/wave1D_fd1

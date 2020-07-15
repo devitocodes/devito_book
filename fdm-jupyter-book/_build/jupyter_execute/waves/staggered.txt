@@ -1,0 +1,195 @@
+# Ordinary differential equations
+
+## The Euler-Cromer scheme on a standard mesh
+
+Consider the fundamental model problem for simple harmonic oscillations,
+
+<!-- Equation labels as ordinary links -->
+<div id="stag:vib:ODE2nd"></div>
+
+$$
+\begin{equation}
+u'' + \omega^2u = 0,\quad u(0)=I,\ u'(0)=0,
+\label{stag:vib:ODE2nd} \tag{1}
+\end{equation}
+$$
+
+where $\omega$ is the frequency of the oscillations (the exact solution
+is $u(t)=I\cos\omega t$). This model can equivalently be
+formulated as two first-order equations,
+
+<!-- Equation labels as ordinary links -->
+<div id="stag:vib:EulerCromer:veq"></div>
+
+$$
+\begin{equation}
+v' = -\omega^2 u,
+\label{stag:vib:EulerCromer:veq} \tag{2} 
+\end{equation}
+$$
+
+<!-- Equation labels as ordinary links -->
+<div id="stag:vib:EulerCromer:ueq"></div>
+
+$$
+\begin{equation}  
+u' = v\tp
+\label{stag:vib:EulerCromer:ueq} \tag{3}
+\end{equation}
+$$
+
+The popular Euler-Cromer scheme for this $2\times 2$ system of ODEs
+applies an explicit
+forward difference in ([2](#stag:vib:EulerCromer:veq)) and a
+backward difference in ([3](#stag:vib:EulerCromer:ueq)):
+
+<!-- Equation labels as ordinary links -->
+<div id="stag:vib:EulerCromer:dveq0"></div>
+
+$$
+\begin{equation}
+\frac{v^{n+1}- v^n}{\Delta t} =- \omega^2u^{n},
+\label{stag:vib:EulerCromer:dveq0} \tag{4}
+\end{equation}
+$$
+
+<!-- Equation labels as ordinary links -->
+<div id="stag:vib:EulerCromer:dueq0"></div>
+
+$$
+\begin{equation}  
+\frac{u^{n+1} - u^n}{\Delta t} = v^{n+1}\tp
+\label{stag:vib:EulerCromer:dueq0} \tag{5}
+\end{equation}
+$$
+
+For a time domain $[0,T]$, we have introduced a mesh with points
+$0=t_0 < t_1 < \cdots < t_n=T$. The most common case is a mesh with
+uniform spacing $\Delta t$: $t_n=n\Delta t$. Then
+$v^n$ is an approximation to $v(t)$ at mesh point $t_n$, and
+$u^n$ is an approximation to $u(t)$ at the same point.
+Note that the backward difference in ([7](#stag:vib:EulerCromer:dueq))
+leads to an explicit updating formula for $u^{n+1}$
+since $v^{n+1}$ is already computed:
+
+<!-- Equation labels as ordinary links -->
+<div id="stag:vib:EulerCromer:dveq"></div>
+
+$$
+\begin{equation}
+v^{n+1} = v^n -\Delta t \omega^2u^{n},
+\label{stag:vib:EulerCromer:dveq} \tag{6}
+\end{equation}
+$$
+
+<!-- Equation labels as ordinary links -->
+<div id="stag:vib:EulerCromer:dueq"></div>
+
+$$
+\begin{equation}  
+u^{n+1} = u^n + \Delta t v^{n+1}\tp
+\label{stag:vib:EulerCromer:dueq} \tag{7}
+\end{equation}
+$$
+
+The Euler-Cromer scheme is equivalent with the standard second-order
+accurate scheme for ([1](#stag:vib:ODE2nd)):
+
+<!-- Equation labels as ordinary links -->
+<div id="stag:vib:dODE2nd"></div>
+
+$$
+\begin{equation}
+u^{n+1} = 2u^n - u^{n-1} - \Delta t^2\omega^2 u^n,\ n=1,2,\ldots,
+\label{stag:vib:dODE2nd} \tag{8}
+\end{equation}
+$$
+
+but for the first time step, the method for ([1](#stag:vib:ODE2nd))
+leads to
+
+<!-- Equation labels as ordinary links -->
+<div id="_auto1"></div>
+
+$$
+\begin{equation}
+u^1= u^0 - \frac{1}{2}\Delta t^2\omega^2u^0,
+\label{_auto1} \tag{9}
+\end{equation}
+$$
+
+while Euler-Cromer gives
+
+<!-- Equation labels as ordinary links -->
+<div id="_auto2"></div>
+
+$$
+\begin{equation}
+u^1= u^0 - \Delta t^2\omega^2u^0,
+\label{_auto2} \tag{10}
+\end{equation}
+$$
+
+which can be interpreted as a first-order, backward difference approximation
+of $u'(0)=0$ combined with ([8](#stag:vib:dODE2nd)). At later time steps,
+however, the alternating use of forward and backward differences in
+([6](#stag:vib:EulerCromer:dveq))-([7](#stag:vib:EulerCromer:dueq))
+leads to a method with error $\Oof{\Delta t^2}$.
+
+
+
+
+
+# Exercises
+
+
+
+<!-- --- begin exercise --- -->
+
+## Exercise 1: Use the forward-backward scheme with quadratic damping
+<div id="vib:exer:quad:damping:fwbw"></div>
+
+We consider the generalized model with quadratic damping, expressed
+as a system of two first-order equations as in the section [vib:ode2:staggered](#vib:ode2:staggered):
+
+$$
+\begin{align*}
+u^{\prime} &= v,\\ 
+v' &= \frac{1}{m}\left( F(t) - \beta |v|v - s(u)\right)\tp
+\end{align*}
+$$
+
+However, contrary to what is done in the section [vib:ode2:staggered](#vib:ode2:staggered),
+we want to apply the idea of a forward-backward discretization:
+$u$ is marched forward by a one-sided Forward Euler scheme applied
+to the first equation, and
+thereafter $v$ can be marched forward by a Backward Euler scheme in the
+second
+equation.
+Express the idea in operator notation and write out the
+scheme. Unfortunately, the backward difference for the $v$ equation
+creates a nonlinearity $|v^{n+1}|v^{n+1}$.  To linearize this
+nonlinearity, use the known value $v^n$ inside the absolute value
+factor, i.e., $|v^{n+1}|v^{n+1}\approx |v^n|v^{n+1}$.  Show that the
+resulting scheme is equivalent to the one in the section [vib:ode2:staggered](#vib:ode2:staggered) for some time level $n\geq 1$.
+
+What we learn from this exercise is that the first-order differences
+and the linearization trick play together in "the right way" such that
+the scheme is as good as when we (in the section [vib:ode2:staggered](#vib:ode2:staggered))
+carefully apply centered differences and a geometric mean on a
+staggered mesh to achieve second-order accuracy.
+Filename: `vib_gen_bwdamping`.
+
+<!-- --- end exercise --- -->
+
+
+# Partial differential equations
+
+<!-- dom:FIGURE: [fig-staggered/staggered_space, width=500 frac=0.8] Examples on mesh functions on a staggered mesh in space. <div id="staggered:wave:fig1"></div> -->
+<!-- begin figure -->
+<div id="staggered:wave:fig1"></div>
+
+<p>Examples on mesh functions on a staggered mesh in space.</p>
+<img src="fig-staggered/staggered_space" width=500>
+
+<!-- end figure -->
