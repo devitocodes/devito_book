@@ -37,3 +37,5 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./fdm-jupyter-book/_build/html
+        cname: www.devitoproject.org
+        
