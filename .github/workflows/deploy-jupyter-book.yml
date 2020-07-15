@@ -27,6 +27,7 @@ jobs:
     # Build the book
     - name: Build the book
       run: |
+        npm rebuild node-sass
         jupyter-book build fdm-jupyter-book
 
     # Push the book's HTML to github-pages
@@ -34,4 +35,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3.6.1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./_build/html
+        publish_dir: ./fdm-jupyter-book/_build/html
