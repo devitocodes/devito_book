@@ -45,3 +45,5 @@ sphinx-rootdir
 Trash
 #iPython notebook extra files
 *.dlog
+.ipynb_checkpoints
+fdm-jupyter-book/_build
