@@ -14,3 +14,4 @@ codecov
 pytest-cov
 devito
 jupyter-book
+matplotlib
