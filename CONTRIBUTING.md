@@ -7,8 +7,8 @@ Software contributions are made via GitHub pull requests to https://github.com/d
 ### Reporting issues
 
 There are several options:
-* Talk to us. You can join our Slack team via this [link](https://opesci-slackin.now.sh/)
-* File an issue on [our GitHub page](https://github.com/devitocodes/devito/issues).
+* Talk to us. You can join our Slack team via this [link](https://opesci-slackin.now.sh/), and join the 'book' channel [here](https://devitocodes.slack.com/archives/C0182SV07NU).
+* File an issue on [our GitHub page](https://github.com/devitocodes/devito_book/issues).
 
 ### Making changes
 
@@ -19,11 +19,21 @@ The protocol to propose a patch is:
 * As soon as you know what you need to do, [fork](https://help.github.com/articles/fork-a-repo/) the Devito Book.
 * Create a branch with a suitable name.
 * Write code following the guidelines below. Commit your changes as small logical units.
-* Commit messages should adhere to the format `<tag>: <msg>`, where `<tag>` could be, for example, "ir" (if the commit impacts the intermediate representation), "operator", "tests", etc. We may ask you to rebase the commit history if it looks too messy.
-* Write tests to convince us and yourself that what you've done works as expected. Commit them.
-* Run **the entire test suite**, including the new tests, to make sure that you haven't accidentally broken anything else.
+* Commit messages should adhere to the format `<tag>: <msg>`, where `<tag>` could be, for example, "wave" (if the commit impacts the waves section of the book), "nonlin", "tests", etc. We may ask you to rebase the commit history if it looks too messy.
 * Push everything to your Devito Book fork.
 * Submit a Pull Request on our repository.
-* Wait for us to provide feedback. This may require a few iterations.
+* Wait for us to provide feedback.
 
 Tip, especially for newcomers: prefer short, self-contained Pull Requests over lengthy, impenetrable, and thus difficult to review, ones.
+
+### Process for working on a notebook
+
+1. Work on your notebook in `fdm-devito-notebooks`. This contains all of the Jupyter notebooks (`.ipynb` files) that make up the book. We recommend you run:
+
+```
+jupyter notebook fdm-devito-notebooks
+```
+
+and navigate to the notebook you are working on in your browser.
+
+2. Once you are happy that the notebook has been successfully "Devito-fied", submit a pull request as described above.
