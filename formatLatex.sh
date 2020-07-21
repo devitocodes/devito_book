@@ -16,6 +16,7 @@ for i in "${CHAPTERS[@]}"; do
   for j in *.ipynb; do
     sed -i -e "s/$tp/$newTp/g" $j
     sed -i -e "s/outhinspace .uts/outputs/g" $j
+    sed -i -e "s/outhinspace .ut_type/output_type/g" $j
     sed -i -e "s/$half/$newHalf/g" $j
   done
   rm -rf *.ipynb-e
