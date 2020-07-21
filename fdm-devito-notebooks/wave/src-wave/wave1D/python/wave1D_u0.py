@@ -22,7 +22,7 @@ code can add visualization, error computations, etc.
 
 import numpy as np
 
-def solver(I, V, f, c, L, dt, C, T, user_action=None):
+def python_solver(I, V, f, c, L, dt, C, T, user_action=None):
     """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
     Nt = int(round(T/dt))
     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
@@ -43,7 +43,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
     u_n   = np.zeros(Nx+1)   # Solution at 1 time level back
     u_nm1 = np.zeros(Nx+1)   # Solution at 2 time levels back
 
-    import time;  t0 = time.clock()  # Measure CPU time
+    import time;  t0 = time.perf_counter()  # Measure CPU time
 
     # Load initial condition into u_n
     for i in range(0,Nx+1):
@@ -82,7 +82,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
         # Switch variables before next step
         u_nm1[:] = u_n;  u_n[:] = u
 
-    cpu_time = time.clock() - t0
+    cpu_time = time.perf_counter() - t0
     return u, x, t, cpu_time
 
 def test_quadratic():
@@ -113,7 +113,7 @@ def test_quadratic():
         tol = 1E-13
         assert diff < tol
 
-    solver(I, V, f, c, L, dt, C, T,
+    python_solver(I, V, f, c, L, dt, C, T,
            user_action=assert_no_error)
 
 def test_constant():
@@ -121,7 +121,7 @@ def test_constant():
     u_const = 0  # Require 0 because of the boundary conditions
     C = 0.75
     dt = C # Very coarse mesh
-    u, x, t, cpu = solver(I=lambda x:
+    u, x, t, cpu = python_solver(I=lambda x:
                           0, V=0, f=0, c=1.5, L=2.5,
                           dt=dt, C=C, T=18)
     tol = 1E-14
@@ -132,12 +132,12 @@ def viz(
     umin, umax,               # Interval for u in plots
     animate=True,             # Simulation with animation?
     tool='matplotlib',        # 'matplotlib' or 'scitools'
-    solver_function=solver,   # Function with numerical algorithm
+    python_solver_function=python_solver,   # Function with numerical algorithm
     ):
-    """Run solver and visualize u at each time level."""
+    """Run python_solver and visualize u at each time level."""
 
     def plot_u_st(u, x, t, n):
-        """user_action function for solver."""
+        """user_action function for python_solver."""
         plt.plot(x, u, 'r-',
                  xlabel='x', ylabel='u',
                  axis=[0, L, umin, umax],
@@ -149,7 +149,7 @@ def viz(
 
     class PlotMatplotlib:
         def __call__(self, u, x, t, n):
-            """user_action function for solver."""
+            """user_action function for python_solver."""
             if n == 0:
                 plt.ion()
                 self.lines = plt.plot(x, u, 'r-')
@@ -175,9 +175,9 @@ def viz(
     for filename in glob.glob('tmp_*.png'):
         os.remove(filename)
 
-    # Call solver and do the simulaton
+    # Call python_solver and do the simulaton
     user_action = plot_u if animate else None
-    u, x, t, cpu = solver_function(
+    u, x, t, cpu = python_solver_function(
         I, V, f, c, L, dt, C, T, user_action)
 
     # Make video files
@@ -243,17 +243,19 @@ def convergence_rates(
 
     # Run finer and finer resolutions and compute true errors
     E = []
-    h = []  # dt, solver adjusts dx such that C=dt*c/dx
+    h = []  # dt, python_solver adjusts dx such that C=dt*c/dx
     dt = dt0
     for i in range(num_meshes):
-        solver(I, V, f, c, L, dt, C, T,
+        python_solver(I, V, f, c, L, dt, C, T,
                user_action=compute_error)
         # error is computed in the final call to compute_error
         E.append(error)
         h.append(dt)
         dt /= 2  # halve the time step for next simulation
-    print 'E:', E
-    print 'h:', h
+    print('E:')
+    print(E)
+    print('h:')
+    print(h)
     # Convergence rates for two consecutive experiments
     r = [np.log(E[i]/E[i-1])/np.log(h[i]/h[i-1])
          for i in range(1,num_meshes)]
@@ -275,8 +277,8 @@ def test_convrate_sincos():
         num_meshes=6,
         C=0.9,
         T=1)
-    print 'rates sin(x)*cos(t) solution:', \
-          [round(r_,2) for r_ in r]
+    print('rates sin(x)*cos(t) solution:')
+    print([round(r_,2) for r_ in r])
     assert abs(r[-1] - 2) < 0.002
 
 if __name__ == '__main__':
@@ -285,9 +287,9 @@ if __name__ == '__main__':
     import sys
     try:
         C = float(sys.argv[1])
-        print 'C=%g' % C
+        print('C=%g' % C)
     except IndexError:
         C = 0.85
-    print 'Courant number: %.2f' % C
+    print('Courant number: %.2f' % C)
     #guitar(C)
     test_convrate_sincos()
