@@ -406,7 +406,7 @@
    "cell_type": "code",
    "execution_count": 1,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "Ix = range(0, Nx+1)\n",
     "It = range(0, Nt+1)"
@@ -450,7 +450,7 @@
    "cell_type": "code",
    "execution_count": 2,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "# Initial condition\n",
     "for i in Ix[1:-1]:\n",
@@ -529,7 +529,7 @@
    "cell_type": "code",
    "execution_count": 3,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "def test_constant():\n",
     "    \"\"\"\n",
@@ -588,7 +588,7 @@
    "cell_type": "code",
    "execution_count": 4,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "def test_plug():\n",
     "    \"\"\"Check that an initial plug is correct back after one period.\"\"\"\n",
@@ -674,7 +674,7 @@
    "cell_type": "code",
    "execution_count": 5,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "u   = zeros(Nx+3)"
    ]
@@ -738,7 +738,7 @@
    "cell_type": "code",
    "execution_count": 6,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "for i in Ix:\n",
     "    u[i] = - u_nm1[i] + 2*u_n[i] + \\\n",
@@ -758,7 +758,7 @@
    "cell_type": "code",
    "execution_count": 7,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "for i in Ix:\n",
     "    u[i] = u_n[i] + dt*V(x[i-Ix[0]]) + \\\n",
@@ -780,7 +780,7 @@
    "cell_type": "code",
    "execution_count": 8,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "i = Ix[0]          # x=0 boundary\n",
     "u[i-1] = u[i+1]\n",
@@ -808,7 +808,7 @@
    "cell_type": "code",
    "execution_count": 9,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "x = linspace(0, L, Nx+1)"
    ]
@@ -824,7 +824,7 @@
    "cell_type": "code",
    "execution_count": 10,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "for i in Ix:\n",
     "    u_n[i] = I(x[i])"
@@ -843,7 +843,7 @@
    "cell_type": "code",
    "execution_count": 11,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "for i in Ix:\n",
     "    u_n[i] = I(x[i-Ix[0]])"
@@ -874,7 +874,7 @@
    "cell_type": "code",
    "execution_count": 12,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "u = zeros(Nx+2)\n",
     "Ix = range(1, u.shape[0])\n",
@@ -1654,7 +1654,7 @@
    "cell_type": "code",
    "execution_count": 13,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "for i in range(1, Nx):\n",
     "    u[i] = - u_nm1[i] + 2*u_n[i] + \\\n",
@@ -1685,7 +1685,7 @@
    "cell_type": "code",
    "execution_count": 14,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "i = 0\n",
     "ip1 = i+1\n",
@@ -1712,7 +1712,7 @@
    "cell_type": "code",
    "execution_count": 15,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "u[1:-1] = - u_nm1[1:-1] + 2*u_n[1:-1] + \\\n",
     "          C2*(0.5*(q[1:-1] + q[2:])*(u_n[2:] - u_n[1:-1]) -\n",
@@ -1998,7 +1998,7 @@
    "cell_type": "code",
    "execution_count": 16,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "i = Ix[0]  # x=0\n",
     "u[i] = U_0(t[n+1])\n",
@@ -2052,7 +2052,7 @@
    "cell_type": "code",
    "execution_count": 17,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "%mathinspace .lotlib inline\n",
     "\n",
@@ -2236,7 +2236,7 @@
    "cell_type": "code",
    "execution_count": 18,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "def pulse(\n",
     "    C=1,            # Maximum Courant number\n",
@@ -3244,7 +3244,7 @@
    "cell_type": "code",
    "execution_count": 19,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "#!/usr/bin/env python\n",
     "from scitools.std import *\n",
@@ -3516,7 +3516,7 @@
    "cell_type": "code",
    "execution_count": 20,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "import wave1D_dn_vc as wave\n",
     "import os, sys, shutil, glob\n",
@@ -4092,7 +4092,7 @@
    "cell_type": "code",
    "execution_count": 21,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "def test_cubic1():\n",
     "    import sympy as sm\n",
@@ -4127,7 +4127,7 @@
    "cell_type": "code",
    "execution_count": 22,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "R_0 = R_0.subs(a[0], 0).subs(a[1], 1)\n",
     "R_L = R_L.subs(a[0], 0).subs(a[1], 1)\n",
@@ -4148,7 +4148,7 @@
    "cell_type": "code",
    "execution_count": 23,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "s = sm.solve([R_0, R_L], a[2:])\n",
     "# s is dictionary with the unknowns a[2] and a[3] as keys\n",
@@ -4187,7 +4187,7 @@
    "cell_type": "code",
    "execution_count": 24,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "e_exact = sm.lambdify([x,t,L,dx,dt,c], e, 'numpy')"
    ]
@@ -4234,7 +4234,7 @@
    "cell_type": "code",
    "execution_count": 25,
    "metadata": {},
-   "outputs": [],
+   "outhinspace .uts": [],
    "source": [
     "def test_cubic2():\n",
     "    import sympy as sm\n",
