@@ -49,6 +49,7 @@ for i in "${CHAPTERS[@]}"; do
     sed -i -e "s/htthinspace .s/https/g" $j
 
     sed -i -e "s/$normalVector/$newNormalVector/g" $j
+
     sed -i -e "s/$half/$newHalf/g" $j
     sed -i -e "s/$real/$newReal/g" $j
 
@@ -61,7 +62,6 @@ for i in "${CHAPTERS[@]}"; do
     # sed -i -e "s/$ix/$newIx/g" $j
     # sed -i -e "s/$setlt/$newSetlt/g" $j
     # sed -i -e "s/$it/$newIt/g" $j
-
 
   done
   rm -rf *.ipynb-e
