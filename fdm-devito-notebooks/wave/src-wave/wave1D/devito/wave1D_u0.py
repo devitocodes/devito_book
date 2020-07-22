@@ -22,7 +22,7 @@ code can add visualization, error computations, etc.
 
 import numpy as np
 import time as time
-from devito import Constant, Grid, TimeFunction, Eq, solve, Operator
+from devito import Constant, Grid, TimeFunction, SparseTimeFunction, Eq, solve, Operator
 
 def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
@@ -55,7 +55,7 @@ def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     
     # Set up wave equation and solve for forward stencil point in time
     x = grid.dimensions[0]
-    t = grid.stepping_dim
+    t = grid.time_dim
     eq = Eq(u.dt2, (a**2) * u.dx2 + f(x, t))
     stencil = solve(eq, u.forward)
     eq_stencil = Eq(u.forward, stencil)
@@ -64,9 +64,15 @@ def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     bc1 = [Eq(u[t+1, 0], 0.)]
     bc2 = [Eq(u[t+1, -1], 0.)]
 
+    # Source term and injection into equation
+    dt_symbolic = grid.time_dim.spacing
+    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt)
+    src.coordinates.data[:, 0] = f(x, t)
+    src_term = src.inject(field=u.forward, expr=src * dt_symbolic**2)
+
     # Building operator
-    op = Operator([eq_stencil] + bc1 + bc2)
-    op(time=Nt, dt=dt.astype('float32'), a=c)
+    op = Operator([eq_stencil] + bc1 + bc2 + src_term)
+    op.apply(dt=dt.astype('float32'), a=c)
 
     cpu_time = time.perf_counter() - t0
     return u.data[1], x, t, cpu_time
