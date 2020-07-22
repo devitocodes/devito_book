@@ -4,6 +4,7 @@
 [![CC BY 4.0][cc-by-shield]][cc-by]
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/devitocodes/devito_book/master)
 ![Jupyter Notebooks](https://github.com/devitocodes/devito_book/workflows/Jupyter%20Notebooks/badge.svg)
+![Verification](https://github.com/devitocodes/devito_book/workflows/Verification/badge.svg)
 ![Deploy Jupyter Book](https://github.com/devitocodes/devito_book/workflows/Deploy%20Jupyter%20Book/badge.svg)
 [![Slack Status](https://img.shields.io/badge/chat-on%20slack-%2336C5F0)](https://opesci-slackin.now.sh)
 
