@@ -34,6 +34,7 @@ The protocol to propose a patch is:
 * Create a branch with a suitable name.
 * Write code following the guidelines below. Commit your changes as small logical units.
 * Commit messages should adhere to the format `<tag>: <msg>`, where `<tag>` could be, for example, "wave" (if the commit impacts the waves section of the book), "nonlin", "tests", etc. We may ask you to rebase the commit history if it looks too messy.
+* Run the tests for the section you have been working on. Make sure your notebook and the code segments you have been working on compile.
 * Push everything to your Devito Book fork.
 * Submit a Pull Request on our repository.
 * Wait for us to provide feedback.
