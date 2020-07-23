@@ -1,4 +1,4 @@
-# Backslash in sed is represented by THREE backslashes
+# NB: Backslash in sed is represented by THREE backslashes
 
 cd fdm-devito-notebooks
 

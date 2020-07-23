@@ -61,8 +61,9 @@ def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     eq_stencil = Eq(u.forward, stencil)
     
     # Boundary conditions
+    t = grid.stepping_dim
     bc1 = [Eq(u[t+1, 0], 0.)]
-    bc2 = [Eq(u[t+1, -1], 0.)]
+    bc2 = [Eq(u[t+1, Nx-1], 0.)]
 
     # Source term and injection into equation
     dt_symbolic = grid.time_dim.spacing
@@ -73,6 +74,7 @@ def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     # Building operator
     op = Operator([eq_stencil] + bc1 + bc2 + src_term)
     op.apply(dt=dt.astype('float32'), a=c)
+    print(op)
 
     cpu_time = time.perf_counter() - t0
     return u.data[1], x, t, cpu_time
