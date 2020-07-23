@@ -2,68 +2,33 @@
 
 cd fdm-devito-notebooks
 
-tp="\\\tp"
-newTp="\\\thinspace ."
-half="\\\half"
-newHalf="\\\frac{1}{2}"
-real="\\\Real"
-newReal="\\\mathbb{R}"
-normalVector="\\\normalvec"
-newNormalVector="\\\boldsymbol{n}"
+# Array containing custom DocOnce commands
+DOCONCE=("\\\tp" "\\\half" "\\\Real" "\\\normalvec")
 
-# Set I
-setbx="\\\setb{\\\Ix}"
-newSetbx="\\\mathcal{I}_x^0"
+# Array containing pure LaTeX commands, where
+# PURE_LATEX[i] is the pure LaTeX version of DOCONCE[i]
+PURE_LATEX=("\\\thinspace ." "\\\frac{1}{2}" "\\\mathbb{R}" "\\\boldsymbol{n}")
 
-setex="\\\sete{\\\Ix}"
-newSetex="\\\mathcal{I}_x^{-1}"
-
-setlx="\\\setl{\\\Ix}"
-newSetlx="\\\mathcal{I}_x^{-}"
-
-setrx="\\\setr{\\\Ix}"
-newSetrx="\\\mathcal{I}_x^{+}"
-
-setix="\\\seti{\\\Ix}"
-newSetix="\\\mathcal{I}_x^i"
-
-ix="\\\Ix"
-newIx="\\\mathcal{I}_x"
-
-setlt="\\\setl{\\\It}"
-newSetlt="\\\mathcal{I}_t^{-}"
-
-it="\\\It"
-newIt="\\\mathcal{I}_t"
-
+# Chapter directory names
 CHAPTERS=("advec" "diffu" "formulas" "nonlin" "softeng2" "trunc" "vib" "wave")
 
-for i in "${CHAPTERS[@]}"; do
-  cd $i
-  for j in *.ipynb; do
-    # replace \tp and account for other places it might get replaced
-    sed -i -e "s/\\\tp/\\\thinspace ./g" $j
-    sed -i -e "s/outhinspace .uts/outputs/g" $j
-    sed -i -e "s/outhinspace .ut_type/output_type/g" $j
-    sed -i -e "s/mathinspace .lotlib/matplotlib/g" $j
-    sed -i -e "s/htthinspace .s/https/g" $j
+# If arrays are different lengths, script is not executed and throws error
+if [ ${#DOCONCE[@]} -ne ${#PURE_LATEX[@]} ]; then
+  echo "ERROR: DocOnce and pure LaTeX arrays are different lengths"
+  exit 1
+fi
 
-    sed -i -e "s/$normalVector/$newNormalVector/g" $j
-
-    sed -i -e "s/$half/$newHalf/g" $j
-    sed -i -e "s/$real/$newReal/g" $j
-
-    # I
-    # sed -i -e "s/$setbx/$newSetbx/g" $j
-    # sed -i -e "s/$setex/$newSetex/g" $j
-    # sed -i -e "s/$setlx/$newSetlx/g" $j
-    # sed -i -e "s/$setrx/$newSetrx/g" $j
-    # sed -i -e "s/$setix/$newSetix/g" $j
-    # sed -i -e "s/$ix/$newIx/g" $j
-    # sed -i -e "s/$setlt/$newSetlt/g" $j
-    # sed -i -e "s/$it/$newIt/g" $j
-
+for chapter in "${CHAPTERS[@]}"; do
+  cd $chapter
+  # Only replace text in Jupyter notebooks (.ipynb files)
+  for notebook in *.ipynb; do
+    for index in ${!DOCONCE[@]}; do
+      sed -i -e "s/${DOCONCE[index]}/${PURE_LATEX[index]}/g" notebook
+    done
   done
+  # Remove extra files generated 
   rm -rf *.ipynb-e
   cd ..
 done
+
+echo "Successfully formatted .ipynb files in ${CHAPTERS[@]}"
