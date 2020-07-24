@@ -73,7 +73,8 @@ jobs:
         pip install --user git+https://github.com/devitocodes/devito.git
     - name: Waves (2.1 to 2.4)
       run: |
-        $RUN_CMD py.test -s -v $SKIP fdm-devito-notebooks/wave/src-wave/wave1D/devito/wave1D_u0.py
+        cd fdm-devito-notebooks/wave/src-wave/wave1D/devito
+        $RUN_CMD py.test -s -v $SKIP wave1D_u0.py::test_quadratic wave1D_u0.py::test_constant
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.6
       with:
