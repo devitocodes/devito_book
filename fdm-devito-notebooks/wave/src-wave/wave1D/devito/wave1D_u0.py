@@ -49,6 +49,9 @@ def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     grid = Grid(shape=Nx+1, extent=L)
     u = TimeFunction(name='u', grid=grid, space_order=2, time_order=2)
     u.data[:] = I(x) # Forward, central and backward time steps all same - u_t(x, 0) = 0
+
+    if user_action is not None:
+        user_action(u.data[1], x, t, 0)
     
     # Measure CPU time
     t0 = time.perf_counter()
@@ -74,7 +77,13 @@ def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     # Building operator
     op = Operator([eq_stencil] + bc1 + bc2 + src_term)
     op.apply(dt=dt.astype('float32'), a=c)
-    print(op)
+
+
+    t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
+    x = np.linspace(0, L, Nx+1)       # Mesh points in space
+
+    if user_action is not None:
+        user_action(u.data[1], x, t, Nt-1)
 
     cpu_time = time.perf_counter() - t0
     return u.data[1], x, t, cpu_time
@@ -103,6 +112,7 @@ def test_quadratic():
 
     def assert_no_error(u, x, t, n):
         u_e = u_exact(x, t[n])
+
         diff = np.abs(u - u_e).max()
         tol = 1E-13
         assert diff < tol
@@ -272,7 +282,8 @@ def test_convrate_sincos():
         C=0.9,
         T=1)
     print('rates sin(x)*cos(t) solution:')
-    print([round(r_,2) for r_ in r])
+    # print([round(r_,2) for r_ in r])
+    print(r)
     assert abs(r[-1] - 2) < 0.002
 
 if __name__ == '__main__':
