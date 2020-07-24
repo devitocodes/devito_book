@@ -19,10 +19,9 @@ I and V are functions of x.
 user_action is a function of (u, x, t, n) where the calling
 code can add visualization, error computations, etc.
 """
-
 import numpy as np
 import time as time
-from devito import Constant, Grid, TimeFunction, SparseTimeFunction, Eq, solve, Operator
+from devito import Constant, Grid, TimeFunction, SparseTimeFunction, Eq, solve, Operator, Buffer
 
 def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
@@ -47,46 +46,45 @@ def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     # Initialise `u` for space and time order 2, using initialisation function I
     # across all values in x
     grid = Grid(shape=Nx+1, extent=L)
-    u = TimeFunction(name='u', grid=grid, space_order=2, time_order=2)
+    u = TimeFunction(name='u', grid=grid, space_order=2, time_order=2, save=Nt)
     u.data[:] = I(x) # Forward, central and backward time steps all same - u_t(x, 0) = 0
-
+    
     if user_action is not None:
-        user_action(u.data[1], x, t, 0)
+        user_action(u.data[0], x, t, 0)
+    
+    dt_symbolic = grid.time_dim.spacing
+    
+    # Source term and injection into equation
+    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt)
+    src.coordinates.data[:, 0] = f(x, t)
+    src_term = src.inject(field=u.forward, expr=src * dt_symbolic**2)
     
     # Measure CPU time
     t0 = time.perf_counter()
     
     # Set up wave equation and solve for forward stencil point in time
-    x = grid.dimensions[0]
-    t = grid.time_dim
-    eq = Eq(u.dt2, (a**2) * u.dx2 + f(x, t))
+    x_dim = grid.dimensions[0]
+    time_dim = grid.time_dim
+    eq = Eq(u.dt2, (a**2) * u.dx2 + f(x_dim, time_dim))
     stencil = solve(eq, u.forward)
     eq_stencil = Eq(u.forward, stencil)
     
+    
     # Boundary conditions
-    t = grid.stepping_dim
-    bc1 = [Eq(u[t+1, 0], 0.)]
-    bc2 = [Eq(u[t+1, Nx-1], 0.)]
-
-    # Source term and injection into equation
-    dt_symbolic = grid.time_dim.spacing
-    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt)
-    src.coordinates.data[:, 0] = f(x, t)
-    src_term = src.inject(field=u.forward, expr=src * dt_symbolic**2)
-
+    stepping_dim = grid.stepping_dim
+    bc1 = [Eq(u[stepping_dim+1, 0], 0.)]
+    bc2 = [Eq(u[stepping_dim+1, -1], 0.)]
+    
     # Building operator
     op = Operator([eq_stencil] + bc1 + bc2 + src_term)
-    op.apply(dt=dt.astype('float32'), a=c)
-
-
-    t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
-    x = np.linspace(0, L, Nx+1)       # Mesh points in space
-
+    op.apply(dt=dt.astype(np.float32), a=c)
+    
     if user_action is not None:
-        user_action(u.data[1], x, t, Nt-1)
-
+        for i in range (1, Nt):
+            user_action(u.data[i], x, t, i+1)
+    
     cpu_time = time.perf_counter() - t0
-    return u.data[1], x, t, cpu_time
+    return u.data[-1], x, t, cpu_time
 
 def test_quadratic():
     """Check that u(x,t)=x(L-x)(1+t/2) is exactly reproduced."""
@@ -101,7 +99,7 @@ def test_quadratic():
         return 0.5*u_exact(x, 0)
 
     def f(x, t):
-        return 2*(1 + 0.5)*c**2
+        return 2*(1 + 0.5*t)*c**2
 
     L = 2.5
     c = 1.5
@@ -112,9 +110,8 @@ def test_quadratic():
 
     def assert_no_error(u, x, t, n):
         u_e = u_exact(x, t[n])
-
         diff = np.abs(u - u_e).max()
-        tol = 1E-13
+        tol = 1E-7
         assert diff < tol
 
     devito_solver(I, V, f, c, L, dt, C, T,
@@ -282,8 +279,7 @@ def test_convrate_sincos():
         C=0.9,
         T=1)
     print('rates sin(x)*cos(t) solution:')
-    # print([round(r_,2) for r_ in r])
-    print(r)
+    print([round(r_,2) for r_ in r])
     assert abs(r[-1] - 2) < 0.002
 
 if __name__ == '__main__':
