@@ -13,7 +13,7 @@ The folder for each section contains the Jupyter notebooks (`.ipynb` files) that
 
 A Jupyter notebook is considered 'complete' when the following is true:
 
-* The Python code segments have been **correctly** re-implemented using Devito - i.e., the tests still pass. (For more on testing, see [here](https://github.com/devitocodes/devito_book/wiki/How-do-I-test-a-notebook-or-set-of-notebooks-with-Devito-implementations%3F)
+* The Python code segments have been **correctly** re-implemented using Devito - i.e., the tests still pass. (For more on testing, see [here](https://github.com/devitocodes/devito_book/wiki/How-do-I-test-a-notebook-or-set-of-notebooks-with-Devito-implementations%3F))
 * The following are all correctly formatted and, if applicable, link to the correct file:
   * LaTeX symbols
   * Images
