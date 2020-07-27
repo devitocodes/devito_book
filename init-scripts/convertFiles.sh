@@ -5,7 +5,7 @@
 cd ..
 cd doc/.src/chapters
 
-CHAPTERS=("advec" "diffu" "formulas" "nonlin" "softeng2" "trunc" "vib")
+CHAPTERS=("01_vib" "02_wave" "03_diffu" "04_advec" "05_nonlin" "A_formulas" "B_trunc" "C_softeng2")
 
 TMPS=()
 

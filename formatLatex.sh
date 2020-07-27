@@ -14,7 +14,7 @@ AUX_ERRORS=("outhinspace .ut" "athinspace .lot")
 AUX_FIXES=("output" "atplot")
 
 # Chapter directory names
-CHAPTERS=("advec" "diffu" "formulas" "nonlin" "softeng2" "trunc" "vib" "wave")
+CHAPTERS=("01_vib" "02_wave" "03_diffu" "04_advec" "05_nonlin" "A_formulas" "B_trunc" "C_softeng2")
 
 # If arrays are different lengths, script is not executed and throws error
 if [ ${#DOCONCE[@]} -ne ${#PURE_LATEX[@]} ]; then

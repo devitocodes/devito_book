@@ -110,6 +110,7 @@ def test_quadratic():
 
     def assert_no_error(u, x, t, n):
         u_e = u_exact(x, t[n])
+        print(np.abs(u- u_e).min())
         diff = np.abs(u - u_e).max()
         tol = 1E-7
         assert diff < tol

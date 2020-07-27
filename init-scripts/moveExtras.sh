@@ -3,7 +3,7 @@
 cd ..
 cd doc/.src/chapters
 
-CHAPTERS=("advec" "diffu" "formulas" "nonlin" "softeng2" "trunc" "vib" "wave")
+CHAPTERS=("01_vib" "02_wave" "03_diffu" "04_advec" "05_nonlin" "A_formulas" "B_trunc" "C_softeng2")
 EXTRAS=("fig" "mov" "src" "exer" "slides")
 
 for i in "${CHAPTERS[@]}"; do
