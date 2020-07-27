@@ -15,6 +15,7 @@ A Jupyter notebook is considered 'complete' when the following is true:
 
 * The Python code segments have been **correctly** re-implemented using Devito (i.e., the tests still pass)
 * The following are all correctly formatted and, if applicable, link to the correct file:
+  * LaTeX symbols
   * Images
   * Videos
   * Websites
