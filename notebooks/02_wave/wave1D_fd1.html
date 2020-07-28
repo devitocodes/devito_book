@@ -471,8 +471,13 @@ a <em>finite difference scheme</em>.</p>
 <!-- dom:FIGURE: [mov-wave/D_stencil_gpl/stencil_n_interior.png, width=500] Mesh in space and time. The circles show points connected in a finite difference equation. <div id="wave:pde1:fig:mesh"></div> -->
 <!-- begin figure -->
 <div id="wave:pde1:fig:mesh"></div>
+<!-- 
 <p>Mesh in space and time. The circles show points connected in a finite difference equation.</p>
-<img src="mov-wave/D_stencil_gpl/stencil_n_interior.png" width=500>
+<img src="mov-wave/D_stencil_gpl/stencil_n_interior.png" width=500> -->
+<div class="figure align-default" id="wave-pde1-fig-mesh">
+<img alt="../../_images/stencil_n_interior.png" src="../../_images/stencil_n_interior.png" />
+<p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Mesh in space and time. The circles show points connected in a finite difference equation.</span><a class="headerlink" href="#wave-pde1-fig-mesh" title="Permalink to this image">¶</a></p>
+</div>
 <!-- end figure -->
 </div>
 <div class="section" id="algebraic-version-of-the-initial-conditions">
@@ -569,8 +574,12 @@ connects four instead of five points: <span class="math notranslate nohighlight"
 <!-- dom:FIGURE: [mov-wave/D_stencil_gpl/stencil_n0_interior.png, width=500] Modified stencil for the first time step. <div id="wave:pde1:fig:stencil:u1"></div> -->
 <!-- begin figure -->
 <div id="wave:pde1:fig:stencil:u1"></div>
-<p>Modified stencil for the first time step.</p>
-<img src="mov-wave/D_stencil_gpl/stencil_n0_interior.png" width=500>
+<!-- <p>Modified stencil for the first time step.</p>
+<img src="./notebooks/02_wave/mov-wave/D_stencil_gpl/stencil_n0_interior.png" width=500> -->
+<div class="figure align-default" id="wave-pde1-fig-stencil-u1">
+<img alt="../../_images/stencil_n0_interior.png" src="../../_images/stencil_n0_interior.png" />
+<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">Modified stencil for the first time step.</span><a class="headerlink" href="#wave-pde1-fig-stencil-u1" title="Permalink to this image">¶</a></p>
+</div>
 <!-- end figure -->
 <p>We can now summarize the computational algorithm:</p>
 <ol>
@@ -728,7 +737,7 @@ RHS: dt**2*(c**2*(-2.0*u(t, x)/h_x**2 + u(t, x - h_x)/h_x**2 + u(t, x + h_x)/h_x
 </pre>
 </div>
 <div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>PerformanceSummary([(PerfKey(name=&#39;section0&#39;, rank=None),
-                     PerfEntry(time=1e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
+                     PerfEntry(time=1.5000000000000004e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
 </pre></div>
 </div>
 </div>
