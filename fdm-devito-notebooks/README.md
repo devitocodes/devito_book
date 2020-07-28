@@ -2,7 +2,7 @@
 
 Every folder inside `fdm-devito-notebooks` refers to a section of the book. The chapters are labelled numerically and the appendices are labelled alphabetically.
 
-The folder for each section contains the Jupyter notebooks (`.ipynb` files) that make up the book, as well as some subdirectories. The most important of these are:
+The folder for each section contains the Jupyter notebooks (`.ipynb` files) for that section, a readme to explain which notebooks correspond to which chapters of the original book section, and some subdirectories. The most important of these subdirectories are:
 
 * `exer-<section>`: the Python code for that section's exercises
 * `fig-<section>`: the images displayed in that section
