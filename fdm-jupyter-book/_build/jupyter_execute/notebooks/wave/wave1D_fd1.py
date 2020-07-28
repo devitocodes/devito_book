@@ -992,4 +992,8 @@ However, for 1D wave
 equations of the type $u_{tt}=c^2u_{xx}$ we shall see that there is always
 another much more powerful way of generating exact
 solutions (which consists in just setting $C=1$ (!), as shown in
-the section [wave:pde1:analysis](#wave:pde1:analysis)).
+the section [wave:pde1:analysis](#wave:pde1:analysis)). {cite}`Japhet_2015`
+
+```{bibliography} ../papers.bib
+```
+

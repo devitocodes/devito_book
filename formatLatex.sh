@@ -10,8 +10,8 @@ DOCONCE=("\\\tp" "\\\half" "\\\Real" "\\\normalvec")
 PURE_LATEX=("\\\thinspace ." "\\\frac{1}{2}" "\\\mathbb{R}" "\\\boldsymbol{n}")
 
 # Auxilliary errors as a result of the above formatting and their fixes
-AUX_ERRORS=("outhinspace .ut" "athinspace .lot")
-AUX_FIXES=("output" "atplot")
+AUX_ERRORS=("outhinspace .ut" "athinspace .lot" "htthinspace .")
+AUX_FIXES=("output" "atplot" "http")
 
 # Chapter directory names
 CHAPTERS=("01_vib" "02_wave" "03_diffu" "04_advec" "05_nonlin" "A_formulas" "B_trunc" "C_softeng2")

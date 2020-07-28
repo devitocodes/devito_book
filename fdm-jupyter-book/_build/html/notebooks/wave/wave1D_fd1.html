@@ -705,7 +705,7 @@ RHS: dt**2*(c**2*(-2.0*u(t, x)/h_x**2 + u(t, x - h_x)/h_x**2 + u(t, x + h_x)/h_x
 </pre>
 </div>
 <div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>PerformanceSummary([(PerfKey(name=&#39;section0&#39;, rank=None),
-                     PerfEntry(time=1.6e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
+                     PerfEntry(time=1.5000000000000002e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
 </pre></div>
 </div>
 </div>
@@ -1122,7 +1122,13 @@ solutions for verifying implementations.</p>
 equations of the type <span class="math notranslate nohighlight">\(u_{tt}=c^2u_{xx}\)</span> we shall see that there is always
 another much more powerful way of generating exact
 solutions (which consists in just setting <span class="math notranslate nohighlight">\(C=1\)</span> (!), as shown in
-the section <a class="reference external" href="#wave:pde1:analysis">wave:pde1:analysis</a>).</p>
+the section <a class="reference external" href="#wave:pde1:analysis">wave:pde1:analysis</a>). <a class="bibtex reference internal" href="#japhet-2015" id="id1">[CJS15]</a></p>
+<p id="bibtex-bibliography-notebooks/wave/wave1D_fd1-0"><dl class="citation">
+<dt class="bibtex label" id="japhet-2015"><span class="brackets"><a class="fn-backref" href="#id1">CJS15</a></span></dt>
+<dd><p>F. Cuvelier, C. Japhet, and G. Scarella. An efficient way of assembling finite element matrices in vector languages. <em>BIT Numerical Mathematics</em>, 2015.</p>
+</dd>
+</dl>
+</p>
 </div>
 </div>
 
