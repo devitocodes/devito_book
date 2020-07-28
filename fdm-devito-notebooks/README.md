@@ -22,6 +22,6 @@ A Jupyter notebook is considered 'complete' when the following is true:
   * Citations
   * References to other sections of the book (either within the same notebook or to other `.ipynb` files)
 
-For information on how to make sure your notebook is correctly formatted, see [the wiki](https://github.com/devitocodes/devito_book/wiki).
+For information on how to make sure your notebook is correctly formatted, see [the wiki](https://github.com/devitocodes/devito_book/wiki) for this repository.
   
 When all of this is complete, the notebook can be copied to the `fdm-jupyter-book` folder on the master branch and deployed to GitHub pages.
