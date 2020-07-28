@@ -43,13 +43,13 @@ Tip, especially for newcomers: prefer short, self-contained Pull Requests over l
 
 ### Process for working on a notebook
 
-1. Work on your notebook in `fdm-devito-notebooks`. This contains all of the Jupyter notebooks (`.ipynb` files) that make up the book. We recommend you run:
+1. Work on your notebook in `fdm-devito-notebooks`. This contains all of the Jupyter Notebooks (`.ipynb` files) that make up the book. We recommend you run:
 
 ```
 jupyter notebook fdm-devito-notebooks
 ```
 
-and navigate to the notebook you are working on in your browser.
+and navigate to the notebook you are working on in your browser. The [Jupyter Notebook docs](https://jupyter-notebook.readthedocs.io/en/latest/?badge=latest) are a good place to start if you are unfamiliar with Jupyter Notebook.
 
 2. Once you are happy that the notebook has been successfully "Devito-fied", submit a pull request as described above. More information on what constitutes a 'complete' notebook is available in this [readme](https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/README.md).
 
