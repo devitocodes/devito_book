@@ -1,4 +1,4 @@
-## Waves directory
+## Wave equations directory
 
 This gives an overview of which notebooks correspond to which chapters in the original book.
 
