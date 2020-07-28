@@ -31,7 +31,6 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="prev" title="Welcome to the Devito Book!" href="../../index.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="docsearch:language" content="en">
@@ -64,17 +63,12 @@
 </form>
 
 <nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
-  
   <ul class="nav sidenav_l1">
-  <li class="">
-    <a href="../../index.html">Welcome to the Devito Book!</a>
-  </li>
-<li class="navbar-special">
-<p class="margin-caption">Wave equations</p>
-</li>
-  <li class="active">
-    <a href="">Simulation of waves on a string</a>
-  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../index.html">
+   Welcome to the Devito Book!
+  </a>
+ </li>
 </ul>
 </nav>
 
@@ -112,7 +106,7 @@
         <!-- ipynb file if we had a myst markdown file -->
         
         <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../../_sources/notebooks/wave/wave1D_fd1.ipynb"><button type="button"
+        <a class="dropdown-buttons" href="../../_sources/notebooks/02_wave/wave1D_fd1.ipynb"><button type="button"
                 class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
                 data-placement="left">.ipynb</button></a>
         <!-- Download PDF via print -->
@@ -145,68 +139,78 @@
         <!-- Launch buttons -->
 
     </div>
+
+    <!-- Table of contents -->
     <div class="d-none d-md-block col-md-2 bd-toc show">
-<div class="tocsection onthispage pt-5 pb-3">
-    <i class="fas fa-list"></i> On this page
-</div>
+        <div class="tocsection onthispage pt-5 pb-3">
+            <i class="fas fa-list"></i> On this page
+        </div>
+        <nav id="bd-toc-nav">
+            <ul class="nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#discretizing-the-domain">
+   Discretizing the domain
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#uniform-meshes">
+     Uniform meshes
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-discrete-solution">
+   The discrete solution
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#fulfilling-the-equation-at-the-mesh-points">
+   Fulfilling the equation at the mesh points
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#replacing-derivatives-by-finite-differences">
+   Replacing derivatives by finite differences
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#algebraic-version-of-the-pde">
+     Algebraic version of the PDE
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#interpretation-of-the-equation-as-a-stencil">
+     Interpretation of the equation as a stencil
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#algebraic-version-of-the-initial-conditions">
+     Algebraic version of the initial conditions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#formulating-a-recursive-algorithm">
+   Formulating a recursive algorithm
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#sketch-of-an-implementation">
+   Sketch of an implementation
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#devito-implementation">
+     Devito implementation
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
 
-<nav id="bd-toc-nav">
-    <ul class="nav section-nav flex-column">
-    
-        <li class="nav-item toc-entry toc-h2">
-            <a href="#discretizing-the-domain" class="nav-link">Discretizing the domain</a><ul class="nav section-nav flex-column">
-                
-        <li class="nav-item toc-entry toc-h3">
-            <a href="#uniform-meshes" class="nav-link">Uniform meshes</a>
-        </li>
-    
-            </ul>
-        </li>
-    
-        <li class="nav-item toc-entry toc-h2">
-            <a href="#the-discrete-solution" class="nav-link">The discrete solution</a>
-        </li>
-    
-        <li class="nav-item toc-entry toc-h2">
-            <a href="#fulfilling-the-equation-at-the-mesh-points" class="nav-link">Fulfilling the equation at the mesh points</a>
-        </li>
-    
-        <li class="nav-item toc-entry toc-h2">
-            <a href="#replacing-derivatives-by-finite-differences" class="nav-link">Replacing derivatives by finite differences</a><ul class="nav section-nav flex-column">
-                
-        <li class="nav-item toc-entry toc-h3">
-            <a href="#algebraic-version-of-the-pde" class="nav-link">Algebraic version of the PDE</a>
-        </li>
-    
-        <li class="nav-item toc-entry toc-h3">
-            <a href="#interpretation-of-the-equation-as-a-stencil" class="nav-link">Interpretation of the equation as a stencil</a>
-        </li>
-    
-        <li class="nav-item toc-entry toc-h3">
-            <a href="#algebraic-version-of-the-initial-conditions" class="nav-link">Algebraic version of the initial conditions</a>
-        </li>
-    
-            </ul>
-        </li>
-    
-        <li class="nav-item toc-entry toc-h2">
-            <a href="#formulating-a-recursive-algorithm" class="nav-link">Formulating a recursive algorithm</a>
-        </li>
-    
-        <li class="nav-item toc-entry toc-h2">
-            <a href="#sketch-of-an-implementation" class="nav-link">Sketch of an implementation</a><ul class="nav section-nav flex-column">
-                
-        <li class="nav-item toc-entry toc-h3">
-            <a href="#devito-implementation" class="nav-link">Devito implementation</a>
-        </li>
-    
-            </ul>
-        </li>
-    
-    </ul>
-</nav>
-
-
+        </nav>
     </div>
 </div>
     <div id="main-content" class="row">
@@ -705,7 +709,7 @@ RHS: dt**2*(c**2*(-2.0*u(t, x)/h_x**2 + u(t, x - h_x)/h_x**2 + u(t, x + h_x)/h_x
 </pre>
 </div>
 <div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>PerformanceSummary([(PerfKey(name=&#39;section0&#39;, rank=None),
-                     PerfEntry(time=1.5000000000000002e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
+                     PerfEntry(time=1.2000000000000002e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
 </pre></div>
 </div>
 </div>
@@ -1122,13 +1126,7 @@ solutions for verifying implementations.</p>
 equations of the type <span class="math notranslate nohighlight">\(u_{tt}=c^2u_{xx}\)</span> we shall see that there is always
 another much more powerful way of generating exact
 solutions (which consists in just setting <span class="math notranslate nohighlight">\(C=1\)</span> (!), as shown in
-the section <a class="reference external" href="#wave:pde1:analysis">wave:pde1:analysis</a>). <a class="bibtex reference internal" href="#japhet-2015" id="id1">[CJS15]</a></p>
-<p id="bibtex-bibliography-notebooks/wave/wave1D_fd1-0"><dl class="citation">
-<dt class="bibtex label" id="japhet-2015"><span class="brackets"><a class="fn-backref" href="#id1">CJS15</a></span></dt>
-<dd><p>F. Cuvelier, C. Japhet, and G. Scarella. An efficient way of assembling finite element matrices in vector languages. <em>BIT Numerical Mathematics</em>, 2015.</p>
-</dd>
-</dl>
-</p>
+the section <a class="reference external" href="#wave:pde1:analysis">wave:pde1:analysis</a>).</p>
 </div>
 </div>
 
@@ -1141,7 +1139,6 @@ the section <a class="reference external" href="#wave:pde1:analysis">wave:pde1:a
     
     <div class='prev-next-bottom'>
         
-    <a class='left-prev' id="prev-link" href="../../index.html" title="previous page">Welcome to the Devito Book!</a>
 
     </div>
     <footer class="footer mt-5 mt-md-0">
