@@ -51,6 +51,6 @@ jupyter notebook fdm-devito-notebooks
 
 and navigate to the notebook you are working on in your browser.
 
-2. Once you are happy that the notebook has been successfully "Devito-fied", submit a pull request as described above.
+2. Once you are happy that the notebook has been successfully "Devito-fied", submit a pull request as described above. More information on what constitutes a 'complete' notebook is available in this [readme](https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/README.md).
 
-NB: A notebook in `fdm-devito-notebooks` only gets copied to `fdm-jupyter-book` once it has been Devito-fied and compiles, since the deployment of the Jupyter Book to GitHub Pages fails if this is not the case.
+NB: A notebook in `fdm-devito-notebooks` only gets copied to `fdm-jupyter-book` once it has been completely Devito-fied and it compiles, since the deployment of the Jupyter Book to GitHub Pages fails if this is not the case.
