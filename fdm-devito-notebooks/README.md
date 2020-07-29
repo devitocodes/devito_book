@@ -9,6 +9,8 @@ The folder for each section contains the Jupyter notebooks (`.ipynb` files) for 
 * `mov-<section>`: the videos displayed in that section
 * `src-<section>`: the Python code that makes up that section's tutorials (including tests)
 
+As there are occasionally issues with the rendering of Jupyter notebooks on GitHub, you can view these notebooks using NBViewer [here](https://nbviewer.jupyter.org/github/devitocodes/devito_book/tree/master/fdm-devito-notebooks/).
+
 ## Information for contributors
 
 A Jupyter notebook is considered 'complete' when the following is true:
@@ -23,5 +25,3 @@ A Jupyter notebook is considered 'complete' when the following is true:
   * References to other sections of the book (either within the same notebook or to other `.ipynb` files)
 
 For information on how to make sure your notebook is correctly formatted, see [the wiki](https://github.com/devitocodes/devito_book/wiki) for this repository.
-  
-When all of this is complete, the notebook can be copied to the `fdm-jupyter-book` folder on the master branch and deployed to GitHub pages.
