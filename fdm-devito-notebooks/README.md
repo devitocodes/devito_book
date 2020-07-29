@@ -24,4 +24,4 @@ A Jupyter notebook is considered 'complete' when the following is true:
   * Links to Python files
   * References to other sections of the book (either within the same notebook or to other `.ipynb` files)
 
-For information on how to make sure your notebook is correctly formatted, see [the wiki](https://github.com/devitocodes/devito_book/wiki) for this repository.
+For information on how to make sure your notebook is correctly formatted, see [the wiki](https://github.com/devitocodes/devito_book/wiki) for this repository. To compare your notebook with the original book pdf, [click here](https://github.com/devitocodes/devito_book/blob/master/doc/pub/book/pdf/fdm-book-4screen.pdf).
