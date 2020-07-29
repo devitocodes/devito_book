@@ -28,8 +28,8 @@ jobs:
     - name: Build the book
       run: |
         npm rebuild node-sass
-        cd fdm-jupyter-book
-        jupyter-book build .
+        jupyter-book clean fdm-jupyter-book
+        jupyter-book build fdm-jupyter-book
 
     # Push the book's HTML to github-pages
     - name: GitHub Pages action
