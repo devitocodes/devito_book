@@ -685,10 +685,10 @@ How to make movie file in modern formats:
 <!-- code=text (!bc sys) typeset with pygments style "default" -->
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span></span>Terminal&gt; name=tmp_frame%04d.png
 Terminal&gt; fps=8  # frames per second in movie
-Terminal&gt; avconv -r $fps -i $name -vcodec flv       movie.flv
-Terminal&gt; avconv -r $fps -i $name -vcodec libx64    movie.mp4
-Terminal&gt; avconv -r $fps -i $name -vcodec libvpx    movie.webm
-Terminal&gt; avconv -r $fps -i $name -vcodec libtheora movie.ogg
+Terminal&gt; ffmpeg -r $fps -i $name -vcodec flv       movie.flv
+Terminal&gt; ffmpeg -r $fps -i $name -vcodec libx64    movie.mp4
+Terminal&gt; ffmpeg -r $fps -i $name -vcodec libvpx    movie.webm
+Terminal&gt; ffmpeg -r $fps -i $name -vcodec libtheora movie.ogg
 </pre></div>
 <p>
 <!-- !split --><br><br><br><br><br><br><br><br>
