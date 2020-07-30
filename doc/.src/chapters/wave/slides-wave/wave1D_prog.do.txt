@@ -154,10 +154,10 @@ local variables in `viz` (known as a closure).
 !bc sys
 Terminal> scitools movie encoder=html output_file=movie.html \
           fps=4 frame_*.png  # web page with a player
-Terminal> avconv -r 4 -i frame_%04d.png -c:v flv       movie.flv
-Terminal> avconv -r 4 -i frame_%04d.png -c:v libtheora movie.ogg
-Terminal> avconv -r 4 -i frame_%04d.png -c:v libx264   movie.mp4
-Terminal> avconv -r 4 -i frame_%04d.png -c:v libpvx    movie.webm
+Terminal> ffmpeg -r 4 -i frame_%04d.png -c:v flv       movie.flv
+Terminal> ffmpeg -r 4 -i frame_%04d.png -c:v libtheora movie.ogg
+Terminal> ffmpeg -r 4 -i frame_%04d.png -c:v libx264   movie.mp4
+Terminal> ffmpeg -r 4 -i frame_%04d.png -c:v libpvx    movie.webm
 !ec
 
 !bwarning Important
