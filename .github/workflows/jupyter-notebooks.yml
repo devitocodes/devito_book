@@ -68,11 +68,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install matplotlib
-        pip install pytest==6.0.0
         pip install --user git+https://github.com/devitocodes/devito.git
     - name: Waves notebooks (2.1 and 2.2)
       run: |
-        $RUN_CMD py.test -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/02_wave/wave1D_fd1.ipynb
+        $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/02_wave/wave1D_fd1.ipynb
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.6
       with:
