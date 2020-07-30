@@ -27,7 +27,7 @@ a_consts = [[0, 1]]
 a_consts = [[0, 1], [0.5, 8]]
 a_consts = [[0, 1], [0.5, 8], [0.75, 0.1]]
 a = fill_a(a_consts, L, Nx)
-#a = random.uniform(0, 10, Nx+1)
+# a = random.uniform(0, 10, Nx+1)
 
 from scitools.std import plot, hold, subplot, figure, show
 
@@ -36,8 +36,8 @@ subplot(2,1,1)
 u, x, cpu = viz(I, a, L, Nx, D, T, umin, umax, theta, u_L, u_R)
 
 v = u_exact_stationary(x, a, u_L, u_R)
-print 'v', v
-print 'u', u
+print('v', v)
+print('u', u)
 hold('on')
 symbol = 'bo' if Nx < 32 else 'b-'
 plot(x, v, symbol, legend='exact stationary')

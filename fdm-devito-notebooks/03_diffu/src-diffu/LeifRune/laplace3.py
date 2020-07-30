@@ -1,12 +1,11 @@
 import numpy as np
 import scipy.linalg
 import matplotlib.pylab as plt
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import scipy as sc
-import scipy.linalg
 import scipy.sparse
 import scipy.sparse.linalg
+
 
 class Grid:
     """A simple grid class that stores the details and solution of the
@@ -76,7 +75,7 @@ class LaplaceSolver:
 
         Asp = sc.sparse.spdiags(dgs, [-nx, -1, 0, 1, nx], n, n,
                                 format='csc')  # Sparse matrix instance,
-        Tv = sc.sparse.linalg.spsolve(Asp, b) # Compute the solution with sparse solver
+        Tv = sc.sparse.linalg.spsolve(Asp, b)  # Compute the solution with sparse solver
         Tmatrix = np.reshape(Tv, (nx, ny))
 
         # Assign the computed values to the field of the T
@@ -94,8 +93,8 @@ class LaplaceSolver:
 # discretizing geometry
 width = 1.0
 height = 1.0
-Nx = 20  # number of unknowns in the x-direction
-Ny = 20  # number of unknowns in the y-direction
+Nx = 40  # number of unknowns in the x-direction
+Ny = 40  # number of unknowns in the y-direction
 N = Nx*Ny
 
 
@@ -142,7 +141,7 @@ mySolver = LaplaceSolver(Grid(nx=Nx, ny=Nx), scheme='direct')
 mySolver.grid.setBC(top=top, bottom=bottom, left=left, right=right)
 mySolver.solve()
 
-# Set the boundary values 
+# Set the boundary values
 T[:, 0] = left
 T[:, Ny+1] = right
 T[0, :] = bottom
