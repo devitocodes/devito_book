@@ -68,6 +68,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install matplotlib
+        pip install --no-use-wheel
         pip install --user git+https://github.com/devitocodes/devito.git
     - name: Waves notebooks (2.1 and 2.2)
       run: |
