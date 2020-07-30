@@ -6,9 +6,9 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
+#   pull_request:
+#     branches:
+#       - master
 
 jobs:
   tutorials:
@@ -68,7 +68,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install matplotlib
-        pip install --no-use-wheel
+        pip install pytest==4.0.2
         pip install --user git+https://github.com/devitocodes/devito.git
     - name: Waves notebooks (2.1 and 2.2)
       run: |
