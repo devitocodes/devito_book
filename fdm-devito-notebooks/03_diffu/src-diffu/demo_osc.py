@@ -5,6 +5,8 @@ import time
 import os
 import sys
 import shutil
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import savefig
 
 
 def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
@@ -107,10 +109,14 @@ class PlotU:
         umax = 1.1  # axis limits for plotting
         title = 'Method: %s, F=%g, t=%f' % \
                 (theta2name[self.theta], self.F, t[n])
-        # plot(x, u, 'r-',
-            # axis=[0, self.L, umin, umax],
-            # title=title)
-        # savefig(os.path.join(self.plotdir, 'frame_%04d.png' % n))
+        plt.plot(x, u, 'r-')
+        # import pdb; pdb.set_trace()
+        plt.xlim(0, self.L)
+        plt.ylim(umin, umax)
+        # axis=[0, self.L, umin, umax],
+        # title=title)
+        plt.title(label=title)
+        savefig(os.path.join(self.plotdir, 'frame_%04d.png' % n))
 
         # Pause the animation initially, otherwise 0.2 s between frames
         if n == 0:
