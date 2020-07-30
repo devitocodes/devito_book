@@ -67,8 +67,8 @@ As = sc.sparse.spdiags(diagonals, [-Nx,-1,0,1,Nx], N, N,format='csc') #sparse ma
 Tvector = sc.sparse.linalg.spsolve(As,b) # Compute the solution with a sparse solver.
 Tvector2 = scipy.linalg.solve(A,b)
 
-print 'max diff = ', np.max(Tvector - Tvector2)
-print 'min diff = ', np.min(Tvector - Tvector2)
+print('max diff = ', np.max(Tvector - Tvector2))
+print('min diff = ', np.min(Tvector - Tvector2))
 
 Tmatrix = np.reshape(Tvector,(Nx,Ny))
 
