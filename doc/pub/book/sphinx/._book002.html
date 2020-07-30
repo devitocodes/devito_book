@@ -756,10 +756,7 @@ format is popular,</p>
 <div class="highlight-text"><div class="highlight"><pre><span></span>Terminal&gt; ffmpeg -r 25 -i tmp_%04d.png -c:v flv movie.flv
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">ffmpeg</span></code> program can be replaced by the <code class="docutils literal"><span class="pre">avconv</span></code> program in
-the above command if desired (but at the time of this writing it seems
-to be more momentum in the <code class="docutils literal"><span class="pre">ffmpeg</span></code> project).
-The <code class="docutils literal"><span class="pre">-r</span></code> option should come first and
+<p>The <code class="docutils literal"><span class="pre">-r</span></code> option should come first and
 describes the number of frames per second in the movie (even if we
 would like to have slow movies, keep this number as large as 25,
 otherwise files are skipped from the movie). The
