@@ -185,7 +185,7 @@ def viz(
     codec2ext = dict(flv='flv', libx264='mp4', libvpx='webm',
                      libtheora='ogg')  # video formats
     filespec = 'tmp_%04d.png'
-    movie_program = 'ffmpeg'  # or 'avconv'
+    movie_program = 'ffmpeg'
     for codec in codec2ext:
         ext = codec2ext[codec]
         cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\
