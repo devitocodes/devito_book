@@ -590,8 +590,8 @@ def solver_classic_iterative(
             #print r, np.abs(u-u_).max(), np.sqrt(dx*dy*np.sum((u-u_)**2))
             u_[:,:] = u
 
-        print 't=%.2f: %s %s (omega=%g) finished in %d iterations' % \
-              (t[n+1], version, iteration, omega, r)
+        print('t=%.2f: %s %s (omega=%g) finished in %d iterations' % \
+              (t[n+1], version, iteration, omega, r))
 
         if user_action is not None:
             user_action(u, x, xv, y, yv, t, n+1)
@@ -626,15 +626,15 @@ def quadratic(theta, Nx, Ny):
         diff = abs(u - u_e).max()
         tol = 1E-12
         msg = 'diff=%g, step %d, time=%g' % (diff, n, t[n])
-        print msg
+        print(msg)
         assert diff < tol, msg
 
-    print '\ntesting dense matrix'
+    print('\ntesting dense matrix')
     t, cpu = solver_dense(
         I, a, f, Lx, Ly, Nx, Ny,
         dt, T, theta, user_action=assert_no_error)
 
-    print '\ntesting sparse matrix'
+    print('\ntesting sparse matrix')
     t, cpu = solver_sparse(
         I, a, f, Lx, Ly, Nx, Ny,
         dt, T, theta, user_action=assert_no_error,
@@ -647,15 +647,15 @@ def quadratic(theta, Nx, Ny):
         tol = 1E-12
         tol = 1E-4
         msg = 'diff=%g, step %d, time=%g' % (diff, n, t[n])
-        print msg
+        print(msg)
         assert diff < tol, msg
 
     tol = 1E-5  # Tolerance in iterative methods
     for iteration in 'Jacobi', 'SOR':
         for version in 'scalar', 'vectorized':
             for theta in 1, 0.5:
-                print '\ntesting %s, %s version, theta=%g, tol=%g' % \
-                      (iteration, version, theta, tol)
+                print('\ntesting %s, %s version, theta=%g, tol=%g' % \
+                      (iteration, version, theta, tol))
                 t, cpu = solver_classic_iterative(
                     I=I, a=a, f=f, Lx=Lx, Ly=Ly, Nx=Nx, Ny=Ny,
                     dt=dt, T=T, theta=theta,
@@ -664,13 +664,13 @@ def quadratic(theta, Nx, Ny):
                     version=version, iteration=iteration,
                     omega=1.0, max_iter=100, tol=tol)
 
-    print '\ntesting CG+ILU, theta=%g, tol=%g' % (theta, tol)
+    print('\ntesting CG+ILU, theta=%g, tol=%g' % (theta, tol))
     solver_sparse(
         I, a, f, Lx, Ly, Nx, Ny, dt, T, theta=0.5,
         user_action=assert_small_error,
         method='CG', CG_prec='ILU', CG_tol=tol)
 
-    print '\ntesting CG, theta=%g, tol=%g' % (theta, tol)
+    print('\ntesting CG, theta=%g, tol=%g' % (theta, tol))
     solver_sparse(
         I, a, f, Lx, Ly, Nx, Ny, dt, T, theta=0.5,
         user_action=assert_small_error,
@@ -684,7 +684,7 @@ def test_quadratic():
     for theta in [1, 0.5, 0]:
         for Nx in range(2, 6, 2):
             for Ny in range(2, 6, 2):
-                print '\n*** testing for %dx%d mesh' % (Nx, Ny)
+                print('\n*** testing for %dx%d mesh' % (Nx, Ny))
                 quadratic(theta, Nx, Ny)
 
 def demo_classic_iterative(
@@ -719,9 +719,9 @@ def demo_classic_iterative(
         A_e  = np.exp(-a*np.pi**2*(Lx**(-2) + Ly**(-2))*t[n])
         A_diff = abs(A_e - A_d)
         u_diff = abs(u_exact(xv, yv, t[n]).max() - u.max())
-        print 'Max u: %.2E' % u.max(), \
+        print('Max u: %.2E' % u.max(), \
               'error in u: %.2E' % u_diff, 'ampl.: %.2E' % A_diff, \
-              'iter: %.2E' % abs(u_diff - A_diff)
+              'iter: %.2E' % abs(u_diff - A_diff))
 
     solver_classic_iterative(
         I=I, a=a, f=f, Lx=Lx, Ly=Ly, Nx=Nx, Ny=Ny,
@@ -796,13 +796,13 @@ def convergence_rates(theta, num_experiments=6):
             diff = abs(r_CN_expected - r[-1])
             msg = 'Crank-Nicolson. r = 2 expected, got=%g' % r[-1]
             #print msg
-        print 'theta: %g' % theta
-        print 'r: ', r
+        print('theta: %g' % theta)
+        print('r: ', r)
         assert diff < tol, msg
 
     tol = 1E-5  # Tolerance in iterative methods
     for method in 'direct', 'CG':
-        print '\ntesting convergence rate, theta=%g, method=%s' % (theta, method)
+        print('\ntesting convergence rate, theta=%g, method=%s' % (theta, method))
         for i in range(num_experiments):
             # Want to do E2_sum += ... in local functions (closures), but
             # a stndard variable E2_sum is reported undefined. Trick: use
@@ -833,7 +833,7 @@ def convergence_rates(theta, num_experiments=6):
                     user_action=add_error_contribution,
                     method=method, CG_prec='ILU', CG_tol=tol)
             compute_E(h)
-            print 'Experiment no:%d, %d unknowns' % (i+1, (N+1)**2), E_values[-1]
+            print('Experiment no:%d, %d unknowns' % (i+1, (N+1)**2), E_values[-1])
         assert_conv_rates()
 
 
@@ -891,7 +891,7 @@ def convergence_rates0(theta, num_experiments=10):
             E_values.append(E)
             dt_values.append(dt)
             if counter['i'] == num_experiments:  # i.e., all num. exp. finished
-                print '...all experiments finished'
+                print('...all experiments finished')
                 r = [np.log(E_values[i+1]/E_values[i])/
                      np.log(dt_values[i+1]/dt_values[i])
                      for i in range(0, num_experiments-2, 1)]
@@ -906,11 +906,11 @@ def convergence_rates0(theta, num_experiments=10):
                     diff = abs(r_CN_expected - r[-1])
                     msg = 'Crank-Nicolson. r = 2 expected, got=%g' % r[-1]
                 #print msg
-                print 'theta: %g' % theta
-                print 'r: ', r
+                print('theta: %g' % theta)
+                print('r: ', r)
                 assert diff < tol, msg
 
-    print '\ntesting convergence rate, sparse matrix, CG, ILU'
+    print('\ntesting convergence rate, sparse matrix, CG, ILU')
     tol = 1E-5  # Tolerance in iterative methods
     counter = {'i' : 0}   # initialize
     for i in range(num_experiments):
@@ -929,7 +929,7 @@ def convergence_rates0(theta, num_experiments=10):
             I, a, f, Lx, Ly, Nx, Ny, dt, T, theta=0.5,
             user_action=assert_correct_convergence_rate,
             method='CG', CG_prec='ILU', CG_tol=tol)
-        print 'Experiment no:%d' % (i+1)
+        print('Experiment no:%d' % (i+1))
 
 
 def test_convergence_rate():
@@ -962,7 +962,7 @@ def efficiency():
     dt = 0.5
     T = 2
 
-    print '\ntesting sparse matrix LU solver'
+    print('\ntesting sparse matrix LU solver')
     t, cpu = solver_sparse(
         I, a, f, Lx, Ly, Nx, Ny,
         dt, T, theta, user_action=None,
@@ -973,8 +973,8 @@ def efficiency():
     # Testing Jacobi and Gauss-Seidel
     for iteration in 'Jacobi', 'SOR':
         for version in 'scalar', 'vectorized':
-            print '\ntesting %s, %s version, theta=%g, tol=%g' % \
-                  (iteration, version, theta, tol)
+            print('\ntesting %s, %s version, theta=%g, tol=%g' % \
+                  (iteration, version, theta, tol))
             t, cpu_ = solver_classic_iterative(
                 I=I, a=a, f=f, Lx=Lx, Ly=Ly, Nx=Nx, Ny=Ny,
                 dt=dt, T=T, theta=theta,
@@ -985,7 +985,7 @@ def efficiency():
             cpu[iteration+'_'+version] = cpu_
 
     for omega in 'optimal', 1.2, 1.5:
-        print '\ntesting SOR, omega:', omega
+        print('\ntesting SOR, omega:', omega)
         t, cpu_ = solver_classic_iterative(
             I=I, a=a, f=f, Lx=Lx, Ly=Ly, Nx=Nx, Ny=Ny,
             dt=dt, T=T, theta=theta,
@@ -995,14 +995,14 @@ def efficiency():
             omega=1.0, max_iter=100, tol=tol)
         cpu['SOR(omega=%g)' % omega] = cpu_
 
-    print '\ntesting CG+ILU, theta=%g, tol=%g' % (theta, tol)
+    print('\ntesting CG+ILU, theta=%g, tol=%g' % (theta, tol))
     t, cpu_ = solver_sparse(
         I, a, f, Lx, Ly, Nx, Ny, dt, T, theta=0.5,
         user_action=None,
         method='CG', CG_prec='ILU', CG_tol=tol)
     cpu['CG+ILU'] = cpu_
 
-    print '\ntesting CG, theta=%g, tol=%g' % (theta, tol)
+    print('\ntesting CG, theta=%g, tol=%g' % (theta, tol))
     t, cpu_ = solver_sparse(
         I, a, f, Lx, Ly, Nx, Ny, dt, T, theta=0.5,
         user_action=None,

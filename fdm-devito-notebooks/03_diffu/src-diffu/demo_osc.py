@@ -59,7 +59,7 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
     lower[:] = -Fl  # 1
     upper[:] = -Fl  # 1
     # Insert boundary conditions
-    # (upper[1:] and lower[:-1] are the active alues)
+    # (upper[1:] and lower[:-1] are the active values)
     upper[0:2] = 0
     lower[-2:] = 0
     diagonal[0] = 1
@@ -67,7 +67,7 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
 
     diags = [0, -1, 1]
     A = spdiags([diagonal, lower, upper], diags, Nx+1, Nx+1)
-    # print A.todense()
+    # print(A.todense())
 
     # Set initial condition
     for i in range(0, Nx+1):
@@ -110,11 +110,8 @@ class PlotU:
         title = 'Method: %s, F=%g, t=%f' % \
                 (theta2name[self.theta], self.F, t[n])
         plt.plot(x, u, 'r-')
-        # import pdb; pdb.set_trace()
         plt.xlim(0, self.L)
         plt.ylim(umin, umax)
-        # axis=[0, self.L, umin, umax],
-        # title=title)
         plt.title(label=title)
         savefig(os.path.join(self.plotdir, 'frame_%04d.png' % n))
 
