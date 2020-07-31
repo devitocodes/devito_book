@@ -149,7 +149,7 @@ def solver(I, a, f, L, Nx, D, T, theta=0.5, u_L=1, u_R=0,
 def viz(I, a, f, L, Nx, D, T, umin, umax, theta, u_L, u_R,
         animate=True, store_u=False):
 
-    from scitools.std import plot
+    # from scitools.std import plot
     solutions = []
     def process_u(u, x, t, n):
         if animate:
