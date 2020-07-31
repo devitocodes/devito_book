@@ -1,6 +1,5 @@
 from Heaviside import PiecewiseConstant, IntegratedPiecewiseConstant
 import numpy as np
-from sets import Set
 
 class SerialLayers:
     """
@@ -47,7 +46,6 @@ class SerialLayers:
         import matplotlib.pyplot as plt
         plt.figure()
         plt.plot(x, y_u, 'b')
-        plt.hold('on')  # Matlab style
         plt.plot(x, y_a, 'r')
         ymin = -0.1
         ymax = 1.2*max(y_u.max(), y_a.max())
@@ -61,7 +59,7 @@ class SerialLayers:
 
 def simulate_case1(
     mesh_resolution_factor=1.,
-    uncertainty_type=Set(['material parameters',
+    uncertainty_type=set(['material parameters',
                           'internal boundary 1',
                           'u at 0',
                           'u at L']),
@@ -91,7 +89,7 @@ def simulate_case1(
         L = 5
         n = 10 # no of mesh intervals with mesh_resolution_factor=1
         i = mesh_resolution_factor*n    # total no of intervals
-        mesh = np.linspace(0, L, i+1)
+        mesh = np.linspace(0, L, np.int32(i+1))
         # Material boundaries matches mesh (as long as n=10)
         b = [0, 0.25, 0.5, 1]
         # Material values
@@ -104,15 +102,15 @@ def simulate_case1(
 
         # Use Set to avoid a particular sequence of the elements
         # in the uncertainty_type set
-        if uncertainty_type == Set(['material parameters']):
+        if uncertainty_type == set(['material parameters']):
             a = np.asarray(*args)
-        elif uncertainty_type == Set(['internal boundary 1']):
+        elif uncertainty_type == set(['internal boundary 1']):
             b[1] = args[0]
-        elif uncertainty_type == Set(['material parameters',
+        elif uncertainty_type == set(['material parameters',
                                       'internal boundaries']):
             a = np.asarray(*args)[:-1]
             b[1] = args[-1]
-        elif uncertainty_type == Set(['internal boundary 1', 'u at L']):
+        elif uncertainty_type == set(['internal boundary 1', 'u at L']):
             b[1] = args[0]
             U_L = args[1]
         # else: no redefinition of data because of args
@@ -130,13 +128,13 @@ def simulate_case1(
 
 simulator = simulate_case1(
     mesh_resolution_factor=1.,
-    uncertainty_type = Set(['internal boundary 1']),
+    uncertainty_type = set(['internal boundary 1']),
     plot=True)
 
 # Play around with moving b[1] and see the effect :-)
 b1 = 0.25
 while 0 < b1 < 0.5:
-    b1 = float(raw_input('location of boundary 1 in (0, 0.5): '))
+    b1 = float(input('location of boundary 1 in (0, 0.5): '))
     q = simulator(b1)
-    print q
+    print(q)
 

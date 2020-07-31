@@ -35,7 +35,8 @@ store solutions, etc.
 import scipy.sparse
 import scipy.sparse.linalg
 from numpy import linspace, zeros, random, array
-import time, sys
+import time
+import sys
 
 
 def solver(I, a, f, L, Nx, D, T, theta=0.5, u_L=1, u_R=0,
