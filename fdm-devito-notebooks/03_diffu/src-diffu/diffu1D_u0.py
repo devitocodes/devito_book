@@ -469,7 +469,6 @@ def test_solvers():
           theta=0, u_L=0, u_R=0, user_action=compare),
         ]
     # solver_FE_simple has different return from the others
-    import pdb; pdb.set_trace()
     u, x, t, cpu = solvers[0]()
     u_e = u_exact(x, t[-1])
     diff = abs(u_e - u).max()
