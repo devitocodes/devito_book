@@ -48,7 +48,7 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     dx = x[1] - x[0]
     dt = t[1] - t[0]
     C = v*dt/dx
-    print 'dt=%g, dx=%g, Nx=%d, C=%g' % (dt, dx, Nx, C)
+    print('dt=%g, dx=%g, Nx=%d, C=%g' % (dt, dx, Nx, C))
 
     u   = np.zeros(Nx+1)
     u_n = np.zeros(Nx+1)
@@ -130,7 +130,7 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
 
         # Switch variables before next step
         u_nm1, u_n, u = u_n, u, u_nm1
-        print 'I:', integral[n+1]
+        print('I:', integral[n+1])
     return integral
 
 def run_FECS(case):
@@ -159,8 +159,8 @@ def run_FECS(case):
         m = 40
         if n % m != 0:
             return
-        print 't=%g, n=%d, u in [%g, %g] w/%d points' % \
-              (t[n], n, u.min(), u.max(), x.size)
+        print('t=%g, n=%d, u in [%g, %g] w/%d points' % \
+              (t[n], n, u.min(), u.max(), x.size))
         if np.abs(u).max() > 3:  # Instability?
             return
         plt.plot(x, u)
@@ -219,13 +219,14 @@ def run(scheme='UP', case='gaussian', C=1, dt=0.01):
         eps = 1E-14
         if abs(t[n] - 0.6) > eps and abs(t[n] - 0) > eps:
             return
-        print 't=%g, n=%d, u in [%g, %g] w/%d points' % \
-              (t[n], n, u.min(), u.max(), x.size)
+        print('t=%g, n=%d, u in [%g, %g] w/%d points' % \
+              (t[n], n, u.min(), u.max(), x.size))
         if np.abs(u).max() > 3:  # Instability?
             return
-        plt.plot(x, u)
-        plt.hold('on')
-        plt.draw()
+        #plt.plot(x, u)
+        ###plt.hold('on')
+        #plt.show
+        #plt.draw()
         if n > 0:
             y = [I(x_-v*t[n]) for x_ in x]
             plt.plot(x, y, 'k--')
@@ -233,6 +234,8 @@ def run(scheme='UP', case='gaussian', C=1, dt=0.01):
                 filename = ('tmp_%s_dt%s_C%s' % \
                             (scheme, t[1]-t[0], C)).replace('.', '')
                 np.savez(filename, x=x, u=u, u_e=y)
+        #plt.plot(x, u)
+        #plt.show
 
     plt.ion()
     U0 = 0
@@ -242,13 +245,13 @@ def run(scheme='UP', case='gaussian', C=1, dt=0.01):
     codecs = dict(flv='flv', mp4='libx264', webm='libvpx',
                   ogg='libtheora')
     # Remove video files
-    import glob, os
-    for name in glob.glob('tmp_*.png'):
-        os.remove(name)
-    for ext in codecs:
-        name = 'movie.%s' % ext
-        if os.path.isfile(name):
-            os.remove(name)
+    #import glob, os
+    #for name in glob.glob('tmp_*.png'):
+        #os.remove(name)
+    #for ext in codecs:
+        #name = 'movie.%s' % ext
+        #if os.path.isfile(name):
+            #os.remove(name)
 
     if scheme == 'CN':
         integral = solver_theta(
@@ -268,11 +271,11 @@ def run(scheme='UP', case='gaussian', C=1, dt=0.01):
     plt.savefig('tmp1.png'); plt.savefig('tmp1.pdf')
     plt.show()
     # Make videos from figure(1) animation files
-    for codec in codecs:
-        cmd = 'ffmpeg -i tmp_%%04d.png -r 25 -vcodec %s movie.%s' % \
-              (codecs[codec], codec)
-        os.system(cmd)
-    print 'Integral of u:', integral.max(), integral.min()
+    #for codec in codecs:
+        #cmd = 'ffmpeg -i tmp_%%04d.png -r 25 -vcodec %s movie.%s' % \
+              #(codecs[codec], codec)
+        #os.system(cmd)
+    print('Integral of u:', integral.max(), integral.min())
 
 def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
     """
@@ -292,7 +295,7 @@ def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
     dx = x[1] - x[0]
     dt = t[1] - t[0]
     C = v*dt/dx
-    print 'dt=%g, dx=%g, Nx=%d, C=%g' % (dt, dx, Nx, C)
+    print('dt=%g, dx=%g, Nx=%d, C=%g' % (dt, dx, Nx, C))
 
     u   = np.zeros(Nx+1)
     u_n = np.zeros(Nx+1)
