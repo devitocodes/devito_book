@@ -23,57 +23,7 @@ from devito import Dimension, Constant, TimeFunction, Eq, solve, Operator
 #     return u, t
 
 
-# def test_three_steps():
-#     from math import pi
-#     I = 1;  w = 2*pi;  dt = 0.1;  T = 1
-#     u_by_hand = np.array([1.000000000000000,
-#                           0.802607911978213,
-#                           0.288358920740053])
-#     u, t = solver(I, w, dt, T)
-#     diff = np.abs(u_by_hand - u[:3]).max()
-#     tol = 1E-14
-#     assert diff < tol
 
-# def convergence_rates(m, solver_function, num_periods=8):
-#     """
-#     Return m-1 empirical estimates of the convergence rate
-#     based on m simulations, where the time step is halved
-#     for each simulation.
-#     solver_function(I, w, dt, T) solves each problem, where T
-#     is based on simulation for num_periods periods.
-#     """
-#     from math import pi
-#     w = 0.35; I = 0.3       # just chosen values
-#     P = 2*pi/w              # period
-#     dt = P/30               # 30 time step per period 2*pi/w
-#     T = P*num_periods
-
-#     dt_values = []
-#     E_values = []
-#     for i in range(m):
-#         u, t = solver_function(I, w, dt, T)
-#         u_e = u_exact(t, I, w)
-#         E = np.sqrt(dt*np.sum((u_e-u)**2))
-#         dt_values.append(dt)
-#         E_values.append(E)
-#         dt = dt/2
-
-#     r = [np.log(E_values[i-1]/E_values[i])/
-#          np.log(dt_values[i-1]/dt_values[i])
-#          for i in range(1, m, 1)]
-#     return r, E_values, dt_values
-
-# def test_convergence_rates():
-#     r, E, dt = convergence_rates(
-#         m=5, solver_function=solver, num_periods=8)
-#     # Accept rate to 1 decimal place
-#     tol = 0.1
-#     assert abs(r[-1] - 2.0) < tol
-#     # Test that adjusted w obtains 4th order convergence
-#     r, E, dt = convergence_rates(
-#         m=5, solver_function=solver_adjust_w, num_periods=8)
-#     print 'adjust w rates:', r
-#     assert abs(r[-1] - 4.0) < tol
 
 # def plot_convergence_rates():
 #     r2, E2, dt2 = convergence_rates(
@@ -116,46 +66,7 @@ from devito import Dimension, Constant, TimeFunction, Eq, solve, Operator
 #     #plot_empirical_freq_and_amplitude(u, t, I, w)
 #     plt.show()
 
-# def plot_empirical_freq_and_amplitude(u, t, I, w):
-#     """
-#     Find the empirical angular frequency and amplitude of
-#     simulations in u and t. u and t can be arrays or (in
-#     the case of multiple simulations) multiple arrays.
-#     One plot is made for the amplitude and one for the angular
-#     frequency (just called frequency in the legends).
-#     """
-#     from vib_empirical_analysis import minmax, periods, amplitudes
-#     from math import pi
-#     if not isinstance(u, (list,tuple)):
-#         u = [u]
-#         t = [t]
-#     legends1 = []
-#     legends2 = []
-#     for i in range(len(u)):
-#         minima, maxima = minmax(t[i], u[i])
-#         p = periods(maxima)
-#         a = amplitudes(minima, maxima)
-#         plt.figure(1)
-#         plt.plot(range(len(p)), 2*pi/p)
-#         legends1.append('frequency, case%d' % (i+1))
-#         plt.hold('on')
-#         plt.figure(2)
-#         plt.plot(range(len(a)), a)
-#         plt.hold('on')
-#         legends2.append('amplitude, case%d' % (i+1))
-#     plt.figure(1)
-#     plt.plot(range(len(p)), [w]*len(p), 'k--')
-#     legends1.append('exact frequency')
-#     plt.legend(legends1, loc='lower left')
-#     plt.axis([0, len(a)-1, 0.8*w, 1.2*w])
-#     plt.savefig('tmp1.png');  plt.savefig('tmp1.pdf')
-#     plt.figure(2)
-#     plt.plot(range(len(a)), [I]*len(a), 'k--')
-#     legends2.append('exact amplitude')
-#     plt.legend(legends2, loc='lower left')
-#     plt.axis([0, len(a)-1, 0.8*I, 1.2*I])
-#     plt.savefig('tmp2.png');  plt.savefig('tmp2.pdf')
-#     plt.show()
+
 
 
 # def visualize_front(u, t, I, w, savefig=False, skip_frames=1):
@@ -342,3 +253,98 @@ def visualize(u, t, I, w):
     umin = 1.2*u.min();  umax = -umin
     plt.axis([t[0], t[-1], umin, umax])
     plt.savefig('tmp1.png');  plt.savefig('tmp1.pdf')
+
+def test_three_steps():
+    from math import pi
+    I = 1;  w = 2*pi;  dt = 0.1;  T = 1
+    u_by_hand = np.array([1.000000000000000,
+                          0.802607911978213,
+                          0.288358920740053])
+    u, t = solver(I, w, dt, T)
+    diff = np.abs(u_e[:3] - u[:3]).max()
+    tol = 1E-14
+    assert diff < tol
+
+
+def convergence_rates(m, solver_function, num_periods=8):
+    """
+    Return m-1 empirical estimates of the convergence rate
+    based on m simulations, where the time step is halved
+    for each simulation.
+    solver_function(I, w, dt, T) solves each problem, where T
+    is based on simulation for num_periods periods.
+    """
+    from math import pi
+    w = 0.35; I = 0.3       # just chosen values
+    P = 2*pi/w              # period
+    dt = P/30               # 30 time step per period 2*pi/w
+    T = P*num_periods
+
+    dt_values = []
+    E_values = []
+    for i in range(m):
+        u, t = solver_function(I, w, dt, T)
+        u_e = u_exact(t, I, w)
+        E = np.sqrt(dt*np.sum((u_e-u)**2))
+        dt_values.append(dt)
+        E_values.append(E)
+        dt = dt/2
+
+    r = [np.log(E_values[i-1]/E_values[i])/
+         np.log(dt_values[i-1]/dt_values[i])
+         for i in range(1, m, 1)]
+    return r, E_values, dt_values
+
+# def test_convergence_rates():
+#     r, E, dt = convergence_rates(
+#         m=5, solver_function=solver, num_periods=8)
+#     # Accept rate to 1 decimal place
+#     tol = 0.1
+#     assert abs(r[-1] - 2.0) < tol
+#     # Test that adjusted w obtains 4th order convergence
+#     r, E, dt = convergence_rates(
+#         m=5, solver_function=solver, num_periods=8)
+#     print("adjust w rates:")
+#     print(r)
+#     assert abs(r[-1] - 4.0) < tol
+
+def plot_empirical_freq_and_amplitude(u, t, I, w):
+    """
+    Find the empirical angular frequency and amplitude of
+    simulations in u and t. u and t can be arrays or (in
+    the case of multiple simulations) multiple arrays.
+    One plot is made for the amplitude and one for the angular
+    frequency (just called frequency in the legends).
+    """
+    from vib_empirical_analysis import minmax, periods, amplitudes
+    from math import pi
+    if not isinstance(u, (list,tuple)):
+        u = [u]
+        t = [t]
+    legends1 = []
+    legends2 = []
+    for i in range(len(u)):
+        minima, maxima = minmax(t[i], u[i])
+        p = periods(maxima)
+        a = amplitudes(minima, maxima)
+        plt.figure(1)
+        plt.plot(range(len(p)), 2*pi/p)
+        legends1.append('frequency, case%d' % (i+1))
+        plt.hold('on')
+        plt.figure(2)
+        plt.plot(range(len(a)), a)
+        plt.hold('on')
+        legends2.append('amplitude, case%d' % (i+1))
+    plt.figure(1)
+    plt.plot(range(len(p)), [w]*len(p), 'k--')
+    legends1.append('exact frequency')
+    plt.legend(legends1, loc='lower left')
+    plt.axis([0, len(a)-1, 0.8*w, 1.2*w])
+    plt.savefig('tmp1.png');  plt.savefig('tmp1.pdf')
+    plt.figure(2)
+    plt.plot(range(len(a)), [I]*len(a), 'k--')
+    legends2.append('exact amplitude')
+    plt.legend(legends2, loc='lower left')
+    plt.axis([0, len(a)-1, 0.8*I, 1.2*I])
+    plt.savefig('tmp2.png');  plt.savefig('tmp2.pdf')
+    plt.show()
