@@ -1,0 +1,22 @@
+version: '2'
+
+services:
+
+  devito_book:
+
+    environment: 
+      QT_QPA_PLATFORM=offscreen
+    
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+
+    environment:
+      DEVITO_ARCH: gcc
+      DEVITO_LANGUAGE: openmp
+
+    volumes:
+      - ./fdm-devito-notebooks:/app/fdm-devito-notebooks
+
+    ports:
+      - 8888:8888
