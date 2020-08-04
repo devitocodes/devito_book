@@ -26,7 +26,7 @@ compute errors, etc.
 """
 import time, sys, os
 from glob import glob
-import scitools.std as st
+# import scitools.std as st
 import numpy as np
 try:
     import mayavi.mlab as mlab
@@ -55,8 +55,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
         safety_factor = -dt    # use negative dt as safety factor
         dt = safety_factor*stability_limit
     elif dt > stability_limit:
-        print 'error: dt=%g exceeds the stability limit %g' % \
-              (dt, stability_limit)
+        print('error: dt=%g exceeds the stability limit %g' % (dt, stability_limit))
     Nt = int(round(T/float(dt)))
     t = np.linspace(0, Nt*dt, Nt+1)    # mesh points in time
     dt = t[1] - t[0]                   # ensure compatibility
@@ -79,11 +78,11 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     u_nm1 = np.zeros((Nx+1,Ny+1), order=order)   # Solution at t-2*dt
     f_a   = np.zeros((Nx+1,Ny+1), order=order)   # For compiled loops
 
-    Ix = range(0, u.shape[0])
-    Iy = range(0, u.shape[1])
-    It = range(0, t.shape[0])
+    Ix = list(range(0, u.shape[0]))
+    Iy = list(range(0, u.shape[1]))
+    It = list(range(0, t.shape[0]))
 
-    import time; t0 = time.clock()  # For measuring CPU time
+    import time; t0 = time.perf_counter()  # For measuring CPU time
 
     # Load initial condition into u_n
     if version == 'scalar':
@@ -137,7 +136,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
         u_nm1, u_n, u = u_n, u, u_nm1
 
     # Important to set u = u_n if u is to be returned!
-    t1 = time.clock()
+    t1 = time.perf_counter()
     # dt might be computed in this function so return the value
     return dt, t1 - t0
 
@@ -145,7 +144,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
 
 def advance_scalar(u, u_n, u_nm1, f, x, y, t, n, Cx2, Cy2, dt2,
                    V=None, step1=False):
-    Ix = range(0, u.shape[0]);  Iy = range(0, u.shape[1])
+    Ix = list(range(0, u.shape[0]));  Iy = list(range(0, u.shape[1]))
     if step1:
         dt = sqrt(dt2)  # save
         Cx2 = 0.5*Cx2;  Cy2 = 0.5*Cy2; dt2 = 0.5*dt2  # redefine
@@ -235,7 +234,7 @@ def test_quadratic():
     for Nx in range(2, 6, 2):
         for Ny in range(2, 6, 2):
             for version in versions:
-                print 'testing', version, 'for %dx%d mesh' % (Nx, Ny)
+                print('testing', version, 'for %dx%d mesh' % (Nx, Ny))
                 quadratic(Nx, Ny, version)
 
 def run_efficiency(nrefinements=4):
@@ -249,7 +248,7 @@ def run_efficiency(nrefinements=4):
     T = 100
     versions = ['scalar', 'vectorized', 'cython', 'f77',
                'c_f2py', 'c_cy']
-    print ' '*15, ''.join(['%-13s' % v for v in versions])
+    print(' '*15, ''.join(['%-13s' % v for v in versions]))
     for Nx in 15, 30, 60, 120:
         cpu = {}
         for version in versions:
@@ -259,21 +258,30 @@ def run_efficiency(nrefinements=4):
             cpu[version] = cpu_
         cpu_min = min(list(cpu.values()))
         if cpu_min < 1E-6:
-            print 'Ignored %dx%d grid (too small execution time)' \
-                  % (Nx, Nx)
+            print('Ignored %dx%d grid (too small execution time)' \
+                  % (Nx, Nx))
         else:
             cpu = {version: cpu[version]/cpu_min for version in cpu}
-            print '%-15s' % '%dx%d' % (Nx, Nx),
-            print ''.join(['%13.1f' % cpu[version] for version in versions])
+            print('%-15s' % '%dx%d' % (Nx, Nx), end=' ')
+            print(''.join(['%13.1f' % cpu[version] for version in versions]))
 
-def gaussian(plot_method=2, version='vectorized', save_plot=True):
+
+
+
+# if __name__ == '__main__':
+#     #test_quadratic()
+#     gaussian(plot_method=4, version='vectorized', save_plot=True)
+
+
+
+def gaussian(plot_method=4, version='vectorized', save_plot=True):
     """
     Initial Gaussian bell in the middle of the domain.
     plot_method=1 applies mesh function, =2 means surf, =0 means no plot.
     """
     # Clean up plot files
-    for name in glob('tmp_*.png'):
-        os.remove(name)
+    # for name in glob('tmp_*.png'):
+    #     os.remove(name)
 
     Lx = 10
     Ly = 10
@@ -297,17 +305,17 @@ def gaussian(plot_method=2, version='vectorized', save_plot=True):
         """User action function for plotting."""
         if t[n] == 0:
             time.sleep(2)
-        if plot_method == 1:
+        # if plot_method == 1:
             # Works well with Gnuplot backend, not with Matplotlib
-            st.mesh(x, y, u, title='t=%g' % t[n], zlim=[-1,1],
-                    caxis=[-1,1])
-        elif plot_method == 2:
+            # st.mesh(x, y, u, title='t=%g' % t[n], zlim=[-1,1],
+            #         caxis=[-1,1])
+        # elif plot_method == 2:
             # Works well with Gnuplot backend, not with Matplotlib
-            st.surfc(xv, yv, u, title='t=%g' % t[n], zlim=[-1, 1],
-                  colorbar=True, colormap=st.hot(), caxis=[-1,1],
-                  shading='flat')
-        elif plot_method == 3:
-            print 'Experimental 3D matplotlib...under development...'
+            # st.surfc(xv, yv, u, title='t=%g' % t[n], zlim=[-1, 1],
+            #       colorbar=True, colormap=st.hot(), caxis=[-1,1],
+            #       shading='flat')
+        if plot_method == 3:
+            print('Experimental 3D matplotlib...under development...')
             # Probably too slow
             #plt.clf()
             ax = fig.add_subplot(111, projection='3d')
@@ -324,8 +332,8 @@ def gaussian(plot_method=2, version='vectorized', save_plot=True):
             mlab.clf()
             extent1 = (0, 20, 0, 20,-2, 2)
             s = mlab.surf(x , y, u,
-                          colormap='Blues',
-                          warp_scale=5,extent=extent1)
+                          colormap='Blues',extent=extent1)
+                        #   warp_scale=5,extent=extent1)
             mlab.axes(s, color=(.7, .7, .7), extent=extent1,
                       ranges=(0, 10, 0, 10, -1, 1),
                       xlabel='', ylabel='', zlabel='',
@@ -342,22 +350,20 @@ def gaussian(plot_method=2, version='vectorized', save_plot=True):
             f = mlab.gcf()
             camera = f.scene.camera
             camera.yaw(0)
+            print("Iteration %d" % n)
+
 
         if plot_method > 0:
             time.sleep(0) # pause between frames
             if save_plot:
                 filename = 'tmp_%04d.png' % n
-		if plot_method == 4:
-                    mlab.savefig(filename)  # time consuming!
-		elif plot_method in (1,2):
-                    st.savefig(filename)  # time consuming!
+        # if plot_method == 4:
+        #             mlab.savefig(filename)  # time consuming!
+		# elif plot_method in (1,2):
+        #             st.savefig(filename)  # time consuming!
 
     Nx = 40; Ny = 40; T = 20
     dt, cpu = solver(I, None, None, c, Lx, Ly, Nx, Ny, -1, T,
                      user_action=plot_u, version=version)
 
 
-
-if __name__ == '__main__':
-    #test_quadratic()
-    gaussian(plot_method=2, version='vectorized', save_plot=True)
