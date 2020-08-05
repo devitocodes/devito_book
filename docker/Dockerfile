@@ -4,8 +4,10 @@ RUN apt-get update && apt-get install -y -q \
     mpich \
     libmpich-dev \
     libgl1-mesa-glx \
+    libglu1-mesa \
     qt5-default \
-    libx11-xcb1
+    libx11-xcb1 \
+    xvfb
 
 ADD ./requirements.txt /app/requirements.txt
 
@@ -32,6 +34,7 @@ WORKDIR /app
 
 ENV DEVITO_ARCH="gcc"
 ENV DEVITO_LANGUAGE="openmp"
+ENV LIBGL_ALWAYS_INDIRECT 1
 
 EXPOSE 8888
 ENTRYPOINT ["/docker-entrypoint.sh"]
