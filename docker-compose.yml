@@ -3,17 +3,15 @@ version: '2'
 services:
 
   devito_book:
-
-    environment: 
-      QT_QPA_PLATFORM=offscreen
     
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
 
     environment:
       DEVITO_ARCH: gcc
       DEVITO_LANGUAGE: openmp
+      QT_QPA_PLATFORM: offscreen
 
     volumes:
       - ./fdm-devito-notebooks:/app/fdm-devito-notebooks
