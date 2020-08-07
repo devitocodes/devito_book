@@ -6,7 +6,7 @@ services:
     
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
 
     environment:
       DEVITO_ARCH: gcc

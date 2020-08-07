@@ -14,7 +14,9 @@ codecov
 pytest-cov
 devito
 jupyter-book
-jupyter_contrib_nbextensions
 matplotlib
+vtk==8.1.2
 mayavi
 ipyevents
+jupyter
+jupyter_contrib_nbextensions
