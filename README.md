@@ -35,4 +35,4 @@ For an interactive experience with the book, you can run the Jupyter notebooks i
 docker-compose up devito_book
 ```
 
-Alternatively, the non-interactive version of the book is available [here](https://devitoproject.org/devito_book)
+Alternatively, the non-interactive version of the book is available [here](https://devitoproject.org/devito_book).
