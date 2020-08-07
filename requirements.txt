@@ -16,7 +16,5 @@ devito
 jupyter-book
 jupyter_contrib_nbextensions
 matplotlib
-vtk==8.1.2
 mayavi
 ipyevents
-pyqt5

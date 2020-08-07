@@ -1,6 +1,6 @@
 FROM python:3.6
 
-USER root
+# USER root
 
 RUN apt-get update && \
     apt-get install -y \
@@ -24,9 +24,26 @@ RUN python3 -m venv /venv && \
     /venv/bin/pip install --no-cache-dir --upgrade pip && \
     /venv/bin/pip install --no-cache-dir vtk==8.1.2 && \
     /venv/bin/pip install --no-cache-dir mayavi && \
+    /venv/bin/pip install --no-cache-dir ipyevents && \
     /venv/bin/pip install --no-cache-dir jupyter && \
     /venv/bin/pip install --no-cache-dir jupyter_contrib_nbextensions
     
 RUN python3 -m venv /venv && \
     /venv/bin/jupyter nbextension install --py mayavi --user && \
     /venv/bin/jupyter nbextension enable mayavi --user --py
+
+ADD ./fdm-devito-notebooks /app/fdm-devito-notebooks
+COPY setup.cfg /app/
+
+ADD run-jupyter.sh /jupyter
+ADD entrypoint.sh /docker-entrypoint.sh
+
+RUN chmod +x \
+    /jupyter \
+    /docker-entrypoint.sh
+
+WORKDIR /app
+
+EXPOSE 8888
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["/jupyter"]
