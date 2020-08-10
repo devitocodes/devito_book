@@ -51,147 +51,8 @@ from devito import Dimension, Constant, TimeFunction, Eq, solve, Operator
 
 
 
-# def visualize_front(u, t, I, w, savefig=False, skip_frames=1):
-#     """
-#     Visualize u and the exact solution vs t, using a
-#     moving plot window and continuous drawing of the
-#     curves as they evolve in time.
-#     Makes it easy to plot very long time series.
-#     Plots are saved to files if savefig is True.
-#     Only each skip_frames-th plot is saved (e.g., if
-#     skip_frame=10, only each 10th plot is saved to file;
-#     this is convenient if plot files corresponding to
-#     different time steps are to be compared).
-#     """
-#     import scitools.std as st
-#     from scitools.MovingPlotWindow import MovingPlotWindow
-#     from math import pi
 
-#     # Remove all old plot files tmp_*.png
-#     import glob, os
-#     for filename in glob.glob('tmp_*.png'):
-#         os.remove(filename)
 
-#     P = 2*pi/w  # one period
-#     umin = 1.2*u.min();  umax = -umin
-#     dt = t[1] - t[0]
-#     plot_manager = MovingPlotWindow(
-#         window_width=8*P,
-#         dt=dt,
-#         yaxis=[umin, umax],
-#         mode='continuous drawing')
-#     frame_counter = 0
-#     for n in range(1,len(u)):
-#         if plot_manager.plot(n):
-#             s = plot_manager.first_index_in_plot
-#             st.plot(t[s:n+1], u[s:n+1], 'r-1',
-#                     t[s:n+1], I*cos(w*t)[s:n+1], 'b-1',
-#                     title='t=%6.3f' % t[n],
-#                     axis=plot_manager.axis(),
-#                     show=not savefig) # drop window if savefig
-#             if savefig and n % skip_frames == 0:
-#                 filename = 'tmp_%04d.png' % frame_counter
-#                 st.savefig(filename)
-#                 print 'making plot file', filename, 'at t=%g' % t[n]
-#                 frame_counter += 1
-#         plot_manager.update(n)
-
-# def visualize_front_ascii(u, t, I, w, fps=10):
-#     """
-#     Plot u and the exact solution vs t line by line in a
-#     terminal window (only using ascii characters).
-#     Makes it easy to plot very long time series.
-#     """
-#     from scitools.avplotter import Plotter
-#     import time
-#     from math import pi
-#     P = 2*pi/w
-#     umin = 1.2*u.min();  umax = -umin
-
-#     p = Plotter(ymin=umin, ymax=umax, width=60, symbols='+o')
-#     for n in range(len(u)):
-#         print p.plot(t[n], u[n], I*cos(w*t[n])), \
-#               '%.1f' % (t[n]/P)
-#         time.sleep(1/float(fps))
-
-# def bokeh_plot(u, t, legends, I, w, t_range, filename):
-#     """
-#     Make plots for u vs t using the Bokeh library.
-#     u and t are lists (several experiments can be compared).
-#     legens contain legend strings for the various u,t pairs.
-#     """
-#     if not isinstance(u, (list,tuple)):
-#         u = [u]  # wrap in list
-#     if not isinstance(t, (list,tuple)):
-#         t = [t]  # wrap in list
-#     if not isinstance(legends, (list,tuple)):
-#         legends = [legends]  # wrap in list
-
-#     import bokeh.plotting as plt
-#     plt.output_file(filename, mode='cdn', title='Comparison')
-#     # Assume that all t arrays have the same range
-#     t_fine = np.linspace(0, t[0][-1], 1001)  # fine mesh for u_e
-#     tools = 'pan,wheel_zoom,box_zoom,reset,'\
-#             'save,box_select,lasso_select'
-#     u_range = [-1.2*I, 1.2*I]
-#     font_size = '8pt'
-#     p = []  # list of plot objects
-#     # Make the first figure
-#     p_ = plt.figure(
-#         width=300, plot_height=250, title=legends[0],
-#         x_axis_label='t', y_axis_label='u',
-#         x_range=t_range, y_range=u_range, tools=tools,
-#         title_text_font_size=font_size)
-#     p_.xaxis.axis_label_text_font_size=font_size
-#     p_.yaxis.axis_label_text_font_size=font_size
-#     p_.line(t[0], u[0], line_color='blue')
-#     # Add exact solution
-#     u_e = u_exact(t_fine, I, w)
-#     p_.line(t_fine, u_e, line_color='red', line_dash='4 4')
-#     p.append(p_)
-#     # Make the rest of the figures and attach their axes to
-#     # the first figure's axes
-#     for i in range(1, len(t)):
-#         p_ = plt.figure(
-#             width=300, plot_height=250, title=legends[i],
-#             x_axis_label='t', y_axis_label='u',
-#             x_range=p[0].x_range, y_range=p[0].y_range, tools=tools,
-#             title_text_font_size=font_size)
-#         p_.xaxis.axis_label_text_font_size = font_size
-#         p_.yaxis.axis_label_text_font_size = font_size
-#         p_.line(t[i], u[i], line_color='blue')
-#         p_.line(t_fine, u_e, line_color='red', line_dash='4 4')
-#         p.append(p_)
-
-#     # Arrange all plots in a grid with 3 plots per row
-#     grid = [[]]
-#     for i, p_ in enumerate(p):
-#         grid[-1].append(p_)
-#         if (i+1) % 3 == 0:
-#             # New row
-#             grid.append([])
-#     plot = plt.gridplot(grid, toolbar_location='left')
-#     plt.save(plot)
-#     plt.show(plot)
-
-# def demo_bokeh():
-#     """Solve a scaled ODE u'' + u = 0."""
-#     from math import pi
-#     w = 1.0        # Scaled problem (frequency)
-#     P = 2*np.pi/w  # Period
-#     num_steps_per_period = [5, 10, 20, 40, 80]
-#     T = 40*P       # Simulation time: 40 periods
-#     u = []         # List of numerical solutions
-#     t = []         # List of corresponding meshes
-#     legends = []
-#     for n in num_steps_per_period:
-#         dt = P/n
-#         u_, t_ = solver(I=1, w=w, dt=dt, T=T)
-#         u.append(u_)
-#         t.append(t_)
-#         legends.append('# time steps per period: %d' % n)
-#     bokeh_plot(u, t, legends, I=1, w=w, t_range=[0, 4*P],
-#                filename='tmp.html')
 
 # if __name__ == '__main__':
 #     #main()
@@ -362,6 +223,71 @@ def plot_convergence_rates():
     plt.savefig('tmp_convrate.png'); plt.savefig('tmp_convrate.pdf')
     plt.show()
 
+def visualize_front(u, t, I, w, savefig=False, skip_frames=1):
+    """
+    Visualize u and the exact solution vs t, using a
+    moving plot window and continuous drawing of the
+    curves as they evolve in time.
+    Makes it easy to plot very long time series.
+    Plots are saved to files if savefig is True.
+    Only each skip_frames-th plot is saved (e.g., if
+    skip_frame=10, only each 10th plot is saved to file;
+    this is convenient if plot files corresponding to
+    different time steps are to be compared).
+    """
+    import scitools.std as st
+    from scitools.MovingPlotWindow import MovingPlotWindow
+    from math import pi
+
+    # Remove all old plot files tmp_*.png
+    import glob, os
+    for filename in glob.glob('tmp_*.png'):
+        os.remove(filename)
+
+    P = 2*pi/w  # one period
+    umin = 1.2*u.min();  umax = -umin
+    dt = t[1] - t[0]
+    plot_manager = MovingPlotWindow(
+        window_width=8*P,
+        dt=dt,
+        yaxis=[umin, umax],
+        mode='continuous drawing')
+    frame_counter = 0
+    for n in range(1,len(u)):
+        if plot_manager.plot(n):
+            s = plot_manager.first_index_in_plot
+            st.plot(t[s:n+1], u[s:n+1], 'r-1',
+                    t[s:n+1], I*cos(w*t)[s:n+1], 'b-1',
+                    title='t=%6.3f' % t[n],
+                    axis=plot_manager.axis(),
+                    show=not savefig) # drop window if savefig
+            if savefig and n % skip_frames == 0:
+                filename = 'tmp_%04d.png' % frame_counter
+                st.savefig(filename)
+                print('making plot file', filename, 'at t=%g' % t[n])
+                frame_counter += 1
+        plot_manager.update(n)
+
+
+
+
+def visualize_front_ascii(u, t, I, w, fps=10):
+    """
+    Plot u and the exact solution vs t line by line in a
+    terminal window (only using ascii characters).
+    Makes it easy to plot very long time series.
+    """
+    from scitools.avplotter import Plotter
+    import time
+    from math import pi
+    P = 2*pi/w
+    umin = 1.2*u.min();  umax = -umin
+
+    p = Plotter(ymin=umin, ymax=umax, width=60, symbols='+o')
+    for n in range(len(u)):
+        print(p.plot(t[n], u[n], I*cos(w*t[n])), '%.1f' % (t[n]/P))
+        time.sleep(1/float(fps))
+
 def plot_empirical_freq_and_amplitude(u, t, I, w):
     """
     Find the empirical angular frequency and amplitude of
@@ -400,6 +326,83 @@ def plot_empirical_freq_and_amplitude(u, t, I, w):
     plt.axis([0, len(a)-1, 0.8*I, 1.2*I])
     plt.savefig('tmp2.png');  plt.savefig('tmp2.pdf')
     plt.show()
+
+def bokeh_plot(u, t, legends, I, w, t_range, filename):
+    """
+    Make plots for u vs t using the Bokeh library.
+    u and t are lists (several experiments can be compared).
+    legens contain legend strings for the various u,t pairs.
+    """
+    if not isinstance(u, (list,tuple)):
+        u = [u]  # wrap in list
+    if not isinstance(t, (list,tuple)):
+        t = [t]  # wrap in list
+    if not isinstance(legends, (list,tuple)):
+        legends = [legends]  # wrap in list
+
+    import bokeh.plotting as plt
+    plt.output_file(filename, mode='cdn', title='Comparison')
+    # Assume that all t arrays have the same range
+    t_fine = np.linspace(0, t[0][-1], 1001)  # fine mesh for u_e
+    tools = 'pan,wheel_zoom,box_zoom,reset,'\
+            'save,box_select,lasso_select'
+    u_range = [-1.2*I, 1.2*I]
+    font_size = '8pt'
+    p = []  # list of plot objects
+    # Make the first figure
+    p_ = plt.figure(
+        width=300, plot_height=250, title=legends[0],
+        x_axis_label='t', y_axis_label='u',
+        x_range=t_range, y_range=u_range, tools=tools)
+    p_.xaxis.axis_label_text_font_size=font_size
+    p_.yaxis.axis_label_text_font_size=font_size
+    p_.line(t[0], u[0], line_color='blue')
+    # Add exact solution
+    u_e = u_exact(t_fine, I, w)
+    p_.line(t_fine, u_e, line_color='red', line_dash='4 4')
+    p.append(p_)
+    # Make the rest of the figures and attach their axes to
+    # the first figure's axes
+    for i in range(1, len(t)):
+        p_ = plt.figure(
+            width=300, plot_height=250, title=legends[i],
+            x_axis_label='t', y_axis_label='u',
+            x_range=p[0].x_range, y_range=p[0].y_range, tools=tools)
+        p_.xaxis.axis_label_text_font_size = font_size
+        p_.yaxis.axis_label_text_font_size = font_size
+        p_.line(t[i], u[i], line_color='blue')
+        p_.line(t_fine, u_e, line_color='red', line_dash='4 4')
+        p.append(p_)
+
+    # Arrange all plots in a grid with 3 plots per row
+    grid = [[]]
+    for i, p_ in enumerate(p):
+        grid[-1].append(p_)
+        if (i+1) % 3 == 0:
+            # New row
+            grid.append([])
+    plot = plt.gridplot(grid, toolbar_location='left')
+    plt.save(plot)
+    plt.show(plot)
+
+def demo_bokeh():
+    """Solve a scaled ODE u'' + u = 0."""
+    from math import pi
+    w = 1.0        # Scaled problem (frequency)
+    P = 2*np.pi/w  # Period
+    num_steps_per_period = [5, 10, 20, 40, 80]
+    T = 40*P       # Simulation time: 40 periods
+    u = []         # List of numerical solutions
+    t = []         # List of corresponding meshes
+    legends = []
+    for n in num_steps_per_period:
+        dt = P/n
+        u_, t_ = solver(I=1, w=w, dt=dt, T=T)
+        u.append(u_)
+        t.append(t_)
+        legends.append('# time steps per period: %d' % n)
+    bokeh_plot(u, t, legends, I=1, w=w, t_range=[0, 4*P],
+               filename='tmp.html')
 
 if __name__ == '__main__':
     plot_convergence_rates()

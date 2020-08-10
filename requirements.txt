@@ -20,3 +20,4 @@ mayavi
 ipyevents
 jupyter
 jupyter_contrib_nbextensions
+bokeh
