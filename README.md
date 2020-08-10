@@ -26,3 +26,13 @@ A summary of the most important subdirectories of this repository is as follows:
 * `doc` and `src` contain the documents and source code for the [original book](https://github.com/hplgit/fdm-book)
 * `fdm-devito-notebooks` contains Jupyter notebooks of the original book with Devito implementations (WIP)
 * `fdm-jupyter-book` contains the completed Jupyter notebooks from `fdm-devito-notebooks`, deployed using GitHub pages [here](https://devitoproject.org/devito_book)
+
+### How to use the Devito Book
+
+For an interactive experience with the book, you can run the Jupyter notebooks in your browser using Docker. Run the following command in the terminal:
+
+```
+docker-compose up devito_book
+```
+
+Alternatively, the non-interactive version of the book is available [here](https://devitoproject.org/devito_book).
