@@ -2,25 +2,46 @@ import numpy as np
 import matplotlib.pyplot as plt
 from devito import Dimension, Constant, TimeFunction, Eq, solve, Operator
 
-
-
-
-# def solver_adjust_w(I, w, dt, T, adjust_w=True):
+# def plot_empirical_freq_and_amplitude(u, t, I, w):
 #     """
-#     Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,
-#     by a central finite difference method with time step dt.
+#     Find the empirical angular frequency and amplitude of
+#     simulations in u and t. u and t can be arrays or (in
+#     the case of multiple simulations) multiple arrays.
+#     One plot is made for the amplitude and one for the angular
+#     frequency (just called frequency in the legends).
 #     """
-#     dt = float(dt)
-#     Nt = int(round(T/dt))
-#     u = np.zeros(Nt+1)
-#     t = np.linspace(0, Nt*dt, Nt+1)
-#     w_adj = w*(1 - w**2*dt**2/24.) if adjust_w else w
-
-#     u[0] = I
-#     u[1] = u[0] - 0.5*dt**2*w_adj**2*u[0]
-#     for n in range(1, Nt):
-#         u[n+1] = 2*u[n] - u[n-1] - dt**2*w_adj**2*u[n]
-#     return u, t
+#     from vib_empirical_analysis import minmax, periods, amplitudes
+#     from math import pi
+#     if not isinstance(u, (list,tuple)):
+#         u = [u]
+#         t = [t]
+#     legends1 = []
+#     legends2 = []
+#     for i in range(len(u)):
+#         minima, maxima = minmax(t[i], u[i])
+#         p = periods(maxima)
+#         a = amplitudes(minima, maxima)
+#         plt.figure(1)
+#         plt.plot(range(len(p)), 2*pi/p)
+#         legends1.append('frequency, case%d' % (i+1))
+#         plt.hold('on')
+#         plt.figure(2)
+#         plt.plot(range(len(a)), a)
+#         plt.hold('on')
+#         legends2.append('amplitude, case%d' % (i+1))
+#     plt.figure(1)
+#     plt.plot(range(len(p)), [w]*len(p), 'k--')
+#     legends1.append('exact frequency')
+#     plt.legend(legends1, loc='lower left')
+#     plt.axis([0, len(a)-1, 0.8*w, 1.2*w])
+#     plt.savefig('tmp1.png');  plt.savefig('tmp1.pdf')
+#     plt.figure(2)
+#     plt.plot(range(len(a)), [I]*len(a), 'k--')
+#     legends2.append('exact amplitude')
+#     plt.legend(legends2, loc='lower left')
+#     plt.axis([0, len(a)-1, 0.8*I, 1.2*I])
+#     plt.savefig('tmp2.png');  plt.savefig('tmp2.pdf')
+#     plt.show()
 
 
 
@@ -217,6 +238,7 @@ from devito import Dimension, Constant, TimeFunction, Eq, solve, Operator
 #     plot_convergence_rates()
 #     raw_input()
 
+# Devito solver
 def solver(I, w, dt, T):
     """
     Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,
@@ -235,6 +257,22 @@ def solver(I, w, dt, T):
     op = Operator(stencil)
     op.apply(h_t=dt, t_M=Nt-1)
     return u.data, np.linspace(0, Nt*dt, Nt+1)
+
+# def solver(I, w, dt, T):
+#     """
+#     Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,
+#     by a central finite difference method with time step dt.
+#     """
+#     dt = float(dt)
+#     Nt = int(round(T/dt))
+#     u = np.zeros(Nt+1)
+#     t = np.linspace(0, Nt*dt, Nt+1)
+
+#     u[0] = I
+#     u[1] = u[0] - 0.5*dt**2*w**2*u[0]
+#     for n in range(1, Nt):
+#         u[n+1] = 2*u[n] - u[n-1] - dt**2*w**2*u[n]
+#     return u, t
 
 def u_exact(t, I, w):
     return I*np.cos(w*t)
@@ -261,7 +299,7 @@ def test_three_steps():
                           0.802607911978213,
                           0.288358920740053])
     u, t = solver(I, w, dt, T)
-    diff = np.abs(u_e[:3] - u[:3]).max()
+    diff = np.abs(u_by_hand - u[:3]).max()
     tol = 1E-14
     assert diff < tol
 
@@ -295,56 +333,74 @@ def convergence_rates(m, solver_function, num_periods=8):
          for i in range(1, m, 1)]
     return r, E_values, dt_values
 
-# def test_convergence_rates():
-#     r, E, dt = convergence_rates(
-#         m=5, solver_function=solver, num_periods=8)
-#     # Accept rate to 1 decimal place
-#     tol = 0.1
-#     assert abs(r[-1] - 2.0) < tol
-#     # Test that adjusted w obtains 4th order convergence
-#     r, E, dt = convergence_rates(
-#         m=5, solver_function=solver, num_periods=8)
-#     print("adjust w rates:")
-#     print(r)
-#     assert abs(r[-1] - 4.0) < tol
+def python_solver_adjust_w(I, w, dt, T, adjust_w=True):
+    """
+    Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,
+    by a central finite difference method with time step dt.
+    """
+    dt = float(dt)
+    Nt = int(round(T/dt))
+    u = np.zeros(Nt+1)
+    t = np.linspace(0, Nt*dt, Nt+1)
+    w_adj = w*(1 - w**2*dt**2/24.) if adjust_w else w
 
-# def plot_empirical_freq_and_amplitude(u, t, I, w):
-#     """
-#     Find the empirical angular frequency and amplitude of
-#     simulations in u and t. u and t can be arrays or (in
-#     the case of multiple simulations) multiple arrays.
-#     One plot is made for the amplitude and one for the angular
-#     frequency (just called frequency in the legends).
-#     """
-#     from vib_empirical_analysis import minmax, periods, amplitudes
-#     from math import pi
-#     if not isinstance(u, (list,tuple)):
-#         u = [u]
-#         t = [t]
-#     legends1 = []
-#     legends2 = []
-#     for i in range(len(u)):
-#         minima, maxima = minmax(t[i], u[i])
-#         p = periods(maxima)
-#         a = amplitudes(minima, maxima)
-#         plt.figure(1)
-#         plt.plot(range(len(p)), 2*pi/p)
-#         legends1.append('frequency, case%d' % (i+1))
-#         plt.hold('on')
-#         plt.figure(2)
-#         plt.plot(range(len(a)), a)
-#         plt.hold('on')
-#         legends2.append('amplitude, case%d' % (i+1))
-#     plt.figure(1)
-#     plt.plot(range(len(p)), [w]*len(p), 'k--')
-#     legends1.append('exact frequency')
-#     plt.legend(legends1, loc='lower left')
-#     plt.axis([0, len(a)-1, 0.8*w, 1.2*w])
-#     plt.savefig('tmp1.png');  plt.savefig('tmp1.pdf')
-#     plt.figure(2)
-#     plt.plot(range(len(a)), [I]*len(a), 'k--')
-#     legends2.append('exact amplitude')
-#     plt.legend(legends2, loc='lower left')
-#     plt.axis([0, len(a)-1, 0.8*I, 1.2*I])
-#     plt.savefig('tmp2.png');  plt.savefig('tmp2.pdf')
-#     plt.show()
+    u[0] = I
+    u[1] = u[0] - 0.5*dt**2*w_adj**2*u[0]
+    for n in range(1, Nt):
+        u[n+1] = 2*u[n] - u[n-1] - dt**2*w_adj**2*u[n]
+    return u, t
+
+# Devito solver (adjust w)
+def solver_adjust_w(I, w, dt, T, adjust_w=True):
+    """
+    Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,
+    by a central finite difference method with time step dt.
+    """
+    dt = float(dt)
+    Nt = int(round(T/dt))
+    t = Dimension('t', spacing=Constant('h_t'))
+
+    u = TimeFunction(name='u', dimensions=(t,),
+                     shape=(Nt+1,), space_order=2)
+
+    w_adj = w*(1 - w**2*dt**2/24.) if adjust_w else w
+
+    u.data[:] = I
+    eqn = u.dt2 + (w**2)*u
+    stencil = Eq(u.forward, solve(eqn, u.forward))
+    op = Operator(stencil)
+    op.apply(h_t=dt, t_M=Nt-1)
+    return u.data, np.linspace(0, Nt*dt, Nt+1)
+
+
+def test_convergence_rates():
+    r, E, dt = convergence_rates(
+        m=5, solver_function=solver, num_periods=8)
+    # Accept rate to 1 decimal place
+    tol = 0.1
+    assert abs(r[-1] - 2.0) < tol
+    # Test that adjusted w obtains 4th order convergence
+    r, E, dt = convergence_rates(
+        m=5, solver_function=solver_adjust_w, num_periods=8)
+    print("adjust w rates:")
+    print(r)
+    assert abs(r[-1] - 4.0) < tol
+
+def plot_convergence_rates():
+    r2, E2, dt2 = convergence_rates(
+        m=5, solver_function=solver, num_periods=8)
+    plt.loglog(dt2, E2)
+    r4, E4, dt4 = convergence_rates(
+        m=5, solver_function=solver_adjust_w, num_periods=8)
+    plt.loglog(dt4, E4)
+    plt.legend(['original scheme', r'adjusted $\omega$'],
+               loc='upper left')
+    plt.title('Convergence of finite difference methods')
+    # from plotslopes import slope_marker
+    # slope_marker((dt2[1], E2[1]), (2,1))
+    # slope_marker((dt4[1], E4[1]), (4,1))
+    plt.savefig('tmp_convrate.png'); plt.savefig('tmp_convrate.pdf')
+    plt.show()
+
+if __name__ == '__main__':
+    plot_convergence_rates()
