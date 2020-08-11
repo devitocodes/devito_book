@@ -1,22 +1,34 @@
 import numpy as np
+from devito import Dimension, TimeFunction, Eq, solve, Operator
 
 def solver(I, w, dt, T):
     """
-    Solve v' = - w**2*u, u'=v for t in (0,T], u(0)=I and v(0)=0,
+    Solve u'=v, v' = - w**2*u for t in (0,T], u(0)=I and v(0)=0,
     by an Euler-Cromer method.
     """
     dt = float(dt)
     Nt = int(round(T/dt))
-    u = np.zeros(Nt+1)
-    v = np.zeros(Nt+1)
-    t = np.linspace(0, Nt*dt, Nt+1)
+    
+    t = Dimension('t', spacing=Constant('h_t'))
+    u = TimeFunction(name='u', dimensions=(t,), shape=(Nt+1,), space_order=2)
+    v = TimeFunction(name='u', dimensions=(t,), shape=(Nt+1,), space_order=2)
 
-    v[0] = 0
-    u[0] = I
-    for n in range(0, Nt):
-        v[n+1] = v[n] - dt*w**2*u[n]
-        u[n+1] = u[n] + dt*v[n+1]
-    return u, v, t
+    v.data[0] = 0    
+    u.data[0] = I
+
+    eq_u = Eq(u.dt, v)
+    eq_v = Eq(v.dt, -(w**2)*u)
+
+    stencil_u = solve(eq_u, u.forward)
+    stencil_v = solve(eq_v, v.forward)
+
+    update_u = Eq(u.forward, stencil_u)
+    update_v = Eq(v.forward, stencil_v)
+
+    op = Operator([update_v, update_u])
+    op.apply(h_t=dt, t_M=Nt-1)
+
+    return u.data, v.data, np.linspace(0, Nt*dt, Nt+1)
 
 def solver_ic_fix(I, w, dt, T):
     """
@@ -88,7 +100,7 @@ def demo():
         plt.plot(t, u, t2, u2,
                  legend=('Euler-Cromer', 'centered scheme for $u''+u=0$'),
                  title='dt=%.3g' % dt)
-        raw_input()
+        input()
         plt.savefig('ECvs2nd_%d' % k + '.png')
         plt.savefig('ECvs2nd_%d' % k + '.pdf')
 
@@ -112,13 +124,13 @@ def convergence_rate():
 
     # Plain Euler-Cromer
     r = convergence_rates(8, solver_wrapper)
-    print round(r[-1], 1)
+    print(round(r[-1], 1))
     # Does it help to fix the initia condition?
     r = convergence_rates(8, solver_ic_fix_wrapper)
-    print round(r[-1], 1)
+    print(round(r[-1], 1))
     # Adjusted w
     r = convergence_rates(8, solver_adjust_w_wrapper)
-    print round(r[-1], 1)
+    print(round(r[-1], 1))
 
 if __name__ == '__main__':
     solver(I=3, w=1, dt=0.6283185, T=2)
