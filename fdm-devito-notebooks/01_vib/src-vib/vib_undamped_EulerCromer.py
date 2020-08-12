@@ -1,5 +1,5 @@
 import numpy as np
-from devito import Dimension, TimeFunction, Eq, solve, Operator
+from devito import Dimension, TimeFunction, Eq, solve, Operator, Constant
 
 def solver(I, w, dt, T):
     """
@@ -10,20 +10,21 @@ def solver(I, w, dt, T):
     Nt = int(round(T/dt))
     
     t = Dimension('t', spacing=Constant('h_t'))
+    v = TimeFunction(name='v', dimensions=(t,), shape=(Nt+1,), space_order=2)
     u = TimeFunction(name='u', dimensions=(t,), shape=(Nt+1,), space_order=2)
-    v = TimeFunction(name='u', dimensions=(t,), shape=(Nt+1,), space_order=2)
 
-    v.data[0] = 0    
-    u.data[0] = I
+    v.data[:] = 0    
+    u.data[:] = I
 
-    eq_u = Eq(u.dt, v)
     eq_v = Eq(v.dt, -(w**2)*u)
-
-    stencil_u = solve(eq_u, u.forward)
+    eq_u = Eq(u.dt, v.forward)
+    
     stencil_v = solve(eq_v, v.forward)
-
-    update_u = Eq(u.forward, stencil_u)
+    stencil_u = solve(eq_u, u.forward)
+    
     update_v = Eq(v.forward, stencil_v)
+    update_u = Eq(u.forward, stencil_u)
+    
 
     op = Operator([update_v, update_u])
     op.apply(h_t=dt, t_M=Nt-1)
