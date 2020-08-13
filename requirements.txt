@@ -15,8 +15,11 @@ pytest-cov
 devito
 jupyter-book
 matplotlib
-vtk==8.1.2
+vtk==8.1.0
 mayavi
 ipyevents
 jupyter
 jupyter_contrib_nbextensions
+dipy
+xvfbwrapper
+fury

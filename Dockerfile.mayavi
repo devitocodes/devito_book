@@ -58,11 +58,17 @@ RUN pip install RISE && \
 # Try to decrease initial IPython kernel load times
 RUN ipython -c "import matplotlib.pyplot as plt; print(plt)"
 
-ADD docker/run-jupyter.sh /jupyter
+# ADD docker/run-jupyter.sh /jupyter
 
-RUN chmod +x \
-    /jupyter
+# RUN chmod +x \
+#     /jupyter
+
+# Add notebooks
+ADD ./fdm-devito-notebooks /app/fdm-devito-notebooks
+COPY setup.cfg /app/
+
+WORKDIR /app
 
 # Add an x-server to the entrypoint. This is needed by Mayavi
 ENTRYPOINT ["tini", "-g", "--", "xvfb-run", "jupyter", "notebook"]
-CMD ["/jupyter"]
+# CMD ["/jupyter"]

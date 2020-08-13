@@ -12,6 +12,16 @@ RUN apt-get update && \
     apt-get install -y \
     libvtk6-dev
 
+RUN apt-get update && \
+    apt-get -y install libgl1-mesa-glx libgl1-mesa-dri && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && \
+    apt-get install -y xvfb
+
+# RUN apt-get update && \
+#     apt-get install -y pkg-config
+
 # # Install nvidia driver
 # RUN apt-get purge nvidia* && \
 #     apt-get autoremove && \
