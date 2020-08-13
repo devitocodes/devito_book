@@ -1,3 +1,5 @@
+# Credit to https://github.com/FelipeLema/mne-binder/blob/master/Dockerfile
+
 FROM jupyter/minimal-notebook:65761486d5d3
 
 # Install core debian packages
