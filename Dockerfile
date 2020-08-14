@@ -26,6 +26,8 @@ ENV DISPLAY=:99
 # Switch to notebook user
 USER $NB_UID
 
+ADD ./requirements.txt /app/requirements.txt
+
 # Upgrade the package managers
 RUN pip install --upgrade pip
 RUN npm i npm@latest -g
@@ -45,7 +47,9 @@ RUN pip install vtk==8.1.2 && \
     pip install scikit-learn && \
     pip install scipy && \
     pip install xvfbwrapper && \
-    pip install https://github.com/nipy/PySurfer/archive/master.zip
+    pip install git+https://github.com/devitocodes/devito.git && \
+    pip install https://github.com/nipy/PySurfer/archive/master.zip --ignore-installed certifi && \
+    pip install --no-cache-dir -r /app/requirements.txt
 
 # Install Jupyter notebook extensions
 RUN pip install RISE && \
@@ -58,17 +62,15 @@ RUN pip install RISE && \
 # Try to decrease initial IPython kernel load times
 RUN ipython -c "import matplotlib.pyplot as plt; print(plt)"
 
-# ADD docker/run-jupyter.sh /jupyter
-
-# RUN chmod +x \
-#     /jupyter
-
 # Add notebooks
 ADD ./fdm-devito-notebooks /app/fdm-devito-notebooks
+
+RUN ip=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
+
 COPY setup.cfg /app/
 
 WORKDIR /app
 
 # Add an x-server to the entrypoint. This is needed by Mayavi
-ENTRYPOINT ["tini", "-g", "--", "xvfb-run", "jupyter", "notebook"]
+ENTRYPOINT ["tini", "-g", "--", "xvfb-run", "-a", "jupyter", "notebook"]
 # CMD ["/jupyter"]
