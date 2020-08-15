@@ -72,7 +72,7 @@ def test_convergence():
         return u, t
 
     r = convergence_rates(8, wrapped_solver, 8)
-    print r
+    print(r)
     assert abs(r[-1] - 2) < 1E-5
 
 if __name__ == '__main__':
