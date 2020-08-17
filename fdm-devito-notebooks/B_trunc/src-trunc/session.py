@@ -31,5 +31,5 @@ def decay():
     R = {'FE': FE-ODE, 'BE': BE-ODE, 'CN': CN-ODE, 'theta': theta-ODE}
     return R
 
-print 'decay:', decay()
+print('decay:', decay())
 
