@@ -197,7 +197,7 @@ def solver_BE(I, a, L, Nx, F, T, user_action=None):
 
     diags = [0, -1, 1]
     A = spdiags([diagonal, lower, upper], diags, Nx+1, Nx+1)
-    print A.todense()
+    print(A.todense())
 
     # Set initial condition
     for i in range(0,Nx+1):
@@ -320,7 +320,7 @@ def plug(scheme='FE', F=0.5, Nx=50):
     u, cpu = viz(I, a, L, Nx, F, T,
                  umin=-0.1, umax=1.1,
                  scheme=scheme, animate=True)
-    print 'CPU time:', cpu
+    print('CPU time:', cpu)
 
     """
     if not allclose(solutions[0], solutions[-1],
@@ -355,15 +355,14 @@ def expsin(scheme='FE', F=0.5, m=3):
     for Nx in Nx_values:
         eval('solver_'+scheme)(I, a, L, Nx, F, T, user_action=action)
         dt = F*(L/Nx)**2/a
-        print dt, errors[-1]
+        print(dt, errors[-1])
 
 if __name__ == '__main__':
-    import sys, time
-    from scitools.std import *
-
+    import sys
+    import time
     if len(sys.argv) < 2:
-        print """Usage %s function arg1 arg2 arg3 ...""" % sys.argv[0]
+        print("""Usage %s function arg1 arg2 arg3 ...""" % sys.argv[0])
         sys.exit(0)
     cmd = '%s(%s)' % (sys.argv[1], ', '.join(sys.argv[2:]))
-    print cmd
+    print(cmd)
     eval(cmd)

@@ -72,7 +72,7 @@ def solver_sparse_CG(
     difference approximation in time. Sparse matrix with ILU
     preconditioning and CG solve.
     """
-    import time; t0 = time.clock()  # for measuring CPU time
+    import time; t0 = time.perf_counter()  # for measuring CPU time
 
     x = np.linspace(0, Lx, Nx+1)       # mesh points in x dir
     y = np.linspace(0, Ly, Ny+1)       # mesh points in y dir
@@ -262,9 +262,9 @@ def solver_sparse_CG(
         c, info = scipy.sparse.linalg.cg(A, b, x0=c, tol=1e-14, maxiter=N, M=M)
 
         if info > 0:
-            print 'CG: tolerance not achieved within %d iterations' % info
+            print('CG: tolerance not achieved within %d iterations' % info)
         elif info < 0:
-            print 'CG breakdown'
+            print('CG breakdown')
 
         # Fill u with vector c
         #for k in Iz:
@@ -278,7 +278,7 @@ def solver_sparse_CG(
         # Update u_n before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
 
     return t, t1-t0
 
@@ -307,10 +307,10 @@ def quadratic(theta, Nx, Ny, Nz):
         diff = abs(u - u_e).max()
         tol = 1E-12
         msg = 'diff=%g, step %d, time=%g' % (diff, n, t[n])
-        print msg
+        print(msg)
         assert diff < tol, msg
 
-    print 'testing sparse matrix, ILU and CG, theta=%g' % theta
+    print('testing sparse matrix, ILU and CG, theta=%g' % theta)
     t, cpu = solver_sparse_CG(
         I, a, f, Lx, Ly, Lz, Nx, Ny, Nz,
         dt, T, theta, user_action=assert_no_error)
@@ -325,7 +325,7 @@ def test_quadratic():
         for Nx in range(2, 6, 2):
             for Ny in range(2, 6, 2):
                 for Nz in range(2, 6, 2):
-                    print 'testing for %dx%dx%d mesh' % (Nx, Ny, Nz)
+                    print('testing for %dx%dx%d mesh' % (Nx, Ny, Nz))
                     quadratic(theta, Nx, Ny, Nz)
 
 if __name__ == '__main__':

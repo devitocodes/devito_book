@@ -1,6 +1,5 @@
 from numpy import *
-#from matplotlib.pyplot import *
-from scitools.std import *
+from matplotlib.pyplot import *
 
 def A_exact(F, p):
     return exp(-4*F*p**2)
@@ -22,7 +21,7 @@ def compare_plot(F, p):
          p, A_FE(F, p),)
     legend(['BE', 'exact', 'CN', 'FE'])
     title('F=%g' % F)
-    print 'F:', F
+    print('F:', F)
     if 0.2 >= F > 0.02:
         axis([p[0], p[-1], 0.3, 1])
     elif F <= 0.02:
@@ -57,7 +56,7 @@ A_err_CN = A_CN(F, p)/A_exact(F, p)
 print 'Error in A, CN:', A_err_CN.series(F, 0, 6)
 print latex(A_err_CN.series(F, 0, 6))
 '''
-raw_input()
+input()
 
 show()
 
