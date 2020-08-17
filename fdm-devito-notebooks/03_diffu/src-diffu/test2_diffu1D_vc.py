@@ -1,4 +1,4 @@
-from diffusion1D_vc import *
+from diffu1D_vc import *
 
 # Test problem: start with u=u_L in left part and u=u_R in right part,
 # let diffusion work and make a linear function from u_L to u_R as
@@ -55,4 +55,4 @@ def visualize(p):
 
 if __name__ == '__main__':
     #visualize((8, 1))
-    print test2((8, 1))
+    print(test2((8, 1)))

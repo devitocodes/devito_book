@@ -1,0 +1,12 @@
+version: '3.3'
+services:
+    devito_book:
+        build:
+          context: .
+          dockerfile: Dockerfile
+        ports:
+            - '8888:8888'
+        environment:
+            - 'DISPLAY=$ip:0'
+        container_name: devito_book
+        image: devito_book
