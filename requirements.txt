@@ -18,6 +18,9 @@ matplotlib
 vtk==8.1.2
 mayavi
 ipyevents
+ipywidgets
 jupyter
 jupyter_contrib_nbextensions
 bokeh
+dipy
+xvfbwrapper

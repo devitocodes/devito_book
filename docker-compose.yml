@@ -1,20 +1,12 @@
-version: '2'
-
+version: '3.3'
 services:
-
-  devito_book:
-    
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-
-    environment:
-      DEVITO_ARCH: gcc
-      DEVITO_LANGUAGE: openmp
-      QT_QPA_PLATFORM: offscreen
-
-    volumes:
-      - ./fdm-devito-notebooks:/app/fdm-devito-notebooks
-
-    ports:
-      - 8888:8888
+    devito_book:
+        build:
+          context: .
+          dockerfile: Dockerfile
+        ports:
+            - '8888:8888'
+        environment:
+            - 'DISPLAY=$ip:0'
+        container_name: devito_book
+        image: devito_book
