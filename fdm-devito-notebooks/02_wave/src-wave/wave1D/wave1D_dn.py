@@ -77,8 +77,8 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
     u_n   = np.zeros(Nx+1)   # Solution at 1 time level back
     u_nm1 = np.zeros(Nx+1)   # Solution at 2 time levels back
 
-    Ix = range(0, Nx+1)
-    It = range(0, Nt+1)
+    Ix = list(range(0, Nx+1))
+    It = list(range(0, Nt+1))
 
     import time;  t0 = time.clock()  # CPU time measurement
 
@@ -228,7 +228,7 @@ def viz(I, V, f, c, U_0, U_L, L, dt, C, T, umin, umax,
             ext = codec2ext[codec]
             cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\
                   '-vcodec %(codec)s movie.%(ext)s' % vars()
-            print cmd
+            print(cmd)
             os.system(cmd)
     return cpu
 
@@ -266,7 +266,7 @@ def test_constant():
             solver(I, V, f, c, U_0, U_L, L, dt, C, T,
                    user_action=assert_no_error,
                    version='vectorized')
-            print U_0, U_L
+            print(U_0, U_L)
 
 def test_quadratic():
     """
@@ -383,7 +383,7 @@ def guitar(C=1, Nx=50, animate=True, version='scalar', T=2):
 
     cpu = viz(I, None, None, c, U_0, U_L, L, dt, C, T,
               umin=-1.1, umax=1.1, version=version, animate=True)
-    print 'CPU time: %s version =' % version, cpu
+    print('CPU time: %s version =' % version, cpu)
 
 
 def moving_end(C=1, Nx=50, reflecting_right_boundary=True, T=2,
@@ -412,7 +412,7 @@ def moving_end(C=1, Nx=50, reflecting_right_boundary=True, T=2,
     umax = 1.1*0.5
     cpu = viz(I, None, None, c, U_0, U_L, L, dt, C, T,
               umin=-umax, umax=umax, version=version, animate=True)
-    print 'CPU time: %s version =' % version, cpu
+    print('CPU time: %s version =' % version, cpu)
 
 
 def sincos(C=1):
@@ -451,7 +451,7 @@ def sincos(C=1):
         _dx = L/Nx
         _dt = C*_dx/c
         dt.append(_dt)
-        print dt[-1], E[-1]
+        print(dt[-1], E[-1])
     return dt, E
 
 if __name__ == '__main__':
