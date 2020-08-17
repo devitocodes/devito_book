@@ -44,19 +44,19 @@ def estimate(truncation_error, T, N_0, m, makeplot=True):
         if i == 0:
             t_coarse = t           # the coarsest mesh
 
-        stride = N[i]/N_0
+        stride = N[i]//N_0
         R[i] = R[i][::stride]      # restrict to coarsest mesh
         R_a[i] = R_a[i][::stride]
 
         if makeplot:
             plt.figure(1)
-            plt.plot(t_coarse, R[i], log='y')
+            plt.plot(t_coarse, R[i])
+            plt.yscale("log")
             legends_R.append('N=%d' % N[i])
-            plt.hold('on')
 
             plt.figure(2)
-            plt.plot(t_coarse, R_a[i] - R[i], log='y')
-            plt.hold('on')
+            plt.plot(t_coarse, R_a[i] - R[i])
+            plt.yscale("log")
             legends_R_a.append('N=%d' % N[i])
 
     if makeplot:
@@ -75,8 +75,8 @@ def estimate(truncation_error, T, N_0, m, makeplot=True):
 
     # Convergence rates
     r_R_I = convergence_rates(dt, R_I)
-    print 'R integrated in time; r:',
-    print ' '.join(['%.1f' % r for r in r_R_I])
+    print('R integrated in time; r:', end=' ')
+    print(' '.join(['%.1f' % r for r in r_R_I]))
     R = np.array(R)  # two-dim. numpy array
     r_R = [convergence_rates(dt, R[:,n])[-1]
            for n in range(len(t_coarse))]

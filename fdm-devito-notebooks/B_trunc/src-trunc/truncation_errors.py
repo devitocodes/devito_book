@@ -86,17 +86,17 @@ def truncation_errors():
                     num_terms_Taylor_series=5)
     D1u = diffop.D(1)   # symbol for du/dt
     D2u = diffop.D(2)   # symbol for d^2u/dt^2
-    print 'R Dt:', diffop['Dt'] - D1u
-    print 'R Dtm:', diffop['Dtm'] - D1u
-    print 'R Dtp:', diffop['Dtp'] - D1u
-    print 'R barDt:', diffop['barDt'] - D1u
-    print 'R DtDt:', diffop['DtDt'] - D2u
-    print 'R weighted arithmetic mean:', diffop['weighted_arithmetic_mean'] - u
-    print 'R arithmetic mean:', diffop['weighted_arithmetic_mean'].subs(theta, sym.Rational(1,2)) - u
-    print 'R geometric mean:', diffop['geometric_mean'] - u
+    print('R Dt:', diffop['Dt'] - D1u)
+    print('R Dtm:', diffop['Dtm'] - D1u)
+    print('R Dtp:', diffop['Dtp'] - D1u)
+    print('R barDt:', diffop['barDt'] - D1u)
+    print('R DtDt:', diffop['DtDt'] - D2u)
+    print('R weighted arithmetic mean:', diffop['weighted_arithmetic_mean'] - u)
+    print('R arithmetic mean:', diffop['weighted_arithmetic_mean'].subs(theta, sym.Rational(1,2)) - u)
+    print('R geometric mean:', diffop['geometric_mean'] - u)
     dt = diffop.h
-    print 'R harmonic mean:', (diffop['harmonic_mean'] - u).\
-          series(dt, 0, 3).as_leading_term(dt)
+    print('R harmonic mean:', (diffop['harmonic_mean'] - u).\
+          series(dt, 0, 3).as_leading_term(dt))
 
 if __name__ == '__main__':
     truncation_errors()

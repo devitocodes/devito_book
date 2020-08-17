@@ -80,21 +80,27 @@ def solver(I, w, dt, T):
     op.apply(h_t=dt, t_M=Nt-1)
     return u.data, np.linspace(0, Nt*dt, Nt+1)
 
-# def solver(I, w, dt, T):
-#     """
-#     Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,
-#     by a central finite difference method with time step dt.
-#     """
-#     dt = float(dt)
-#     Nt = int(round(T/dt))
-#     u = np.zeros(Nt+1)
-#     t = np.linspace(0, Nt*dt, Nt+1)
+def solver_adjust_w(I, w, dt, T, adjust_w=True):
+    """
+    Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,
+    by a central finite difference method with time step dt.
+    """
+    dt = float(dt)
+    Nt = int(round(T/dt))
+    t = Dimension('t', spacing=Constant('h_t'))
 
-#     u[0] = I
-#     u[1] = u[0] - 0.5*dt**2*w**2*u[0]
-#     for n in range(1, Nt):
-#         u[n+1] = 2*u[n] - u[n-1] - dt**2*w**2*u[n]
-#     return u, t
+    u = TimeFunction(name='u', dimensions=(t,),
+                     shape=(Nt+1,), space_order=2)
+
+    # Adjust w if required
+    w_adj = w*(1 - w**2*dt**2/24.) if adjust_w else w
+
+    u.data[:] = I
+    eqn = u.dt2 + (w**2)*u
+    stencil = Eq(u.forward, solve(eqn, u.forward))
+    op = Operator(stencil)
+    op.apply(h_t=dt, t_M=Nt-1)
+    return u.data, np.linspace(0, Nt*dt, Nt+1)
 
 def u_exact(t, I, w):
     return I*np.cos(w*t)
@@ -405,4 +411,5 @@ def demo_bokeh():
                filename='tmp.html')
 
 if __name__ == '__main__':
-    plot_convergence_rates()
+    r = convergence_rates(m=5, solver_function=solver_adjust_w, num_periods=8)[0]
+    print(r)
