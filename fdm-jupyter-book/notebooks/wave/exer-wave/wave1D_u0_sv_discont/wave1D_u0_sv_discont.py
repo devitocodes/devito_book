@@ -136,12 +136,12 @@ def viz(I, V, f, density, tension, L, Nx, C, T, umin, umax,
     fps = 4  # Frames per second
     plt.movie('frame_*.png', encoder='html', fps=fps,
               output_file='movie.html')
-    # Ex: avconv -r 4 -i frame_%04d.png -vcodec libtheora movie.ogg
+    # Ex: ffmpeg -r 4 -i frame_%04d.png -vcodec libtheora movie.ogg
     #codec2ext = dict(flv='flv', libx64='mp4', libvpx='webm',
     #                 libtheora='ogg')
     codec2ext = dict(libtheora='ogg')
     filespec = 'frame_%04d.png'
-    movie_program = 'avconv'  # or 'ffmpeg'
+    movie_program = 'ffmpeg'
     for codec in codec2ext:
         ext = codec2ext[codec]
         cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\

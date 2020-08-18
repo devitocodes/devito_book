@@ -3195,7 +3195,7 @@ The following <code>viz</code> function
     codec2ext = dict(flv='flv', libx264='mp4', libvpx='webm',
                      libtheora='ogg')  # video formats
     filespec = 'tmp_%04d.png'
-    movie_program = 'ffmpeg'  # or 'avconv'
+    movie_program = 'ffmpeg'
     for codec in codec2ext:
         ext = codec2ext[codec]
         cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\ 
@@ -3274,11 +3274,11 @@ From the
 <code>frame_*.png</code> files containing the frames in the animation we can
 make video files.
 The section <a href="._fdm-book-solarized003.html#vib:ode1:anim">Making animations</a> presents basic information on how to
-use the <code>ffmpeg</code> (or <code>avconv</code>) program for producing video files
+use the <code>ffmpeg</code>  program for producing video files
 in different modern formats: Flash, MP4, Webm, and Ogg.
 
 <p>
-The <code>viz</code> function creates an <code>ffmpeg</code> or <code>avconv</code> command
+The <code>viz</code> function creates an <code>ffmpeg</code> command
 with the proper arguments for each of the formats Flash, MP4, WebM,
 and Ogg. The task is greatly simplified by having a
 <code>codec2ext</code> dictionary for mapping
@@ -3289,7 +3289,7 @@ successfully play the video: MP4 and WebM.
 
 <p>
 Some animations having a large number of plot files may not
-be properly combined into a video using <code>ffmpeg</code> or <code>avconv</code>.
+be properly combined into a video using <code>ffmpeg</code>.
 A method that always works is to play the PNG files as an animation
 in a browser using JavaScript code in an HTML file.
 The SciTools package has a function <code>movie</code> (or a stand-alone command

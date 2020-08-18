@@ -685,9 +685,7 @@ format is popular,
 !bc sys
 Terminal> ffmpeg -r 25 -i tmp_%04d.png -c:v flv movie.flv
 !ec
-The `ffmpeg` program can be replaced by the `avconv` program in
-the above command if desired (but at the time of this writing it seems
-to be more momentum in the `ffmpeg` project).
+
 The `-r` option should come first and
 describes the number of frames per second in the movie (even if we
 would like to have slow movies, keep this number as large as 25,

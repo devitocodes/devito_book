@@ -235,7 +235,6 @@ Generates frames `tmp_vib%04d.png` in files. Can make movie:
 !bc sys
 Terminal> ffmpeg -r 12 -i tmp_vib%04d.png -c:v flv movie.flv
 !ec
-Can use `avconv` instead of `ffmpeg`.
 
 |---------------------------------------|
 | Format | Codec and filename           |

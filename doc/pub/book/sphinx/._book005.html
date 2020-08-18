@@ -1025,7 +1025,7 @@ for plotting the solution at each time level,</li>
     <span class="n">codec2ext</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">flv</span><span class="o">=</span><span class="s1">&#39;flv&#39;</span><span class="p">,</span> <span class="n">libx264</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span> <span class="n">libvpx</span><span class="o">=</span><span class="s1">&#39;webm&#39;</span><span class="p">,</span>
                      <span class="n">libtheora</span><span class="o">=</span><span class="s1">&#39;ogg&#39;</span><span class="p">)</span>  <span class="c1"># video formats</span>
     <span class="n">filespec</span> <span class="o">=</span> <span class="s1">&#39;tmp_</span><span class="si">%04d</span><span class="s1">.png&#39;</span>
-    <span class="n">movie_program</span> <span class="o">=</span> <span class="s1">&#39;ffmpeg&#39;</span>  <span class="c1"># or &#39;avconv&#39;</span>
+    <span class="n">movie_program</span> <span class="o">=</span> <span class="s1">&#39;ffmpeg&#39;</span>  <span class="c1"># or &#39;ffmpeg&#39;</span>
     <span class="k">for</span> <span class="n">codec</span> <span class="ow">in</span> <span class="n">codec2ext</span><span class="p">:</span>
         <span class="n">ext</span> <span class="o">=</span> <span class="n">codec2ext</span><span class="p">[</span><span class="n">codec</span><span class="p">]</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(movie_program)s</span><span class="s1"> -r </span><span class="si">%(fps)d</span><span class="s1"> -i </span><span class="si">%(filespec)s</span><span class="s1"> &#39;</span>\
@@ -1096,9 +1096,9 @@ callback function from <code class="docutils literal"><span class="pre">solver</
 <code class="docutils literal"><span class="pre">frame_*.png</span></code> files containing the frames in the animation we can
 make video files.
 The section <a class="reference internal" href="._book002.html#vib-ode1-anim"><span class="std std-ref">Making animations</span></a> presents basic information on how to
-use the <code class="docutils literal"><span class="pre">ffmpeg</span></code> (or <code class="docutils literal"><span class="pre">avconv</span></code>) program for producing video files
+use the <code class="docutils literal"><span class="pre">ffmpeg</span></code> (or <code class="docutils literal"><span class="pre">ffmpeg</span></code>) program for producing video files
 in different modern formats: Flash, MP4, Webm, and Ogg.</p>
-<p>The <code class="docutils literal"><span class="pre">viz</span></code> function creates an <code class="docutils literal"><span class="pre">ffmpeg</span></code> or <code class="docutils literal"><span class="pre">avconv</span></code> command
+<p>The <code class="docutils literal"><span class="pre">viz</span></code> function creates an <code class="docutils literal"><span class="pre">ffmpeg</span></code> or <code class="docutils literal"><span class="pre">ffmpeg</span></code> command
 with the proper arguments for each of the formats Flash, MP4, WebM,
 and Ogg. The task is greatly simplified by having a
 <code class="docutils literal"><span class="pre">codec2ext</span></code> dictionary for mapping
@@ -1107,7 +1107,7 @@ As mentioned in the section <a class="reference internal" href="._book002.html#v
 two formats are actually needed to ensure that all browsers can
 successfully play the video: MP4 and WebM.</p>
 <p>Some animations having a large number of plot files may not
-be properly combined into a video using <code class="docutils literal"><span class="pre">ffmpeg</span></code> or <code class="docutils literal"><span class="pre">avconv</span></code>.
+be properly combined into a video using <code class="docutils literal"><span class="pre">ffmpeg</span></code> or <code class="docutils literal"><span class="pre">ffmpeg</span></code>.
 A method that always works is to play the PNG files as an animation
 in a browser using JavaScript code in an HTML file.
 The SciTools package has a function <code class="docutils literal"><span class="pre">movie</span></code> (or a stand-alone command
