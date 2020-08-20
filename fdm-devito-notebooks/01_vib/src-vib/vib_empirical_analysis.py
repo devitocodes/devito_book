@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import scitools.std as plt
 
 def minmax(t, u):
     """
