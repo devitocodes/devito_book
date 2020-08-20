@@ -78,7 +78,7 @@ def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     # Boundary conditions
     stepping_dim = grid.stepping_dim
     bc1 = [Eq(u[stepping_dim+1, 0], 0.)]
-    bc2 = [Eq(u[stepping_dim+1, -1], 0.)]
+    bc2 = [Eq(u[stepping_dim+1, Nx], 0.)]
     
     # Building operator
     op = Operator([eq_stencil] + bc1 + bc2 + src_term)
@@ -90,6 +90,52 @@ def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     
     cpu_time = time.perf_counter() - t0
     return u.data[-1], x, t, cpu_time
+
+def second_devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
+    """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
+    Nt = int(round(T/dt))
+    t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
+    dx = dt*c/float(C)
+    Nx = int(round(L/dx))
+    x = np.linspace(0, L, Nx+1)       # Mesh points in space
+    C2 = C**2                         # Help variable in the scheme
+    # Make sure dx and dt are compatible with x and t
+    dx = x[1] - x[0]
+    dt = t[1] - t[0]
+
+    if f is None or f == 0 :
+        f = lambda x, t: 0
+    if V is None or V == 0:
+        V = lambda x: 0
+    
+    grid = Grid(shape=(Nx+1), extent=(L))
+    t_s = grid.stepping_dim
+    
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+    u.data[:,:] = I(x[:])
+
+    if user_action is not None:
+        user_action(u.data[0], x, t, 0)
+
+    pde = (1/c**2)*u.dt2-u.dx2
+    stencil = Eq(u.forward, solve(pde, u.forward))
+    
+    # Initial timestep
+    stencil_init = stencil.subs(u.backward, u.forward)
+    
+    # Boundary conditions
+    bc = [Eq(u[t_s+1, 0], 0)]
+    bc += [Eq(u[t_s+1, Nx], 0)]
+    
+    op_init = Operator([stencil_init]+bc)
+    op = Operator([stencil]+bc)
+    
+    op_init.apply(time_M=1, dt=dt)
+    op.apply(time_m=1, time_M=Nt-1, dt=dt)
+    
+#     print(op.ccode)
+    
+    return u.data[-1], x, t, 0
 
 def test_quadratic():
     """Check that u(x,t)=x(L-x)(1+t/2) is exactly reproduced."""
@@ -128,7 +174,7 @@ def test_constant():
     u_const = 0  # Require 0 because of the boundary conditions
     C = 0.75
     dt = C # Very coarse mesh
-    u, x, t, cpu = devito_solver(I=lambda x:
+    u, x, t, cpu = second_devito_solver(I=lambda x:
                           0, V=0, f=0, c=1.5, L=2.5,
                           dt=dt, C=C, T=18)
     tol = 1E-14
