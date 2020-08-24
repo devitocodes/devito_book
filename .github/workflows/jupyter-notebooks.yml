@@ -69,6 +69,9 @@ jobs:
         pip install -e .
         pip install matplotlib
         pip install --user git+https://github.com/devitocodes/devito.git
+    - name: Vibration ODE notebooks (1.1 to 1.8)
+      run: |
+        $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/01_vib/vib_undamped.ipynb  
     - name: Waves notebooks (2.1 and 2.2)
       run: |
         $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/02_wave/wave1D_fd1.ipynb
