@@ -24,12 +24,12 @@
     <script src="../../_static/togglebutton.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/mystnb.js"></script>
     <script src="../../_static/sphinx-book-theme.js"></script>
     <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
     <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
     <script >
         const thebe_selector = ".thebe"
@@ -622,7 +622,7 @@ elements <code class="docutils literal notranslate"><span class="pre">u[i]</span
 algorithm.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># Given mesh points as arrays x and t (x[i], t[n]),</span>
 <span class="c1"># constant c and function I for initial condition</span>
@@ -681,7 +681,7 @@ algorithm.</p>
 <p>We start by defining our 1D computational grid and creating a function <code class="docutils literal notranslate"><span class="pre">u</span></code> as a symbolic <code class="docutils literal notranslate"><span class="pre">devito.TimeFunction</span></code>. We need to specify the <code class="docutils literal notranslate"><span class="pre">space_order</span></code> as 2 since our wave equation involves second-order derivatives with respect to <span class="math notranslate nohighlight">\(x\)</span>. Similarly, we specify the <code class="docutils literal notranslate"><span class="pre">time_order</span></code> as 2, as our equation involves second-order derivatives with respect to <span class="math notranslate nohighlight">\(t\)</span>. Setting these parameters allows us to use <code class="docutils literal notranslate"><span class="pre">u.dx2</span></code> and <code class="docutils literal notranslate"><span class="pre">u.dt2</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">TimeFunction</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">TimeFunction</span>
 
 <span class="c1"># Initialise `u` for space and time order 2, using initialisation function I</span>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">Nx</span><span class="p">)</span>
@@ -694,7 +694,7 @@ algorithm.</p>
 <p>Now that we have initialised <code class="docutils literal notranslate"><span class="pre">u</span></code>, we can solve our wave equation for the unknown quantity <span class="math notranslate nohighlight">\(u^{n+1}_i\)</span> using forward and backward differences in space and time.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Constant</span><span class="p">,</span> <span class="n">Eq</span><span class="p">,</span> <span class="n">solve</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Constant</span><span class="p">,</span> <span class="n">Eq</span><span class="p">,</span> <span class="n">solve</span>
 
 <span class="c1"># Set up wave equation and solve for forward stencil point in time</span>
 <span class="n">c</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">)</span>
@@ -708,7 +708,7 @@ algorithm.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>LHS: u(t + dt, x)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>LHS: u(t + dt, x)
 RHS: dt**2*(c**2*(-2.0*u(t, x)/h_x**2 + u(t, x - h_x)/h_x**2 + u(t, x + h_x)/h_x**2) + 2.0*u(t, x)/dt**2 - u(t - dt, x)/dt**2)
 </pre></div>
 </div>
@@ -718,7 +718,7 @@ RHS: dt**2*(c**2*(-2.0*u(t, x)/h_x**2 + u(t, x - h_x)/h_x**2 + u(t, x + h_x)/h_x
 <p>Now we can create expressions for our boundary conditions and build the operator.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Operator</span>
 
@@ -737,15 +737,17 @@ RHS: dt**2*(c**2*(-2.0*u(t, x)/h_x**2 + u(t, x - h_x)/h_x**2 + u(t, x + h_x)/h_x
 </div>
 <div class="cell_output docutils container">
 <div class="stderr docutils container">
-<pre class="stderr literal-block">Data type float64 of runtime value `dt` does not match the Constant data type &lt;class 'numpy.float32'&gt;
-</pre>
+<div class="stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Data type float64 of runtime value `dt` does not match the Constant data type &lt;class &#39;numpy.float32&#39;&gt;
+</pre></div>
+</div>
 </div>
 <div class="stderr docutils container">
-<pre class="stderr literal-block">Operator `Kernel` run in 0.01 s
-</pre>
+<div class="stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Operator `Kernel` run in 0.01 s
+</pre></div>
 </div>
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>PerformanceSummary([(PerfKey(name=&#39;section0&#39;, rank=None),
-                     PerfEntry(time=1.8000000000000004e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PerformanceSummary([(PerfKey(name=&#39;section0&#39;, rank=None),
+                     PerfEntry(time=1.7000000000000003e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
 </pre></div>
 </div>
 </div>
