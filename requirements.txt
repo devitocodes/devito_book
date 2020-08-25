@@ -25,3 +25,4 @@ bokeh
 dipy
 xvfbwrapper
 scitools3
+future
