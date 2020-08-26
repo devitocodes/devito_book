@@ -29,7 +29,7 @@ solution on the screen (as an animation).
 """
 import numpy as np
 
-def solver(I, V, f, c, L, dt, C, T, user_action=None):
+def python_solver(I, V, f, c, L, dt, C, T, user_action=None):
     """
     Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].
     u(0,t)=U_0(t) or du/dn=0 (U_0=None), u(L,t)=U_L(t) or du/dn=0 (u_L=None).
