@@ -52,7 +52,7 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     grid = Grid(shape=(Nx), extent=(L))
     t_s=grid.stepping_dim
 
-    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+    u = TimeFunction(name='u', grid=grid, space_order=2)
 
     pde = u.dt + v*u.dx
     eq = Eq(u.forward, solve(pde, u.forward))
