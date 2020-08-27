@@ -1536,7 +1536,7 @@ in a <code>user_action</code> function <code>plot_u</code>:
     codec2ext <span style="color: #666666">=</span> <span style="color: #008000">dict</span>(flv<span style="color: #666666">=</span><span style="color: #BA2121">&#39;flv&#39;</span>, libx264<span style="color: #666666">=</span><span style="color: #BA2121">&#39;mp4&#39;</span>, libvpx<span style="color: #666666">=</span><span style="color: #BA2121">&#39;webm&#39;</span>,
                      libtheora<span style="color: #666666">=</span><span style="color: #BA2121">&#39;ogg&#39;</span>)  <span style="color: #408080; font-style: italic"># video formats</span>
     filespec <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;tmp_</span><span style="color: #BB6688; font-weight: bold">%04d</span><span style="color: #BA2121">.png&#39;</span>
-    movie_program <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;ffmpeg&#39;</span>  <span style="color: #408080; font-style: italic"># or &#39;avconv&#39;</span>
+    movie_program <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;ffmpeg&#39;</span>  <span style="color: #408080; font-style: italic"># or &#39;ffmpeg&#39;</span>
     <span style="color: #008000; font-weight: bold">for</span> codec <span style="color: #AA22FF; font-weight: bold">in</span> codec2ext:
         ext <span style="color: #666666">=</span> codec2ext[codec]
         cmd <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;</span><span style="color: #BB6688; font-weight: bold">%(movie_program)s</span><span style="color: #BA2121"> -r </span><span style="color: #BB6688; font-weight: bold">%(fps)d</span><span style="color: #BA2121"> -i </span><span style="color: #BB6688; font-weight: bold">%(filespec)s</span><span style="color: #BA2121"> &#39;</span>\ 
@@ -1569,10 +1569,10 @@ local variables in <code>viz</code> (known as a closure).
 <!-- code=text (!bc sys) typeset with pygments style "default" -->
 <div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%"><span></span>Terminal&gt; scitools movie encoder=html output_file=movie.html \ 
           fps=4 frame_*.png  # web page with a player
-Terminal&gt; avconv -r 4 -i frame_%04d.png -c:v flv       movie.flv
-Terminal&gt; avconv -r 4 -i frame_%04d.png -c:v libtheora movie.ogg
-Terminal&gt; avconv -r 4 -i frame_%04d.png -c:v libx264   movie.mp4
-Terminal&gt; avconv -r 4 -i frame_%04d.png -c:v libpvx    movie.webm
+Terminal&gt; ffmpeg -r 4 -i frame_%04d.png -c:v flv       movie.flv
+Terminal&gt; ffmpeg -r 4 -i frame_%04d.png -c:v libtheora movie.ogg
+Terminal&gt; ffmpeg -r 4 -i frame_%04d.png -c:v libx264   movie.mp4
+Terminal&gt; ffmpeg -r 4 -i frame_%04d.png -c:v libpvx    movie.webm
 </pre></div>
 <p>
 <div class="alert alert-block alert-warning alert-text-normal">

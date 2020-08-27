@@ -1,12 +1,13 @@
 """List files that should be in repo. Must be run from root dir."""
 
-import commands, os
+import subprocess
+import os
 # Get all files not in repo
-failure, output = commands.getstatusoutput('git status')
+failure, output = subprocess.getstatusoutput('git status')
 
 # Find the relevant files
 src_extensions_fig = ['.pdf', '.png']
-src_extensions_src = ['.py', '.f', '.c', '.cpp', '.pyx',]
+src_extensions_src = ['.py', '.f', '.c', '.cpp', '.pyx', ]
 src_extensions_txt = ['.do.txt', '.dict4spell.txt']
 src_extensions = src_extensions_fig + src_extensions_src + \
                  src_extensions_txt
@@ -32,4 +33,4 @@ for filename in output.splitlines():
 
 # git add doc/pub is never wrong...
 
-print '\n'.join(files)
+print('\n'.join(files))

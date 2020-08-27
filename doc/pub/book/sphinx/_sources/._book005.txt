@@ -1365,7 +1365,7 @@ The following ``viz`` function
         codec2ext = dict(flv='flv', libx264='mp4', libvpx='webm',
                          libtheora='ogg')  # video formats
         filespec = 'tmp_%04d.png'
-        movie_program = 'ffmpeg'  # or 'avconv'
+        movie_program = 'ffmpeg'
         for codec in codec2ext:
             ext = codec2ext[codec]
             cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\ 
@@ -1441,10 +1441,10 @@ From the
 ``frame_*.png`` files containing the frames in the animation we can
 make video files.
 The section :ref:`vib:ode1:anim` presents basic information on how to
-use the ``ffmpeg`` (or ``avconv``) program for producing video files
+use the ``ffmpeg`` program for producing video files
 in different modern formats: Flash, MP4, Webm, and Ogg.
 
-The ``viz`` function creates an ``ffmpeg`` or ``avconv`` command
+The ``viz`` function creates an ``ffmpeg`` command
 with the proper arguments for each of the formats Flash, MP4, WebM,
 and Ogg. The task is greatly simplified by having a
 ``codec2ext`` dictionary for mapping
@@ -1454,7 +1454,7 @@ two formats are actually needed to ensure that all browsers can
 successfully play the video: MP4 and WebM.
 
 Some animations having a large number of plot files may not
-be properly combined into a video using ``ffmpeg`` or ``avconv``.
+be properly combined into a video using ``ffmpeg``.
 A method that always works is to play the PNG files as an animation
 in a browser using JavaScript code in an HTML file.
 The SciTools package has a function ``movie`` (or a stand-alone command

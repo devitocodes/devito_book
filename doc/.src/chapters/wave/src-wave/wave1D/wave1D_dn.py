@@ -223,7 +223,7 @@ def viz(I, V, f, c, U_0, U_L, L, dt, C, T, umin, umax,
                          libtheora='ogg')
         fps = 6
         filespec = 'frame_%04d.png'
-        movie_program = 'ffmpeg'  # or 'avconv'
+        movie_program = 'ffmpeg'
         for codec in codec2ext:
             ext = codec2ext[codec]
             cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\

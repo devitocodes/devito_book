@@ -1,7 +1,8 @@
-import scitools.std as plt
+import matplotlib.pyplot as plt
 #import matplotlib.pyplot as plt
 from vib_empirical_analysis import minmax, periods, amplitudes
 import sys
+sys.path.insert(0, "../../../src/odespy/")
 import odespy
 import numpy as np
 
@@ -33,7 +34,7 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20,
 
         solver_name = 'CrankNicolson' if solver.__class__.__name__ == \
                       'MidpointImplicit' else solver.__class__.__name__
-        print '*** Relative max error in energy for %s [0,%g] with dt=%g: %.3E' % (solver_name, t[-1], dt, np.abs(e_E).max()/E0)
+        print('*** Relative max error in energy for %s [0,%g] with dt=%g: %.3E' % (solver_name, t[-1], dt, np.abs(e_E).max()/E0))
 
         # Make plots
         if num_periods <= 80:
@@ -58,10 +59,10 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20,
             p = periods(maxima)
             a = amplitudes(minima, maxima)
             plt.figure(3)
-            plt.plot(range(len(p)), 2*np.pi/p, '-')
+            plt.plot(list(range(len(p))), 2*np.pi/p, '-')
             plt.hold('on')
             plt.figure(4)
-            plt.plot(range(len(a)), a, '-')
+            plt.plot(list(range(len(a))), a, '-')
             plt.hold('on')
 
     # Compare with exact solution plotted on a very fine mesh
