@@ -28,6 +28,61 @@ calls solver with a user_action function that can plot the
 solution on the screen (as an animation).
 """
 import numpy as np
+from devito import Constant, Grid, TimeFunction, SparseTimeFunction, SparseFunction, Eq, solve, Operator, Buffer
+
+def solver(I, V, f, c, L, dt, C, T, user_action=None):
+    """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
+    Nt = int(round(T/dt))
+    t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
+    dx = dt*c/float(C)
+    Nx = int(round(L/dx))
+    x = np.linspace(0, L, Nx+1)       # Mesh points in space
+    C2 = C**2                         # Help variable in the scheme
+    # Make sure dx and dt are compatible with x and t
+    dx = x[1] - x[0]
+    dt = t[1] - t[0]
+
+    if f is None or f == 0 :
+        f = lambda x, t: 0
+    if V is None or V == 0:
+        V = lambda x: 0
+    
+    grid = Grid(shape=(Nx+1), extent=(L))
+    t_s = grid.stepping_dim
+    
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+    # Initialise values
+    for i in range(Nx+1):
+        u.data[:,i] = I(x[i])
+
+    x_dim = grid.dimensions[0]
+    t_dim = grid.time_dim
+    
+    pde = (1/c**2)*u.dt2-u.dx2
+    stencil = Eq(u.forward, solve(pde, u.forward))
+    
+    # Source term and injection into equation
+    dt_symbolic = grid.time_dim.spacing    
+    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt+1)
+    for i in range(Nt):
+        src.data[i] = f(x, t[i])
+    src.coordinates.data[:, 0] = x
+    src_term = src.inject(field=u.forward, expr=src * (dt_symbolic**2))
+    
+    v = SparseFunction(name='v', grid=grid, npoint=Nx+1, nt=1)
+    v.data[:] = V(x[:])
+    stencil_init = stencil.subs(u.backward, u.forward - 2*dt_symbolic*v)
+
+    # Boundary condition
+    bc = [Eq(u[t_s+1, 0], u[t_s+1, 1])]
+
+    op_init = Operator([stencil_init]+bc)
+    op = Operator([stencil]+src_term+bc)
+    
+    op_init.apply(time_M=1, dt=dt)
+    op.apply(time_m=1,time_M=Nt, dt=dt)
+    
+    return u.data[-1], x, t, 0
 
 def python_solver(I, V, f, c, L, dt, C, T, user_action=None):
     """
