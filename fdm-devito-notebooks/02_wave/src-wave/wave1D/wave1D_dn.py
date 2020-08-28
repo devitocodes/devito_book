@@ -40,6 +40,7 @@ import scitools.std as plt
 import time
 from devito import Constant, Grid, TimeFunction, SparseTimeFunction, SparseFunction, Eq, solve, Operator, Buffer
 
+# TODO: Remove scalar vs vectorized version since Devito doesn't require these
 
 def devito_solver(I, V, f, c, U_0, U_L, L, dt, C, T,
            user_action=None, version='scalar'):
