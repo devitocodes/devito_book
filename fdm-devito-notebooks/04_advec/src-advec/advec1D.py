@@ -54,22 +54,25 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     t_s=grid.stepping_dim
 
     u = TimeFunction(name='u', grid=grid, space_order=2)
-
-    pde = u.dt + v*u.dx
-    eq = Eq(u.forward, solve(pde, u.forward))
-    bc = [Eq(u[t_s+1, 0], U0)]
-
     u.data[0, :] = I(x)
 
+    pde = u.dtr + v*u.dxc
+    
+    stencil = solve(pde, u.forward)
+    eq = Eq(u.forward, stencil)
+    
+    bc = [Eq(u[t_s+1, 0], U0)]
+
     op = Operator([eq] + bc)
+    op.apply(time_M=Nt, time_m=1, dt=dt)
     
-    if user_action is not None:
-        user_action(u_n, x, t, 0)
+    # if user_action is not None:
+    #     user_action(u_n, x, t, 0)
     
-    for n in range(0, Nt):
-        op.apply(dt=dt, time_m=n, time_M=n)
-        if user_action is not None:
-            user_action(u, x, t, n+1)
+    # for n in range(0, Nt):
+        # op.apply(dt=dt, time_m=n, time_M=n)
+        # if user_action is not None:
+        #     user_action(u, x, t, n+1)
             
             
 def solver(I, U0, v, L, dt, C, T, user_action=None,
