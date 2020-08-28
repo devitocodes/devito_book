@@ -33,7 +33,6 @@ import time, glob, shutil, os
 import numpy as np
 from devito import Constant, Grid, TimeFunction, SparseTimeFunction, SparseFunction, Eq, solve, Operator, Buffer, Function
 
-
 def devito_solver(
     I, V, f, c, U_0, U_L, L, dt, C, T,
     user_action=None, version='scalar',
@@ -86,6 +85,20 @@ def devito_solver(
         if isinstance(U_L, (float,int)) and U_L == 0:
             U_L = lambda t: 0
 
+    # --- Make hash of all input data ---
+    import hashlib, inspect
+    data = inspect.getsource(I) + '_' + inspect.getsource(V) + \
+           '_' + inspect.getsource(f) + '_' + str(c) + '_' + \
+           ('None' if U_0 is None else inspect.getsource(U_0)) + \
+           ('None' if U_L is None else inspect.getsource(U_L)) + \
+           '_' + str(L) + str(dt) + '_' + str(C) + '_' + str(T) + \
+           '_' + str(stability_safety_factor)
+    hashed_input = hashlib.sha1(data.encode('utf-8')).hexdigest()
+    if os.path.isfile('.' + hashed_input + '_archive.npz'):
+        # Simulation is already run
+        return -1, hashed_input
+
+
     grid = Grid(shape=(Nx+1), extent=(L))
     t_s = grid.stepping_dim
     
@@ -129,10 +142,13 @@ def devito_solver(
     op_init = Operator([stencil_init]+bc)
     op = Operator([stencil]+src_term+bc)
     
+    cpu = time.perf_counter()
     op_init.apply(time_M=1, dt=dt)
     op.apply(time_m=1,time_M=Nt, dt=dt)
     
-    return u.data[-1], x, t, 0
+    cpu = time.perf_counter() - cpu
+
+    return cpu, hashed_input
 
 def python_solver(
     I, V, f, c, U_0, U_L, L, dt, C, T,
@@ -525,10 +541,10 @@ class PlotAndStoreSolution:
         os.chdir(directory)        # cd directory
 
         fps = 24 # frames per second
-        if self.backend is not None:
-            from scitools.std import movie
-            movie('frame_*.png', encoder='html',
-                  output_file='index.html', fps=fps)
+        # if self.backend is not None:
+        #     from scitools.std import movie
+        #     movie('frame_*.png', encoder='html',
+        #           output_file='index.html', fps=fps)
 
         # Make other movie formats: Flash, Webm, Ogg, MP4
         codec2ext = dict(flv='flv', libx264='mp4', libvpx='webm',
@@ -539,6 +555,7 @@ class PlotAndStoreSolution:
             ext = codec2ext[codec]
             cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\
                   '-vcodec %(codec)s movie.%(ext)s' % vars()
+            print(cmd)
             os.system(cmd)
 
         os.chdir(os.pardir)  # move back to parent directory
@@ -778,7 +795,7 @@ def pulse(
     # Choose the stability limit with given Nx, worst case c
     # (lower C will then use this dt, but smaller Nx)
     dt = (L/Nx)/c_0
-    cpu, hashed_input = python_solver(
+    cpu, hashed_input = devito_solver(
         I=I, V=None, f=None, c=c,
         U_0=None, U_L=None,
         L=L, dt=dt, C=C, T=T,
