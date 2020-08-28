@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from devito import *
+from devito import Grid, Eq, solve, TimeFunction, Operator
+
 
 # def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
 #     Nt = int(round(T/float(dt)))
@@ -49,7 +50,7 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     dt = float(t[1] - t[0])
     C = v*dt/dx
 
-    grid = Grid(shape=(Nx), extent=(L))
+    grid = Grid(shape=(Nx+1,), extent=(L,))
     t_s=grid.stepping_dim
 
     u = TimeFunction(name='u', grid=grid, space_order=2)
@@ -61,6 +62,9 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     u.data[0, :] = I(x)
 
     op = Operator([eq] + bc)
+    
+    if user_action is not None:
+        user_action(u_n, x, t, 0)
     
     for n in range(0, Nt):
         op.apply(dt=dt, time_m=n, time_M=n)
