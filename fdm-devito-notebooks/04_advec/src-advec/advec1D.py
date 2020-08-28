@@ -44,8 +44,8 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     dx = v*dt/C
     Nx = int(round(L/dx))
 
-    t = np.linspace(0, Nt*dt, Nt)
-    x = np.linspace(0, L, Nx)
+    t = np.linspace(0, Nt*dt, Nt+1)
+    x = np.linspace(0, L, Nx+1)
     dx = float(x[1] - x[0])
     dt = float(t[1] - t[0])
     C = v*dt/dx
@@ -53,8 +53,7 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     grid = Grid(shape=(Nx+1,), extent=(L,))
     t_s=grid.stepping_dim
 
-    u = TimeFunction(name='u', grid=grid, space_order=2)
-    u.data[0, :] = I(x)
+    u = TimeFunction(name='u', grid=grid, space_order=2, save=Nt+1)
 
     pde = u.dtr + v*u.dxc
     
@@ -62,17 +61,13 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     eq = Eq(u.forward, stencil)
     
     bc = [Eq(u[t_s+1, 0], U0)]
+    u.data[1, :] = I(x)
 
     op = Operator([eq] + bc)
-    op.apply(time_M=Nt, time_m=1, dt=dt)
-    
-    # if user_action is not None:
-    #     user_action(u_n, x, t, 0)
-    
-    # for n in range(0, Nt):
-        # op.apply(dt=dt, time_m=n, time_M=n)
-        # if user_action is not None:
-        #     user_action(u, x, t, n+1)
+    op.apply(time_m=1, dt=dt)
+    if user_action is not None:
+        for n in range(0, Nt + 1):
+            user_action(u.data[n], x, t, n)
             
             
 def solver(I, U0, v, L, dt, C, T, user_action=None,
