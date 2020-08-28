@@ -61,167 +61,80 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     eq = Eq(u.forward, stencil)
     
     bc = [Eq(u[t_s+1, 0], U0)]
-    u.data[1, :] = I(x)
+    u.data[1, :] = [I(xs) for xs in x]
 
     op = Operator([eq] + bc)
     op.apply(time_m=1, dt=dt)
     if user_action is not None:
         for n in range(0, Nt + 1):
             user_action(u.data[n], x, t, n)
-            
-            
+
+
 def solver(I, U0, v, L, dt, C, T, user_action=None,
-           scheme='FE', periodic_bc=True):
+           scheme='FE', periodic_bc=False):
+    print('USING DEVITO')
     Nt = int(round(T/float(dt)))
     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
     dx = v*dt/C
     Nx = int(round(L/dx))
     x = np.linspace(0, L, Nx+1)       # Mesh points in space
+    
     # Make sure dx and dt are compatible with x and t
     dx = x[1] - x[0]
     dt = t[1] - t[0]
     C = v*dt/dx
     print('dt=%g, dx=%g, Nx=%d, C=%g' % (dt, dx, Nx, C))
-    
-    grid = Grid(shape=(Nx+1,), extent=(L,))
-    t_s = grid.stepping_dim
-    
-    u = TimeFunction(name='u', grid=grid, space_order=2, time_order=2)
-    
-    pde = u.dt + v*u.dx
-    eq = Eq(u.forward, solve(pde, u.forward))
 
     integral = np.zeros(Nt+1)
-
-    # Set initial condition u(x,0) = I(x)
-    u.data[0, :] = I(x)
-
-    # Insert boundary condition
-    bc = [Eq(u[t_s+1, 0], U0)]
-    if periodic_bc:
-        bc += [Eq(u[s_t+1, Nx], u[s_t+1, 0])]
-        
-    op = Operator([eq] + bc)
-    
-    # Compute the integral under the curve
-    integral[0] = dx*(0.5*u.data[1][0] + 0.5*u.data[1][Nx] + np.sum(u.data[1][1:-1]))
-
-    if user_action is not None:
-        user_action(u.data[1], x, t, 0)
-
-    for n in range(1, Nt):
-
-        # TODO: is scheme parameter necessary for devito?
-        if scheme not in ['FE', 'LF', 'UP', 'LW']:
-            raise ValueError('scheme="%s" not implemented' % scheme)
-        
-        op.apply(dt=dt, time_m=n, time_M=n, x_m=1, x_M=Nx-1)
-        
-        # Compute the integral under the curve
-        integral[n+1] = dx*(0.5*u.data[0][0] + 0.5*u.data[0][Nx] + np.sum(u.data[0][1:-1]))
-
-        if user_action is not None:
-            user_action(u.data[0], x, t, n+1)
-            
-        print('I:', integral[n+1])
-    return integral
-
-
-# def solver(I, U0, v, L, dt, C, T, user_action=None,
-#            scheme='FE', periodic_bc=True):
-#     Nt = int(round(T/float(dt)))
-#     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
-#     dx = v*dt/C
-#     Nx = int(round(L/dx))
-#     x = np.linspace(0, L, Nx+1)       # Mesh points in space
-#     # Make sure dx and dt are compatible with x and t
-#     dx = x[1] - x[0]
-#     dt = t[1] - t[0]
-#     C = v*dt/dx
-#     print('dt=%g, dx=%g, Nx=%d, C=%g' % (dt, dx, Nx, C))
-
-#     u   = np.zeros(Nx+1)
-#     u_n = np.zeros(Nx+1)
-#     u_nm1 = np.zeros(Nx+1)
-#     integral = np.zeros(Nt+1)
-
-#     # Set initial condition u(x,0) = I(x)
-#     for i in range(0, Nx+1):
-#         u_n[i] = I(x[i])
-
-#     # Insert boundary condition
-#     u[0] = U0
-
-#     # Compute the integral under the curve
-#     integral[0] = dx*(0.5*u_n[0] + 0.5*u_n[Nx] + np.sum(u_n[1:-1]))
 
 #     if user_action is not None:
 #         user_action(u_n, x, t, 0)
 
-#     for n in range(0, Nt):
-#         if scheme == 'FE':
-#             if periodic_bc:
-#                 i = 0
-#                 u[i] = u_n[i] - 0.5*C*(u_n[i+1] - u_n[Nx])
-#                 u[Nx] = u[0]
-#                 #u[i] = u_n[i] - 0.5*C*(u_n[1] - u_n[Nx])
-#             for i in range(1, Nx):
-#                 u[i] = u_n[i] - 0.5*C*(u_n[i+1] - u_n[i-1])
-#         elif scheme == 'LF':
-#             if n == 0:
-#                 # Use upwind for first step
-#                 if periodic_bc:
-#                     i = 0
-#                     #u[i] = u_n[i] - C*(u_n[i] - u_n[Nx-1])
-#                     u_n[i] = u_n[Nx]
-#                 for i in range(1, Nx+1):
-#                     u[i] = u_n[i] - C*(u_n[i] - u_n[i-1])
-#             else:
-#                 if periodic_bc:
-#                     i = 0
-#                     # Must have this,
-#                     u[i] = u_nm1[i] - C*(u_n[i+1] - u_n[Nx-1])
-#                     # not this:
-#                     #u_n[i] = u_n[Nx]
-#                 for i in range(1, Nx):
-#                     u[i] = u_nm1[i] - C*(u_n[i+1] - u_n[i-1])
-#                 if periodic_bc:
-#                     u[Nx] = u[0]
-#         elif scheme == 'UP':
-#             if periodic_bc:
-#                 u_n[0] = u_n[Nx]
-#             for i in range(1, Nx+1):
-#                 u[i] = u_n[i] - C*(u_n[i] - u_n[i-1])
-#         elif scheme == 'LW':
-#             if periodic_bc:
-#                 i = 0
-#                 # Must have this,
-#                 u[i] = u_n[i] - 0.5*C*(u_n[i+1] - u_n[Nx-1]) + \
-#                        0.5*C*(u_n[i+1] - 2*u_n[i] + u_n[Nx-1])
-#                 # not this:
-#                 #u_n[i] = u_n[Nx]
-#             for i in range(1, Nx):
-#                 u[i] = u_n[i] - 0.5*C*(u_n[i+1] - u_n[i-1]) + \
-#                        0.5*C*(u_n[i+1] - 2*u_n[i] + u_n[i-1])
-#             if periodic_bc:
-#                 u[Nx] = u[0]
-#         else:
-#             raise ValueError('scheme="%s" not implemented' % scheme)
+    grid = Grid(shape=(Nx+1,), extent=(L,))
+    t_s=grid.stepping_dim
+    u = None
+    pde = None
+    
+    def u(to=1, so=1):
+        u = TimeFunction(name='u', grid=grid, time_order=to, space_order=so, save=Nt+1)
+        return u
+        
+    if scheme == 'FE':
+        u   = u(so=2)
+        pde = u.dtr + v*u.dxc
+        
+    elif scheme == 'LF':
+        u   = u(to=2, so=2)
+        pde = u.dtc + v*u.dxc
+    
+    elif scheme == 'UP':
+        u   = u()
+        pde = u.dtr - v*u.dxl
+    
+    elif scheme == 'LW':
+        pass
+    
+    else:
+        raise ValueError('scheme="%s" not implemented' % scheme)
 
-#         if not periodic_bc:
-#             # Insert boundary condition
-#             u[0] = U0
+    stencil = solve(pde, u.forward)
+    eq = Eq(u.forward, stencil)
+    
+    bc = [Eq(u[t_s+1, 0], U0)]  # non-periodic boundary condition
+    u.data[0:2, :] = [I(xs) for xs in x]
 
-#         # Compute the integral under the curve
-#         integral[n+1] = dx*(0.5*u[0] + 0.5*u[Nx] + np.sum(u[1:-1]))
+    op = Operator([eq] + bc)
+    op.apply(time_m=1, dt=float(dt))
+    print(u.data)
+    for n in range(0, Nt+1):
+        # Compute the integral under the curve
+        integral[n] = dx*(0.5*u.data[n][0] + 0.5*u.data[n][Nx] + np.sum(u.data[n][1:Nx]))
 
-#         if user_action is not None:
-#             user_action(u, x, t, n+1)
+        if user_action is not None:
+            user_action(u.data[n], x, t, n)
 
-#         # Switch variables before next step
-#         u_nm1, u_n, u = u_n, u, u_nm1
-#         print('I:', integral[n+1])
-#     return integral
+        print('I:', integral[n])
+    return integral
 
 def run_FECS(case):
     """Special function for the FECS case."""
