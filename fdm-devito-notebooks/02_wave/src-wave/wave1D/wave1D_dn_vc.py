@@ -31,7 +31,7 @@ store solutions, etc.
 """
 import time, glob, shutil, os
 import numpy as np
-from devito import Constant, Grid, TimeFunction, SparseTimeFunction, SparseFunction, Eq, solve, Operator, Buffer
+from devito import Constant, Grid, TimeFunction, SparseTimeFunction, SparseFunction, Eq, solve, Operator, Buffer, Function
 
 
 def devito_solver(
@@ -96,8 +96,12 @@ def devito_solver(
     
     x_dim = grid.dimensions[0]
     t_dim = grid.time_dim
+
+    # Initialise variable velocity function
+    q_f = Function(name='q', grid=grid, npoint=Nx+1, nt=Nt+1)
+    q_f.data[:] = q(x[:])
     
-    pde = u.dt2-(q*u.dx).dx
+    pde = u.dt2-(q_f*u.dx).dx
     stencil = Eq(u.forward, solve(pde, u.forward))
     
     # Source term and injection into equation
