@@ -87,9 +87,6 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
 
     integral = np.zeros(Nt+1)
 
-#     if user_action is not None:
-#         user_action(u_n, x, t, 0)
-
     grid = Grid(shape=(Nx+1,), extent=(L,))
     t_s=grid.stepping_dim
     u = None
@@ -109,7 +106,7 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     
     elif scheme == 'UP':
         u   = u()
-        pde = u.dtr - v*u.dxl
+        pde = u.dtr + v*u.dxl
     
     elif scheme == 'LW':
         pass
@@ -120,13 +117,22 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     stencil = solve(pde, u.forward)
     eq = Eq(u.forward, stencil)
     
-    bc = [Eq(u[t_s+1, 0], U0)]  # non-periodic boundary condition
+    # Insert non-periodic boundary condition
+    bc = [Eq(u[t_s+1, 0], U0)]
+    
+    # Set initial condition u(x,0) = I(x)
     u.data[0:2, :] = [I(xs) for xs in x]
+    
+    # Compute the integral under the curve
+    integral[0] = dx*(0.5*u.data[1][0] + 0.5*u.data[1][Nx] + np.sum(u.data[1][1:Nx]))
+    
+    if user_action is not None:
+        user_action(u.data[1], x, t, 0)
 
     op = Operator([eq] + bc)
     op.apply(time_m=1, dt=float(dt))
-    print(u.data)
-    for n in range(0, Nt+1):
+
+    for n in range(1, Nt+1):
         # Compute the integral under the curve
         integral[n] = dx*(0.5*u.data[n][0] + 0.5*u.data[n][Nx] + np.sum(u.data[n][1:Nx]))
 
