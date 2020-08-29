@@ -109,7 +109,8 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         pde = u.dtr + v*u.dxl
     
     elif scheme == 'LW':
-        pass
+        u = u(so=2)
+        pde = u.dtr + v*u.dxc - 0.5*dt*v**2*u.dx2
     
     else:
         raise ValueError('scheme="%s" not implemented' % scheme)
@@ -117,11 +118,11 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     stencil = solve(pde, u.forward)
     eq = Eq(u.forward, stencil)
     
-    # Insert non-periodic boundary condition
-    bc = [Eq(u[t_s+1, 0], U0)]
-    
     # Set initial condition u(x,0) = I(x)
     u.data[0:2, :] = [I(xs) for xs in x]
+    
+    # Insert non-periodic boundary condition
+    bc = [Eq(u[t_s+1, 0], U0)]
     
     # Compute the integral under the curve
     integral[0] = dx*(0.5*u.data[1][0] + 0.5*u.data[1][Nx] + np.sum(u.data[1][1:Nx]))
