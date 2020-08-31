@@ -61,7 +61,7 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     eq = Eq(u.forward, stencil)
     
     bc = [Eq(u[t_s+1, 0], U0)]
-    u.data[1, :] = [I(xs) for xs in x]
+    u.data[1, :] = [I(xi) for xi in x]
 
     op = Operator([eq] + bc)
     op.apply(time_m=1, dt=dt)
@@ -71,7 +71,7 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
 
 
 def solver(I, U0, v, L, dt, C, T, user_action=None,
-           scheme='FE', periodic_bc=False):
+           scheme='FE', periodic_bc=True):
     print('USING DEVITO')
     Nt = int(round(T/float(dt)))
     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
@@ -119,10 +119,14 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     eq = Eq(u.forward, stencil)
     
     # Set initial condition u(x,0) = I(x)
-    u.data[0:2, :] = [I(xs) for xs in x]
+    u.data[0:2, :] = [I(xi) for xi in x]
     
-    # Insert non-periodic boundary condition
+    # Insert boundary condition
     bc = [Eq(u[t_s+1, 0], U0)]
+    
+    if periodic_bc:
+        # Insert periodic boundary condition
+        bc += [Eq(u[t_s+1, Nx], u[t_s+1, 0])]
     
     # Compute the integral under the curve
     integral[0] = dx*(0.5*u.data[1][0] + 0.5*u.data[1][Nx] + np.sum(u.data[1][1:Nx]))
