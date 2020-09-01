@@ -75,7 +75,6 @@ jobs:
       run: |
         cd fdm-devito-notebooks/02_wave/src-wave/wave1D
         $RUN_CMD py.test -s -v $SKIP wave1D_u0.py::test_constant
-        # TODO: Add other tests after adding user_action to wave solver functions
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.6
       with:
