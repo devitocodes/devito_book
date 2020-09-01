@@ -42,7 +42,7 @@ from devito import Constant, Grid, TimeFunction, SparseTimeFunction, SparseFunct
 
 # TODO: Remove scalar vs vectorized version since Devito doesn't require these
 
-def devito_solver(I, V, f, c, U_0, U_L, L, dt, C, T,
+def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
            user_action=None, version='scalar'):
     """
     Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].
