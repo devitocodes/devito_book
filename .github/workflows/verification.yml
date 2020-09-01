@@ -74,7 +74,7 @@ jobs:
     - name: Waves (2.1 to 2.5)
       run: |
         cd fdm-devito-notebooks/02_wave/src-wave/wave1D
-        $RUN_CMD py.test -s -v $SKIP wave1D_u0.py::test_constant
+        $RUN_CMD python -m pytest -W ignore::DeprecationWarning -s -v --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP wave1D_u0.py::test_constant
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.6
       with:
