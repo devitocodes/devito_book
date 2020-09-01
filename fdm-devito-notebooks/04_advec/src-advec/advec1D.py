@@ -70,7 +70,37 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         pde = u.dtr + v*u.dxc
         
     elif scheme == 'LF':
+        # Use UP scheme for first timestep
+        u1   = TimeFunction(name='u1', grid=grid, save=2)
+        pde1 = u1.dtr + v*u1.dxl
+        
+        stencil1 = solve(pde1, u1.forward)
+        eq1      = Eq(u1.forward, stencil1)
+        
+        # Set initial condition u(x,0) = I(x)
+        u1.data[0, :] = [I(xi) for xi in x]
+        
+        # Insert boundary condition
+        bc1 = [Eq(u1[t_s+1, 0], U0)]
+        
+        integral[0] = dx*(0.5*u1.data[0][0] + 0.5*u1.data[0][Nx] + np.sum(u1.data[0][1:Nx]))
+        
+        if user_action is not None:
+            user_action(u1.data[0], x, t, 0)
+        
+        op1 = Operator([eq1] + bc1)
+        op1.apply(time_m=0, dt=dt)
+        
+        integral[1] = dx*(0.5*u1.data[1][0] + 0.5*u1.data[1][Nx] + np.sum(u1.data[1][1:Nx]))
+        
+        if user_action is not None:
+            user_action(u1.data[1], x, t, 1)
+            
+        print('I:', integral[1])
+        
+        # Now continue with LF scheme
         u   = u(to=2, so=2)
+        u.data[0:2, :] = u1.data
         pde = u.dtc + v*u.dxc
     
     elif scheme == 'UP':
@@ -87,26 +117,27 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     stencil = solve(pde, u.forward)
     eq = Eq(u.forward, stencil)
     
-    # Set initial condition u(x,0) = I(x)
-    u.data[0, :] = [I(xi) for xi in x]
+    if scheme != 'LF':
+        # Set initial condition u(x,0) = I(x)
+        u.data[0, :] = [I(xi) for xi in x]
+        
+        # Compute the integral under the curve
+        integral[0] = dx*(0.5*u.data[0][0] + 0.5*u.data[0][Nx] + np.sum(u.data[0][1:Nx]))
     
+        if user_action is not None:
+            user_action(u.data[0], x, t, 0)
+
     # Insert boundary condition
     bc = [Eq(u[t_s+1, 0], U0)]
     
     if periodic_bc:
         # Insert periodic boundary condition
         bc += [Eq(u[t_s+1, Nx], u[t_s+1, 0])]
-    
-    # Compute the integral under the curve
-    integral[0] = dx*(0.5*u.data[0][0] + 0.5*u.data[0][Nx] + np.sum(u.data[0][1:Nx]))
-    
-    if user_action is not None:
-        user_action(u.data[0], x, t, 0)
 
     op = Operator([eq] + bc)
-    op.apply(time_m=0, time_M=Nt-1, dt=float(dt))
+    op.apply(time_m=1 if scheme == 'LF' else 0, time_M=Nt-1, dt=float(dt))
 
-    for n in range(1, Nt+1):
+    for n in range(2 if scheme == 'LF' else 1, Nt+1):
         # Compute the integral under the curve
         integral[n] = dx*(0.5*u.data[n][0] + 0.5*u.data[n][Nx] + np.sum(u.data[n][1:Nx+1]))
 
@@ -114,7 +145,6 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
             user_action(u.data[n], x, t, n)
 
         print('I:', integral[n])
-    print(integral)
     return integral
 
 def run_FECS(case):
