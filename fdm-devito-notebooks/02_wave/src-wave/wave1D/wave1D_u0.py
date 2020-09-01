@@ -26,9 +26,9 @@ code can add visualization, error computations, etc.
 # from ipynb.fs.defs.wave1D_prog import devito_solver
 import numpy as np
 import time as time
-from devito import Constant, Grid, TimeFunction, SparseTimeFunction, Eq, solve, Operator, Buffer
+from devito import Constant, Grid, TimeFunction, SparseTimeFunction, Function, Eq, solve, Operator, Buffer
 
-def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
+def solver(I, V, f, c, L, dt, C, T, user_action=None):
     """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
     Nt = int(round(T/dt))
     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
@@ -36,59 +36,62 @@ def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
     Nx = int(round(L/dx))
     x = np.linspace(0, L, Nx+1)       # Mesh points in space
     C2 = C**2                         # Help variable in the scheme
+    
     # Make sure dx and dt are compatible with x and t
     dx = x[1] - x[0]
     dt = t[1] - t[0]
-    a = Constant(name='a')
 
-    # Set source term to 0 if not provided
+    # Initialising functions f and V if not provided
     if f is None or f == 0 :
         f = lambda x, t: 0
-    
     if V is None or V == 0:
         V = lambda x: 0
+        
+    t0 = time.perf_counter()  # Measure CPU time
 
-    # Initialise `u` for space and time order 2, using initialisation function I
-    # across all values in x
-    grid = Grid(shape=Nx+1, extent=L)
-    u = TimeFunction(name='u', grid=grid, space_order=2, time_order=2, save=Nt)
-    u.data[:] = I(x) # Forward, central and backward time steps all same - u_t(x, 0) = 0
+    # Set up grid
+    grid = Grid(shape=(Nx+1), extent=(L))
+    t_s = grid.stepping_dim
+        
+    # Create and initialise u
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+    u.data[:,:] = I(x[:])
+
+    x_dim = grid.dimensions[0]
+    t_dim = grid.time_dim
     
-    if user_action is not None:
-        user_action(u.data[0], x, t, 0)
-    
-    dt_symbolic = grid.time_dim.spacing
+    # The wave equation we are trying to solve
+    pde = (1/c**2)*u.dt2-u.dx2
     
     # Source term and injection into equation
-    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt)
-    src.coordinates.data[:, 0] = f(x, t)
-    src_term = src.inject(field=u.forward, expr=src * dt_symbolic**2)
+    dt_symbolic = grid.time_dim.spacing    
+    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt+1)
     
-    # Measure CPU time
-    t0 = time.perf_counter()
+    for i in range(Nt):
+        src.data[i] = f(x, t[i])
     
-    # Set up wave equation and solve for forward stencil point in time
-    x_dim = grid.dimensions[0]
-    time_dim = grid.time_dim
-    eq = Eq(u.dt2, (a**2) * u.dx2 + f(x_dim, time_dim))
-    stencil = solve(eq, u.forward)
-    eq_stencil = Eq(u.forward, stencil)
-    
-    
+    src.coordinates.data[:, 0] = x
+    src_term = src.inject(field=u.forward, expr=src * (dt_symbolic**2))
+    stencil = Eq(u.forward, solve(pde, u.forward))
+
+    # Set up special stencil for initial timestep with substitution for u.backward
+    v = Function(name='v', grid=grid, npoint=Nx+1, nt=1)
+    v.data[:] = V(x[:])
+    stencil_init = stencil.subs(u.backward, u.forward - dt_symbolic*v)
+
     # Boundary conditions
-    stepping_dim = grid.stepping_dim
-    bc1 = [Eq(u[stepping_dim+1, 0], 0.)]
-    bc2 = [Eq(u[stepping_dim+1, -1], 0.)]
+    bc = [Eq(u[t_s+1, 0], 0)]
+    bc += [Eq(u[t_s+1, Nx], 0)]
+
+    # Create and apply operators
+    op_init = Operator([stencil_init]+src_term+bc)
+    op = Operator([stencil]+src_term+bc)
     
-    # Building operator
-    op = Operator([eq_stencil] + bc1 + bc2 + src_term)
-    op.apply(dt=dt.astype(np.float32), a=c)
-    
-    if user_action is not None:
-        for i in range (1, Nt):
-            user_action(u.data[i], x, t, i+1)
+    op_init.apply(time_M=1, dt=dt)
+    op.apply(time_m=1, time_M=Nt, dt=dt)
     
     cpu_time = time.perf_counter() - t0
+    
     return u.data[-1], x, t, cpu_time
 
 def test_quadratic():
@@ -120,7 +123,7 @@ def test_quadratic():
         tol = 1E-7
         assert diff < tol
 
-    devito_solver(I, V, f, c, L, dt, C, T,
+    solver(I, V, f, c, L, dt, C, T,
            user_action=assert_no_error)
 
 def test_constant():
@@ -128,7 +131,7 @@ def test_constant():
     u_const = 0  # Require 0 because of the boundary conditions
     C = 0.75
     dt = C # Very coarse mesh
-    u, x, t, cpu = devito_solver(I=lambda x:
+    u, x, t, cpu = solver(I=lambda x:
                           0, V=0, f=0, c=1.5, L=2.5,
                           dt=dt, C=C, T=18)
     tol = 1E-14
@@ -139,9 +142,9 @@ def viz(
     umin, umax,               # Interval for u in plots
     animate=True,             # Simulation with animation?
     tool='matplotlib',        # 'matplotlib' or 'scitools'
-    devito_solver_function=devito_solver,   # Function with numerical algorithm
+    devito_solver_function=solver   # Function with numerical algorithm
     ):
-    """Run devito_solver and visualize u at each time level."""
+    """Run solver and visualize u at each time level."""
 
     def plot_u_st(u, x, t, n):
         """user_action function for devito_solver."""
@@ -253,7 +256,7 @@ def convergence_rates(
     h = []  # dt, devito_solver adjusts dx such that C=dt*c/dx
     dt = dt0
     for i in range(num_meshes):
-        devito_solver(I, V, f, c, L, dt, C, T,
+        solver(I, V, f, c, L, dt, C, T,
                user_action=compute_error)
         # error is computed in the final call to compute_error
         E.append(error)
@@ -265,7 +268,7 @@ def convergence_rates(
     print(h)
     # Convergence rates for two consecutive experiments
     r = [np.log(E[i]/E[i-1])/np.log(h[i]/h[i-1])
-         for i in range(1,num_meshes)]
+         for i in range(1,num_meshes) if h[i-1] != 0 and h[i] != h[i-1] and E[i-1] != 0]
     return r
 
 def test_convrate_sincos():
@@ -300,67 +303,3 @@ if __name__ == '__main__':
     print('Courant number: %.2f' % C)
     #guitar(C)
     test_convrate_sincos()
-
-# Original Python solver
-def python_solver(I, V, f, c, L, dt, C, T, user_action=None):
-    """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
-    Nt = int(round(T/dt))
-    t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
-    dx = dt*c/float(C)
-    Nx = int(round(L/dx))
-    x = np.linspace(0, L, Nx+1)       # Mesh points in space
-    C2 = C**2                         # Help variable in the scheme
-    # Make sure dx and dt are compatible with x and t
-    dx = x[1] - x[0]
-    dt = t[1] - t[0]
-
-    if f is None or f == 0 :
-        f = lambda x, t: 0
-    if V is None or V == 0:
-        V = lambda x: 0
-
-    u     = np.zeros(Nx+1)   # Solution array at new time level
-    u_n   = np.zeros(Nx+1)   # Solution at 1 time level back
-    u_nm1 = np.zeros(Nx+1)   # Solution at 2 time levels back
-
-    import time;  t0 = time.perf_counter()  # Measure CPU time
-
-    # Load initial condition into u_n
-    for i in range(0,Nx+1):
-        u_n[i] = I(x[i])
-
-    if user_action is not None:
-        user_action(u_n, x, t, 0)
-
-    # Special formula for first time step
-    n = 0
-    for i in range(1, Nx):
-        u[i] = u_n[i] + dt*V(x[i]) + \
-               0.5*C2*(u_n[i-1] - 2*u_n[i] + u_n[i+1]) + \
-               0.5*dt**2*f(x[i], t[n])
-    u[0] = 0;  u[Nx] = 0
-
-    if user_action is not None:
-        user_action(u, x, t, 1)
-
-    # Switch variables before next step
-    u_nm1[:] = u_n;  u_n[:] = u
-
-    for n in range(1, Nt):
-        # Update all inner points at time t[n+1]
-        for i in range(1, Nx):
-            u[i] = - u_nm1[i] + 2*u_n[i] + \
-                     C2*(u_n[i-1] - 2*u_n[i] + u_n[i+1]) + \
-                     dt**2*f(x[i], t[n])
-
-        # Insert boundary conditions
-        u[0] = 0;  u[Nx] = 0
-        if user_action is not None:
-            if user_action(u, x, t, n+1):
-                break
-
-        # Switch variables before next step
-        u_nm1[:] = u_n;  u_n[:] = u
-
-    cpu_time = time.perf_counter() - t0
-    return u, x, t, cpu_time
