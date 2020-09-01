@@ -276,10 +276,10 @@ How to make movie file in modern formats:
 !bc sys
 Terminal> name=tmp_frame%04d.png
 Terminal> fps=8  # frames per second in movie
-Terminal> avconv -r $fps -i $name -vcodec flv       movie.flv
-Terminal> avconv -r $fps -i $name -vcodec libx64    movie.mp4
-Terminal> avconv -r $fps -i $name -vcodec libvpx    movie.webm
-Terminal> avconv -r $fps -i $name -vcodec libtheora movie.ogg
+Terminal> ffmpeg -r $fps -i $name -vcodec flv       movie.flv
+Terminal> ffmpeg -r $fps -i $name -vcodec libx64    movie.mp4
+Terminal> ffmpeg -r $fps -i $name -vcodec libvpx    movie.webm
+Terminal> ffmpeg -r $fps -i $name -vcodec libtheora movie.ogg
 !ec
 
 !split

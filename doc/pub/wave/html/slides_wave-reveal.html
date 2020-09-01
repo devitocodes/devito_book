@@ -1223,7 +1223,7 @@ in a <code>user_action</code> function <code>plot_u</code>:
     <span style="color: #d0d0d0">codec2ext</span> <span style="color: #d0d0d0">=</span> <span style="color: #24909d">dict</span><span style="color: #d0d0d0">(flv=</span><span style="color: #ed9d13">&#39;flv&#39;</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">libx264=</span><span style="color: #ed9d13">&#39;mp4&#39;</span><span style="color: #d0d0d0">,</span> <span style="color: #d0d0d0">libvpx=</span><span style="color: #ed9d13">&#39;webm&#39;</span><span style="color: #d0d0d0">,</span>
                      <span style="color: #d0d0d0">libtheora=</span><span style="color: #ed9d13">&#39;ogg&#39;</span><span style="color: #d0d0d0">)</span>  <span style="color: #999999; font-style: italic"># video formats</span>
     <span style="color: #d0d0d0">filespec</span> <span style="color: #d0d0d0">=</span> <span style="color: #ed9d13">&#39;tmp_%04d.png&#39;</span>
-    <span style="color: #d0d0d0">movie_program</span> <span style="color: #d0d0d0">=</span> <span style="color: #ed9d13">&#39;ffmpeg&#39;</span>  <span style="color: #999999; font-style: italic"># or &#39;avconv&#39;</span>
+    <span style="color: #d0d0d0">movie_program</span> <span style="color: #d0d0d0">=</span> <span style="color: #ed9d13">&#39;ffmpeg&#39;</span>  <span style="color: #999999; font-style: italic"># or &#39;ffmpeg&#39;</span>
     <span style="color: #6ab825; font-weight: bold">for</span> <span style="color: #d0d0d0">codec</span> <span style="color: #6ab825; font-weight: bold">in</span> <span style="color: #d0d0d0">codec2ext:</span>
         <span style="color: #d0d0d0">ext</span> <span style="color: #d0d0d0">=</span> <span style="color: #d0d0d0">codec2ext[codec]</span>
         <span style="color: #d0d0d0">cmd</span> <span style="color: #d0d0d0">=</span> <span style="color: #ed9d13">&#39;%(movie_program)s -r %(fps)d -i %(filespec)s &#39;</span>\ 
@@ -1255,10 +1255,10 @@ local variables in <code>viz</code> (known as a closure).
 <!-- code=text (!bc sys) typeset with pygments style "native" -->
 <div class="highlight" style="background: #202020"><pre style="font-size: 80%; line-height: 125%"><span></span>Terminal&gt; scitools movie encoder=html output_file=movie.html \ 
           fps=4 frame_*.png  # web page with a player
-Terminal&gt; avconv -r 4 -i frame_%04d.png -c:v flv       movie.flv
-Terminal&gt; avconv -r 4 -i frame_%04d.png -c:v libtheora movie.ogg
-Terminal&gt; avconv -r 4 -i frame_%04d.png -c:v libx264   movie.mp4
-Terminal&gt; avconv -r 4 -i frame_%04d.png -c:v libpvx    movie.webm
+Terminal&gt; ffmpeg -r 4 -i frame_%04d.png -c:v flv       movie.flv
+Terminal&gt; ffmpeg -r 4 -i frame_%04d.png -c:v libtheora movie.ogg
+Terminal&gt; ffmpeg -r 4 -i frame_%04d.png -c:v libx264   movie.mp4
+Terminal&gt; ffmpeg -r 4 -i frame_%04d.png -c:v libpvx    movie.webm
 </pre></div>
 <p>
 <div class="alert alert-block alert-warning alert-text-normal">

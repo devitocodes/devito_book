@@ -1,6 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.join(os.pardir, os.pardir, 'vib', 'src-vib'))
-from numpy import zeros, linspace
+import numpy as np
+from devito import Dimension, TimeFunction, Eq, solve, Operator, Constant
 
 def solver_v1(I, w, dt, T):
     """
@@ -9,17 +10,30 @@ def solver_v1(I, w, dt, T):
     """
     dt = float(dt)
     Nt = int(round(T/dt))
-    u = zeros(Nt+1)
-    v = zeros(Nt+1)
-    t = linspace(0, Nt*dt, Nt+1)  # mesh for u
-    t_v = (t + dt/2)[:-1]         # mesh for v
+    
+    t = Dimension('t', spacing=Constant('h_t'))
+    u = TimeFunction(name='u', dimensions=(t,), shape=(Nt+1,), space_order=2)
+    v = TimeFunction(name='v', dimensions=(t,), shape=(Nt+1,), space_order=2)
 
-    u[0] = I
-    v[0] = 0 - 0.5*dt*w**2*u[0]
-    for n in range(1, Nt+1):
-        u[n] = u[n-1] + dt*v[n-1]
-        v[n] = v[n-1] - dt*w**2*u[n]
-    return u, t, v, t_v
+    u.data[:] = I
+    v.data[:] = 0 - 0.5*dt*w**2*u.data[:]
+    
+    eq_u = Eq(u.dt, v)
+    eq_v = Eq(v.dt, -(w**2)*u.forward)
+    
+    stencil_u = solve(eq_u, u.forward)
+    stencil_v = solve(eq_v, v.forward)
+    
+    update_u = Eq(u.forward, stencil_u)
+    update_v = Eq(v.forward, stencil_v)
+    
+    op = Operator([update_u, update_v])
+    op.apply(h_t=dt, t_M=Nt-1)
+
+    t_mesh = np.linspace(0, Nt*dt, Nt+1)    # mesh for u
+    t_v_mesh = (t_mesh + dt/2)[:-1]         # mesh for v
+
+    return u.data, t_mesh, v.data, t_v_mesh
 
 class HalfInt:
     """
@@ -43,9 +57,9 @@ def solver(I, w, dt, T):
     """
     dt = float(dt)
     Nt = int(round(T/dt))
-    u = zeros(Nt+1)
-    v = zeros(Nt+1)
-    t = linspace(0, Nt*dt, Nt+1)  # mesh for u
+    u = np.zeros(Nt+1)
+    v = np.zeros(Nt+1)
+    t = np.linspace(0, Nt*dt, Nt+1)  # mesh for u
     t_v = t + dt/2                # mesh for v
 
     u[0] = I
@@ -72,7 +86,7 @@ def test_convergence():
         return u, t
 
     r = convergence_rates(8, wrapped_solver, 8)
-    print r
+    print(r)
     assert abs(r[-1] - 2) < 1E-5
 
 if __name__ == '__main__':

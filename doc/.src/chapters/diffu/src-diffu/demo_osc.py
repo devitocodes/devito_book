@@ -122,9 +122,9 @@ class PlotU:
         """Go to plot directory and make movie files."""
         orig_dir = os.getcwd()
         os.chdir(self.plotdir)
-        cmd = 'avconv -r 1 -i frame_%04d.png -vcodec libvpx movie.webm'
-        cmd = 'avconv -r 1 -i frame_%04d.png -vcodec flv movie.flv'
-        cmd = 'avconv -r 1 -i frame_%04d.png -vcodec libtheora movie.ogg'
+        cmd = 'ffmpeg -r 1 -i frame_%04d.png -vcodec libvpx movie.webm'
+        cmd = 'ffmpeg -r 1 -i frame_%04d.png -vcodec flv movie.flv'
+        cmd = 'ffmpeg -r 1 -i frame_%04d.png -vcodec libtheora movie.ogg'
         os.system(cmd)
         cmd = 'scitools movie output_file=index.html frame*.png'
         os.system(cmd)
