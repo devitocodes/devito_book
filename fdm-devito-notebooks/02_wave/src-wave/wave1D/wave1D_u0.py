@@ -28,70 +28,7 @@ import numpy as np
 import time as time
 from devito import Constant, Grid, TimeFunction, SparseTimeFunction, Eq, solve, Operator, Buffer
 
-def devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
-    """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
-    Nt = int(round(T/dt))
-    t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
-    dx = dt*c/float(C)
-    Nx = int(round(L/dx))
-    x = np.linspace(0, L, Nx+1)       # Mesh points in space
-    C2 = C**2                         # Help variable in the scheme
-    # Make sure dx and dt are compatible with x and t
-    dx = x[1] - x[0]
-    dt = t[1] - t[0]
-    a = Constant(name='a')
-
-    # Set source term to 0 if not provided
-    if f is None or f == 0 :
-        f = lambda x, t: 0
-    
-    if V is None or V == 0:
-        V = lambda x: 0
-
-    # Initialise `u` for space and time order 2, using initialisation function I
-    # across all values in x
-    grid = Grid(shape=Nx+1, extent=L)
-    u = TimeFunction(name='u', grid=grid, space_order=2, time_order=2, save=Nt)
-    u.data[:] = I(x) # Forward, central and backward time steps all same - u_t(x, 0) = 0
-    
-    if user_action is not None:
-        user_action(u.data[0], x, t, 0)
-    
-    dt_symbolic = grid.time_dim.spacing
-    
-    # Source term and injection into equation
-    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt)
-    src.coordinates.data[:, 0] = f(x, t)
-    src_term = src.inject(field=u.forward, expr=src * dt_symbolic**2)
-    
-    # Measure CPU time
-    t0 = time.perf_counter()
-    
-    # Set up wave equation and solve for forward stencil point in time
-    x_dim = grid.dimensions[0]
-    time_dim = grid.time_dim
-    eq = Eq(u.dt2, (a**2) * u.dx2 + f(x_dim, time_dim))
-    stencil = solve(eq, u.forward)
-    eq_stencil = Eq(u.forward, stencil)
-    
-    
-    # Boundary conditions
-    stepping_dim = grid.stepping_dim
-    bc1 = [Eq(u[stepping_dim+1, 0], 0.)]
-    bc2 = [Eq(u[stepping_dim+1, Nx], 0.)]
-    
-    # Building operator
-    op = Operator([eq_stencil] + bc1 + bc2 + src_term)
-    op.apply(dt=dt.astype(np.float32), a=c)
-    
-    if user_action is not None:
-        for i in range (1, Nt):
-            user_action(u.data[i], x, t, i+1)
-    
-    cpu_time = time.perf_counter() - t0
-    return u.data[-1], x, t, cpu_time
-
-def second_devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
+def solver(I, V, f, c, L, dt, C, T, user_action=None):
     """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
     Nt = int(round(T/dt))
     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
@@ -107,35 +44,50 @@ def second_devito_solver(I, V, f, c, L, dt, C, T, user_action=None):
         f = lambda x, t: 0
     if V is None or V == 0:
         V = lambda x: 0
-    
+        
+    t0 = time.perf_counter()  # Measure CPU time
+
     grid = Grid(shape=(Nx+1), extent=(L))
     t_s = grid.stepping_dim
     
     u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
     u.data[:,:] = I(x[:])
 
-    if user_action is not None:
-        user_action(u.data[0], x, t, 0)
-
+    x_dim = grid.dimensions[0]
+    t_dim = grid.time_dim
+    
     pde = (1/c**2)*u.dt2-u.dx2
+    
+    # Source term and injection into equation
+    dt_symbolic = grid.time_dim.spacing    
+    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt+1)
+    
+    for i in range(Nt):
+        src.data[i] = f(x, t[i])
+    
+    src.coordinates.data[:, 0] = x
+    src_term = src.inject(field=u.forward, expr=src * (dt_symbolic**2))
     stencil = Eq(u.forward, solve(pde, u.forward))
-    
-    # Initial timestep
-    stencil_init = stencil.subs(u.backward, u.forward)
-    
+
+    v = SparseFunction(name='v', grid=grid, npoint=Nx+1)
+    v.data[:] = V(x[:])
+    stencil_init = stencil.subs(u.backward, u.forward - 2*dt_symbolic*v)
+
     # Boundary conditions
     bc = [Eq(u[t_s+1, 0], 0)]
     bc += [Eq(u[t_s+1, Nx], 0)]
-    
-    op_init = Operator([stencil_init]+bc)
-    op = Operator([stencil]+bc)
+
+    op_init = Operator([stencil_init]+src_term+bc)
+    op = Operator([stencil]+src_term+bc)
     
     op_init.apply(time_M=1, dt=dt)
-    op.apply(time_m=1, time_M=Nt-1, dt=dt)
+    op.apply(time_m=1, time_M=Nt, dt=dt)
     
-#     print(op.ccode)
+    cpu_time = time.perf_counter() - t0
     
-    return u.data[-1], x, t, 0
+    return u.data[1], x, t, cpu_time
+
+
 
 def test_quadratic():
     """Check that u(x,t)=x(L-x)(1+t/2) is exactly reproduced."""
