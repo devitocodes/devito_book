@@ -39,9 +39,7 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
 
 
 def solver(I, U0, v, L, dt, C, T, user_action=None,
-           scheme='FE', periodic_bc=False):
-    print('YES DEVITO')
-    print(periodic_bc)
+           scheme='FE', periodic_bc=True):
     Nt = int(round(T/float(dt)))
     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
     dx = v*dt/C
@@ -57,7 +55,7 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     integral = np.zeros(Nt+1)
 
     grid = Grid(shape=(Nx+1,), extent=(L,), dtype=np.float64)
-    t_s=grid.stepping_dim
+    t_s=grid.time_dim
     u = None
     pde = None
     
@@ -80,16 +78,16 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         # Set initial condition u(x,0) = I(x)
         u1.data[0, :] = [I(xi) for xi in x]
         
-        # Insert boundary condition
-        bc1 = [Eq(u1[t_s+1, 0], U0)]
+        bc1  = [Eq(u1[t_s+1, 0], U0)]  # non-periodic boundary condition
+        pbc1 = [Eq(u1[t_s, 0], u1[t_s, Nx])]  # periodic boundary condition
         
         integral[0] = dx*(0.5*u1.data[0][0] + 0.5*u1.data[0][Nx] + np.sum(u1.data[0][1:Nx]))
         
         if user_action is not None:
             user_action(u1.data[0], x, t, 0)
         
-        op1 = Operator([eq1] + bc1)
-        op1.apply(time_m=0, dt=dt)
+        op1 = Operator(bc1 + (pbc1 if periodic_bc else []) + [eq1] + (bc1 if not periodic_bc else []))
+        op1.apply(dt=dt)
         
         integral[1] = dx*(0.5*u1.data[1][0] + 0.5*u1.data[1][Nx] + np.sum(u1.data[1][1:Nx]))
         
@@ -99,7 +97,7 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         print('I:', integral[1])
         
         # Now continue with LF scheme
-        u   = u(to=2, so=2)
+        u = u(to=2, so=2)
         u.data[0:2, :] = u1.data
         pde = u.dtc + v*u.dxc
     
@@ -127,19 +125,15 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         if user_action is not None:
             user_action(u.data[0], x, t, 0)
 
-    # Insert boundary condition
-    bc = [Eq(u[t_s+1, 0], U0)]
-    
-    if periodic_bc:
-        # Insert periodic boundary condition
-        bc += [Eq(u[t_s+1, Nx], u[t_s+1, 0])]
+    bc  = [Eq(u[t_s+1, 0], U0)]  # non-periodic boundary condition
+    pbc = [Eq(u[t_s, 0], u[t_s, Nx])]  # periodic boundary condition
 
-    op = Operator([eq] + bc)
+    op = Operator(bc + (pbc if periodic_bc else []) + [eq] + (bc if not periodic_bc else []))
     op.apply(time_m=1 if scheme == 'LF' else 0, time_M=Nt-1, dt=float(dt))
 
     for n in range(2 if scheme == 'LF' else 1, Nt+1):
         # Compute the integral under the curve
-        integral[n] = dx*(0.5*u.data[n][0] + 0.5*u.data[n][Nx] + np.sum(u.data[n][1:Nx+1]))
+        integral[n] = dx*(0.5*u.data[n][0] + 0.5*u.data[n][Nx] + np.sum(u.data[n][1:Nx]))
 
         if user_action is not None:
             user_action(u.data[n], x, t, n)
