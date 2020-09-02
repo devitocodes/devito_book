@@ -36,9 +36,9 @@ calls solver with a user_action function that can plot the
 solution on the screen (as an animation).
 """
 import numpy as np
-import scitools.std as plt
+# import scitools.std as plt
 import time
-from devito import Constant, Grid, TimeFunction, SparseTimeFunction, SparseFunction, Eq, solve, Operator, Buffer
+from devito import Constant, Grid, TimeFunction, SparseTimeFunction, Function, Eq, solve, Operator, Buffer
 
 # TODO: Remove scalar vs vectorized version since Devito doesn't require these
 
@@ -54,6 +54,7 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
     Nx = int(round(L/dx))
     x = np.linspace(0, L, Nx+1)       # Mesh points in space
     C2 = C**2                         # Help variable in the scheme
+
     # Make sure dx and dt are compatible with x and t
     dx = x[1] - x[0]
     dt = t[1] - t[0]
@@ -76,32 +77,39 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
         if isinstance(U_L, (float,int)) and U_L == 0:
             U_L = lambda t: 0
         # else: U_L(t) is a function
+
+    t0 = time.perf_counter()  # Measure CPU time
     
+    # Set up grid
     grid = Grid(shape=(Nx+1), extent=(L))
     t_s = grid.stepping_dim
     
+    # Create and initialise u
     u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
-    # Initialise values
     for i in range(Nx+1):
         u.data[:,i] = I(x[i])
 
     x_dim = grid.dimensions[0]
     t_dim = grid.time_dim
     
+    # The wave equation we are trying to solve
     pde = (1/c**2)*u.dt2-u.dx2
-    stencil = Eq(u.forward, solve(pde, u.forward))
     
     # Source term and injection into equation
     dt_symbolic = grid.time_dim.spacing    
     src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt+1)
+
     for i in range(Nt):
         src.data[i] = f(x, t[i])
+
     src.coordinates.data[:, 0] = x
     src_term = src.inject(field=u.forward, expr=src * (dt_symbolic**2))
+    stencil = Eq(u.forward, solve(pde, u.forward))
     
-    v = SparseFunction(name='v', grid=grid, npoint=Nx+1, nt=1)
+    # Set up special stencil for initial timestep with substitution for u.backward
+    v = Function(name='v', grid=grid, npoint=Nx+1, nt=1)
     v.data[:] = V(x[:])
-    stencil_init = stencil.subs(u.backward, u.forward - 2*dt_symbolic*v)
+    stencil_init = stencil.subs(u.backward, u.forward - dt_symbolic*v)
 
     # Boundary conditions, depending on arguments
     bc = []
@@ -113,13 +121,15 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
         if U_L is not None:
             bc += [Eq(u[t_s+1, L], U_L(t_s+1))]
     
-    op_init = Operator([stencil_init]+bc)
+    op_init = Operator([stencil_init]+src_term+bc)
     op = Operator([stencil]+src_term+bc)
     
     op_init.apply(time_M=1, dt=dt)
     op.apply(time_m=1,time_M=Nt, dt=dt)
-    
-    return u.data[-1], x, t, 0
+
+    cpu_time = time.perf_counter() - t0
+
+    return u.data[-1], x, t, cpu_time
 
 def python_solver(I, V, f, c, U_0, U_L, L, dt, C, T,
            user_action=None, version='scalar'):
@@ -444,14 +454,10 @@ def test_plug():
     u_s, x, t, cpu = solver(
         I=I,
         V=None, f=None, c=0.5, U_0=None, U_L=None, L=L,
-        dt=dt, C=1, T=4, user_action=None, version='scalar')
-    u_v, x, t, cpu = solver(
-        I=I,
-        V=None, f=None, c=0.5, U_0=None, U_L=None, L=L,
-        dt=dt, C=1, T=4, user_action=None, version='vectorized')
+        dt=dt, C=1, T=4, user_action=None)
     tol = 1E-13
-    diff = abs(u_s - u_v).max()
-    assert diff < tol
+    # diff = abs(u_s - u_v).max()
+    # assert diff < tol
     u_0 = np.array([I(x_) for x_ in x])
     diff = np.abs(u_s - u_0).max()
     assert diff < tol
