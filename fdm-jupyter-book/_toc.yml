@@ -1,6 +1,11 @@
 - file: index.md
   numbered: true
 
+- chapter: Vibration ODEs
+  sections:
+  - file: notebooks/vib/vib_undamped.ipynb
+
 - chapter: Wave equations
   sections:
   - file: notebooks/wave/wave1D_fd1.ipynb
+  - file: notebooks/wave/wave1D_prog.ipynb
