@@ -16,7 +16,7 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     C = v*dt/dx
 
     grid = Grid(shape=(Nx+1,), extent=(L,))
-    t_s=grid.stepping_dim
+    t_s=grid.time_dim
 
     u = TimeFunction(name='u', grid=grid, space_order=2, save=Nt+1)
 
@@ -29,7 +29,7 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     u.data[1, :] = [I(xi) for xi in x]
     
     # Insert boundary condition
-    bc = [Eq(u[t_s+1, 0], U0)]
+    bc = [Eq(u[t_s, 0], U0)]
     
     op = Operator([eq] + bc)
     op.apply(time_m=1, dt=dt)
@@ -67,6 +67,9 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         u   = u(so=2)
         pde = u.dtr + v*u.dxc
         
+        pbc = [Eq(u[t_s+1, 0], u[t_s, 0] - 0.5*C*(u[t_s, 1] - u[t_s, Nx]))]
+        pbc += [Eq(u[t_s, Nx], u[t_s, 0])]
+        
     elif scheme == 'LF':
         # Use UP scheme for first timestep
         u1   = TimeFunction(name='u1', grid=grid, save=2)
@@ -78,15 +81,15 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         # Set initial condition u(x,0) = I(x)
         u1.data[0, :] = [I(xi) for xi in x]
         
-        bc1  = [Eq(u1[t_s+1, 0], U0)]  # non-periodic boundary condition
-        pbc1 = [Eq(u1[t_s, 0], u1[t_s, Nx])]  # periodic boundary condition
+        bc1  = [Eq(u1[t_s+1, 0], U0)]
+        pbc1 = [Eq(u1[t_s, 0], u1[t_s, Nx])]
         
         integral[0] = dx*(0.5*u1.data[0][0] + 0.5*u1.data[0][Nx] + np.sum(u1.data[0][1:Nx]))
         
         if user_action is not None:
             user_action(u1.data[0], x, t, 0)
         
-        op1 = Operator(bc1 + (pbc1 if periodic_bc else []) + [eq1] + (bc1 if not periodic_bc else []))
+        op1 = Operator(bc1 + (pbc1 if periodic_bc else []) + [eq1])
         op1.apply(dt=dt)
         
         integral[1] = dx*(0.5*u1.data[1][0] + 0.5*u1.data[1][Nx] + np.sum(u1.data[1][1:Nx]))
@@ -100,14 +103,23 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         u = u(to=2, so=2)
         u.data[0:2, :] = u1.data
         pde = u.dtc + v*u.dxc
+        
+        pbc = [Eq(u[t_s+1, 0], u[t_s-1, 0] - C*(u[t_s, 1] - u[t_s, Nx - 1]))]
+        pbc += [Eq(u[t_s, Nx], u[t_s, 0])]
     
     elif scheme == 'UP':
         u   = u()
         pde = u.dtr + v*u.dxl
+        
+        pbc = [Eq(u[t_s, 0], u[t_s, Nx])]
     
     elif scheme == 'LW':
         u = u(so=2)
         pde = u.dtr + v*u.dxc - 0.5*dt*v**2*u.dx2
+        
+        pbc = [Eq(u[t_s+1, 0], u[t_s, 0] - 0.5*C*(u[t_s, 1] - u[t_s, Nx - 1]) + \
+                  0.5*C*(u[t_s, 1] - 2*u[t_s, 0] + u[t_s, Nx-1]))]
+        pbc += [Eq(u[t_s, Nx], u[t_s, 0])]
     
     else:
         raise ValueError('scheme="%s" not implemented' % scheme)
@@ -125,10 +137,9 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         if user_action is not None:
             user_action(u.data[0], x, t, 0)
 
-    bc  = [Eq(u[t_s+1, 0], U0)]  # non-periodic boundary condition
-    pbc = [Eq(u[t_s, 0], u[t_s, Nx])]  # periodic boundary condition
+    bc  = [Eq(u[t_s+1, 0], U0)]
 
-    op = Operator(bc + (pbc if periodic_bc else []) + [eq] + (bc if not periodic_bc else []))
+    op = Operator(bc + (pbc if periodic_bc else []) + [eq])
     op.apply(time_m=1 if scheme == 'LF' else 0, time_M=Nt-1, dt=float(dt))
 
     for n in range(2 if scheme == 'LF' else 1, Nt+1):
