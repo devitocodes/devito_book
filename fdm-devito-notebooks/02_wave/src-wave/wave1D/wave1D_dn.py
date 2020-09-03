@@ -36,9 +36,102 @@ calls solver with a user_action function that can plot the
 solution on the screen (as an animation).
 """
 import numpy as np
-import scitools.std as plt
+# import scitools.std as plt
+import time
+from devito import Constant, Grid, TimeFunction, SparseTimeFunction, Function, Eq, solve, Operator, Buffer
+
+# TODO: Remove scalar vs vectorized version since Devito doesn't require these
 
 def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
+           user_action=None, version='scalar'):
+    """
+    Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].
+    u(0,t)=U_0(t) or du/dn=0 (U_0=None), u(L,t)=U_L(t) or du/dn=0 (u_L=None).
+    """
+    Nt = int(round(T/dt))
+    t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
+    dx = dt*c/float(C)
+    Nx = int(round(L/dx))
+    x = np.linspace(0, L, Nx+1)       # Mesh points in space
+    C2 = C**2                         # Help variable in the scheme
+
+    # Make sure dx and dt are compatible with x and t
+    dx = x[1] - x[0]
+    dt = t[1] - t[0]
+
+    # Wrap user-given f, I, V, U_0, U_L if None or 0
+    if f is None or f == 0:
+        f = (lambda x, t: 0) if version == 'scalar' else \
+            lambda x, t: np.zeros(x.shape)
+    if I is None or I == 0:
+        I = (lambda x: 0) if version == 'scalar' else \
+            lambda x: np.zeros(x.shape)
+    if V is None or V == 0:
+        V = (lambda x: 0) if version == 'scalar' else \
+            lambda x: np.zeros(x.shape)
+    if U_0 is not None:
+        if isinstance(U_0, (float,int)) and U_0 == 0:
+            U_0 = lambda t: 0
+        # else: U_0(t) is a function
+    if U_L is not None:
+        if isinstance(U_L, (float,int)) and U_L == 0:
+            U_L = lambda t: 0
+        # else: U_L(t) is a function
+
+    t0 = time.perf_counter()  # Measure CPU time
+    
+    # Set up grid
+    grid = Grid(shape=(Nx+1), extent=(L))
+    t_s = grid.stepping_dim
+    
+    # Create and initialise u
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+    for i in range(Nx+1):
+        u.data[:,i] = I(x[i])
+
+    x_dim = grid.dimensions[0]
+    t_dim = grid.time_dim
+    
+    # The wave equation we are trying to solve
+    pde = (1/c**2)*u.dt2-u.dx2
+    
+    # Source term and injection into equation
+    dt_symbolic = grid.time_dim.spacing    
+    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt+1)
+
+    for i in range(Nt):
+        src.data[i] = f(x, t[i])
+
+    src.coordinates.data[:, 0] = x
+    src_term = src.inject(field=u.forward, expr=src * (dt_symbolic**2))
+    stencil = Eq(u.forward, solve(pde, u.forward))
+    
+    # Set up special stencil for initial timestep with substitution for u.backward
+    v = Function(name='v', grid=grid, npoint=Nx+1, nt=1)
+    v.data[:] = V(x[:])
+    stencil_init = stencil.subs(u.backward, u.forward - dt_symbolic*v)
+
+    # Boundary conditions, depending on arguments
+    bc = []
+    if U_0 is None and U_L is None:
+        bc += [Eq(u[t_s+1, 0], u[t_s+1, 1])]
+    else:
+        if U_0 is not None:
+            bc += [Eq(u[t_s+1, 0], U_0(t_s+1))]
+        if U_L is not None:
+            bc += [Eq(u[t_s+1, L], U_L(t_s+1))]
+    
+    op_init = Operator([stencil_init]+src_term+bc)
+    op = Operator([stencil]+src_term+bc)
+    
+    op_init.apply(time_M=1, dt=dt)
+    op.apply(time_m=1,time_M=Nt, dt=dt)
+
+    cpu_time = time.perf_counter() - t0
+
+    return u.data[-1], x, t, cpu_time
+
+def python_solver(I, V, f, c, U_0, U_L, L, dt, C, T,
            user_action=None, version='scalar'):
     """
     Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].
@@ -77,10 +170,10 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
     u_n   = np.zeros(Nx+1)   # Solution at 1 time level back
     u_nm1 = np.zeros(Nx+1)   # Solution at 2 time levels back
 
-    Ix = range(0, Nx+1)
-    It = range(0, Nt+1)
+    Ix = list(range(0, Nx+1))
+    It = list(range(0, Nt+1))
 
-    import time;  t0 = time.clock()  # CPU time measurement
+    import time;  t0 = time.perf_counter()  # CPU time measurement
 
     # Load initial condition into u_n
     for i in Ix:
@@ -175,7 +268,7 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
     # Important to correct the mathematically wrong u=u_nm1 above
     # before returning u
     u = u_n
-    cpu_time = time.clock() - t0
+    cpu_time = time.perf_counter() - t0
     return u, x, t, cpu_time
 
 
@@ -228,7 +321,7 @@ def viz(I, V, f, c, U_0, U_L, L, dt, C, T, umin, umax,
             ext = codec2ext[codec]
             cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\
                   '-vcodec %(codec)s movie.%(ext)s' % vars()
-            print cmd
+            print(cmd)
             os.system(cmd)
     return cpu
 
@@ -266,7 +359,7 @@ def test_constant():
             solver(I, V, f, c, U_0, U_L, L, dt, C, T,
                    user_action=assert_no_error,
                    version='vectorized')
-            print U_0, U_L
+            print(U_0, U_L)
 
 def test_quadratic():
     """
@@ -361,14 +454,10 @@ def test_plug():
     u_s, x, t, cpu = solver(
         I=I,
         V=None, f=None, c=0.5, U_0=None, U_L=None, L=L,
-        dt=dt, C=1, T=4, user_action=None, version='scalar')
-    u_v, x, t, cpu = solver(
-        I=I,
-        V=None, f=None, c=0.5, U_0=None, U_L=None, L=L,
-        dt=dt, C=1, T=4, user_action=None, version='vectorized')
+        dt=dt, C=1, T=4, user_action=None)
     tol = 1E-13
-    diff = abs(u_s - u_v).max()
-    assert diff < tol
+    # diff = abs(u_s - u_v).max()
+    # assert diff < tol
     u_0 = np.array([I(x_) for x_ in x])
     diff = np.abs(u_s - u_0).max()
     assert diff < tol
@@ -383,7 +472,7 @@ def guitar(C=1, Nx=50, animate=True, version='scalar', T=2):
 
     cpu = viz(I, None, None, c, U_0, U_L, L, dt, C, T,
               umin=-1.1, umax=1.1, version=version, animate=True)
-    print 'CPU time: %s version =' % version, cpu
+    print('CPU time: %s version =' % version, cpu)
 
 
 def moving_end(C=1, Nx=50, reflecting_right_boundary=True, T=2,
@@ -412,7 +501,7 @@ def moving_end(C=1, Nx=50, reflecting_right_boundary=True, T=2,
     umax = 1.1*0.5
     cpu = viz(I, None, None, c, U_0, U_L, L, dt, C, T,
               umin=-umax, umax=umax, version=version, animate=True)
-    print 'CPU time: %s version =' % version, cpu
+    print('CPU time: %s version =' % version, cpu)
 
 
 def sincos(C=1):
@@ -451,7 +540,7 @@ def sincos(C=1):
         _dx = L/Nx
         _dt = C*_dx/c
         dt.append(_dt)
-        print dt[-1], E[-1]
+        print(dt[-1], E[-1])
     return dt, E
 
 if __name__ == '__main__':

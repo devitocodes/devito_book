@@ -28,8 +28,77 @@ calls solver with a user_action function that can plot the
 solution on the screen (as an animation).
 """
 import numpy as np
+import time
+from devito import Constant, Grid, TimeFunction, SparseTimeFunction, Function, Eq, solve, Operator, Buffer
 
 def solver(I, V, f, c, L, dt, C, T, user_action=None):
+    """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
+    Nt = int(round(T/dt))
+    t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
+    dx = dt*c/float(C)
+    Nx = int(round(L/dx))
+    x = np.linspace(0, L, Nx+1)       # Mesh points in space
+    C2 = C**2                         # Help variable in the scheme
+    
+    # Make sure dx and dt are compatible with x and t
+    dx = x[1] - x[0]
+    dt = t[1] - t[0]
+
+    # Initialising functions f and V if not provided
+    if f is None or f == 0 :
+        f = lambda x, t: 0
+    if V is None or V == 0:
+        V = lambda x: 0
+        
+    t0 = time.perf_counter()  # Measure CPU time
+
+    # Set up grid
+    grid = Grid(shape=(Nx+1), extent=(L))
+    t_s = grid.stepping_dim
+        
+    # Create and initialise u
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+    for i in range(Nx+1):
+        u.data[:,i] = I(x[i])
+
+    x_dim = grid.dimensions[0]
+    t_dim = grid.time_dim
+    
+    # The wave equation we are trying to solve
+    pde = (1/c**2)*u.dt2-u.dx2
+    
+    # Source term and injection into equation
+    dt_symbolic = grid.time_dim.spacing    
+    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt+1)
+    
+    for i in range(Nt):
+        src.data[i] = f(x, t[i])
+    
+    src.coordinates.data[:, 0] = x
+    src_term = src.inject(field=u.forward, expr=src * (dt_symbolic**2))
+    stencil = Eq(u.forward, solve(pde, u.forward))
+
+    # Set up special stencil for initial timestep with substitution for u.backward
+    v = Function(name='v', grid=grid, npoint=Nx+1, nt=1)
+    v.data[:] = V(x[:])
+    stencil_init = stencil.subs(u.backward, u.forward - dt_symbolic*v)
+
+    # Boundary condition
+    bc = [Eq(u[t_s+1, 0], u[t_s+1, 1])]
+
+    # Create and apply operators
+    op_init = Operator([stencil_init]+src_term+bc)
+    op = Operator([stencil]+src_term+bc)
+    
+    op_init.apply(time_M=1, dt=dt)
+    op.apply(time_m=1, time_M=Nt, dt=dt)
+    
+    cpu_time = time.perf_counter() - t0
+    
+    return u.data[-1], x, t, cpu_time
+
+
+def python_solver(I, V, f, c, L, dt, C, T, user_action=None):
     """
     Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].
     u(0,t)=U_0(t) or du/dn=0 (U_0=None), u(L,t)=U_L(t) or du/dn=0 (u_L=None).
@@ -54,7 +123,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
     u_n   = np.zeros(Nx+1)   # Solution at 1 time level back
     u_nm1 = np.zeros(Nx+1)   # Solution at 2 time levels back
 
-    import time;  t0 = time.clock()  # CPU time measurement
+    import time;  t0 = time.perf_counter()  # CPU time measurement
 
     # Load initial condition into u_n
     for i in range(0, Nx+1):
@@ -96,7 +165,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
 
     # Wrong assignment u = u_nm1 must be corrected before return
     u = u_n
-    cpu_time = time.clock() - t0
+    cpu_time = time.perf_counter() - t0
     return u, x, t, cpu_time
 
 from wave1D_u0 import viz

@@ -31,8 +31,9 @@ store solutions, etc.
 """
 import time, glob, shutil, os
 import numpy as np
+from devito import Constant, Grid, TimeFunction, SparseTimeFunction, SparseFunction, Eq, solve, Operator, Buffer, Function
 
-def solver(
+def devito_solver(
     I, V, f, c, U_0, U_L, L, dt, C, T,
     user_action=None, version='scalar',
     stability_safety_factor=1.0):
@@ -92,7 +93,124 @@ def solver(
            ('None' if U_L is None else inspect.getsource(U_L)) + \
            '_' + str(L) + str(dt) + '_' + str(C) + '_' + str(T) + \
            '_' + str(stability_safety_factor)
-    hashed_input = hashlib.sha1(data).hexdigest()
+    hashed_input = hashlib.sha1(data.encode('utf-8')).hexdigest()
+    if os.path.isfile('.' + hashed_input + '_archive.npz'):
+        # Simulation is already run
+        return -1, hashed_input
+
+
+    grid = Grid(shape=(Nx+1), extent=(L))
+    t_s = grid.stepping_dim
+    
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+    # Initialise values
+    for i in range(Nx+1):
+        u.data[:,i] = I(x[i])
+    
+    x_dim = grid.dimensions[0]
+    t_dim = grid.time_dim
+
+    # Initialise variable velocity function
+    q_f = Function(name='q', grid=grid, npoint=Nx+1, nt=Nt+1)
+    q_f.data[:] = q[:]
+    
+    pde = u.dt2-(q_f*u.dx).dx
+    stencil = Eq(u.forward, solve(pde, u.forward))
+    
+    # Source term and injection into equation
+    dt_symbolic = grid.time_dim.spacing    
+    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt+1)
+    for i in range(Nt):
+        src.data[i] = f(x, t[i])
+    src.coordinates.data[:, 0] = x
+    src_term = src.inject(field=u.forward, expr=src * (dt_symbolic**2))
+    
+    v = SparseFunction(name='v', grid=grid, npoint=Nx+1, nt=1)
+    v.data[:] = V(x[:])
+    stencil_init = stencil.subs(u.backward, u.forward - 2*dt_symbolic*v)
+
+    # Boundary conditions, depending on arguments
+    bc = []
+    if U_0 is None and U_L is None:
+        bc += [Eq(u[t_s+1, 0], u[t_s+1, 1])]
+    else:
+        if U_0 is not None:
+            bc += [Eq(u[t_s+1, 0], U_0(t_s+1))]
+        if U_L is not None:
+            bc += [Eq(u[t_s+1, L], U_L(t_s+1))]
+    
+    op_init = Operator([stencil_init]+bc)
+    op = Operator([stencil]+src_term+bc)
+    
+    cpu = time.perf_counter()
+    op_init.apply(time_M=1, dt=dt)
+    op.apply(time_m=1,time_M=Nt, dt=dt)
+    
+    cpu = time.perf_counter() - cpu
+
+    return cpu, hashed_input
+
+def python_solver(
+    I, V, f, c, U_0, U_L, L, dt, C, T,
+    user_action=None, version='scalar',
+    stability_safety_factor=1.0):
+    """Solve u_tt=(c^2*u_x)_x + f on (0,L)x(0,T]."""
+
+    # --- Compute time and space mesh ---
+    Nt = int(round(T/dt))
+    t = np.linspace(0, Nt*dt, Nt+1)      # Mesh points in time
+
+    # Find max(c) using a fake mesh and adapt dx to C and dt
+    if isinstance(c, (float,int)):
+        c_max = c
+    elif callable(c):
+        c_max = max([c(x_) for x_ in np.linspace(0, L, 101)])
+    dx = dt*c_max/(stability_safety_factor*C)
+    Nx = int(round(L/dx))
+    x = np.linspace(0, L, Nx+1)          # Mesh points in space
+    # Make sure dx and dt are compatible with x and t
+    dx = x[1] - x[0]
+    dt = t[1] - t[0]
+
+    # Make c(x) available as array
+    if isinstance(c, (float,int)):
+        c = np.zeros(x.shape) + c
+    elif callable(c):
+        # Call c(x) and fill array c
+        c_ = np.zeros(x.shape)
+        for i in range(Nx+1):
+            c_[i] = c(x[i])
+        c = c_
+
+    q = c**2
+    C2 = (dt/dx)**2; dt2 = dt*dt    # Help variables in the scheme
+
+    # --- Wrap user-given f, I, V, U_0, U_L if None or 0 ---
+    if f is None or f == 0:
+        f = (lambda x, t: 0) if version == 'scalar' else \
+            lambda x, t: np.zeros(x.shape)
+    if I is None or I == 0:
+        I = (lambda x: 0) if version == 'scalar' else \
+            lambda x: np.zeros(x.shape)
+    if V is None or V == 0:
+        V = (lambda x: 0) if version == 'scalar' else \
+            lambda x: np.zeros(x.shape)
+    if U_0 is not None:
+        if isinstance(U_0, (float,int)) and U_0 == 0:
+            U_0 = lambda t: 0
+    if U_L is not None:
+        if isinstance(U_L, (float,int)) and U_L == 0:
+            U_L = lambda t: 0
+
+    # --- Make hash of all input data ---
+    import hashlib, inspect
+    data = inspect.getsource(I) + '_' + inspect.getsource(V) + \
+           '_' + inspect.getsource(f) + '_' + str(c) + '_' + \
+           ('None' if U_0 is None else inspect.getsource(U_0)) + \
+           ('None' if U_L is None else inspect.getsource(U_L)) + \
+           '_' + str(L) + str(dt) + '_' + str(C) + '_' + str(T) + \
+           '_' + str(stability_safety_factor)
+    hashed_input = hashlib.sha1(data.encode('utf-8')).hexdigest()
     if os.path.isfile('.' + hashed_input + '_archive.npz'):
         # Simulation is already run
         return -1, hashed_input
@@ -102,11 +220,11 @@ def solver(
     u_n   = np.zeros(Nx+1)   # Solution at 1 time level back
     u_nm1 = np.zeros(Nx+1)   # Solution at 2 time levels back
 
-    import time;  t0 = time.clock()  # CPU time measurement
+    import time;  t0 = time.perf_counter()  # CPU time measurement
 
     # --- Valid indices for space and time mesh ---
-    Ix = range(0, Nx+1)
-    It = range(0, Nt+1)
+    Ix = list(range(0, Nx+1))
+    It = list(range(0, Nt+1))
 
     # --- Load initial condition into u_n ---
     for i in range(0,Nx+1):
@@ -204,7 +322,7 @@ def solver(
         # Update data structures for next step
         u_nm1, u_n, u = u_n, u, u_nm1
 
-    cpu_time = time.clock() - t0
+    cpu_time = time.perf_counter() - t0
     return cpu_time, hashed_input
 
 
@@ -423,10 +541,10 @@ class PlotAndStoreSolution:
         os.chdir(directory)        # cd directory
 
         fps = 24 # frames per second
-        if self.backend is not None:
-            from scitools.std import movie
-            movie('frame_*.png', encoder='html',
-                  output_file='index.html', fps=fps)
+        # if self.backend is not None:
+        #     from scitools.std import movie
+        #     movie('frame_*.png', encoder='html',
+        #           output_file='index.html', fps=fps)
 
         # Make other movie formats: Flash, Webm, Ogg, MP4
         codec2ext = dict(flv='flv', libx264='mp4', libvpx='webm',
@@ -437,6 +555,7 @@ class PlotAndStoreSolution:
             ext = codec2ext[codec]
             cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\
                   '-vcodec %(codec)s movie.%(ext)s' % vars()
+            print(cmd)
             os.system(cmd)
 
         os.chdir(os.pardir)  # move back to parent directory
@@ -456,7 +575,7 @@ class PlotAndStoreSolution:
             archive_name = '.' + hashed_input + '_archive.npz'
             filenames = glob.glob('.' + self.filename + '*.dat.npz')
             merge_zip_archives(filenames, archive_name)
-	    print 'Archive name:', archive_name
+	    # print('Archive name:', archive_name)
             # data = numpy.load(archive); data.files holds names
             # data[name] extract the array
 
@@ -468,7 +587,7 @@ def demo_BC_plug(C=1, Nx=40, T=4):
     # Scaled problem: L=1, c=1, max I=1
     L = 1.
     dt = (L/Nx)/C  # choose the stability limit with given Nx
-    cpu, hashed_input = solver(
+    cpu, hashed_input = python_solver(
         I=lambda x: 0 if abs(x-L/2.0) > 0.1 else 1,
         V=0, f=0, c=1, U_0=lambda t: 0, U_L=None, L=L,
         dt=dt, C=C, T=T,
@@ -477,7 +596,7 @@ def demo_BC_plug(C=1, Nx=40, T=4):
     action.make_movie_file()
     if cpu > 0:  # did we generate new data?
         action.close_file(hashed_input)
-    print 'cpu:', cpu
+    print('cpu:', cpu)
 
 def demo_BC_gaussian(C=1, Nx=80, T=4):
     """Demonstrate u=0 and u_x=0 boundary conditions with a bell function."""
@@ -487,7 +606,7 @@ def demo_BC_gaussian(C=1, Nx=80, T=4):
         title='u(0,t)=0, du(L,t)/dn=0.', filename='tmpdata')
     L = 1.
     dt = (L/Nx)/c  # choose the stability limit with given Nx
-    cpu, hashed_input = solver(
+    cpu, hashed_input = python_solver(
         I=lambda x: np.exp(-0.5*((x-0.5)/0.05)**2),
         V=0, f=0, c=1, U_0=lambda t: 0, U_L=None, L=L,
         dt=dt, C=C, T=T,
@@ -523,7 +642,7 @@ def moving_end(
         'moving_end', -2.3, 2.3, skip_frame=4,
         title='u(0,t)=0.25*sin(6*pi*t) if t < 1/3 else 0, '
         + bc_right, filename='tmpdata')
-    cpu, hashed_input = solver(
+    cpu, hashed_input = python_solver(
         I, V, f, c, U_0, U_L, L, dt, C, T,
         user_action=action, version=version,
         stability_safety_factor=1)
@@ -676,7 +795,7 @@ def pulse(
     # Choose the stability limit with given Nx, worst case c
     # (lower C will then use this dt, but smaller Nx)
     dt = (L/Nx)/c_0
-    cpu, hashed_input = solver(
+    cpu, hashed_input = devito_solver(
         I=I, V=None, f=None, c=c,
         U_0=None, U_L=None,
         L=L, dt=dt, C=C, T=T,
@@ -687,7 +806,7 @@ def pulse(
     if cpu > 0:  # did we generate new data?
         action.close_file(hashed_input)
         action.make_movie_file()
-    print 'cpu (-1 means no new data generated):', cpu
+    print('cpu (-1 means no new data generated):', cpu)
 
 def convergence_rates(
     u_exact,
@@ -720,8 +839,8 @@ def convergence_rates(
         E.append(error_calculator.error)
         h.append(dt)
         dt /= 2  # halve the time step for next simulation
-    print 'E:', E
-    print 'h:', h
+    print('E:', E)
+    print('h:', h)
     r = [np.log(E[i]/E[i-1])/np.log(h[i]/h[i-1])
          for i in range(1,num_meshes)]
     return r
@@ -746,9 +865,10 @@ def test_convrate_sincos():
         T=1,
         version='scalar',
         stability_safety_factor=1.0)
-    print 'rates sin(x)*cos(t) solution:', \
-          [round(r_,2) for r_ in r]
+    print('rates sin(x)*cos(t) solution:', \
+          [round(r_,2) for r_ in r])
     assert abs(r[-1] - 2) < 0.002
 
 if __name__ == '__main__':
-    test_convrate_sincos()
+    pulse()
+    # test_convrate_sincos()
