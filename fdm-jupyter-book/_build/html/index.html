@@ -39,7 +39,7 @@
     <script async="async" src="_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Simulation of waves on a string" href="notebooks/wave/wave1D_fd1.html" />
+    <link rel="next" title="Finite difference discretization" href="notebooks/vib/vib_undamped.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="docsearch:language" content="en">
@@ -81,6 +81,58 @@
 </ul>
 <p class="caption">
  <span class="caption-text">
+  Vibration ODEs
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/vib/vib_undamped.html">
+   Finite difference discretization
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/vib/vib_undamped.html#implementation">
+   Implementation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/vib/vib_undamped.html#visualization-of-long-time-simulations">
+   Visualization of long time simulations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/vib/vib_undamped.html#analysis-of-the-numerical-scheme">
+   Analysis of the numerical scheme
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/vib/vib_undamped.html#alternative-schemes-based-on-1st-order-equations">
+   Alternative schemes based on 1st-order equations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/vib/vib_undamped.html#energy-considerations">
+   Energy considerations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/vib/vib_undamped.html#the-euler-cromer-method">
+   The Euler-Cromer method
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/vib/vib_undamped.html#staggered-mesh">
+   Staggered mesh
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/vib/vib_undamped.html#exercises-and-problems">
+   Exercises and Problems
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
   Wave equations
  </span>
 </p>
@@ -93,6 +145,16 @@
  <li class="toctree-l1">
   <a class="reference internal" href="notebooks/wave/wave1D_fd1.html#verification">
    Verification
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/wave/wave1D_prog.html">
+   Implementation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="notebooks/wave/wave1D_prog.html#exercises">
+   Exercises
   </a>
  </li>
 </ul>
@@ -188,6 +250,8 @@
 <p>We would like to say a special thank you to H. P. Langtangen and S. Linge, the authors of the <a class="reference external" href="https://github.com/hplgit/fdm-book">book</a> that these tutorials were based upon (“Finite Difference Computing with PDEs - A Modern Software Approach”).</p>
 <div class="toctree-wrapper compound">
 </div>
+<div class="toctree-wrapper compound">
+</div>
 </div>
 
     <script type="text/x-thebe-config">
@@ -218,7 +282,7 @@
     
     <div class='prev-next-bottom'>
         
-    <a class='right-next' id="next-link" href="notebooks/wave/wave1D_fd1.html" title="next page">Simulation of waves on a string</a>
+    <a class='right-next' id="next-link" href="notebooks/vib/vib_undamped.html" title="next page">Finite difference discretization</a>
 
     </div>
     <footer class="footer mt-5 mt-md-0">
