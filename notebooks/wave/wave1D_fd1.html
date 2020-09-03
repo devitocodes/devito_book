@@ -2,9 +2,10 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>1. Simulation of waves on a string &#8212; The Devito Book</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous">
     <link href="../../_static/css/index.css" rel="stylesheet">
@@ -14,7 +15,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-dropdown.css" />
     <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/sphinx-book-theme.js"></script>
     <script src="../../_static/jquery.js"></script>
@@ -24,12 +25,10 @@
     <script src="../../_static/togglebutton.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/mystnb.js"></script>
     <script src="../../_static/sphinx-book-theme.js"></script>
     <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
     <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
     <script >
         const thebe_selector = ".thebe"
@@ -39,7 +38,8 @@
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="prev" title="Welcome to the Devito Book!" href="../../index.html" />
+    <link rel="next" title="3. Implementation" href="wave1D_prog.html" />
+    <link rel="prev" title="1. Finite difference discretization" href="../vib/vib_undamped.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="docsearch:language" content="en">
@@ -81,6 +81,58 @@
 </ul>
 <p class="caption">
  <span class="caption-text">
+  Vibration ODEs
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html">
+   1. Finite difference discretization
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#implementation">
+   2. Implementation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#visualization-of-long-time-simulations">
+   3. Visualization of long time simulations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#analysis-of-the-numerical-scheme">
+   4. Analysis of the numerical scheme
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#alternative-schemes-based-on-1st-order-equations">
+   5. Alternative schemes based on 1st-order equations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#energy-considerations">
+   6. Energy considerations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#the-euler-cromer-method">
+   7. The Euler-Cromer method
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#staggered-mesh">
+   8. Staggered mesh
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#exercises-and-problems">
+   9. Exercises and Problems
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
   Wave equations
  </span>
 </p>
@@ -95,11 +147,25 @@
    2. Verification
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="wave1D_prog.html">
+   3. Implementation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="wave1D_prog.html#exercises">
+   4. Exercises
+  </a>
+ </li>
 </ul>
 
 </nav>
 
  <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
 
 </div>
 
@@ -165,6 +231,28 @@
 
         <!-- Launch buttons -->
 
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/devitocodes/devito_book/master?urlpath=tree/notebooks/wave/wave1D_fd1.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        <a class="colab-button" href="https://colab.research.google.com/github/devitocodes/devito_book/blob/master/notebooks/wave/wave1D_fd1.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
+                title="Launch Colab" data-toggle="tooltip" data-placement="left"><img class="colab-button-logo"
+                    src="../../_static/images/logo_colab.png"
+                    alt="Interact on Colab">Colab</button></a>
+        
+        
+    </div>
+</div>
+
     </div>
 
     <!-- Table of contents -->
@@ -227,13 +315,6 @@
   <a class="reference internal nav-link" href="#sketch-of-an-implementation">
    1.6. Sketch of an implementation
   </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#devito-implementation">
-     1.6.1. Devito implementation
-    </a>
-   </li>
-  </ul>
  </li>
 </ul>
 
@@ -426,7 +507,7 @@ the second-order derivative is</p>
 \frac{\partial^2}{\partial t^2}u(x_i,t_n)\approx
 \frac{u_i^{n+1} - 2u_i^n + u^{n-1}_i}{\Delta t^2}\
 \]</div>
-<p>It is convenient to introduce the finite difference operator notation</p>
+<p>mathcal{I}_t is convenient to introduce the finite difference operator notation</p>
 <div class="math notranslate nohighlight">
 \[
 [D_tD_t u]^n_i = \frac{u_i^{n+1} - 2u_i^n + u^{n-1}_i}{\Delta t^2}
@@ -479,13 +560,8 @@ a <em>finite difference scheme</em>.</p>
 <!-- dom:FIGURE: [mov-wave/D_stencil_gpl/stencil_n_interior.png, width=500] Mesh in space and time. The circles show points connected in a finite difference equation. <div id="wave:pde1:fig:mesh"></div> -->
 <!-- begin figure -->
 <div id="wave:pde1:fig:mesh"></div>
-<!-- 
 <p>Mesh in space and time. The circles show points connected in a finite difference equation.</p>
-<img src="mov-wave/D_stencil_gpl/stencil_n_interior.png" width=500> -->
-<div class="figure align-default" id="wave-pde1-fig-mesh">
-<img alt="../../_images/stencil_n_interior.png" src="../../_images/stencil_n_interior.png" />
-<p class="caption"><span class="caption-number">Fig. 1.1 </span><span class="caption-text">Mesh in space and time. The circles show points connected in a finite difference equation.</span><a class="headerlink" href="#wave-pde1-fig-mesh" title="Permalink to this image">¶</a></p>
-</div>
+<img src="mov-wave/D_stencil_gpl/stencil_n_interior.png" width=500>
 <!-- end figure -->
 </div>
 <div class="section" id="algebraic-version-of-the-initial-conditions">
@@ -546,7 +622,7 @@ C = c\frac{\Delta t}{\Delta x},
 <p><strong><span class="math notranslate nohighlight">\(C\)</span> is the key parameter in the discrete wave equation.</strong></p>
 <p>We see that the discrete version of the PDE features only one
 parameter, <span class="math notranslate nohighlight">\(C\)</span>, which is therefore the key parameter, together with
-<span class="math notranslate nohighlight">\(N_x\)</span>, that governs the quality of the numerical solution (see the section <a class="reference external" href="#wave:pde1:analysis">wave:pde1:analysis</a> for details). Both the primary physical
+<span class="math notranslate nohighlight">\(N_x\)</span>, that governs the quality of the numerical solution (see the section <span class="xref myst">Analysis of the difference equations</span> for details). Both the primary physical
 parameter <span class="math notranslate nohighlight">\(c\)</span> and the numerical parameters <span class="math notranslate nohighlight">\(\Delta x\)</span> and <span class="math notranslate nohighlight">\(\Delta t\)</span>
 are lumped together in <span class="math notranslate nohighlight">\(C\)</span>. Note that <span class="math notranslate nohighlight">\(C\)</span> is a dimensionless
 parameter.</p>
@@ -582,12 +658,8 @@ connects four instead of five points: <span class="math notranslate nohighlight"
 <!-- dom:FIGURE: [mov-wave/D_stencil_gpl/stencil_n0_interior.png, width=500] Modified stencil for the first time step. <div id="wave:pde1:fig:stencil:u1"></div> -->
 <!-- begin figure -->
 <div id="wave:pde1:fig:stencil:u1"></div>
-<!-- <p>Modified stencil for the first time step.</p>
-<img src="./notebooks/02_wave/mov-wave/D_stencil_gpl/stencil_n0_interior.png" width=500> -->
-<div class="figure align-default" id="wave-pde1-fig-stencil-u1">
-<img alt="../../_images/stencil_n0_interior.png" src="../../_images/stencil_n0_interior.png" />
-<p class="caption"><span class="caption-number">Fig. 1.2 </span><span class="caption-text">Modified stencil for the first time step.</span><a class="headerlink" href="#wave-pde1-fig-stencil-u1" title="Permalink to this image">¶</a></p>
-</div>
+<p>Modified stencil for the first time step.</p>
+<img src="mov-wave/D_stencil_gpl/stencil_n0_interior.png" width=500>
 <!-- end figure -->
 <p>We can now summarize the computational algorithm:</p>
 <ol>
@@ -607,29 +679,17 @@ or a <span class="xref myst">movie file</span>.</p>
 <div class="section" id="sketch-of-an-implementation">
 <h2><span class="section-number">1.6. </span>Sketch of an implementation<a class="headerlink" href="#sketch-of-an-implementation" title="Permalink to this headline">¶</a></h2>
 <div id="wave:string:impl"></div>
-<p>The algorithm only involves the three most recent time levels, so we
-need only three arrays for <span class="math notranslate nohighlight">\(u_i^{n+1}\)</span>, <span class="math notranslate nohighlight">\(u_i^n\)</span>, and <span class="math notranslate nohighlight">\(u_i^{n-1}\)</span>,
-<span class="math notranslate nohighlight">\(i=0,\ldots,N_x\)</span>.  Storing all the solutions in a two-dimensional
-array of size <span class="math notranslate nohighlight">\((N_x+1)\times (N_t+1)\)</span> would be possible in this simple
-one-dimensional PDE problem, but is normally out of the question in
-three-dimensional (3D) and large two-dimensional (2D) problems. We
-shall therefore, in all our PDE solving programs, have the unknown in
-memory at as few time levels as possible.</p>
-<p>In a Python implementation of this algorithm, we use the array
-elements <code class="docutils literal notranslate"><span class="pre">u[i]</span></code> to store <span class="math notranslate nohighlight">\(u^{n+1}_i\)</span>, <code class="docutils literal notranslate"><span class="pre">u_n[i]</span></code> to store <span class="math notranslate nohighlight">\(u^n_i\)</span>, and
-<code class="docutils literal notranslate"><span class="pre">u_nm1[i]</span></code> to store <span class="math notranslate nohighlight">\(u^{n-1}_i\)</span>.</p>
-<p>The following Python snippet realizes the steps in the computational
-algorithm.</p>
+<p>We start by defining some constants that will be used throughout our Devito code.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># Given mesh points as arrays x and t (x[i], t[n]),</span>
 <span class="c1"># constant c and function I for initial condition</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">41</span><span class="p">)</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
 <span class="n">c</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">I</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+<span class="n">I</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="n">dx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">dt</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -637,56 +697,20 @@ algorithm.</p>
 <span class="n">Nx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
 <span class="n">Nt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
 <span class="n">C2</span> <span class="o">=</span> <span class="n">C</span><span class="o">**</span><span class="mi">2</span>              <span class="c1"># Help variable in the scheme</span>
-
-<span class="c1"># Initialise arrays</span>
-<span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">u_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">u_nm1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-
-
-<span class="c1"># Set initial condition u(x,0) = I(x)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-    <span class="n">u_n</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">I</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-
-<span class="c1"># Apply special formula for first step, incorporating du/dt=0</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">):</span>
-    <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_n</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> \
-           <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">C2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">u_n</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_n</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_n</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="n">u</span><span class="p">[</span><span class="n">Nx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c1"># Enforce boundary conditions</span>
-
-<span class="c1"># Switch variables before next step</span>
-<span class="n">u_nm1</span><span class="p">[:],</span> <span class="n">u_n</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">u_n</span><span class="p">,</span> <span class="n">u</span>
-
-<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nt</span><span class="p">):</span>
-    <span class="c1"># Update all inner mesh points at time t[n+1]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">):</span>
-        <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_n</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">u_nm1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> \
-               <span class="p">(</span><span class="n">C2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">u_n</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u_n</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">u_n</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-
-    <span class="c1"># Insert boundary conditions</span>
-    <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="n">u</span><span class="p">[</span><span class="n">Nx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="c1"># Switch variables before next step</span>
-    <span class="n">u_nm1</span><span class="p">[:],</span> <span class="n">u_n</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">u_n</span><span class="p">,</span> <span class="n">u</span>
-        
-
-<span class="c1"># print(wave_1D_solver(x, t, 1, lambda x: x))</span>
+<span class="n">L</span> <span class="o">=</span> <span class="mf">2.</span>
 </pre></div>
 </div>
 </div>
 </div>
-<div class="section" id="devito-implementation">
-<h3><span class="section-number">1.6.1. </span>Devito implementation<a class="headerlink" href="#devito-implementation" title="Permalink to this headline">¶</a></h3>
-<p>Now let’s take a look at the same algorithm, but this time, using Devito.</p>
-<p>We start by defining our 1D computational grid and creating a function <code class="docutils literal notranslate"><span class="pre">u</span></code> as a symbolic <code class="docutils literal notranslate"><span class="pre">devito.TimeFunction</span></code>. We need to specify the <code class="docutils literal notranslate"><span class="pre">space_order</span></code> as 2 since our wave equation involves second-order derivatives with respect to <span class="math notranslate nohighlight">\(x\)</span>. Similarly, we specify the <code class="docutils literal notranslate"><span class="pre">time_order</span></code> as 2, as our equation involves second-order derivatives with respect to <span class="math notranslate nohighlight">\(t\)</span>. Setting these parameters allows us to use <code class="docutils literal notranslate"><span class="pre">u.dx2</span></code> and <code class="docutils literal notranslate"><span class="pre">u.dt2</span></code>.</p>
+<p>Next, we define our 1D computational grid and create a function <code class="docutils literal notranslate"><span class="pre">u</span></code> as a symbolic <code class="docutils literal notranslate"><span class="pre">devito.TimeFunction</span></code>. We need to specify the <code class="docutils literal notranslate"><span class="pre">space_order</span></code> as 2 since our wave equation involves second-order derivatives with respect to <span class="math notranslate nohighlight">\(x\)</span>. Similarly, we specify the <code class="docutils literal notranslate"><span class="pre">time_order</span></code> as 2, as our equation involves second-order derivatives with respect to <span class="math notranslate nohighlight">\(t\)</span>. Setting these parameters allows us to use <code class="docutils literal notranslate"><span class="pre">u.dx2</span></code> and <code class="docutils literal notranslate"><span class="pre">u.dt2</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">TimeFunction</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">TimeFunction</span>
 
 <span class="c1"># Initialise `u` for space and time order 2, using initialisation function I</span>
-<span class="n">grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">Nx</span><span class="p">)</span>
-<span class="n">u</span> <span class="o">=</span> <span class="n">TimeFunction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">space_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">time_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">I</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="n">L</span><span class="p">))</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">TimeFunction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">time_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">space_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">I</span><span class="p">(</span><span class="n">x</span><span class="p">[:])</span>
 </pre></div>
 </div>
 </div>
@@ -694,61 +718,87 @@ algorithm.</p>
 <p>Now that we have initialised <code class="docutils literal notranslate"><span class="pre">u</span></code>, we can solve our wave equation for the unknown quantity <span class="math notranslate nohighlight">\(u^{n+1}_i\)</span> using forward and backward differences in space and time.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Constant</span><span class="p">,</span> <span class="n">Eq</span><span class="p">,</span> <span class="n">solve</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Constant</span><span class="p">,</span> <span class="n">Eq</span><span class="p">,</span> <span class="n">solve</span>
 
 <span class="c1"># Set up wave equation and solve for forward stencil point in time</span>
-<span class="n">c</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">)</span>
-<span class="n">eq</span> <span class="o">=</span> <span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dt2</span><span class="p">,</span> <span class="p">(</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">dx2</span><span class="p">)</span>
-<span class="n">stencil</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">eq</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span>
-<span class="n">eq_stencil</span> <span class="o">=</span> <span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="n">stencil</span><span class="p">)</span>
+<span class="n">pde</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">dt2</span><span class="o">-</span><span class="n">u</span><span class="o">.</span><span class="n">dx2</span>
+<span class="n">stencil</span> <span class="o">=</span> <span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="n">solve</span><span class="p">(</span><span class="n">pde</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">))</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LHS: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">eq_stencil</span><span class="o">.</span><span class="n">lhs</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RHS: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">eq_stencil</span><span class="o">.</span><span class="n">rhs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LHS: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">stencil</span><span class="o">.</span><span class="n">lhs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RHS: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">stencil</span><span class="o">.</span><span class="n">rhs</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>LHS: u(t + dt, x)
-RHS: dt**2*(c**2*(-2.0*u(t, x)/h_x**2 + u(t, x - h_x)/h_x**2 + u(t, x + h_x)/h_x**2) + 2.0*u(t, x)/dt**2 - u(t - dt, x)/dt**2)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>LHS: u(t + dt, x)
+RHS: 1.0*dt**2*(-2.0*u(t, x)/h_x**2 + u(t, x - h_x)/h_x**2 + u(t, x + h_x)/h_x**2 + 2.0*u(t, x)/dt**2 - 1.0*u(t - dt, x)/dt**2)
 </pre></div>
 </div>
 </div>
 </div>
-<p>Great! From these print statements, we can see that Devito has taken the wave equation in (<a class="reference external" href="#wave:pde1">1</a>) and solved it for <span class="math notranslate nohighlight">\(u^{n+1}_i\)</span>, giving us equation (<a class="reference external" href="#wave:pde1:step4">11</a>). Note that <code class="docutils literal notranslate"><span class="pre">dx</span></code> is denoted as <code class="docutils literal notranslate"><span class="pre">h_x</span></code>, while <code class="docutils literal notranslate"><span class="pre">u(t,</span> <span class="pre">x)</span></code>, <code class="docutils literal notranslate"><span class="pre">u(t,</span> <span class="pre">x</span> <span class="pre">-</span> <span class="pre">h_x)</span></code> and <code class="docutils literal notranslate"><span class="pre">u(t,</span> <span class="pre">x</span> <span class="pre">+</span> <span class="pre">h_x)</span></code> denote the equivalent of <span class="math notranslate nohighlight">\(u^{n}_{i}\)</span>, <span class="math notranslate nohighlight">\(u^{n}_{i-1}\)</span> and <span class="math notranslate nohighlight">\(u^{n}_{i+1}\)</span> respectively.</p>
-<p>Now we can create expressions for our boundary conditions and build the operator.</p>
+<p>Great! From these print statements, we can see that Devito has taken the wave equation in (<a class="reference external" href="#wave:pde1">1</a>) and solved it for <span class="math notranslate nohighlight">\(u^{n+1}_i\)</span>, giving us equation (<a class="reference external" href="#wave:pde1:step4">14</a>). Note that <code class="docutils literal notranslate"><span class="pre">dx</span></code> is denoted as <code class="docutils literal notranslate"><span class="pre">h_x</span></code>, while <code class="docutils literal notranslate"><span class="pre">u(t,</span> <span class="pre">x)</span></code>, <code class="docutils literal notranslate"><span class="pre">u(t,</span> <span class="pre">x</span> <span class="pre">-</span> <span class="pre">h_x)</span></code> and <code class="docutils literal notranslate"><span class="pre">u(t,</span> <span class="pre">x</span> <span class="pre">+</span> <span class="pre">h_x)</span></code> denote the equivalent of <span class="math notranslate nohighlight">\(u^{n}_{i}\)</span>, <span class="math notranslate nohighlight">\(u^{n}_{i-1}\)</span> and <span class="math notranslate nohighlight">\(u^{n}_{i+1}\)</span> respectively.</p>
+<p>We also need to create a separate stencil for the first timestep, where we substitute <span class="math notranslate nohighlight">\(u^{1}_i\)</span> for <span class="math notranslate nohighlight">\(u^{-1}_i\)</span>, as given in (<a class="reference external" href="#wave:pde1:step3c">13</a>).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
-
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stencil_init</span> <span class="o">=</span> <span class="n">stencil</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">backward</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now we can create expressions for our boundary conditions and build the operator. The results are plotted below.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#NBVAL_IGNORE_OUTPUT</span>
 <span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Operator</span>
 
-<span class="n">x</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">stepping_dim</span>
+<span class="n">t_s</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">stepping_dim</span>  
 
 <span class="c1"># Boundary conditions</span>
-<span class="n">bcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mf">0.</span><span class="p">)]</span>
-<span class="n">bcs</span> <span class="o">+=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.</span><span class="p">)]</span>
+<span class="n">bc</span> <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)]</span>
+<span class="n">bc</span> <span class="o">+=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">],</span> <span class="mi">0</span><span class="p">)]</span>
 
-<span class="c1"># Building operator</span>
-<span class="n">op</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">([</span><span class="n">eq_stencil</span><span class="p">]</span> <span class="o">+</span> <span class="n">bcs</span><span class="p">)</span>
-<span class="n">op</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">Nt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+<span class="c1"># Defining one Operator for initial timestep and one for the rest</span>
+<span class="n">op_init</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">([</span><span class="n">stencil_init</span><span class="p">]</span><span class="o">+</span><span class="n">bc</span><span class="p">)</span>
+<span class="n">op</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">([</span><span class="n">stencil</span><span class="p">]</span><span class="o">+</span><span class="n">bc</span><span class="p">)</span>
+    
+<span class="n">op_init</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">time_M</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+<span class="n">op</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">time_m</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">time_M</span><span class="o">=</span><span class="n">Nt</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="stderr docutils container">
-<pre class="stderr literal-block">Data type float64 of runtime value `dt` does not match the Constant data type &lt;class 'numpy.float32'&gt;
-</pre>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Data type float64 of runtime value `dt` does not match the Constant data type &lt;class &#39;numpy.float32&#39;&gt;
+</pre></div>
 </div>
-<div class="stderr docutils container">
-<pre class="stderr literal-block">Operator `Kernel` run in 0.01 s
-</pre>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Operator `Kernel` run in 0.01 s
+</pre></div>
 </div>
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>PerformanceSummary([(PerfKey(name=&#39;section0&#39;, rank=None),
-                     PerfEntry(time=8e-06, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Data type float64 of runtime value `dt` does not match the Constant data type &lt;class &#39;numpy.float32&#39;&gt;
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Operator `Kernel` run in 0.01 s
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PerformanceSummary([(PerfKey(name=&#39;section0&#39;, rank=None),
+                     PerfEntry(time=2.3000000000000003e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
 </pre></div>
 </div>
 </div>
+</div>
+<p>We can plot our results using <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;u&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/wave1D_fd1_50_0.png" src="../../_images/wave1D_fd1_50_0.png" />
 </div>
 </div>
 </div>
@@ -845,7 +895,7 @@ the special formula</p>
 <div class="math notranslate nohighlight">
 \[
 \begin{equation}
-u^{1}_i = u^0_i - \Delta t V_i + {\frac{1}{2}}
+u^{1}_i = u^0_i + \Delta t V_i + {\frac{1}{2}}
 C^2
 \left(u^{0}_{i+1}-2u^{0}_{i} + u^{0}_{i-1}\right) + \frac{1}{2}\Delta t^2 f^0_i
 \label{wave:pde2:step3c} \tag{24}
@@ -890,13 +940,11 @@ run a series of simulations on finer and finer meshes, measure the
 integrated error in each mesh, and from this information estimate the
 empirical convergence rate of the method.</p>
 <p>An introduction to the computing of convergence rates is given in Section 3.1.6
-in <a class="reference external" href="#Langtangen_decay">[Langtangen_decay]</a>.</p>
-<!-- % if BOOK == "book": -->
-<p>There is also a detailed example on computing convergence rates in
-the section <a class="reference external" href="#vib:ode1:verify">vib:ode1:verify</a>.</p>
-<!-- % endif -->
+in <a class="reference external" href="#Langtangen_decay">[Langtangen_decay]</a>.
+There is also a detailed example on computing convergence rates in
+the <a class="reference external" href="../01_vib/vib_undamped.ipynb#vib:ode1:verify">verification section</a> of the Vibration ODEs chapter.</p>
 <p>In the present problem, one expects the method to have a convergence rate
-of 2 (see the section <a class="reference external" href="#wave:pde1:analysis">wave:pde1:analysis</a>), so if the computed rates
+of 2 (see the section <span class="xref myst">Analysis of the difference equations</span>), so if the computed rates
 are close to 2 on a sufficiently fine mesh, we have good evidence that
 the implementation is free of programming mistakes.</p>
 </div>
@@ -955,7 +1003,7 @@ the error measure <span class="math notranslate nohighlight">\(E\)</span> on a s
 the rates <span class="math notranslate nohighlight">\(r=p=2\)</span> are obtained. We will not be concerned with estimating
 the constants <span class="math notranslate nohighlight">\(C_t\)</span> and <span class="math notranslate nohighlight">\(C_x\)</span>, simply because we are not interested in
 their values.</p>
-<p>It is advantageous to introduce a single discretization parameter
+<p>mathcal{I}_t is advantageous to introduce a single discretization parameter
 <span class="math notranslate nohighlight">\(h=\Delta t=\hat c \Delta x\)</span> for some constant <span class="math notranslate nohighlight">\(\hat c\)</span>.  Since
 <span class="math notranslate nohighlight">\(\Delta t\)</span> and <span class="math notranslate nohighlight">\(\Delta x\)</span> are related through the Courant number,
 <span class="math notranslate nohighlight">\(\Delta t = C\Delta x/c\)</span>, we set <span class="math notranslate nohighlight">\(h=\Delta t\)</span>, and then <span class="math notranslate nohighlight">\(\Delta x =
@@ -1063,7 +1111,7 @@ convergence rates. A significantly better test though,
 would be to check that the
 numerical solution is exactly what it should be. This will in general
 require exact knowledge of the numerical error, which we do not normally have
-(although we in the section <a class="reference external" href="#wave:pde1:analysis">wave:pde1:analysis</a> establish such knowledge
+(although we in the section <span class="xref myst">Analysis of the difference equations</span> establish such knowledge
 in simple cases).
 However, it is possible to look for solutions where we can show that
 the numerical error vanishes, i.e., the solution of the original continuous
@@ -1162,7 +1210,7 @@ solutions for verifying implementations.</p>
 equations of the type <span class="math notranslate nohighlight">\(u_{tt}=c^2u_{xx}\)</span> we shall see that there is always
 another much more powerful way of generating exact
 solutions (which consists in just setting <span class="math notranslate nohighlight">\(C=1\)</span> (!), as shown in
-the section <a class="reference external" href="#wave:pde1:analysis">wave:pde1:analysis</a>).</p>
+the section <span class="xref myst">Analysis of the difference equations</span>).</p>
 </div>
 </div>
 
@@ -1194,7 +1242,8 @@ the section <a class="reference external" href="#wave:pde1:analysis">wave:pde1:a
     
     <div class='prev-next-bottom'>
         
-    <a class='left-prev' id="prev-link" href="../../index.html" title="previous page">Welcome to the Devito Book!</a>
+    <a class='left-prev' id="prev-link" href="../vib/vib_undamped.html" title="previous page"><span class="section-number">1. </span>Finite difference discretization</a>
+    <a class='right-next' id="next-link" href="wave1D_prog.html" title="next page"><span class="section-number">3. </span>Implementation</a>
 
     </div>
     <footer class="footer mt-5 mt-md-0">
