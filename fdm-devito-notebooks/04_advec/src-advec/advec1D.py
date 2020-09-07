@@ -39,8 +39,8 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
 
 
 def solver(I, U0, v, L, dt, C, T, user_action=None,
-           scheme='FE', periodic_bc=True):
-    Nt = int(round(T/float(dt)))
+           scheme='FE', periodic_bc=False):
+    Nt = int(round(T/np.float64(dt)))
     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
     dx = v*dt/C
     Nx = int(round(L/dx))
@@ -56,8 +56,6 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
 
     grid = Grid(shape=(Nx+1,), extent=(L,), dtype=np.float64)
     t_s=grid.time_dim
-    u = None
-    pde = None
     
     def u(to=1, so=1):
         u = TimeFunction(name='u', grid=grid, time_order=to, space_order=so, save=Nt+1)
@@ -72,39 +70,18 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         
     elif scheme == 'LF':
         # Use UP scheme for first timestep
-        u1   = TimeFunction(name='u1', grid=grid, save=2)
-        pde1 = u1.dtr + v*u1.dxl
-        
-        stencil1 = solve(pde1, u1.forward)
-        eq1      = Eq(u1.forward, stencil1)
-        
-        # Set initial condition u(x,0) = I(x)
-        u1.data[0, :] = [I(xi) for xi in x]
-        
-        bc1  = [Eq(u1[t_s+1, 0], U0)]
-        pbc1 = [Eq(u1[t_s, 0], u1[t_s, Nx])]
-        
-        integral[0] = dx*(0.5*u1.data[0][0] + 0.5*u1.data[0][Nx] + np.sum(u1.data[0][1:Nx]))
-        
-        if user_action is not None:
-            user_action(u1.data[0], x, t, 0)
-        
-        op1 = Operator(bc1 + (pbc1 if periodic_bc else []) + [eq1])
-        op1.apply(dt=dt)
-        
-        integral[1] = dx*(0.5*u1.data[1][0] + 0.5*u1.data[1][Nx] + np.sum(u1.data[1][1:Nx]))
-        
-        if user_action is not None:
-            user_action(u1.data[1], x, t, 1)
-            
-        print('I:', integral[1])
-        
-        # Now continue with LF scheme
         u = u(to=2, so=2)
-        u.data[0:2, :] = u1.data
+        pde0 = u.dtr(fd_order=1) + v*u.dxl(fd_order=1)
+        
+        stencil0 = solve(pde0, u.forward)
+        eq0      = Eq(u.forward, stencil0).subs(t_s, 0)
+        
+        pbc0 = [Eq(u[t_s, 0], u[t_s, Nx]).subs(t_s, 0)]
+            
+        # Now continue with LF scheme
         pde = u.dtc + v*u.dxc
         
-        pbc = [Eq(u[t_s+1, 0], u[t_s-1, 0] - C*(u[t_s, 1] - u[t_s, Nx - 1]))]
+        pbc = [Eq(u[t_s+1, 0], u[t_s-1, 0] - C*(u[t_s, 1] - u[t_s, Nx-1]))]
         pbc += [Eq(u[t_s, Nx], u[t_s, 0])]
     
     elif scheme == 'UP':
@@ -117,7 +94,7 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         u = u(so=2)
         pde = u.dtr + v*u.dxc - 0.5*dt*v**2*u.dx2
         
-        pbc = [Eq(u[t_s+1, 0], u[t_s, 0] - 0.5*C*(u[t_s, 1] - u[t_s, Nx - 1]) + \
+        pbc = [Eq(u[t_s+1, 0], u[t_s, 0] - 0.5*C*(u[t_s, 1] - u[t_s, Nx-1]) + \
                   0.5*C*(u[t_s, 1] - 2*u[t_s, 0] + u[t_s, Nx-1]))]
         pbc += [Eq(u[t_s, Nx], u[t_s, 0])]
     
@@ -127,22 +104,30 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     stencil = solve(pde, u.forward)
     eq = Eq(u.forward, stencil)
     
-    if scheme != 'LF':
-        # Set initial condition u(x,0) = I(x)
-        u.data[0, :] = [I(xi) for xi in x]
-        
-        # Compute the integral under the curve
-        integral[0] = dx*(0.5*u.data[0][0] + 0.5*u.data[0][Nx] + np.sum(u.data[0][1:Nx]))
+    bc_init = [Eq(u[t_s+1, 0], U0).subs(t_s, 0)]
     
-        if user_action is not None:
-            user_action(u.data[0], x, t, 0)
+    # Set initial condition u(x,0) = I(x)
+    u.data[0, :] = [I(xi) for xi in x]
+        
+    # Compute the integral under the curve
+    integral[0] = dx*(0.5*u.data[0][0] + 0.5*u.data[0][Nx] + np.sum(u.data[0][1:Nx]))
+    
+    if user_action is not None:
+        user_action(u.data[0], x, t, 0)
 
     bc  = [Eq(u[t_s+1, 0], U0)]
+    
+    if scheme == 'LF':
+        op = Operator((pbc0 if periodic_bc else []) + [eq0] + bc_init + (pbc if periodic_bc else []) + [eq] + (bc if not periodic_bc else []))
+    else:       
+        op = Operator(bc_init + (pbc if periodic_bc else []) + [eq] + (bc if not periodic_bc else []))
+        
+    print(op.arguments(dt=dt))
+    print(op.ccode)
+        
+    op.apply(dt=dt)
 
-    op = Operator(bc + (pbc if periodic_bc else []) + [eq])
-    op.apply(time_m=1 if scheme == 'LF' else 0, time_M=Nt-1, dt=float(dt))
-
-    for n in range(2 if scheme == 'LF' else 1, Nt+1):
+    for n in range(1, Nt+1):
         # Compute the integral under the curve
         integral[n] = dx*(0.5*u.data[n][0] + 0.5*u.data[n][Nx] + np.sum(u.data[n][1:Nx]))
 
@@ -296,7 +281,7 @@ def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
     Vectorized implementation and sparse (tridiagonal)
     coefficient matrix.
     """
-    import time;  t0 = time.clock()  # for measuring the CPU time
+    import time;  t0 = time.process_time()  # for measuring the CPU time
     Nt = int(round(T/float(dt)))
     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
     dx = v*dt/C
@@ -368,7 +353,7 @@ def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
         # Update u_n before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.process_time()
     return integral
 
 
