@@ -54,16 +54,8 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
 
     integral = np.zeros(Nt+1)
     
-#     class Left(SubDomain):
-#         name = 'left'
-#         def define(self, dimensions):
-#             x = dimensions[0]
-#             return {x: ('left', Nx-1)}
-    
-#     left = Left()
     grid = Grid(shape=(Nx+1,), extent=(L,), dtype=np.float64)
 
-#     grid = Grid(shape=(Nx+1,), extent=(L,), dtype=np.float64, subdomains=(left))
     t_s=grid.time_dim
     
     def u(to=1, so=1):
@@ -102,7 +94,6 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     elif scheme == 'LW':
         u = u(so=2)
         pde = u.dtr + v*u.dxc - 0.5*dt*v**2*u.dx2
-        print(pde)
         
         pbc = [Eq(u[t_s+1, 0], u[t_s, 0] - 0.5*C*(u[t_s, 1] - u[t_s, Nx-1]) + \
                   0.5*C**2*(u[t_s, 1] - 2*u[t_s, 0] + u[t_s, Nx-1]))]
@@ -112,10 +103,7 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         raise ValueError('scheme="%s" not implemented' % scheme)
 
     stencil = solve(pde, u.forward)
-#     eq = Eq(u.forward, stencil, subdomain=grid.subdomains['left'])
     eq = Eq(u.forward, stencil)
-    print(eq)
-    print(v)
     
     bc_init = [Eq(u[t_s+1, 0], U0).subs(t_s, 0)]
     
@@ -135,9 +123,6 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
                       + (pbc if periodic_bc else []) + [eq] + (bc if not periodic_bc else []))
     else:       
         op = Operator(bc_init + (pbc if periodic_bc else []) + [eq] + (bc if not periodic_bc else []))
-        
-    print(op.arguments(dt=dt, x_m=1, x_M=Nx-1))
-    print(op.ccode)
         
     op.apply(dt=dt, x_m=1, x_M=Nx if scheme == 'UP' else Nx-1)
 
