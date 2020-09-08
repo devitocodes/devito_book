@@ -39,7 +39,7 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
 
 
 def solver(I, U0, v, L, dt, C, T, user_action=None,
-           scheme='FE', periodic_bc=False):
+           scheme='FE', periodic_bc=True):
     Nt = int(round(T/np.float64(dt)))
     t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
     dx = v*dt/C
@@ -53,8 +53,17 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     print('dt=%g, dx=%g, Nx=%d, C=%g' % (dt, dx, Nx, C))
 
     integral = np.zeros(Nt+1)
-
+    
+#     class Left(SubDomain):
+#         name = 'left'
+#         def define(self, dimensions):
+#             x = dimensions[0]
+#             return {x: ('left', Nx-1)}
+    
+#     left = Left()
     grid = Grid(shape=(Nx+1,), extent=(L,), dtype=np.float64)
+
+#     grid = Grid(shape=(Nx+1,), extent=(L,), dtype=np.float64, subdomains=(left))
     t_s=grid.time_dim
     
     def u(to=1, so=1):
@@ -66,23 +75,23 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
         pde = u.dtr + v*u.dxc
         
         pbc = [Eq(u[t_s+1, 0], u[t_s, 0] - 0.5*C*(u[t_s, 1] - u[t_s, Nx]))]
-        pbc += [Eq(u[t_s, Nx], u[t_s, 0])]
+        pbc += [Eq(u[t_s+1, Nx], u[t_s+1, 0])]
         
     elif scheme == 'LF':
-        # Use UP scheme for first timestep
+        # Use UP scheme for the first timestep
         u = u(to=2, so=2)
         pde0 = u.dtr(fd_order=1) + v*u.dxl(fd_order=1)
         
         stencil0 = solve(pde0, u.forward)
         eq0      = Eq(u.forward, stencil0).subs(t_s, 0)
-        
+
         pbc0 = [Eq(u[t_s, 0], u[t_s, Nx]).subs(t_s, 0)]
             
         # Now continue with LF scheme
         pde = u.dtc + v*u.dxc
         
         pbc = [Eq(u[t_s+1, 0], u[t_s-1, 0] - C*(u[t_s, 1] - u[t_s, Nx-1]))]
-        pbc += [Eq(u[t_s, Nx], u[t_s, 0])]
+        pbc += [Eq(u[t_s+1, Nx], u[t_s+1, 0])]
     
     elif scheme == 'UP':
         u   = u()
@@ -93,16 +102,20 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     elif scheme == 'LW':
         u = u(so=2)
         pde = u.dtr + v*u.dxc - 0.5*dt*v**2*u.dx2
+        print(pde)
         
         pbc = [Eq(u[t_s+1, 0], u[t_s, 0] - 0.5*C*(u[t_s, 1] - u[t_s, Nx-1]) + \
-                  0.5*C*(u[t_s, 1] - 2*u[t_s, 0] + u[t_s, Nx-1]))]
-        pbc += [Eq(u[t_s, Nx], u[t_s, 0])]
+                  0.5*C**2*(u[t_s, 1] - 2*u[t_s, 0] + u[t_s, Nx-1]))]
+        pbc += [Eq(u[t_s+1, Nx], u[t_s+1, 0])]
     
     else:
         raise ValueError('scheme="%s" not implemented' % scheme)
 
     stencil = solve(pde, u.forward)
+#     eq = Eq(u.forward, stencil, subdomain=grid.subdomains['left'])
     eq = Eq(u.forward, stencil)
+    print(eq)
+    print(v)
     
     bc_init = [Eq(u[t_s+1, 0], U0).subs(t_s, 0)]
     
@@ -118,14 +131,15 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
     bc  = [Eq(u[t_s+1, 0], U0)]
     
     if scheme == 'LF':
-        op = Operator((pbc0 if periodic_bc else []) + [eq0] + bc_init + (pbc if periodic_bc else []) + [eq] + (bc if not periodic_bc else []))
+        op = Operator((pbc0 if periodic_bc else []) + [eq0] + (bc_init if not periodic_bc else []) \
+                      + (pbc if periodic_bc else []) + [eq] + (bc if not periodic_bc else []))
     else:       
         op = Operator(bc_init + (pbc if periodic_bc else []) + [eq] + (bc if not periodic_bc else []))
         
-    print(op.arguments(dt=dt))
+    print(op.arguments(dt=dt, x_m=1, x_M=Nx-1))
     print(op.ccode)
         
-    op.apply(dt=dt)
+    op.apply(dt=dt, x_m=1, x_M=Nx if scheme == 'UP' else Nx-1)
 
     for n in range(1, Nt+1):
         # Compute the integral under the curve
@@ -136,6 +150,7 @@ def solver(I, U0, v, L, dt, C, T, user_action=None,
 
         print('I:', integral[n])
     return integral
+
 
 def run_FECS(case):
     """Special function for the FECS case."""
