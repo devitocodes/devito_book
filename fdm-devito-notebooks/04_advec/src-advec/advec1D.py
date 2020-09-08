@@ -29,10 +29,11 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     u.data[1, :] = [I(xi) for xi in x]
     
     # Insert boundary condition
-    bc = [Eq(u[t_s, 0], U0)]
+    bc = [Eq(u[t_s+1, 0], U0)]
     
     op = Operator([eq] + bc)
-    op.apply(time_m=1, dt=dt)
+    op.apply(dt=dt, x_m=1, x_M=Nx-1)
+    
     if user_action is not None:
         for n in range(0, Nt + 1):
             user_action(u.data[n], x, t, n)
