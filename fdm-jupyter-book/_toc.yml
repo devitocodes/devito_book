@@ -9,3 +9,7 @@
   sections:
   - file: notebooks/wave/wave1D_fd1.ipynb
   - file: notebooks/wave/wave1D_prog.ipynb
+
+- chapter: Diffusion equations
+  sections:
+  - file: notebooks/diffu/diffu_rw.ipynb
