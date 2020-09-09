@@ -79,6 +79,9 @@ jobs:
     - name: Waves notebooks (2.3 to 2.5)
       run: |
         $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/02_wave/wave1D_prog.ipynb
+    - name: Diffusion notebooks (3.7)
+      run: |
+        $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:diffu_coverage.xml $SKIP fdm-devito-notebooks/03_diffu/diffu_rw.ipynb
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.6
       with:

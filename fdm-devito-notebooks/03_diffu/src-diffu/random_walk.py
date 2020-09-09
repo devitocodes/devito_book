@@ -1,12 +1,13 @@
 import random, numpy as np
 import matplotlib.pyplot as plt
+from devito import Dimension, Constant, TimeFunction, Function, Eq, Operator
 random.seed(10)
 np.random.seed(10)
 
 def random_walk1D(x0, N, p, random=random):
     """1D random walk with 1 particle and N moves."""
     # random is argument so we can use np.random instead
-    # and use it for testing equivalence with random_walk1D_vec
+    # and use it for testing
 
     # Store position in step k in position[k]
     position = np.zeros(N+1)
@@ -21,15 +22,22 @@ def random_walk1D(x0, N, p, random=random):
         position[k+1] = current_pos
     return position
 
-def random_walk1D_vec(x0, N, p):
+def random_walk1D_vec(x0, N, p, random=random):
     """Vectorized version of random_walk1D."""
-    # Store position in step k in position[k]
-    position = np.zeros(N+1)
-    position[0] = x0
-    r = np.random.uniform(0, 1, size=N)
-    steps = np.where(r <= p, -1, 1)
-    position[1:] = x0 + np.cumsum(steps)
-    return position
+    # Create and initialise r with dimension x_d
+    x_d = Dimension(name='x_d', spacing=Constant('h_x'))
+    r = TimeFunction(name='r', dimensions=(x_d,), shape=(N+1,))
+    r.data[0] = x0
+    
+    rs = random.uniform(0, 1, size=N)
+    steps = Function(name='steps', dimensions=(x_d,), shape=(N+1,))
+    steps.data[:N] = np.where(rs <= p, -1, 1)
+    
+    # The next value is computed using the previous value and the steps function at that point
+    eq = Eq(r.forward, r + steps)
+    op = Operator(eq)
+    op.apply()
+    return r.data
 
 def test_random_walk1D():
     # For fixed seed, check that scalar and vectorized versions
@@ -38,7 +46,7 @@ def test_random_walk1D():
     np.random.seed(10)
     scalar_computed = random_walk1D(x0, N, p, random=np.random)
     np.random.seed(10)
-    vectorized_computed = random_walk1D_vec(x0, N, p)
+    vectorized_computed = random_walk1D_vec(x0, N, p, random=np.random)
     assert (scalar_computed == vectorized_computed).all()
     # We do not need tolerance since all arithmetics is w/int
     #diff = np.abs(scalar_computed - vectorized_computed).max()
@@ -120,23 +128,40 @@ def random_walks1D(x0, N, p, num_walks=1, num_times=1,
     return position, position2, pos_hist, np.array(pos_hist_times)
 
 
-def random_walks1D_vec1(x0, N, p, num_walks=1, num_times=1):
+def random_walks1D_vec(x0, N, p, num_walks=1, num_times=1, random=random):
     """Vectorized version of random_walks1D."""
-    position = np.zeros(N+1)  # Accumulated positions
-    position2 = np.zeros(N+1)  # Accumulated positions**2
-    walk = np.zeros(N+1)  # Positions of current walk
-    walk[0] = x0
+    position = np.zeros(N+1)    # Accumulated positions
+    position2 = np.zeros(N+1)    # Accumulated positions**2
     # Histogram at num_times selected time points
     pos_hist = np.zeros((num_walks, num_times))
     pos_hist_times = [(N//num_times)*i for i in range(num_times)]
 
+    # Create and initialise our TimeFunction r
+    x_d = Dimension(name='x_d')
+    t_d = Dimension(name='t_d')
+    r = TimeFunction(name='r', dimensions=(x_d, t_d), shape=(N+1, num_walks))
+    
+    # Setting each walk's first element to x0
+    r.data[0,:] = x0
+    
+    steps = Function(name='steps', dimensions=(x_d,t_d), shape=(N+1,num_walks))
+        
+    # Populating steps with -1 if value in rs <= p at that point and 1 otherwise
+    rs = random.uniform(0, 1, size=N*num_walks).reshape(num_walks, N)
     for n in range(num_walks):
-        r = np.random.uniform(0, 1, size=N)
-        steps = np.where(r <= p, -1, 1)
-        walk[1:] = x0 + np.cumsum(steps)  # Positions of this walk
-        position += walk
-        position2 += walk**2
-        pos_hist[n, :] = walk[pos_hist_times]
+        steps.data[:N, n] = np.where(rs[n] <= p, -1, 1)
+    
+    # Creating and applying operator that contains equation for adding steps
+    eq = Eq(r.forward, r + steps)
+    op = Operator(eq)
+    op.apply()
+    
+    # Summing over data to give positions
+    position = np.sum(r.data, axis=1)               # Accumulated positions
+    position2 = np.sum(r.data**2, axis=1)           # Accumulated positions**2
+    
+    pos_hist[:,:] = np.transpose(r.data[pos_hist_times,:])
+    
     return position, position2, pos_hist, np.array(pos_hist_times)
 
 
@@ -178,14 +203,14 @@ def test_random_walks1D():
 
     # Same for vectorized versions
     np.random.seed(10)
-    computed = random_walks1D_vec1(x0, N, p, num_walks)
+    computed = random_walks1D_vec(x0, N, p, num_walks, random=np.random)
     np.random.seed(10)
-    expected = random_walk1D_vec(x0, N, p)
+    expected = random_walk1D_vec(x0, N, p, random=np.random)
     assert (computed[0] == expected).all()
     np.random.seed(10)
     computed = random_walks1D_vec2(x0, N, p, num_walks)
     np.random.seed(10)
-    expected = random_walk1D_vec(x0, N, p)
+    expected = random_walk1D_vec(x0, N, p, random=np.random)
     assert (computed[0] == expected).all()
 
     # Second, check multiple walks: scalar == vectorized
@@ -195,8 +220,8 @@ def test_random_walks1D():
     serial_computed = random_walks1D(
         x0, N, p, num_walks, num_times, random=np.random)
     np.random.seed(10)
-    vectorized1_computed = random_walks1D_vec1(
-        x0, N, p, num_walks, num_times)
+    vectorized1_computed = random_walks1D_vec(
+        x0, N, p, num_walks, num_times, random=np.random)
     np.random.seed(10)
     vectorized2_computed = random_walks1D_vec2(
         x0, N, p, num_walks, num_times)
@@ -218,8 +243,8 @@ def test_random_walks1D():
 def demo_random_walks1D(N=1000, num_walks=10000, EX_minmax=None):
     import time
     t0 = time.clock()
-    pos, pos2, hist, hist_times = random_walks1D_vec1(
-        x0=0, N=N, p=0.5, num_walks=num_walks, num_times=10,)
+    pos, pos2, hist, hist_times = random_walks1D_vec(
+        x0=0, N=N, p=0.5, num_walks=num_walks, num_times=10, random=np.random)
     t1 = time.clock()
     print('histogram times:', hist_times)
     print('random walk: %.1fs' % (t1-t0))
@@ -306,8 +331,8 @@ def demo_random_walks1D_timing():
     cpu_scalar = t1 - t0
     print('CPU scalar: %.1f' % cpu_scalar)
     np.random.seed(10)
-    pos, pos2, pos_hist, pos_hist_times = random_walks1D_vec1(
-        x0, N, p, num_walks, num_times=4)
+    pos, pos2, pos_hist, pos_hist_times = random_walks1D_vec(
+        x0, N, p, num_walks, num_times=4, random=np.random)
     t2 = time.clock()
     cpu_vec1 = t2 - t1
     print('CPU vectorized1: %.1f' % cpu_vec1)
@@ -373,16 +398,27 @@ def random_walkdD(x0, N, p, random=random):
     return position
 
 
-def random_walkdD_vec(x0, N, p):
+def random_walkdD_vec(x0, N, p, random=random):
     """Vectorized version of random_walkdD."""
+
+    # Here, x0 is an array of initial values in each spatial dimension
     d = len(x0)
-    # Store position in step k in position[k]
-    position = np.zeros((N+1, d))
-    position[0] = np.array(x0, dtype=float)
-    r = np.random.uniform(0, 1, size=N*d)
-    steps = np.where(r <= p, -1, 1).reshape(N, d)
-    position[1:, :] = x0 + np.cumsum(steps, axis=0)
-    return position
+    
+    x_d = Dimension(name='x_d', spacing=Constant('h_x'))
+    # Add space dimensions
+    d_d = Dimension(name='d', spacing=Constant('h_d'))
+    r = TimeFunction(name='r', dimensions=(x_d, d_d), shape=(N+1, d))
+    r.data[0] = x0
+    
+    rs = random.uniform(0, 1, size=N*d).reshape(N,d)
+    steps = Function(name='steps', dimensions=(x_d, d_d), shape=(N+1, d))
+    steps.data[:N] = np.where(rs <= p, -1, 1)
+    
+    # The next value is computed using the previous value and the steps function at that point
+    eq = Eq(r.forward, r + steps)
+    op = Operator(eq)
+    op.apply()
+    return r.data
 
 
 def demo_random_walkdD():
@@ -437,14 +473,14 @@ def demo_fig_random_walkdD():
     plt.show()
 
 
-def test_ramdom_walkdD():
+def test_random_walkdD():
     x0 = (0, 0)
     N = 7
     p = 0.5
     np.random.seed(10)
     scalar_computed = random_walkdD(x0, N, p, random=np.random)
     np.random.seed(10)
-    vectorized_computed = random_walkdD_vec(x0, N, p)
+    vectorized_computed = random_walkdD_vec(x0, N, p, random=np.random)
     assert (scalar_computed == vectorized_computed).all()
 
 
@@ -477,23 +513,42 @@ def random_walksdD(x0, N, p, num_walks=1, num_times=1,
     return position, position2, pos_hist, np.array(pos_hist_times)
 
 
-def random_walksdD_vec(x0, N, p, num_walks=1, num_times=1):
-    """Vectorized version of random_walks1D; no loops."""
+def random_walksdD_vec(x0, N, p, num_walks=1, num_times=1, random=np.random):
+    """Vectorized version of random_walksdD."""
     d = len(x0)
-    position = np.zeros((N+1, d))  # Accumulated positions
+    position  = np.zeros((N+1, d))  # Accumulated positions
     position2 = np.zeros((N+1, d))  # Accumulated positions**2
-    walks = np.zeros((num_walks, N+1, d))  # Positions of each walk
-    walks[:, 0, :] = x0
     # Histogram at num_times selected time points
     pos_hist = np.zeros((num_walks, num_times, d))
     pos_hist_times = [(N//num_times)*i for i in range(num_times)]
 
-    r = np.random.uniform(0, 1, size=N*num_walks*d)
-    steps = np.where(r <= p, -1, 1).reshape(num_walks, N, d)
-    walks[:, 1:, :] = x0 + np.cumsum(steps, axis=1)
-    position = np.sum(walks, axis=0)
-    position2 = np.sum(walks**2, axis=0)
-    pos_hist[:, :, :] = walks[:, pos_hist_times, :]
+    # Create and initialise our TimeFunction r
+    x_d = Dimension(name='x_d')
+    t_d = Dimension(name='t_d')
+    d_d = Dimension(name='d_d')
+    r = TimeFunction(name='r', dimensions=(x_d, t_d, d_d), shape=(N+1, num_walks, d))
+    # Setting each walk's first element to x0
+    r.data[0] = x0
+    
+    steps = Function(name='steps', dimensions=(x_d,t_d,d_d), shape=(N+1,num_walks,d))
+        
+    # Populating steps with -1 if value in rs <= p at that point and 1 otherwise
+    rs = random.uniform(0, 1, size=N*num_walks*d).reshape(num_walks, N, d)
+    for n in range(num_walks):
+        steps.data[:N, n] = np.where(rs[n] <= p, -1, 1)
+    
+    # Creating and applying operator that contains equation for adding steps
+    eq = Eq(r.forward, r + steps)
+    op = Operator(eq)
+    op.apply()
+    
+    # Summing over data to give positions
+    position = np.sum(r.data, axis=1)               # Accumulated positions
+    position2 = np.sum(r.data**2, axis=1)           # Accumulated positions**2
+    
+    for k in range(num_walks):
+        pos_hist[k,:] = r.data[pos_hist_times,k]
+    
     return position, position2, pos_hist, np.array(pos_hist_times)
 
 
@@ -517,9 +572,9 @@ def test_random_walksdD():
 
     # Same for vectorized version
     np.random.seed(10)
-    computed = random_walksdD_vec(x0, N, p, num_walks)
+    computed = random_walksdD_vec(x0, N, p, num_walks, random=np.random)
     np.random.seed(10)
-    expected = random_walkdD_vec(x0, N, p)
+    expected = random_walkdD_vec(x0, N, p, random=np.random)
     assert (computed[0] == expected).all()
 
     # Second, check multiple walks: scalar == vectorized
@@ -530,7 +585,7 @@ def test_random_walksdD():
         x0, N, p, num_walks, num_times, random=np.random)
     np.random.seed(10)
     vectorized_computed = random_walksdD_vec(
-        x0, N, p, num_walks, num_times)
+        x0, N, p, num_walks, num_times, random=np.random)
     return_values = ['pos', 'pos2', 'pos_hist', 'pos_hist_times']
     for s, v, r in zip(serial_computed,
                        vectorized_computed,
@@ -554,7 +609,7 @@ def demo_random_walksdD():
     plt.plot(pos[:, 0], pos[:, 1])
     np.random.seed(10)
     pos, pos2, pos_hist, pos_hist_times = random_walksdD_vec(
-        x0, N, p, num_walks, num_times=4)
+        x0, N, p, num_walks, num_times=4, random=np.random)
     plt.figure()
     plt.plot(pos[:, 0], pos[:, 1])
 
@@ -581,7 +636,7 @@ def demo_random_walksdD_timing():
     print('CPU scalar: %.1f' % cpu_scalar)
     np.random.seed(10)
     pos, pos2, pos_hist, pos_hist_times = random_walksdD_vec(
-        x0, N, p, num_walks, num_times=4)
+        x0, N, p, num_walks, num_times=4, random=np.random)
     t2 = time.clock()
     cpu_vec = t2 - t1
     print('CPU vectorized: %.1f' % cpu_vec)
