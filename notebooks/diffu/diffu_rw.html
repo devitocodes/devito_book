@@ -1,0 +1,1258 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>1. Random walk &#8212; The Devito Book</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous">
+    <link href="../../_static/css/index.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-dropdown.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/sphinx-book-theme.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
+    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="prev" title="3. Implementation" href="../wave/wave1D_prog.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="docsearch:language" content="en">
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../../index.html">
+  
+  <img src="../../_static/devito_logo.png" class="logo" alt="logo">
+  
+  
+  <h1 class="site-logo" id="site-title">The Devito Book</h1>
+  
+</a>
+</div>
+
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../index.html">
+   Welcome to the Devito Book!
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Vibration ODEs
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html">
+   1. Finite difference discretization
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#implementation">
+   2. Implementation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#visualization-of-long-time-simulations">
+   3. Visualization of long time simulations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#analysis-of-the-numerical-scheme">
+   4. Analysis of the numerical scheme
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#alternative-schemes-based-on-1st-order-equations">
+   5. Alternative schemes based on 1st-order equations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#energy-considerations">
+   6. Energy considerations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#the-euler-cromer-method">
+   7. The Euler-Cromer method
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#staggered-mesh">
+   8. Staggered mesh
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#exercises-and-problems">
+   9. Exercises and Problems
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Wave equations
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../wave/wave1D_fd1.html">
+   1. Simulation of waves on a string
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../wave/wave1D_fd1.html#verification">
+   2. Verification
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../wave/wave1D_prog.html">
+   3. Implementation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../wave/wave1D_prog.html#exercises">
+   4. Exercises
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Diffusion equations
+ </span>
+</p>
+<ul class="current nav sidenav_l1">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   1. Random walk
+  </a>
+ </li>
+</ul>
+
+</nav>
+
+ <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="row topbar fixed-top container-xl">
+    <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show">
+    </div>
+    <div class="col pl-2 topbar-main">
+        
+        <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+            data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+            aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+            title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+            <i class="fas fa-bars"></i>
+            <i class="fas fa-arrow-left"></i>
+            <i class="fas fa-arrow-up"></i>
+        </button>
+        
+        <div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../../_sources/notebooks/diffu/diffu_rw.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+    
+</div>
+        <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/devitocodes/devito_book"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        
+        
+    </div>
+</div>
+
+
+        <!-- Full screen (wrap in <a> to have style consistency -->
+        <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                data-placement="bottom" onclick="toggleFullScreen()" title="Fullscreen mode"><i
+                    class="fas fa-expand"></i></button></a>
+
+        <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/devitocodes/devito_book/master?urlpath=tree/notebooks/diffu/diffu_rw.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        <a class="colab-button" href="https://colab.research.google.com/github/devitocodes/devito_book/blob/master/notebooks/diffu/diffu_rw.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
+                title="Launch Colab" data-toggle="tooltip" data-placement="left"><img class="colab-button-logo"
+                    src="../../_static/images/logo_colab.png"
+                    alt="Interact on Colab">Colab</button></a>
+        
+        
+    </div>
+</div>
+
+    </div>
+
+    <!-- Table of contents -->
+    <div class="d-none d-md-block col-md-2 bd-toc show">
+        <div class="tocsection onthispage pt-5 pb-3">
+            <i class="fas fa-list"></i> Contents
+        </div>
+        <nav id="bd-toc-nav">
+            <ul class="nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#random-walk-in-1d">
+   1.1. Random walk in 1D
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#statistical-considerations">
+   1.2. Statistical considerations
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#playing-around-with-some-code">
+   1.3. Playing around with some code
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#fixing-the-random-sequence">
+     1.3.1. Fixing the random sequence
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#equivalence-with-diffusion">
+   1.4. Equivalence with diffusion
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#implementation-of-multiple-walks">
+   1.5. Implementation of multiple walks
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#vectorized-version">
+     1.5.1. Vectorized version
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#test-function">
+     1.5.2. Test function
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#demonstration-of-multiple-walks">
+   1.6. Demonstration of multiple walks
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#ascii-visualization-of-1d-random-walk">
+   1.7. Ascii visualization of 1D random walk
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#random-walk-as-a-stochastic-equation">
+   1.8. Random walk as a stochastic equation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#random-walk-in-2d">
+   1.9. Random walk in 2D
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#random-walk-in-any-number-of-space-dimensions">
+   1.10. Random walk in any number of space dimensions
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#multiple-random-walks-in-any-number-of-space-dimensions">
+   1.11. Multiple random walks in any number of space dimensions
+  </a>
+ </li>
+</ul>
+
+        </nav>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="random-walk">
+<h1><span class="section-number">1. </span>Random walk<a class="headerlink" href="#random-walk" title="Permalink to this headline">¶</a></h1>
+<div id="diffu:randomwalk"></div>
+<p>Models leading to diffusion equations, see the section <span class="xref myst">Applications of diffusion equations</span>, are
+usually based on reasoning with <em>averaged</em> physical quantities such as
+concentration, temperature, and velocity.  The underlying physical
+processes involve complicated microscopic movement of atoms and
+molecules, but an average of a large number of molecules is performed
+in a small volume before the modeling starts, and the averaged
+quantity inside this volume is assigned as a point value at the
+centroid of the volume. This means that concentration, temperature,
+and velocity at a space-time point represent averages around the
+point in a small time interval and small spatial volume.</p>
+<p>Random walk is a principally different kind of modeling procedure
+compared to the reasoning behind partial differential equations.  The
+idea in random walk is to have a large number of “particles” that
+undergo random movements. Averaging can then be used afterwards to
+compute macroscopic quantities like concentration. The “particles”
+and their random movement represent a very simplified microscopic
+behavior of molecules, much simpler and computationally much more
+efficient than direct <a class="reference external" href="https://en.wikipedia.org/wiki/Molecular_dynamics">molecular simulation</a>, yet the random
+walk model has been very powerful to describe a wide range of
+phenomena, including heat conduction, quantum mechanics, polymer
+chains, population genetics, neuroscience, hazard games, and pricing
+of financial instruments.</p>
+<p>It can be shown that random walk, when averaged, produces models that
+are mathematically equivalent to diffusion equations. This is the
+primary reason why we treat random walk in this chapter: two very
+different algorithms (finite difference stencils and random walk)
+solve the same type of problems. The simplicity of the random walk
+algorithm makes it particularly attractive for solving diffusion
+equations on massively parallel computers.
+The exposition here is as simple as possible, and good thorough
+derivation of the models is provided by Hjorth-Jensen <a class="reference external" href="#hjorten">[hjorten]</a>.</p>
+<div class="section" id="random-walk-in-1d">
+<h2><span class="section-number">1.1. </span>Random walk in 1D<a class="headerlink" href="#random-walk-in-1d" title="Permalink to this headline">¶</a></h2>
+<div id="diffu:randomwalk:1D"></div>
+<p>Imagine that we have some particles that perform random moves, either
+to the right or to the left. We may flip a coin to decide the movement
+of each particle, say head implies movement to the right and tail
+means movement to the left. Each move is one unit length.  Physicists
+use the term <em>random walk</em> for this type of movement.
+The movement is also known as <a class="reference external" href="https://en.wikipedia.org/wiki/The_Drunkard%27s_Walk">drunkard’s walk</a>.
+You may try this yourself: flip the coin and make one step to the left
+or right, and repeat the process.</p>
+<p>We introduce the symbol <span class="math notranslate nohighlight">\(N\)</span> for the number of steps in a random walk.
+<a class="reference external" href="#diffu:randomwalk:1D:fig:ensemble">Figure</a> shows four different
+random walks with <span class="math notranslate nohighlight">\(N=200\)</span>.</p>
+<!-- dom:FIGURE: [fig-diffu/rw1D_ensemble4.png, width=800 frac=1] Ensemble of 4 random walks, each with 200 steps. <div id="diffu:randomwalk:1D:fig:ensemble"></div> -->
+<!-- begin figure -->
+<div id="diffu:randomwalk:1D:fig:ensemble"></div>
+<p>Ensemble of 4 random walks, each with 200 steps.</p>
+<img src="fig-diffu/rw1D_ensemble4.png" width=800>
+<!-- end figure -->
+</div>
+<div class="section" id="statistical-considerations">
+<h2><span class="section-number">1.2. </span>Statistical considerations<a class="headerlink" href="#statistical-considerations" title="Permalink to this headline">¶</a></h2>
+<div id="diffu:randomwalk:1D:EVar"></div>
+<p>Let <span class="math notranslate nohighlight">\(S_k\)</span> be the stochastic variable representing a step to the left
+or to the right in step number <span class="math notranslate nohighlight">\(k\)</span>. We have that <span class="math notranslate nohighlight">\(S_k=-1\)</span> with
+probability <span class="math notranslate nohighlight">\(p\)</span> and <span class="math notranslate nohighlight">\(S_k=1\)</span> with probability <span class="math notranslate nohighlight">\(q=1-p\)</span>. The variable
+<span class="math notranslate nohighlight">\(S_k\)</span> is known as a <a class="reference external" href="https://en.wikipedia.org/wiki/Bernoulli_distribution">Bernoulli variable</a>. The
+expectation of <span class="math notranslate nohighlight">\(S_k\)</span> is</p>
+<div class="math notranslate nohighlight">
+\[
+\hbox{E}\lbrack{S_k}\rbrack = p\cdot (-1) + q\cdot 1 = 1 - 2p,
+\]</div>
+<p>and the variance is</p>
+<div class="math notranslate nohighlight">
+\[
+\hbox{Var}\lbrack{S_k}\rbrack = \hbox{E}\lbrack{S_k^2}\rbrack - \hbox{E}\lbrack{S_k}\rbrack^2 = 1 - (1-2p)^2 = 4p(1-p)\thinspace .
+\]</div>
+<p>The position after <span class="math notranslate nohighlight">\(k\)</span> steps is another stochastic variable</p>
+<div class="math notranslate nohighlight">
+\[
+\bar X_k = \sum_{i=0}^{k-1} S_i\thinspace .
+\]</div>
+<p>The expected position is</p>
+<div class="math notranslate nohighlight">
+\[
+\hbox{E}\lbrack{\bar X_k}\rbrack =
+\hbox{E}\lbrack{\sum_{i=0}^{k-1} S_i}\rbrack = \sum_{i=0}^{k-1} \hbox{E}\lbrack{S_i}\rbrack= k(1-2p)\thinspace .
+\]</div>
+<p>All the <span class="math notranslate nohighlight">\(S_k\)</span> variables are independent. The variance therefore becomes</p>
+<div class="math notranslate nohighlight">
+\[
+\hbox{Var}\lbrack{\bar X_k}\rbrack = \hbox{Var}\lbrack{\sum_{i=0}^{k-1} S_i}\rbrack = \sum_{i=0}^{k-1} \hbox{Var}\lbrack{S_i}\rbrack =
+k4p(1-p)\thinspace .
+\]</div>
+<p>We see that <span class="math notranslate nohighlight">\({\hbox{Var}\lbrack\bar X_k\rbrack}\)</span> is proportional with the number of steps <span class="math notranslate nohighlight">\(k\)</span>.
+For the very important case <span class="math notranslate nohighlight">\(p=q=\frac{1}{2}\)</span>, <span class="math notranslate nohighlight">\(\hbox{E}\lbrack{\bar X_k}\rbrack=0\)</span> and
+<span class="math notranslate nohighlight">\(\hbox{Var}\lbrack{\bar X_k}\rbrack=k\)</span>.</p>
+<p>How can we estimate <span class="math notranslate nohighlight">\(\hbox{E}\lbrack{\bar X_k}\rbrack=0\)</span> and <span class="math notranslate nohighlight">\(\hbox{Var}\lbrack{\bar X_k}\rbrack=N\)</span>?
+We must have many random walks of the type in
+<a class="reference external" href="#diffu:randomwalk:1D:fig:ensemble">Figure</a>. For a given <span class="math notranslate nohighlight">\(k\)</span>, say <span class="math notranslate nohighlight">\(k=100\)</span>,
+we find all the values of <span class="math notranslate nohighlight">\(\bar X_k\)</span>, name them <span class="math notranslate nohighlight">\(\bar x_{0,k}\)</span>, <span class="math notranslate nohighlight">\(\bar x_{1,k}\)</span>,
+<span class="math notranslate nohighlight">\(\bar x_{2,k}\)</span>, and so on. The empirical estimate of <span class="math notranslate nohighlight">\(\hbox{E}\lbrack{\bar X_k}\rbrack\)</span> is the
+average,</p>
+<div class="math notranslate nohighlight">
+\[
+\hbox{E}\lbrack{\bar X_k}\rbrack \approx \frac{1}{W}\sum_{j=0}^{W-1} \bar x_{j,k},
+\]</div>
+<p>while an empirical estimate of <span class="math notranslate nohighlight">\(\hbox{Var}\lbrack{\bar X_k}\rbrack\)</span> is</p>
+<div class="math notranslate nohighlight">
+\[
+\hbox{Var}\lbrack{\bar X_k}\rbrack \approx \frac{1}{W}\sum_{j=0}^{W-1} (\bar x_{j,k})^2 -
+\left(\frac{1}{W}\sum_{j=0}^{W-1} \bar x_{j,k}\right)^2\thinspace .
+\]</div>
+<p>That is, we take the statistics for a given <span class="math notranslate nohighlight">\(K\)</span> across the ensemble
+of random walks (“vertically” in
+<a class="reference external" href="#diffu:randomwalk:1D:fig:ensemble">Figure</a>). The key quantities
+to record are <span class="math notranslate nohighlight">\(\sum_i \bar x_{i,k}\)</span> and <span class="math notranslate nohighlight">\(\sum_i \bar x_{i,k}^2\)</span>.</p>
+</div>
+<div class="section" id="playing-around-with-some-code">
+<h2><span class="section-number">1.3. </span>Playing around with some code<a class="headerlink" href="#playing-around-with-some-code" title="Permalink to this headline">¶</a></h2>
+<div id="diffu:randomwalk:1D:code1"></div>
+<p>Python has a <code class="docutils literal notranslate"><span class="pre">random</span></code> module for drawing random numbers, and this
+module has a function <code class="docutils literal notranslate"><span class="pre">uniform(a,</span> <span class="pre">b)</span></code> for drawing a uniformly
+distributed random number in the interval <span class="math notranslate nohighlight">\([a,b)\)</span>.  If an event
+happens with probability <span class="math notranslate nohighlight">\(p\)</span>, we can simulate this on the computer by
+drawing a random number <span class="math notranslate nohighlight">\(r\)</span> in <span class="math notranslate nohighlight">\([0,1)\)</span>, because then <span class="math notranslate nohighlight">\(r\leq p\)</span> with
+probability <span class="math notranslate nohighlight">\(p\)</span> and <span class="math notranslate nohighlight">\(r&gt;p\)</span> with probability <span class="math notranslate nohighlight">\(1-p\)</span>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">:</span>
+    <span class="c1"># Event happens</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Event does not happen</span>
+</pre></div>
+</div>
+<p>A random walk with <span class="math notranslate nohighlight">\(N\)</span> steps, starting at <span class="math notranslate nohighlight">\(x_0\)</span>, where we move
+to the left with probability <span class="math notranslate nohighlight">\(p\)</span> and to the right
+with probability <span class="math notranslate nohighlight">\(1-p\)</span> can now be implemented by</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walk1D, src-diffu/random_walk.py</span>
+<span class="k">def</span> <span class="nf">random_walk1D</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;1D random walk with 1 particle and N moves.&quot;&quot;&quot;</span>
+    <span class="c1"># random is argument so we can use np.random instead</span>
+    <span class="c1"># and use it for testing</span>
+
+    <span class="c1"># Store position in step k in position[k]</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x0</span>
+    <span class="n">current_pos</span> <span class="o">=</span> <span class="n">x0</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">:</span>
+            <span class="n">current_pos</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">current_pos</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">position</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_pos</span>
+    <span class="k">return</span> <span class="n">position</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Since <span class="math notranslate nohighlight">\(N\)</span> is supposed to be large and we want to repeat the process for
+many particles, we should speed up the code as much as possible.
+Vectorization is the obvious technique here: we draw all the random
+numbers at once with aid of <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, and then we formulate vector
+operations to get rid of the loop over the steps (<code class="docutils literal notranslate"><span class="pre">k</span></code>).
+The <code class="docutils literal notranslate"><span class="pre">numpy.random</span></code> module has vectorized versions of the functions in
+Python’s built-in <code class="docutils literal notranslate"><span class="pre">random</span></code> module. For example, <code class="docutils literal notranslate"><span class="pre">numpy.random.uniform(a,</span> <span class="pre">b,</span> <span class="pre">N)</span></code>
+returns <code class="docutils literal notranslate"><span class="pre">N</span></code> random numbers uniformly distributed between <code class="docutils literal notranslate"><span class="pre">a</span></code> (included)
+and <code class="docutils literal notranslate"><span class="pre">b</span></code> (not included).</p>
+<p>We can then make an array of all the steps in a random walk: if
+the random number is less than or equal to <span class="math notranslate nohighlight">\(p\)</span>, the step is <span class="math notranslate nohighlight">\(-1\)</span>,
+otherwise the step is <span class="math notranslate nohighlight">\(1\)</span>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">N</span><span class="o">=</span><span class="mi">200</span>
+<span class="n">p</span><span class="o">=</span><span class="mi">50</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Our vectorized implementation using Devito is as follows:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Dimension</span><span class="p">,</span> <span class="n">Constant</span><span class="p">,</span> <span class="n">TimeFunction</span><span class="p">,</span> <span class="n">Function</span><span class="p">,</span> <span class="n">Eq</span><span class="p">,</span> <span class="n">Operator</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walk1D_vec, src-diffu/random_walk.py</span>
+<span class="k">def</span> <span class="nf">random_walk1D_vec</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Vectorized version of random_walk1D.&quot;&quot;&quot;</span>
+    <span class="c1"># Create and initialise r with dimension x_d</span>
+    <span class="n">x_d</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;x_d&#39;</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="n">Constant</span><span class="p">(</span><span class="s1">&#39;h_x&#39;</span><span class="p">))</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">TimeFunction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="p">(</span><span class="n">x_d</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,))</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x0</span>
+    
+    <span class="n">rs</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="p">(</span><span class="n">x_d</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,))</span>
+    <span class="n">steps</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rs</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># The next value is computed using the previous value and the steps function at that point</span>
+    <span class="n">eq</span> <span class="o">=</span> <span class="n">Eq</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="n">r</span> <span class="o">+</span> <span class="n">steps</span><span class="p">)</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="fixing-the-random-sequence">
+<h3><span class="section-number">1.3.1. </span>Fixing the random sequence<a class="headerlink" href="#fixing-the-random-sequence" title="Permalink to this headline">¶</a></h3>
+<p>During software development with random numbers it is advantageous to
+always generate the same sequence of random numbers, as this may help
+debugging processes. To fix the sequence, we set a <em>seed</em> of the random
+number generator to some chosen integer, e.g.,</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Calls to <code class="docutils literal notranslate"><span class="pre">random_walk1D</span></code> give positions of the particle as
+depicted in <a class="reference external" href="#diffu:randomwalk:1D:code1:fig1">Figure</a>. The particle starts
+at the origin and moves with <span class="math notranslate nohighlight">\(p=\frac{1}{2}\)</span>. Since the seed is the same,
+the plot to the left is just a magnification of the first 1,000 steps in
+the plot to the right.</p>
+<!-- demo_random_walk1D produced the plots -->
+<!-- dom:FIGURE: [fig-diffu/rw1D_1sample.png, width=800 frac=1] 1,000 (left) and 50,000 (right) steps of a random walk. <div id="diffu:randomwalk:1D:code1:fig1"></div> -->
+<!-- begin figure -->
+<div id="diffu:randomwalk:1D:code1:fig1"></div>
+<p>1,000 (left) and 50,000 (right) steps of a random walk.</p>
+<img src="fig-diffu/rw1D_1sample.png" width=800>
+<!-- end figure -->
+</div>
+</div>
+<div class="section" id="equivalence-with-diffusion">
+<h2><span class="section-number">1.4. </span>Equivalence with diffusion<a class="headerlink" href="#equivalence-with-diffusion" title="Permalink to this headline">¶</a></h2>
+<div id="diffu:randomwalk:1D:pde"></div>
+<p>The original random walk algorithm can be said to work with
+dimensionless coordinates <span class="math notranslate nohighlight">\(\bar x_i = -N + i\)</span>, <span class="math notranslate nohighlight">\(i=0,1,\ldots, 2N+1\)</span>
+(<span class="math notranslate nohighlight">\(i\in [-N,N]\)</span>), and <span class="math notranslate nohighlight">\(\bar t_n=n\)</span>, <span class="math notranslate nohighlight">\(n=0,1,\ldots,N\)</span>.  A mesh with
+spacings <span class="math notranslate nohighlight">\(\Delta x\)</span> and <span class="math notranslate nohighlight">\(\Delta t\)</span> with dimensions can be introduced
+by</p>
+<div class="math notranslate nohighlight">
+\[
+x_i = X_0 + \bar x_i \Delta x,\quad t_n = \bar t_n\Delta t\thinspace .
+\]</div>
+<p>If we implement the algorithm with dimensionless coordinates, we can just
+use this rescaling to obtain the movement in a coordinate system
+without unit spacings.</p>
+<p>Let <span class="math notranslate nohighlight">\(P^{n+1}_i\)</span> be the probability of finding the particle at mesh point
+<span class="math notranslate nohighlight">\(\bar x_i\)</span> at time <span class="math notranslate nohighlight">\(\bar t_{n+1}\)</span>. We can reach mesh point <span class="math notranslate nohighlight">\((i,n+1)\)</span> in two
+ways: either coming in from the left from <span class="math notranslate nohighlight">\((i-1,n)\)</span> or from the
+right (<span class="math notranslate nohighlight">\(i+1,n)\)</span>. Each has probability <span class="math notranslate nohighlight">\(\frac{1}{2}\)</span> (if we assume
+<span class="math notranslate nohighlight">\(p=q=\frac{1}{2}\)</span>). The fundamental equation for <span class="math notranslate nohighlight">\(P^{n+1}_i\)</span> is</p>
+<!-- Equation labels as ordinary links -->
+<div id="diffu:randomwalk:1D:pde:Markov"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+P^{n+1}_i = \frac{1}{2} P^{n}_{i-1} + \frac{1}{2} P^{n}_{i+1}\thinspace .
+\label{diffu:randomwalk:1D:pde:Markov} \tag{1}
+\end{equation}
+\]</div>
+<p>(This equation is easiest to understand if one looks at the random walk
+as a Markov process and applies the transition probabilities, but this is
+beyond scope of the present text.)</p>
+<p>Subtracting <span class="math notranslate nohighlight">\(P^{n}_i\)</span> from (<a class="reference external" href="#diffu:randomwalk:1D:pde:Markov">1</a>) results
+in</p>
+<div class="math notranslate nohighlight">
+\[
+P^{n+1}_i - P^{n}_i = \frac{1}{2} (P^{n}_{i-1} -2P^{n}_i + \frac{1}{2} P^{n}_{i+1})\thinspace .
+\]</div>
+<p>Readers who have seen the Forward Euler discretization of a 1D
+diffusion equation recognize this scheme as very close to such a
+discretization. We have</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial}{\partial t}P(x_i,t_{n})
+= \frac{P^{n+1}_i - P^{n}_i}{\Delta t} + \mathcal{O}({\Delta t}),
+\]</div>
+<p>or in dimensionless coordinates</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial}{\partial\bar t}P(\bar x_i,\bar t_n)
+\approx P^{n+1}_i - P^{n}_i\thinspace .
+\]</div>
+<p>Similarly, we have</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+\frac{\partial^2}{\partial x^2}P(x_i,t_n) &amp;=
+\frac{P^{n}_{i-1} -2P^{n}_i + \frac{1}{2} P^{n}_{i+1}}{\Delta x^2}
++ \mathcal{O}({\Delta x^2}),\\
+\frac{\partial^2}{\partial x^2}P(\bar x_i,\bar t_n) &amp;\approx
+P^{n}_{i-1} -2P^{n}_i + \frac{1}{2} P^{n}_{i+1}\thinspace .
+\end{align*}
+\end{split}\]</div>
+<p>Equation (<a class="reference external" href="#diffu:randomwalk:1D:pde:Markov">1</a>) is therefore equivalent with
+the dimensionless diffusion equation</p>
+<!-- Equation labels as ordinary links -->
+<div id="diffu:randomwalk:1D:pde:dimless"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+\frac{\partial P}{\partial\bar t} = \frac{1}{2}
+\frac{\partial^2 P}{\partial \bar x^2},
+\label{diffu:randomwalk:1D:pde:dimless} \tag{2}
+\end{equation}
+\]</div>
+<p>or the diffusion equation</p>
+<!-- Equation labels as ordinary links -->
+<div id="diffu:randomwalk:1D:pde:dim"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+\frac{\partial P}{\partial t} = D\frac{\partial^2 P}{\partial x^2},
+\label{diffu:randomwalk:1D:pde:dim} \tag{3}
+\end{equation}
+\]</div>
+<p>with diffusion coefficient</p>
+<div class="math notranslate nohighlight">
+\[
+D = \frac{\Delta x^2}{2\Delta t}\thinspace .
+\]</div>
+<p>This derivation shows the tight link between random walk and diffusion.
+If we keep track of where the particle is, and repeat the process
+many times, or run the algorithms for lots of particles, the histogram
+of the positions will approximate the solution of the diffusion equation
+for the local probability <span class="math notranslate nohighlight">\(P^n_i\)</span>.</p>
+<p>Suppose all the random walks start at the origin. Then the initial
+condition for the probability distribution is the Dirac delta
+function <span class="math notranslate nohighlight">\(\delta(x)\)</span>. The solution of (<a class="reference external" href="#diffu:randomwalk:1D:pde:dimless">2</a>)
+can be shown to be</p>
+<!-- Equation labels as ordinary links -->
+<div id="diffu:randomwalk:1D:pde:dimless:sol"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+\bar P(\bar x,\bar t) = \frac{1}{\sqrt{4\pi\alpha t}}e^{-\frac{x^2}{4\alpha t}},
+\label{diffu:randomwalk:1D:pde:dimless:sol} \tag{4}
+\end{equation}
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(\alpha = \frac{1}{2}\)</span>.</p>
+</div>
+<div class="section" id="implementation-of-multiple-walks">
+<h2><span class="section-number">1.5. </span>Implementation of multiple walks<a class="headerlink" href="#implementation-of-multiple-walks" title="Permalink to this headline">¶</a></h2>
+<div id="diffu:randomwalk:1D:multiplewalks"></div>
+<p>Our next task is to implement an ensemble of walks (for statistics,
+see the section <a class="reference external" href="#diffu:randomwalk:1D:EVar">Statistical considerations</a>) and also provide data from
+the walks such that we can compute the probabilities of the positions
+as introduced in the previous section. An appropriate representation
+of probabilities <span class="math notranslate nohighlight">\(P^n_i\)</span> are histograms (with <span class="math notranslate nohighlight">\(i\)</span> along the <span class="math notranslate nohighlight">\(x\)</span> axis)
+for a few selected values of <span class="math notranslate nohighlight">\(n\)</span>.</p>
+<p>To estimate the expectation and variance of the random walks,
+the section <a class="reference external" href="#diffu:randomwalk:1D:EVar">Statistical considerations</a> points to recording
+<span class="math notranslate nohighlight">\(\sum_j x_{j,k}\)</span> and <span class="math notranslate nohighlight">\(\sum_j x_{j,k}^2\)</span>, where <span class="math notranslate nohighlight">\(x_{j,k}\)</span> is the
+position at time/step level <span class="math notranslate nohighlight">\(k\)</span> in random walk number <span class="math notranslate nohighlight">\(j\)</span>.
+The histogram of positions needs the individual values <span class="math notranslate nohighlight">\(x_{i,k}\)</span>
+for all <span class="math notranslate nohighlight">\(i\)</span> values and some selected <span class="math notranslate nohighlight">\(k\)</span> values.</p>
+<p>We introduce <code class="docutils literal notranslate"><span class="pre">position[k]</span></code> to hold <span class="math notranslate nohighlight">\(\sum_j x_{j,k}\)</span>,
+<code class="docutils literal notranslate"><span class="pre">position2[k]</span></code> to hold <span class="math notranslate nohighlight">\(\sum_j (x_{j,k})^2\)</span>, and
+<code class="docutils literal notranslate"><span class="pre">pos_hist[i,k]</span></code> to hold <span class="math notranslate nohighlight">\(x_{i,k}\)</span>. A selection of <span class="math notranslate nohighlight">\(k\)</span> values can be
+specified by saying how many, <code class="docutils literal notranslate"><span class="pre">num_times</span></code>, and let them be equally
+spaced through time:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pos_hist_times</span> <span class="o">=</span> <span class="p">[(</span><span class="n">N</span><span class="o">//</span><span class="n">num_times</span><span class="p">)</span><span class="o">*</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_times</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>This is one of the few situations where we want integer division (<code class="docutils literal notranslate"><span class="pre">//</span></code>) or
+real division rounded to an integer.</p>
+<div class="section" id="vectorized-version">
+<h3><span class="section-number">1.5.1. </span>Vectorized version<a class="headerlink" href="#vectorized-version" title="Permalink to this headline">¶</a></h3>
+<p>We have already vectorized a single random walk. The additional
+challenge here is to vectorize the computation of the data for the
+histogram, <code class="docutils literal notranslate"><span class="pre">pos_hist</span></code>, but given the selected steps in <code class="docutils literal notranslate"><span class="pre">pos_hist_times</span></code>,
+we can find the corresponding positions by indexing with the
+list <code class="docutils literal notranslate"><span class="pre">pos_hist_times</span></code>: <code class="docutils literal notranslate"><span class="pre">position[post_hist_times]</span></code>, which are to be
+inserted in <code class="docutils literal notranslate"><span class="pre">pos_hist[n,:]</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walks1D_vec, src-diffu/random_walk.py</span>
+<span class="k">def</span> <span class="nf">random_walks1D_vec</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">num_walks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_times</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Vectorized version of random_walks1D.&quot;&quot;&quot;</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># Accumulated positions</span>
+    <span class="n">position2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># Accumulated positions**2</span>
+    <span class="c1"># Histogram at num_times selected time points</span>
+    <span class="n">pos_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_walks</span><span class="p">,</span> <span class="n">num_times</span><span class="p">))</span>
+    <span class="n">pos_hist_times</span> <span class="o">=</span> <span class="p">[(</span><span class="n">N</span><span class="o">//</span><span class="n">num_times</span><span class="p">)</span><span class="o">*</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_times</span><span class="p">)]</span>
+
+    <span class="c1"># Create and initialise our TimeFunction r</span>
+    <span class="n">x_d</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;x_d&#39;</span><span class="p">)</span>
+    <span class="n">t_d</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;t_d&#39;</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">TimeFunction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="p">(</span><span class="n">x_d</span><span class="p">,</span> <span class="n">t_d</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_walks</span><span class="p">))</span>
+    
+    <span class="c1"># Setting each walk&#39;s first element to x0</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">x0</span>
+    
+    <span class="n">steps</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="p">(</span><span class="n">x_d</span><span class="p">,</span><span class="n">t_d</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">num_walks</span><span class="p">))</span>
+        
+    <span class="c1"># Populating steps with -1 if value in rs &lt;= p at that point and 1 otherwise</span>
+    <span class="n">rs</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">num_walks</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_walks</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_walks</span><span class="p">):</span>
+        <span class="n">steps</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="n">N</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rs</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># Creating and applying operator that contains equation for adding steps</span>
+    <span class="n">eq</span> <span class="o">=</span> <span class="n">Eq</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="n">r</span> <span class="o">+</span> <span class="n">steps</span><span class="p">)</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
+    
+    <span class="c1"># Summing over data to give positions</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>               <span class="c1"># Accumulated positions</span>
+    <span class="n">position2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>           <span class="c1"># Accumulated positions**2</span>
+    
+    <span class="n">pos_hist</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pos_hist_times</span><span class="p">,:])</span>
+    
+    <span class="k">return</span> <span class="n">position</span><span class="p">,</span> <span class="n">position2</span><span class="p">,</span> <span class="n">pos_hist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pos_hist_times</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>What is the gain of the vectorized implementations? One important gain
+is that each vectorized operation can be automatically parallelized
+if one applies a parallel <code class="docutils literal notranslate"><span class="pre">numpy</span></code> library like <a class="reference external" href="http://numba.pydata.org">Numba</a>. On a single CPU, however, the speed up of the vectorized operations
+is also significant. With <span class="math notranslate nohighlight">\(N=1,000\)</span> and 50,000 repeated walks,
+the two vectorized versions run about 25 and 18 times faster than the scalar
+version, with <code class="docutils literal notranslate"><span class="pre">random_walks1D_vec1</span></code> being fastest.</p>
+<!-- The downside of vectorization of random walks is the large -->
+<!-- arrays that arise, especially the version in `random_walks1D_vec2`. -->
+<!-- CPU: -->
+<!-- N=1000, 50K walks -->
+<!-- scalar: 42, vec1: 1.7, vec2: 1.7, factors 25 and 25 -->
+</div>
+<div class="section" id="test-function">
+<h3><span class="section-number">1.5.2. </span>Test function<a class="headerlink" href="#test-function" title="Permalink to this headline">¶</a></h3>
+<p>During program development, it is highly recommended to carry out
+computations by hand for, e.g., <code class="docutils literal notranslate"><span class="pre">N=4</span></code> and <code class="docutils literal notranslate"><span class="pre">num_walks=3</span></code>.  Normally,
+this is done by executing the program with these parameters and
+checking with pen and paper that the computations make sense.  The
+next step is to use this test for correctness in a formal test
+function.</p>
+<p>We need to check that the simulation of multiple random walks
+reproduces the results of <code class="docutils literal notranslate"><span class="pre">random_walk1D</span></code> for the first walk, if the seed is the
+same.</p>
+<p>We arrive at the test function below.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_random_walks1D</span><span class="p">():</span>
+    <span class="c1"># For fixed seed, check that scalar and vectorized versions</span>
+    <span class="c1"># produce the same result</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="n">N</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span>  <span class="n">p</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+    <span class="c1"># Check that random_walks1D for 1 walk reproduces</span>
+    <span class="c1"># the walk in random_walk1D</span>
+    <span class="n">num_walks</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">computed</span> <span class="o">=</span> <span class="n">random_walks1D_vec</span><span class="p">(</span>
+        <span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">num_walks</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">random_walk1D_vec</span><span class="p">(</span>
+        <span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Computed: &quot;</span><span class="p">,</span> <span class="n">computed</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Expected: &quot;</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">computed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">expected</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_random_walks1D</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Operator `Kernel` run in 0.01 s
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Operator `Kernel` run in 0.01 s
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Computed:  [0. 1. 0. 1. 2.]
+Expected:  [0. 1. 0. 1. 2.]
+</pre></div>
+</div>
+</div>
+</div>
+<p>Such test functions are indispensable for further development of the code
+as we can at any time test whether the basic computations remain correct or not.
+This is particularly important in stochastic simulations since without
+test functions and fixed seeds, we always experience variations from run to
+run, and it can be very difficult to spot bugs through averaged statistical
+quantities.</p>
+<p>A full test suite for this notebook, along with the rest of the functions for random walks, can be found in <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">random_walk.py</span></code></span>.</p>
+</div>
+</div>
+<div class="section" id="demonstration-of-multiple-walks">
+<h2><span class="section-number">1.6. </span>Demonstration of multiple walks<a class="headerlink" href="#demonstration-of-multiple-walks" title="Permalink to this headline">¶</a></h2>
+<p>Assuming now that the code works, we can just scale up the number of
+steps in each walk and the number of walks. The latter influences the
+accuracy of the statistical estimates.  <a class="reference external" href="#diffu:randomwalk:1D:fig:demo1:EX">Figure</a> shows the impact of the number
+of walks on the expectation, which should approach zero.  <a class="reference external" href="#diffu:randomwalk:1D:fig:demo1:VarX">Figure</a> displays the corresponding
+estimate of the variance of the position, which should grow linearly
+with the number of steps. mathcal{I}_t does, seemingly very accurately, but
+notice that the scale on the <span class="math notranslate nohighlight">\(y\)</span> axis is so much larger than for the
+expectation, so irregularities due to the stochastic nature of the
+process become so much less visible in the variance plots.  The
+probability of finding a particle at a certain position at time (or
+step) 800 is shown in <a class="reference external" href="#diffu:randomwalk:1D:fig:demo1:HistX">Figure</a>. The dashed red line is the
+theoretical distribution (<a class="reference external" href="#diffu:randomwalk:1D:pde:dimless:sol">4</a>)
+arising from solving the diffusion equation
+(<a class="reference external" href="#diffu:randomwalk:1D:pde:dimless">2</a>) instead. As always, we realize
+that one needs significantly more statistical samples to estimate a
+histogram accurately than the expectation or variance.</p>
+<!-- dom:FIGURE: [fig-diffu/rw1D_EX_100_10000_100000_1000000.png, width=800 frac=1] Estimated expected value for 1000 steps, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right). <div id="diffu:randomwalk:1D:fig:demo1:EX"></div> -->
+<!-- begin figure -->
+<div id="diffu:randomwalk:1D:fig:demo1:EX"></div>
+<p>Estimated expected value for 1000 steps, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right).</p>
+<img src="fig-diffu/rw1D_EX_100_10000_100000_1000000.png" width=800>
+<!-- end figure -->
+<!-- dom:FIGURE: [fig-diffu/rw1D_VarX_100_10000_100000_1000000.png, width=800 frac=1] Estimated variance over 1000 steps, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right). <div id="diffu:randomwalk:1D:fig:demo1:VarX"></div> -->
+<!-- begin figure -->
+<div id="diffu:randomwalk:1D:fig:demo1:VarX"></div>
+<p>Estimated variance over 1000 steps, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right).</p>
+<img src="fig-diffu/rw1D_VarX_100_10000_100000_1000000.png" width=800>
+<!-- end figure -->
+<!-- dom:FIGURE: [fig-diffu/rw1D_HistX_100_10000_100000_1000000.png, width=800 frac=1] Estimated probability distribution at step 800, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right). <div id="diffu:randomwalk:1D:fig:demo1:HistX"></div> -->
+<!-- begin figure -->
+<div id="diffu:randomwalk:1D:fig:demo1:HistX"></div>
+<p>Estimated probability distribution at step 800, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right).</p>
+<img src="fig-diffu/rw1D_HistX_100_10000_100000_1000000.png" width=800>
+<!-- end figure -->
+</div>
+<div class="section" id="ascii-visualization-of-1d-random-walk">
+<h2><span class="section-number">1.7. </span>Ascii visualization of 1D random walk<a class="headerlink" href="#ascii-visualization-of-1d-random-walk" title="Permalink to this headline">¶</a></h2>
+<div id="diffu:randomwalk:1D:avplotter"></div>
+<p>If we want to study (very) long time series of random walks, it can be
+convenient to plot the position in a terminal window with the time axis
+pointing downwards. The module <code class="docutils literal notranslate"><span class="pre">avplotter</span></code> in SciTools has a class <code class="docutils literal notranslate"><span class="pre">Plotter</span></code>
+for plotting functions in the terminal window with the aid of ascii symbols
+only. Below is the code required to visualize a simple random walk,
+starting at the origin, and considered over
+when the point <span class="math notranslate nohighlight">\(x=-1\)</span> is reached. We use a spacing <span class="math notranslate nohighlight">\(\Delta x = 0.05\)</span> (so
+<span class="math notranslate nohighlight">\(x=-1\)</span> corresponds to <span class="math notranslate nohighlight">\(i=-20\)</span>).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="k">def</span> <span class="nf">run_random_walk</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">scitools.avplotter</span> <span class="kn">import</span> <span class="n">Plotter</span>
+    <span class="kn">import</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">Plotter</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">75</span><span class="p">)</span>   <span class="c1"># Horizontal axis: 75 chars wide</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="mf">0.05</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">random_step</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">dx</span><span class="o">*</span><span class="n">random_step</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>                  <span class="c1"># Destination reached!</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+
+        <span class="c1"># Allow Ctrl+c to abort the simulation</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># Wait for interrupt</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Interrupted by Ctrl+c&#39;</span><span class="p">)</span>
+            <span class="k">break</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Observe that we implement an infinite loop, but allow a smooth interrupt
+of the program by <code class="docutils literal notranslate"><span class="pre">Ctrl+c</span></code> through Python’s <code class="docutils literal notranslate"><span class="pre">KeyboardInterrupt</span></code>
+exception. This is a useful recipe that can be used in many occasions!</p>
+<p>The output looks typically like</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>                                *         |
+                                  *       |
+                                *         |
+                                  *       |
+                                *         |
+                                  *       |
+                                    *     |
+                                  *       |
+                                *         |
+                              *           |
+                            *             |
+                          *               |
+                            *             |
+                          *               |
+                         *                |
+                       *                  |
+                     *                    |
+                   *                      |
+</pre></div>
+</div>
+<p>Positions beyond the limits of the <span class="math notranslate nohighlight">\(x\)</span> axis appear with a value.
+<a class="reference external" href="http://bit.ly/1UbULeH">A long file</a>
+contains the complete ascii plot corresponding to the
+function <code class="docutils literal notranslate"><span class="pre">run_random_walk</span></code> above.</p>
+<!-- "https://github.com/hplgit/fdm-book/blob/master/doc/.src/chapters/diffu/fig-diffu/rw_ascii.txt" -->
+</div>
+<div class="section" id="random-walk-as-a-stochastic-equation">
+<h2><span class="section-number">1.8. </span>Random walk as a stochastic equation<a class="headerlink" href="#random-walk-as-a-stochastic-equation" title="Permalink to this headline">¶</a></h2>
+<div id="diffu:randomwalk:1D:ode"></div>
+<p>The (dimensionless) position in a random walk, <span class="math notranslate nohighlight">\(\bar X_k\)</span>, can be expressed as
+a stochastic difference equation:</p>
+<!-- Equation labels as ordinary links -->
+<div id="diffu:randomwalk:1D:ode:x"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+\bar X_k = \bar X_{k-1} + s, \quad x_0=0,
+\label{diffu:randomwalk:1D:ode:x} \tag{5}
+\end{equation}
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(s\)</span> is a <a class="reference external" href="https://en.wikipedia.org/wiki/Bernoulli_distribution">Bernoulli variable</a>,
+taking on the two values <span class="math notranslate nohighlight">\(s=-1\)</span> and <span class="math notranslate nohighlight">\(s=1\)</span>
+with equal probability:</p>
+<div class="math notranslate nohighlight">
+\[
+\hbox{P}(s=1)=\frac{1}{2},\quad \hbox{P}(s=-1)=\frac{1}{2}\thinspace .
+\]</div>
+<p>The <span class="math notranslate nohighlight">\(s\)</span> variable in a step is independent of the <span class="math notranslate nohighlight">\(s\)</span> variable in other steps.</p>
+<p>The difference equation expresses essentially the sum of independent
+Bernoulli variables.  Because of the central limit theorem, <span class="math notranslate nohighlight">\(X_k\)</span>,
+will then be normally distributed with expectation <span class="math notranslate nohighlight">\(k\hbox{E}\lbrack{s}\rbrack\)</span> and
+<span class="math notranslate nohighlight">\(k\hbox{Var}\lbrack{s}\rbrack\)</span>.  The expectation and variance of a Bernoulli variable with
+values <span class="math notranslate nohighlight">\(r=0\)</span> and <span class="math notranslate nohighlight">\(r=1\)</span> are <span class="math notranslate nohighlight">\(p\)</span> and <span class="math notranslate nohighlight">\(p(1-p)\)</span>, respectively.
+The variable <span class="math notranslate nohighlight">\(s=2r-1\)</span> then has expectation
+<span class="math notranslate nohighlight">\(2\hbox{E}\lbrack{r}\rbrack-1=2p-1=0\)</span> and variance <span class="math notranslate nohighlight">\(2^2\hbox{Var}\lbrack{r}\rbrack=4p(1-p)=1\)</span>.  The position
+<span class="math notranslate nohighlight">\(X_k\)</span> is normally distributed with zero expectation and variance <span class="math notranslate nohighlight">\(k\)</span>,
+as we found in the section <a class="reference external" href="#diffu:randomwalk:1D:EVar">Statistical considerations</a>.</p>
+<p>The central limit theorem tells that as long as <span class="math notranslate nohighlight">\(k\)</span> is not small,
+the distribution of <span class="math notranslate nohighlight">\(X_k\)</span> remains the same if
+we replace the Bernoulli variable <span class="math notranslate nohighlight">\(s\)</span> by any other stochastic variable with
+the same expectation and variance. In particular, we may let <span class="math notranslate nohighlight">\(s\)</span> be a
+standardized Gaussian variable (zero mean, unit variance).</p>
+<!-- Let us introduce -->
+<!-- !bt -->
+<!-- x_k = \Delta x\bar x_k,\] -->
+<!-- !et -->
+<!-- such that we take steps of length $\Delta x$. -->
+<p>Dividing (<a class="reference external" href="#diffu:randomwalk:1D:ode:x">5</a>) by <span class="math notranslate nohighlight">\(\Delta t\)</span> gives</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\bar X_k - \bar X_{k-1}}{\Delta t} = \frac{1}{\Delta t} s\thinspace .
+\]</div>
+<p>In the limit <span class="math notranslate nohighlight">\(\Delta t\rightarrow 0\)</span>, <span class="math notranslate nohighlight">\(s/\Delta t\)</span> approaches a white noise
+stochastic process.
+With <span class="math notranslate nohighlight">\(\bar X(t)\)</span> as the continuous process in the limit
+<span class="math notranslate nohighlight">\(\Delta t\rightarrow 0\)</span> (<span class="math notranslate nohighlight">\(X_k\rightarrow X(t_k)\)</span>),
+we formally get the stochastic differential equation</p>
+<!-- Equation labels as ordinary links -->
+<div id="_auto1"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+d\bar X = dW,
+\label{_auto1} \tag{6}
+\end{equation}
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(W(t)\)</span> is a <a class="reference external" href="https://en.wikipedia.org/wiki/Wiener_process">Wiener process</a>. Then <span class="math notranslate nohighlight">\(X\)</span> is also a
+Wiener process. It follows from the stochastic ODE <span class="math notranslate nohighlight">\(dX=dW\)</span> that the
+probability distribution of <span class="math notranslate nohighlight">\(X\)</span> is given by the <a class="reference external" href="https://en.wikipedia.org/wiki/Fokker-Planck_equation">Fokker-Planck
+equation</a>
+(<a class="reference external" href="#diffu:randomwalk:1D:pde:dimless">2</a>).  In other words, the key
+results for random walk we found earlier can alternatively be
+derived via a stochastic ordinary differential equation and its
+related Fokker-Planck equation.</p>
+</div>
+<div class="section" id="random-walk-in-2d">
+<h2><span class="section-number">1.9. </span>Random walk in 2D<a class="headerlink" href="#random-walk-in-2d" title="Permalink to this headline">¶</a></h2>
+<p>The most obvious generalization of 1D random walk to two spatial
+dimensions is to allow movements to the north, east, south, and west,
+with equal probability <span class="math notranslate nohighlight">\(\frac{1}{4}\)</span>. This can be intuitively demonstrated using the following scalar implementation:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walk2D, src-diffu/random_walk.py</span>
+<span class="k">def</span> <span class="nf">random_walk2D</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;2D random walk with 1 particle and N moves: N, E, W, S.&quot;&quot;&quot;</span>
+    <span class="c1"># Store position in step k in position[k]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+    <span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">x0</span>
+    <span class="n">current_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="mf">0.25</span><span class="p">:</span>
+            <span class="n">current_pos</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>   <span class="c1"># Move north</span>
+        <span class="k">elif</span> <span class="mf">0.25</span> <span class="o">&lt;</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">current_pos</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>   <span class="c1"># Move east</span>
+        <span class="k">elif</span> <span class="mf">0.5</span> <span class="o">&lt;</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="mf">0.75</span><span class="p">:</span>
+            <span class="n">current_pos</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># Move south</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">current_pos</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>  <span class="c1"># Move west</span>
+        <span class="n">position</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">current_pos</span>
+    <span class="k">return</span> <span class="n">position</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The left plot in <a class="reference external" href="#diffu:randomwalk:2D:fig:rect_vs_diag">Figure</a> provides
+an example on 200 steps with this kind of walk. We may refer to this walk
+as a walk on a <em>rectangular mesh</em> as we move from any spatial
+mesh point <span class="math notranslate nohighlight">\((i,j)\)</span> to one of its four neighbors in the rectangular directions:
+<span class="math notranslate nohighlight">\((i+1,j)\)</span>, <span class="math notranslate nohighlight">\((i-1,j)\)</span>, <span class="math notranslate nohighlight">\((i,j+1)\)</span>, or <span class="math notranslate nohighlight">\((i,j-1)\)</span>.</p>
+<!-- dom:FIGURE: [fig-diffu/rw2D_sample200.png, width=800 frac=1] Random walks in 2D with 200 steps: rectangular mesh (left) and diagonal mesh (right). <div id="diffu:randomwalk:2D:fig:rect_vs_diag"></div> -->
+<!-- begin figure -->
+<div id="diffu:randomwalk:2D:fig:rect_vs_diag"></div>
+<p>Random walks in 2D with 200 steps: rectangular mesh (left) and diagonal mesh (right).</p>
+<img src="fig-diffu/rw2D_sample200.png" width=800>
+<!-- end figure -->
+</div>
+<div class="section" id="random-walk-in-any-number-of-space-dimensions">
+<h2><span class="section-number">1.10. </span>Random walk in any number of space dimensions<a class="headerlink" href="#random-walk-in-any-number-of-space-dimensions" title="Permalink to this headline">¶</a></h2>
+<p>From a programming point of view, especially when implementing a random
+walk in any number of dimensions, it is more natural to consider a walk
+in the diagonal directions NW, NE, SW, and SE. On a two-dimensional spatial mesh
+it means that we go from <span class="math notranslate nohighlight">\((i,j)\)</span> to either <span class="math notranslate nohighlight">\((i+1,j+1)\)</span>, <span class="math notranslate nohighlight">\((i-1,j+1)\)</span>,
+<span class="math notranslate nohighlight">\((i+1,j-1)\)</span>, or <span class="math notranslate nohighlight">\((i-1,j-1)\)</span>. We can with such a <em>diagonal mesh</em>
+(see right plot in <a class="reference external" href="#diffu:randomwalk:2D:fig:rect_vs_diag">Figure</a>)
+draw a Bernoulli variable for the step in each spatial direction and
+trivially write code that works in any number of spatial directions:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walkdD, src-diffu/random_walk.py</span>
+<span class="k">def</span> <span class="nf">random_walkdD</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Any-D (diagonal) random walk with 1 particle and N moves.&quot;&quot;&quot;</span>
+    <span class="c1"># Store position in step k in position[k]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+    <span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">x0</span>
+    <span class="n">current_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">:</span>
+                <span class="n">current_pos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">current_pos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">position</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">current_pos</span>
+    <span class="k">return</span> <span class="n">position</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>A vectorized version is desired. We follow the ideas from the section <a class="reference external" href="#diffu:randomwalk:1D:code1">Playing around with some code</a>. We need to add an extra <code class="docutils literal notranslate"><span class="pre">Dimension</span></code> to our <code class="docutils literal notranslate"><span class="pre">TimeFunction</span></code>, representing the number of space dimensions. We also need to generate <code class="docutils literal notranslate"><span class="pre">N*d</span></code> random values, which we can do using the <code class="docutils literal notranslate"><span class="pre">uniform</span></code> function from before and specifying the <code class="docutils literal notranslate"><span class="pre">size</span></code> argument as <code class="docutils literal notranslate"><span class="pre">N*d</span></code>. This can be represented as follows:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walkdD_vec, src-diffu/random_walk.py</span>
+<span class="k">def</span> <span class="nf">random_walkdD_vec</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Vectorized version of random_walkdD.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Here, x0 is an array of initial values in each spatial dimension</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+    
+    <span class="n">x_d</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;x_d&#39;</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="n">Constant</span><span class="p">(</span><span class="s1">&#39;h_x&#39;</span><span class="p">))</span>
+    <span class="c1"># Add space dimensions</span>
+    <span class="n">d_d</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="n">Constant</span><span class="p">(</span><span class="s1">&#39;h_d&#39;</span><span class="p">))</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">TimeFunction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="p">(</span><span class="n">x_d</span><span class="p">,</span> <span class="n">d_d</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x0</span>
+    
+    <span class="n">rs</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="p">(</span><span class="n">x_d</span><span class="p">,</span> <span class="n">d_d</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+    <span class="n">steps</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="n">N</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rs</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># The next value is computed using the previous value and the steps function at that point</span>
+    <span class="n">eq</span> <span class="o">=</span> <span class="n">Eq</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="n">r</span> <span class="o">+</span> <span class="n">steps</span><span class="p">)</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+</div>
+</div>
+<!-- dom:FIGURE: [fig-diffu/rw2D_samples_5000.png, width=800 frac=1] Four random walks with 5000 steps in 2D. <div id="diffu:randomwalk:2D:fig:samples"></div> -->
+<!-- begin figure -->
+<div id="diffu:randomwalk:2D:fig:samples"></div>
+<p>Four random walks with 5000 steps in 2D.</p>
+<img src="fig-diffu/rw2D_samples_5000.png" width=800>
+<!-- end figure -->
+</div>
+<div class="section" id="multiple-random-walks-in-any-number-of-space-dimensions">
+<h2><span class="section-number">1.11. </span>Multiple random walks in any number of space dimensions<a class="headerlink" href="#multiple-random-walks-in-any-number-of-space-dimensions" title="Permalink to this headline">¶</a></h2>
+<p>As we did in 1D, we extend one single walk to a number of walks (<code class="docutils literal notranslate"><span class="pre">num_walks</span></code> in the code). We can take a look at our function for multiple random walks (<code class="docutils literal notranslate"><span class="pre">random_walks1D</span></code>) from the <a class="reference external" href="#diffu:randomwalk:1D:multiplewalks">Implementation of multiple walks</a> section. The changes we make here are similar to those we made for <code class="docutils literal notranslate"><span class="pre">random_walkdD_vec</span></code>, in that we add an extra <code class="docutils literal notranslate"><span class="pre">Dimension</span></code> to represent the number of space dimensions.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walksdD_vec, src-diffu/random_walk.py</span>
+<span class="k">def</span> <span class="nf">random_walksdD_vec</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">num_walks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_times</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Vectorized version of random_walksdD.&quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+    <span class="n">position</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>  <span class="c1"># Accumulated positions</span>
+    <span class="n">position2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>  <span class="c1"># Accumulated positions**2</span>
+    <span class="c1"># Histogram at num_times selected time points</span>
+    <span class="n">pos_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_walks</span><span class="p">,</span> <span class="n">num_times</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+    <span class="n">pos_hist_times</span> <span class="o">=</span> <span class="p">[(</span><span class="n">N</span><span class="o">//</span><span class="n">num_times</span><span class="p">)</span><span class="o">*</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_times</span><span class="p">)]</span>
+
+    <span class="c1"># Create and initialise our TimeFunction r</span>
+    <span class="n">x_d</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;x_d&#39;</span><span class="p">)</span>
+    <span class="n">t_d</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;t_d&#39;</span><span class="p">)</span>
+    <span class="n">d_d</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;d_d&#39;</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">TimeFunction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="p">(</span><span class="n">x_d</span><span class="p">,</span> <span class="n">t_d</span><span class="p">,</span> <span class="n">d_d</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_walks</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+    <span class="c1"># Setting each walk&#39;s first element to x0</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x0</span>
+    
+    <span class="n">steps</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="p">(</span><span class="n">x_d</span><span class="p">,</span><span class="n">t_d</span><span class="p">,</span><span class="n">d_d</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">num_walks</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
+        
+    <span class="c1"># Populating steps with -1 if value in rs &lt;= p at that point and 1 otherwise</span>
+    <span class="n">rs</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="o">*</span><span class="n">num_walks</span><span class="o">*</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_walks</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_walks</span><span class="p">):</span>
+        <span class="n">steps</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="n">N</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rs</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># Creating and applying operator that contains equation for adding steps</span>
+    <span class="n">eq</span> <span class="o">=</span> <span class="n">Eq</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="n">r</span> <span class="o">+</span> <span class="n">steps</span><span class="p">)</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
+    
+    <span class="c1"># Summing over data to give positions</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>               <span class="c1"># Accumulated positions</span>
+    <span class="n">position2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>           <span class="c1"># Accumulated positions**2</span>
+    
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_walks</span><span class="p">):</span>
+        <span class="n">pos_hist</span><span class="p">[</span><span class="n">k</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">pos_hist_times</span><span class="p">,</span><span class="n">k</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">position</span><span class="p">,</span> <span class="n">position2</span><span class="p">,</span> <span class="n">pos_hist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pos_hist_times</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<!-- 2D N=4M -->
+<!-- scalar/vec (1 walk): 25 -->
+<!-- 2D N=5000 -->
+<!-- num_walks=10K -->
+<!-- scalar/vec=50 -->
+<!-- 3D: 40 -->
+<!-- 1D: 100 -->
+<!-- scalar is about the same for 1D, 2D, 3D, but vec is 0.3, 0.7, 1.0 --></div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./notebooks/diffu"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        </div>
+    </div>
+    
+    
+    <div class='prev-next-bottom'>
+        
+    <a class='left-prev' id="prev-link" href="../wave/wave1D_prog.html" title="previous page"><span class="section-number">3. </span>Implementation</a>
+
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By The Devito Project Community<br/>
+        
+            &copy; Copyright 2020.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    <script src="../../_static/js/index.js"></script>
+    
+  </body>
+</html>
