@@ -21,11 +21,10 @@ This work is licensed under a
 
 ### Directory structure
 
-A summary of the most important subdirectories of this repository is as follows:
+The most important subdirectories in this repository are:
 
-* `doc` and `src` contain the documents and source code for the [original book](https://github.com/hplgit/fdm-book)
-* `fdm-devito-notebooks` contains Jupyter notebooks of the original book with Devito implementations (WIP)
-* `fdm-jupyter-book` contains the completed Jupyter notebooks from `fdm-devito-notebooks`, deployed using GitHub pages [here](https://devitoproject.org/devito_book)
+* `fdm-devito-notebooks`, which contains the Jupyter notebooks from the original book with Devito implementations (WIP)
+* `fdm-jupyter-book`, which contains the **completed** Jupyter notebooks from `fdm-devito-notebooks`, deployed using GitHub pages [here](https://devitoproject.org/devito_book)
 
 ### How to use the Devito Book
 
