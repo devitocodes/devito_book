@@ -7,7 +7,7 @@
 ![Jupyter Notebooks](https://github.com/devitocodes/devito_book/workflows/Jupyter%20Notebooks/badge.svg)
 ![Verification](https://github.com/devitocodes/devito_book/workflows/Verification/badge.svg)
 ![Deploy Jupyter Book](https://github.com/devitocodes/devito_book/workflows/Deploy%20Jupyter%20Book/badge.svg)
-[![Slack Status](https://img.shields.io/badge/chat-on%20slack-%2336C5F0)](https://opesci-slackin.now.sh)
+[![Slack Status](https://img.shields.io/badge/chat-on%20slack-%2336C5F0)](https://devitocodes.slack.com/join/shared_invite/zt-gtd2yxj9-Y31YKk_7lr9AwfXeL2iMFg#/)
 
 
 ## The Devito Book
