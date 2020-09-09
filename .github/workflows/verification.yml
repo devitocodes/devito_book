@@ -1,3 +1,4 @@
+# Workflow for running verification tests from original textbook on Devito functions
 name: Verification
 
 on:
