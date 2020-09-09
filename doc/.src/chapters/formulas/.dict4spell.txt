@@ -1,3 +1,0 @@
-Langtangen
-SymPy
-wiki
