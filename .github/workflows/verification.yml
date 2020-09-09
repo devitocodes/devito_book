@@ -76,6 +76,12 @@ jobs:
       run: |
         cd fdm-devito-notebooks/02_wave/src-wave/wave1D
         $RUN_CMD python -m pytest -W ignore::DeprecationWarning -s -v --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP wave1D_u0.py::test_constant
+    - name: Diffusion (3.7)
+      run: |
+        cd fdm-devito-notebooks/03_diffu/src-diffu
+        $RUN_CMD python -m pytest -W ignore::DeprecationWarning -s -v --cov . --cov-config=.coveragerc --cov-report=xml:diffu_coverage.xml $SKIP random_walk.py
+     
+    
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.6
       with:
