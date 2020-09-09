@@ -1,3 +1,4 @@
+# Workflow for checking notebooks in fdm-devito-notebooks are compiling using nbval
 name: Jupyter Notebooks
 
 on:
