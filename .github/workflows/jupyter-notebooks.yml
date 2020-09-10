@@ -82,6 +82,9 @@ jobs:
     - name: Diffusion notebooks (3.7)
       run: |
         $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:diffu_coverage.xml $SKIP fdm-devito-notebooks/03_diffu/diffu_rw.ipynb
+    - name: Advection notebook (4)
+      run: |
+        $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:advec_coverage.xml $SKIP fdm-devito-notebooks/04_advec/advec.ipynb
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.6
       with:
