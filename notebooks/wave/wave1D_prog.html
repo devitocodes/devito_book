@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3. Implementation &#8212; The Devito Book</title>
+    <title>Implementation &#8212; The Devito Book</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous">
     <link href="../../_static/css/index.css" rel="stylesheet">
     <link rel="stylesheet" href="../../_static/sphinx-book-theme.css" type="text/css" />
@@ -37,8 +37,8 @@
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="1. Random walk" href="../diffu/diffu_rw.html" />
-    <link rel="prev" title="1. Simulation of waves on a string" href="wave1D_fd1.html" />
+    <link rel="next" title="Coming soon" href="wave_placeholder.html" />
+    <link rel="prev" title="Simulation of waves on a string" href="wave1D_fd1.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="docsearch:language" content="en">
@@ -86,47 +86,52 @@
 <ul class="nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html">
-   1. Finite difference discretization
+   Finite difference discretization
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#implementation">
-   2. Implementation
+   Implementation
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#visualization-of-long-time-simulations">
-   3. Visualization of long time simulations
+   Visualization of long time simulations
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#analysis-of-the-numerical-scheme">
-   4. Analysis of the numerical scheme
+   Analysis of the numerical scheme
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#alternative-schemes-based-on-1st-order-equations">
-   5. Alternative schemes based on 1st-order equations
+   Alternative schemes based on 1st-order equations
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#energy-considerations">
-   6. Energy considerations
+   Energy considerations
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#the-euler-cromer-method">
-   7. The Euler-Cromer method
+   The Euler-Cromer method
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#staggered-mesh">
-   8. Staggered mesh
+   Staggered mesh
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#exercises-and-problems">
-   9. Exercises and Problems
+   Exercises and Problems
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_placeholder.html">
+   Coming soon
   </a>
  </li>
 </ul>
@@ -138,22 +143,27 @@
 <ul class="current nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="wave1D_fd1.html">
-   1. Simulation of waves on a string
+   Simulation of waves on a string
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="wave1D_fd1.html#verification">
-   2. Verification
+   Verification
   </a>
  </li>
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   3. Implementation
+   Implementation
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="#exercises">
-   4. Exercises
+   Exercises
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="wave_placeholder.html">
+   Coming soon
   </a>
  </li>
 </ul>
@@ -165,7 +175,36 @@
 <ul class="nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="../diffu/diffu_rw.html">
-   1. Random walk
+   Random walk
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../diffu/diffu_placeholder.html">
+   Coming soon
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Advection equations
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../advec/advec_placeholder.html">
+   Coming soon
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Nonlinear problems
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../nonlin/nonlin_placeholder.html">
+   Coming soon
   </a>
  </li>
 </ul>
@@ -275,59 +314,59 @@
             <ul class="nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#callback-function-for-user-specific-actions">
-   3.1. Callback function for user-specific actions
+   Callback function for user-specific actions
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#the-solver-function">
-   3.2. The solver function
+   The solver function
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#verification-exact-quadratic-solution">
-   3.3. Verification: exact quadratic solution
+   Verification: exact quadratic solution
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#verification-convergence-rates">
-   3.4. Verification: convergence rates
+   Verification: convergence rates
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#visualization-animating-the-solution">
-   3.5. Visualization: animating the solution
+   Visualization: animating the solution
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#function-for-administering-the-simulation">
-     3.5.1. Function for administering the simulation
+     Function for administering the simulation
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#dissection-of-the-code">
-     3.5.2. Dissection of the code
+     Dissection of the code
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#making-movie-files">
-     3.5.3. Making movie files
+     Making movie files
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#skipping-frames-for-animation-speed">
-     3.5.4. Skipping frames for animation speed
+     Skipping frames for animation speed
     </a>
    </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#running-a-case">
-   3.6. Running a case
+   Running a case
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#working-with-a-scaled-pde-model">
-   3.7. Working with a scaled PDE model
+   Working with a scaled PDE model
   </a>
  </li>
 </ul>
@@ -341,7 +380,7 @@
               <div>
                 
   <div class="section" id="implementation">
-<h1><span class="section-number">3. </span>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h1>
+<h1>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h1>
 <div id="wave:pde1:impl"></div>
 <p>This section presents the complete computational algorithm, its
 implementation in Python code, animation of the solution, and
@@ -367,7 +406,7 @@ mesh resolutions. Plotting functions of <span class="math notranslate nohighligh
 with different spatial resolution is trivial,
 so it is easier to let <span class="math notranslate nohighlight">\(\Delta x\)</span> vary in the simulations than <span class="math notranslate nohighlight">\(\Delta t\)</span>.</p>
 <div class="section" id="callback-function-for-user-specific-actions">
-<h2><span class="section-number">3.1. </span>Callback function for user-specific actions<a class="headerlink" href="#callback-function-for-user-specific-actions" title="Permalink to this headline">¶</a></h2>
+<h2>Callback function for user-specific actions<a class="headerlink" href="#callback-function-for-user-specific-actions" title="Permalink to this headline">¶</a></h2>
 <div id="wave:pde1:impl:useraction"></div>
 <p>The solution at all spatial points at a new time level is stored in an
 array <code class="docutils literal notranslate"><span class="pre">u</span></code> of length <span class="math notranslate nohighlight">\(N_x+1\)</span>. We need to decide what to do with
@@ -402,7 +441,7 @@ amplitude of the waves exceed 10, which is here considered as a numerical
 instability.</p>
 </div>
 <div class="section" id="the-solver-function">
-<h2><span class="section-number">3.2. </span>The solver function<a class="headerlink" href="#the-solver-function" title="Permalink to this headline">¶</a></h2>
+<h2>The solver function<a class="headerlink" href="#the-solver-function" title="Permalink to this headline">¶</a></h2>
 <div id="wave:pde1:impl:solver"></div>
 <p>A first attempt at a solver function is listed below.</p>
 <div class="cell docutils container">
@@ -549,7 +588,7 @@ correspond to the cell sizes in <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="section" id="verification-exact-quadratic-solution">
-<h2><span class="section-number">3.3. </span>Verification: exact quadratic solution<a class="headerlink" href="#verification-exact-quadratic-solution" title="Permalink to this headline">¶</a></h2>
+<h2>Verification: exact quadratic solution<a class="headerlink" href="#verification-exact-quadratic-solution" title="Permalink to this headline">¶</a></h2>
 <div id="wave:pde1:impl:verify:quadratic"></div>
 <p>We use the test problem derived in the section <a class="reference external" href="wave1D_fd1.ipynb#wave:pde2:fd">A slightly generalized model problem</a> for
 verification. Below is a unit test based on this test problem
@@ -601,7 +640,7 @@ in this file work:</p>
 </div>
 </div>
 <div class="section" id="verification-convergence-rates">
-<h2><span class="section-number">3.4. </span>Verification: convergence rates<a class="headerlink" href="#verification-convergence-rates" title="Permalink to this headline">¶</a></h2>
+<h2>Verification: convergence rates<a class="headerlink" href="#verification-convergence-rates" title="Permalink to this headline">¶</a></h2>
 <div id="wave:pde1:impl:verify:rate"></div>
 <p>A more general method, but not so reliable as a verification method,
 is to compute the convergence rates and see if they coincide with
@@ -691,7 +730,7 @@ a proper test function:</p>
 show the rates 2.05, 1.98, 2.00, 2.00, and 2.00 (to two decimals).</p>
 </div>
 <div class="section" id="visualization-animating-the-solution">
-<h2><span class="section-number">3.5. </span>Visualization: animating the solution<a class="headerlink" href="#visualization-animating-the-solution" title="Permalink to this headline">¶</a></h2>
+<h2>Visualization: animating the solution<a class="headerlink" href="#visualization-animating-the-solution" title="Permalink to this headline">¶</a></h2>
 <div id="wave:pde1:impl:animate"></div>
 <p>Now that we have verified the implementation it is time to do a
 real computation where we also display evolution of the waves
@@ -700,7 +739,7 @@ what type of visualizations we may want, it calls the callback function
 <code class="docutils literal notranslate"><span class="pre">user_action(u,</span> <span class="pre">x,</span> <span class="pre">t,</span> <span class="pre">n)</span></code>. We must therefore write this function and
 find the proper statements for plotting the solution.</p>
 <div class="section" id="function-for-administering-the-simulation">
-<h3><span class="section-number">3.5.1. </span>Function for administering the simulation<a class="headerlink" href="#function-for-administering-the-simulation" title="Permalink to this headline">¶</a></h3>
+<h3>Function for administering the simulation<a class="headerlink" href="#function-for-administering-the-simulation" title="Permalink to this headline">¶</a></h3>
 <p>The following <code class="docutils literal notranslate"><span class="pre">viz</span></code> function</p>
 <ol class="simple">
 <li><p>defines a <code class="docutils literal notranslate"><span class="pre">user_action</span></code> callback function
@@ -787,7 +826,7 @@ for plotting the solution at each time level,</p></li>
 </div>
 </div>
 <div class="section" id="dissection-of-the-code">
-<h3><span class="section-number">3.5.2. </span>Dissection of the code<a class="headerlink" href="#dissection-of-the-code" title="Permalink to this headline">¶</a></h3>
+<h3>Dissection of the code<a class="headerlink" href="#dissection-of-the-code" title="Permalink to this headline">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">viz</span></code> function can either use SciTools or Matplotlib for
 visualizing the solution. The <code class="docutils literal notranslate"><span class="pre">user_action</span></code> function based on SciTools
 is called <code class="docutils literal notranslate"><span class="pre">plot_u_st</span></code>, while the <code class="docutils literal notranslate"><span class="pre">user_action</span></code> function based on
@@ -836,7 +875,7 @@ such that the instance <code class="docutils literal notranslate"><span class="p
 callback function from <code class="docutils literal notranslate"><span class="pre">solver</span></code>.</p>
 </div>
 <div class="section" id="making-movie-files">
-<h3><span class="section-number">3.5.3. </span>Making movie files<a class="headerlink" href="#making-movie-files" title="Permalink to this headline">¶</a></h3>
+<h3>Making movie files<a class="headerlink" href="#making-movie-files" title="Permalink to this headline">¶</a></h3>
 <p>From the
 <code class="docutils literal notranslate"><span class="pre">frame_*.png</span></code> files containing the frames in the animation we can
 make video files.</p>
@@ -888,7 +927,7 @@ Note that the movie in this case consists of the <code class="docutils literal n
 and all the frame files <code class="docutils literal notranslate"><span class="pre">tmp_*.png</span></code>.</p>
 </div>
 <div class="section" id="skipping-frames-for-animation-speed">
-<h3><span class="section-number">3.5.4. </span>Skipping frames for animation speed<a class="headerlink" href="#skipping-frames-for-animation-speed" title="Permalink to this headline">¶</a></h3>
+<h3>Skipping frames for animation speed<a class="headerlink" href="#skipping-frames-for-animation-speed" title="Permalink to this headline">¶</a></h3>
 <p>Sometimes the time step is small and <span class="math notranslate nohighlight">\(T\)</span> is large, leading to an
 inconveniently large number of plot files and a slow animation on the
 screen. The solution to such a problem is to decide on a total number
@@ -923,7 +962,7 @@ in the file <span class="xref myst"><code class="docutils literal notranslate"><
 </div>
 </div>
 <div class="section" id="running-a-case">
-<h2><span class="section-number">3.6. </span>Running a case<a class="headerlink" href="#running-a-case" title="Permalink to this headline">¶</a></h2>
+<h2>Running a case<a class="headerlink" href="#running-a-case" title="Permalink to this headline">¶</a></h2>
 <div id="wave:pde1:guitar:data"></div>
 <p>The first demo of our 1D wave equation solver concerns vibrations of a
 string that is initially deformed to a triangular shape, like when picking
@@ -993,7 +1032,7 @@ somewhat wavy due to numerical approximation. Run the case with the
 <code class="docutils literal notranslate"><span class="pre">wave1D_u0.py</span></code> code and <span class="math notranslate nohighlight">\(C=1\)</span> to see the exact solution.</p>
 </div>
 <div class="section" id="working-with-a-scaled-pde-model">
-<h2><span class="section-number">3.7. </span>Working with a scaled PDE model<a class="headerlink" href="#working-with-a-scaled-pde-model" title="Permalink to this headline">¶</a></h2>
+<h2>Working with a scaled PDE model<a class="headerlink" href="#working-with-a-scaled-pde-model" title="Permalink to this headline">¶</a></h2>
 <p>Depending on the model, it may be a substantial job to establish
 consistent and relevant physical parameter values for a case.  The
 guitar string example illustrates the point.  However, by <em>scaling</em>
@@ -1095,10 +1134,10 @@ shorter period <span class="math notranslate nohighlight">\(\tilde P=2/n\)</span
 </div>
 </div>
 <div class="section" id="exercises">
-<h1><span class="section-number">4. </span>Exercises<a class="headerlink" href="#exercises" title="Permalink to this headline">¶</a></h1>
+<h1>Exercises<a class="headerlink" href="#exercises" title="Permalink to this headline">¶</a></h1>
 <!-- --- begin exercise --- -->
 <div class="section" id="exercise-1-simulate-a-standing-wave">
-<h2><span class="section-number">4.1. </span>Exercise 1: Simulate a standing wave<a class="headerlink" href="#exercise-1-simulate-a-standing-wave" title="Permalink to this headline">¶</a></h2>
+<h2>Exercise 1: Simulate a standing wave<a class="headerlink" href="#exercise-1-simulate-a-standing-wave" title="Permalink to this headline">¶</a></h2>
 <div id="wave:exer:standingwave"></div>
 <p>The purpose of this exercise is to simulate standing waves on <span class="math notranslate nohighlight">\([0,L]\)</span>
 and illustrate the error in the simulation.
@@ -1280,7 +1319,7 @@ The code:</p>
 <p>Filename: <code class="docutils literal notranslate"><span class="pre">wave_standing</span></code>.</p>
 <!-- Closing remarks for this Exercise -->
 <div class="section" id="remarks">
-<h3><span class="section-number">4.1.1. </span>Remarks<a class="headerlink" href="#remarks" title="Permalink to this headline">¶</a></h3>
+<h3>Remarks<a class="headerlink" href="#remarks" title="Permalink to this headline">¶</a></h3>
 <p>The important
 parameters for numerical quality are <span class="math notranslate nohighlight">\(C\)</span> and <span class="math notranslate nohighlight">\(k\Delta x\)</span>, where
 <span class="math notranslate nohighlight">\(C=c\Delta t/\Delta x\)</span> is the Courant number and <span class="math notranslate nohighlight">\(k\)</span> is defined above
@@ -1291,7 +1330,7 @@ in space, see the <a class="reference external" href="wave_analysis.ipynb#wave:p
 </div>
 </div>
 <div class="section" id="exercise-2-add-storage-of-solution-in-a-user-action-function">
-<h2><span class="section-number">4.2. </span>Exercise 2: Add storage of solution in a user action function<a class="headerlink" href="#exercise-2-add-storage-of-solution-in-a-user-action-function" title="Permalink to this headline">¶</a></h2>
+<h2>Exercise 2: Add storage of solution in a user action function<a class="headerlink" href="#exercise-2-add-storage-of-solution-in-a-user-action-function" title="Permalink to this headline">¶</a></h2>
 <div id="wave:exer:store:list"></div>
 <p>Extend the <code class="docutils literal notranslate"><span class="pre">plot_u</span></code> function in the file <code class="docutils literal notranslate"><span class="pre">wave1D_u0.py</span></code> to also store
 the solutions <code class="docutils literal notranslate"><span class="pre">u</span></code> in a list.
@@ -1554,7 +1593,7 @@ We have to explicitly use a copy of u, i.e. as <code class="docutils literal not
 <!-- --- begin exercise --- -->
 </div>
 <div class="section" id="exercise-3-use-a-class-for-the-user-action-function">
-<h2><span class="section-number">4.3. </span>Exercise 3: Use a class for the user action function<a class="headerlink" href="#exercise-3-use-a-class-for-the-user-action-function" title="Permalink to this headline">¶</a></h2>
+<h2>Exercise 3: Use a class for the user action function<a class="headerlink" href="#exercise-3-use-a-class-for-the-user-action-function" title="Permalink to this headline">¶</a></h2>
 <div id="wave:exer:store:list:class"></div>
 <p>Redo <a class="reference external" href="#wave:exer:store:list">Exercise 2: Add storage of solution in a user action function</a> using a class for the user
 action function. Let the <code class="docutils literal notranslate"><span class="pre">all_u</span></code> list be an attribute in this class
@@ -1812,7 +1851,7 @@ Using a class, we get</p>
 <!-- --- begin exercise --- -->
 </div>
 <div class="section" id="exercise-4-compare-several-courant-numbers-in-one-movie">
-<h2><span class="section-number">4.4. </span>Exercise 4: Compare several Courant numbers in one movie<a class="headerlink" href="#exercise-4-compare-several-courant-numbers-in-one-movie" title="Permalink to this headline">¶</a></h2>
+<h2>Exercise 4: Compare several Courant numbers in one movie<a class="headerlink" href="#exercise-4-compare-several-courant-numbers-in-one-movie" title="Permalink to this headline">¶</a></h2>
 <div id="wave:exer:multiple:C"></div>
 <p>The goal of this exercise is to make movies where several curves,
 corresponding to different Courant numbers, are visualized. Write a
@@ -2095,7 +2134,7 @@ Modifying the code to store all solutions for each <span class="math notranslate
 <!-- --- begin exercise --- -->
 </div>
 <div class="section" id="exercise-5-implementing-the-solver-function-as-a-generator">
-<h2><span class="section-number">4.5. </span>Exercise 5: Implementing the solver function as a generator<a class="headerlink" href="#exercise-5-implementing-the-solver-function-as-a-generator" title="Permalink to this headline">¶</a></h2>
+<h2>Exercise 5: Implementing the solver function as a generator<a class="headerlink" href="#exercise-5-implementing-the-solver-function-as-a-generator" title="Permalink to this headline">¶</a></h2>
 <div id="wave:exer:useraction:generator"></div>
 <p>The callback function <code class="docutils literal notranslate"><span class="pre">user_action(u,</span> <span class="pre">x,</span> <span class="pre">t,</span> <span class="pre">n)</span></code> is called from the
 <code class="docutils literal notranslate"><span class="pre">solver</span></code> function (in, e.g., <code class="docutils literal notranslate"><span class="pre">wave1D_u0.py</span></code>) at every time level and lets
@@ -2134,7 +2173,7 @@ Filename: <code class="docutils literal notranslate"><span class="pre">wave1D_u0
 <!-- --- begin exercise --- -->
 </div>
 <div class="section" id="project-6-calculus-with-1d-mesh-functions">
-<h2><span class="section-number">4.6. </span>Project 6: Calculus with 1D mesh functions<a class="headerlink" href="#project-6-calculus-with-1d-mesh-functions" title="Permalink to this headline">¶</a></h2>
+<h2>Project 6: Calculus with 1D mesh functions<a class="headerlink" href="#project-6-calculus-with-1d-mesh-functions" title="Permalink to this headline">¶</a></h2>
 <div id="wave:exer:mesh1D:calculus"></div>
 <p>This project explores integration and differentiation of
 mesh functions, both with scalar and vectorized implementations.
@@ -2375,8 +2414,8 @@ The final version of the code reads</p>
     
     <div class='prev-next-bottom'>
         
-    <a class='left-prev' id="prev-link" href="wave1D_fd1.html" title="previous page"><span class="section-number">1. </span>Simulation of waves on a string</a>
-    <a class='right-next' id="next-link" href="../diffu/diffu_rw.html" title="next page"><span class="section-number">1. </span>Random walk</a>
+    <a class='left-prev' id="prev-link" href="wave1D_fd1.html" title="previous page">Simulation of waves on a string</a>
+    <a class='right-next' id="next-link" href="wave_placeholder.html" title="next page">Coming soon</a>
 
     </div>
     <footer class="footer mt-5 mt-md-0">

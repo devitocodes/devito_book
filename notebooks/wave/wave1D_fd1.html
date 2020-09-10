@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>1. Simulation of waves on a string &#8212; The Devito Book</title>
+    <title>Simulation of waves on a string &#8212; The Devito Book</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous">
     <link href="../../_static/css/index.css" rel="stylesheet">
     <link rel="stylesheet" href="../../_static/sphinx-book-theme.css" type="text/css" />
@@ -37,8 +37,8 @@
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="3. Implementation" href="wave1D_prog.html" />
-    <link rel="prev" title="1. Finite difference discretization" href="../vib/vib_undamped.html" />
+    <link rel="next" title="Implementation" href="wave1D_prog.html" />
+    <link rel="prev" title="Coming soon" href="../vib/vib_placeholder.html" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="docsearch:language" content="en">
@@ -86,47 +86,52 @@
 <ul class="nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html">
-   1. Finite difference discretization
+   Finite difference discretization
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#implementation">
-   2. Implementation
+   Implementation
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#visualization-of-long-time-simulations">
-   3. Visualization of long time simulations
+   Visualization of long time simulations
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#analysis-of-the-numerical-scheme">
-   4. Analysis of the numerical scheme
+   Analysis of the numerical scheme
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#alternative-schemes-based-on-1st-order-equations">
-   5. Alternative schemes based on 1st-order equations
+   Alternative schemes based on 1st-order equations
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#energy-considerations">
-   6. Energy considerations
+   Energy considerations
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#the-euler-cromer-method">
-   7. The Euler-Cromer method
+   The Euler-Cromer method
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#staggered-mesh">
-   8. Staggered mesh
+   Staggered mesh
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../vib/vib_undamped.html#exercises-and-problems">
-   9. Exercises and Problems
+   Exercises and Problems
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_placeholder.html">
+   Coming soon
   </a>
  </li>
 </ul>
@@ -138,22 +143,27 @@
 <ul class="current nav sidenav_l1">
  <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   1. Simulation of waves on a string
+   Simulation of waves on a string
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="#verification">
-   2. Verification
+   Verification
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="wave1D_prog.html">
-   3. Implementation
+   Implementation
   </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="wave1D_prog.html#exercises">
-   4. Exercises
+   Exercises
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="wave_placeholder.html">
+   Coming soon
   </a>
  </li>
 </ul>
@@ -165,7 +175,36 @@
 <ul class="nav sidenav_l1">
  <li class="toctree-l1">
   <a class="reference internal" href="../diffu/diffu_rw.html">
-   1. Random walk
+   Random walk
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../diffu/diffu_placeholder.html">
+   Coming soon
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Advection equations
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../advec/advec_placeholder.html">
+   Coming soon
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Nonlinear problems
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../nonlin/nonlin_placeholder.html">
+   Coming soon
   </a>
  </li>
 </ul>
@@ -275,56 +314,56 @@
             <ul class="nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#discretizing-the-domain">
-   1.1. Discretizing the domain
+   Discretizing the domain
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#uniform-meshes">
-     1.1.1. Uniform meshes
+     Uniform meshes
     </a>
    </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#the-discrete-solution">
-   1.2. The discrete solution
+   The discrete solution
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#fulfilling-the-equation-at-the-mesh-points">
-   1.3. Fulfilling the equation at the mesh points
+   Fulfilling the equation at the mesh points
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#replacing-derivatives-by-finite-differences">
-   1.4. Replacing derivatives by finite differences
+   Replacing derivatives by finite differences
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#algebraic-version-of-the-pde">
-     1.4.1. Algebraic version of the PDE
+     Algebraic version of the PDE
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#interpretation-of-the-equation-as-a-stencil">
-     1.4.2. Interpretation of the equation as a stencil
+     Interpretation of the equation as a stencil
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#algebraic-version-of-the-initial-conditions">
-     1.4.3. Algebraic version of the initial conditions
+     Algebraic version of the initial conditions
     </a>
    </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#formulating-a-recursive-algorithm">
-   1.5. Formulating a recursive algorithm
+   Formulating a recursive algorithm
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#sketch-of-an-implementation">
-   1.6. Sketch of an implementation
+   Sketch of an implementation
   </a>
  </li>
 </ul>
@@ -347,7 +386,7 @@ Many types of wave motion can be described by the equation
 <span class="math notranslate nohighlight">\(u_{tt}=\nabla\cdot (c^2\nabla u) + f\)</span>, which we will solve
 in the forthcoming text by finite difference methods.</p>
 <div class="section" id="simulation-of-waves-on-a-string">
-<h1><span class="section-number">1. </span>Simulation of waves on a string<a class="headerlink" href="#simulation-of-waves-on-a-string" title="Permalink to this headline">¶</a></h1>
+<h1>Simulation of waves on a string<a class="headerlink" href="#simulation-of-waves-on-a-string" title="Permalink to this headline">¶</a></h1>
 <div id="wave:string"></div>
 <p>We begin our study of wave equations by simulating one-dimensional
 waves on a string, say on a guitar or violin.
@@ -433,7 +472,7 @@ wave equation can be written compactly as <span class="math notranslate nohighli
 <p>The PDE problem (<a class="reference external" href="#wave:pde1">1</a>)-(<a class="reference external" href="#wave:pde1:bc:L">5</a>) will now be
 discretized in space and time by a finite difference method.</p>
 <div class="section" id="discretizing-the-domain">
-<h2><span class="section-number">1.1. </span>Discretizing the domain<a class="headerlink" href="#discretizing-the-domain" title="Permalink to this headline">¶</a></h2>
+<h2>Discretizing the domain<a class="headerlink" href="#discretizing-the-domain" title="Permalink to this headline">¶</a></h2>
 <div id="wave:string:mesh"></div>
 <p>The temporal domain <span class="math notranslate nohighlight">\([0,T]\)</span> is represented by a finite number of mesh points</p>
 <!-- Equation labels as ordinary links -->
@@ -456,7 +495,7 @@ discretized in space and time by a finite difference method.</p>
 <p>One may view the mesh as two-dimensional in the <span class="math notranslate nohighlight">\(x,t\)</span> plane, consisting
 of points <span class="math notranslate nohighlight">\((x_i, t_n)\)</span>, with <span class="math notranslate nohighlight">\(i=0,\ldots,N_x\)</span> and <span class="math notranslate nohighlight">\(n=0,\ldots,N_t\)</span>.</p>
 <div class="section" id="uniform-meshes">
-<h3><span class="section-number">1.1.1. </span>Uniform meshes<a class="headerlink" href="#uniform-meshes" title="Permalink to this headline">¶</a></h3>
+<h3>Uniform meshes<a class="headerlink" href="#uniform-meshes" title="Permalink to this headline">¶</a></h3>
 <p>For uniformly distributed mesh points we can introduce the constant
 mesh spacings <span class="math notranslate nohighlight">\(\Delta t\)</span> and <span class="math notranslate nohighlight">\(\Delta x\)</span>. We have that</p>
 <!-- Equation labels as ordinary links -->
@@ -476,7 +515,7 @@ mesh spacings.</p>
 </div>
 </div>
 <div class="section" id="the-discrete-solution">
-<h2><span class="section-number">1.2. </span>The discrete solution<a class="headerlink" href="#the-discrete-solution" title="Permalink to this headline">¶</a></h2>
+<h2>The discrete solution<a class="headerlink" href="#the-discrete-solution" title="Permalink to this headline">¶</a></h2>
 <div id="wave:string:numerical:sol"></div>
 <p>The solution <span class="math notranslate nohighlight">\(u(x,t)\)</span> is sought at the mesh points. We introduce
 the mesh function <span class="math notranslate nohighlight">\(u_i^n\)</span>, which approximates the exact
@@ -486,7 +525,7 @@ Using the finite difference method, we shall
 develop algebraic equations for computing the mesh function.</p>
 </div>
 <div class="section" id="fulfilling-the-equation-at-the-mesh-points">
-<h2><span class="section-number">1.3. </span>Fulfilling the equation at the mesh points<a class="headerlink" href="#fulfilling-the-equation-at-the-mesh-points" title="Permalink to this headline">¶</a></h2>
+<h2>Fulfilling the equation at the mesh points<a class="headerlink" href="#fulfilling-the-equation-at-the-mesh-points" title="Permalink to this headline">¶</a></h2>
 <div id="wave:string:samplingPDE"></div>
 <p>In the finite difference method, we relax
 the condition that (<a class="reference external" href="#wave:pde1">1</a>) holds at all points in
@@ -508,7 +547,7 @@ and at the boundaries <span class="math notranslate nohighlight">\(i=0,N_x\)</sp
 have the boundary condition <span class="math notranslate nohighlight">\(u=0\)</span>.</p>
 </div>
 <div class="section" id="replacing-derivatives-by-finite-differences">
-<h2><span class="section-number">1.4. </span>Replacing derivatives by finite differences<a class="headerlink" href="#replacing-derivatives-by-finite-differences" title="Permalink to this headline">¶</a></h2>
+<h2>Replacing derivatives by finite differences<a class="headerlink" href="#replacing-derivatives-by-finite-differences" title="Permalink to this headline">¶</a></h2>
 <div id="wave:string:fd"></div>
 <p>The second-order derivatives can be replaced by central
 differences. The most widely used difference approximation of
@@ -531,7 +570,7 @@ direction reads</p>
 \frac{u_{i+1}^{n} - 2u_i^n + u^{n}_{i-1}}{\Delta x^2} = [D_xD_x u]^n_i
 \]</div>
 <div class="section" id="algebraic-version-of-the-pde">
-<h3><span class="section-number">1.4.1. </span>Algebraic version of the PDE<a class="headerlink" href="#algebraic-version-of-the-pde" title="Permalink to this headline">¶</a></h3>
+<h3>Algebraic version of the PDE<a class="headerlink" href="#algebraic-version-of-the-pde" title="Permalink to this headline">¶</a></h3>
 <p>We can now replace the derivatives in (<a class="reference external" href="#wave:pde1:step2">10</a>)
 and get</p>
 <!-- Equation labels as ordinary links -->
@@ -556,7 +595,7 @@ c^2\frac{u_{i+1}^{n} - 2u_i^n + u^{n}_{i-1}}{\Delta x^2},
 \]</div>
 </div>
 <div class="section" id="interpretation-of-the-equation-as-a-stencil">
-<h3><span class="section-number">1.4.2. </span>Interpretation of the equation as a stencil<a class="headerlink" href="#interpretation-of-the-equation-as-a-stencil" title="Permalink to this headline">¶</a></h3>
+<h3>Interpretation of the equation as a stencil<a class="headerlink" href="#interpretation-of-the-equation-as-a-stencil" title="Permalink to this headline">¶</a></h3>
 <p>A characteristic feature of (<a class="reference external" href="#wave:pde1:step3b">11</a>) is that it
 involves <span class="math notranslate nohighlight">\(u\)</span> values from neighboring points only: <span class="math notranslate nohighlight">\(u_i^{n+1}\)</span>,
 <span class="math notranslate nohighlight">\(u^n_{i\pm 1}\)</span>, <span class="math notranslate nohighlight">\(u^n_i\)</span>, and <span class="math notranslate nohighlight">\(u^{n-1}_i\)</span>.  The circles in <a class="reference external" href="#wave:pde1:fig:mesh">Figure</a> illustrate such neighboring mesh points that
@@ -576,7 +615,7 @@ a <em>finite difference scheme</em>.</p>
 <!-- end figure -->
 </div>
 <div class="section" id="algebraic-version-of-the-initial-conditions">
-<h3><span class="section-number">1.4.3. </span>Algebraic version of the initial conditions<a class="headerlink" href="#algebraic-version-of-the-initial-conditions" title="Permalink to this headline">¶</a></h3>
+<h3>Algebraic version of the initial conditions<a class="headerlink" href="#algebraic-version-of-the-initial-conditions" title="Permalink to this headline">¶</a></h3>
 <p>We also need to replace the derivative in the initial condition
 (<a class="reference external" href="#wave:pde1:ic:ut">3</a>) by a finite difference approximation.
 A centered difference of the type</p>
@@ -603,7 +642,7 @@ u_i^0 = I(x_i),\quad i=0,\ldots,N_x
 </div>
 </div>
 <div class="section" id="formulating-a-recursive-algorithm">
-<h2><span class="section-number">1.5. </span>Formulating a recursive algorithm<a class="headerlink" href="#formulating-a-recursive-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2>Formulating a recursive algorithm<a class="headerlink" href="#formulating-a-recursive-algorithm" title="Permalink to this headline">¶</a></h2>
 <div id="wave:string:alg"></div>
 <p>We assume that <span class="math notranslate nohighlight">\(u^n_i\)</span> and <span class="math notranslate nohighlight">\(u^{n-1}_i\)</span> are available for
 <span class="math notranslate nohighlight">\(i=0,\ldots,N_x\)</span>.  The only unknown quantity in
@@ -688,7 +727,7 @@ in a <span class="xref myst">web page</span>
 or a <span class="xref myst">movie file</span>.</p>
 </div>
 <div class="section" id="sketch-of-an-implementation">
-<h2><span class="section-number">1.6. </span>Sketch of an implementation<a class="headerlink" href="#sketch-of-an-implementation" title="Permalink to this headline">¶</a></h2>
+<h2>Sketch of an implementation<a class="headerlink" href="#sketch-of-an-implementation" title="Permalink to this headline">¶</a></h2>
 <div id="wave:string:impl"></div>
 <p>We start by defining some constants that will be used throughout our Devito code.</p>
 <div class="cell docutils container">
@@ -791,7 +830,7 @@ RHS: 1.0*dt**2*(-2.0*u(t, x)/h_x**2 + u(t, x - h_x)/h_x**2 + u(t, x + h_x)/h_x**
 </pre></div>
 </div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PerformanceSummary([(PerfKey(name=&#39;section0&#39;, rank=None),
-                     PerfEntry(time=2.6000000000000002e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
+                     PerfEntry(time=1.9000000000000004e-05, gflopss=0.0, gpointss=0.0, oi=0.0, ops=0, itershapes=[]))])
 </pre></div>
 </div>
 </div>
@@ -815,13 +854,13 @@ RHS: 1.0*dt**2*(-2.0*u(t, x)/h_x**2 + u(t, x - h_x)/h_x**2 + u(t, x + h_x)/h_x**
 </div>
 </div>
 <div class="section" id="verification">
-<h1><span class="section-number">2. </span>Verification<a class="headerlink" href="#verification" title="Permalink to this headline">¶</a></h1>
+<h1>Verification<a class="headerlink" href="#verification" title="Permalink to this headline">¶</a></h1>
 <p>Before implementing the algorithm, it is convenient to add a source
 term to the PDE (<a class="reference external" href="#wave:pde1">1</a>), since that gives us more freedom in
 finding test problems for verification. Physically, a source term acts
 as a generator for waves in the interior of the domain.</p>
 <div class="section" id="a-slightly-generalized-model-problem">
-<h2><span class="section-number">2.1. </span>A slightly generalized model problem<a class="headerlink" href="#a-slightly-generalized-model-problem" title="Permalink to this headline">¶</a></h2>
+<h2>A slightly generalized model problem<a class="headerlink" href="#a-slightly-generalized-model-problem" title="Permalink to this headline">¶</a></h2>
 <div id="wave:pde2:fd"></div>
 <p>We now address the following extended initial-boundary value problem
 for one-dimensional wave phenomena:</p>
@@ -914,7 +953,7 @@ C^2
 \]</div>
 </div>
 <div class="section" id="using-an-analytical-solution-of-physical-significance">
-<h2><span class="section-number">2.2. </span>Using an analytical solution of physical significance<a class="headerlink" href="#using-an-analytical-solution-of-physical-significance" title="Permalink to this headline">¶</a></h2>
+<h2>Using an analytical solution of physical significance<a class="headerlink" href="#using-an-analytical-solution-of-physical-significance" title="Permalink to this headline">¶</a></h2>
 <div id="wave:pde2:fd:standing:waves"></div>
 <p>Many wave problems feature sinusoidal oscillations in time
 and space. For example, the original PDE problem
@@ -960,10 +999,10 @@ are close to 2 on a sufficiently fine mesh, we have good evidence that
 the implementation is free of programming mistakes.</p>
 </div>
 <div class="section" id="manufactured-solution-and-estimation-of-convergence-rates">
-<h2><span class="section-number">2.3. </span>Manufactured solution and estimation of convergence rates<a class="headerlink" href="#manufactured-solution-and-estimation-of-convergence-rates" title="Permalink to this headline">¶</a></h2>
+<h2>Manufactured solution and estimation of convergence rates<a class="headerlink" href="#manufactured-solution-and-estimation-of-convergence-rates" title="Permalink to this headline">¶</a></h2>
 <div id="wave:pde2:fd:MMS"></div>
 <div class="section" id="specifying-the-solution-and-computing-corresponding-data">
-<h3><span class="section-number">2.3.1. </span>Specifying the solution and computing corresponding data<a class="headerlink" href="#specifying-the-solution-and-computing-corresponding-data" title="Permalink to this headline">¶</a></h3>
+<h3>Specifying the solution and computing corresponding data<a class="headerlink" href="#specifying-the-solution-and-computing-corresponding-data" title="Permalink to this headline">¶</a></h3>
 <p>One problem with the exact solution (<a class="reference external" href="#wave:pde2:test:ue">25</a>) is
 that it requires a simplification (<span class="math notranslate nohighlight">\({V}=0, f=0\)</span>) of the implemented problem
 (<a class="reference external" href="#wave:pde2">17</a>)-(<a class="reference external" href="#wave:pde2:bc:L">21</a>). An advantage of using
@@ -993,7 +1032,7 @@ u_t(x,0) &amp;= V(x) = x(L-x)
 \end{split}\]</div>
 </div>
 <div class="section" id="defining-a-single-discretization-parameter">
-<h3><span class="section-number">2.3.2. </span>Defining a single discretization parameter<a class="headerlink" href="#defining-a-single-discretization-parameter" title="Permalink to this headline">¶</a></h3>
+<h3>Defining a single discretization parameter<a class="headerlink" href="#defining-a-single-discretization-parameter" title="Permalink to this headline">¶</a></h3>
 <p>To verify the code, we compute the convergence rates in a series of
 simulations, letting each simulation use a finer mesh than the
 previous one. Such empirical estimation of convergence rates relies on
@@ -1028,7 +1067,7 @@ C_t h^r + C_x\left(\frac{c}{C}\right)^r h^r
 \]</div>
 </div>
 <div class="section" id="computing-errors">
-<h3><span class="section-number">2.3.3. </span>Computing errors<a class="headerlink" href="#computing-errors" title="Permalink to this headline">¶</a></h3>
+<h3>Computing errors<a class="headerlink" href="#computing-errors" title="Permalink to this headline">¶</a></h3>
 <p>We choose an initial discretization parameter <span class="math notranslate nohighlight">\(h_0\)</span> and run
 experiments with decreasing <span class="math notranslate nohighlight">\(h\)</span>: <span class="math notranslate nohighlight">\(h_i=2^{-i}h_0\)</span>, <span class="math notranslate nohighlight">\(i=1,2,\ldots,m\)</span>.
 Halving <span class="math notranslate nohighlight">\(h\)</span> in each experiment is not necessary, but it is a common
@@ -1084,7 +1123,7 @@ E = ||e^n_i||_{\ell^\infty} = \max_{0\leq i\leq N_x} |e^{n}_i|
 <p>The important point is that the error measure (<span class="math notranslate nohighlight">\(E\)</span>) for the simulation is represented by a single number.</p>
 </div>
 <div class="section" id="computing-rates">
-<h3><span class="section-number">2.3.4. </span>Computing rates<a class="headerlink" href="#computing-rates" title="Permalink to this headline">¶</a></h3>
+<h3>Computing rates<a class="headerlink" href="#computing-rates" title="Permalink to this headline">¶</a></h3>
 <p>Let <span class="math notranslate nohighlight">\(E_i\)</span> be the error measure in experiment (mesh) number <span class="math notranslate nohighlight">\(i\)</span>
 (not to be confused with the spatial index <span class="math notranslate nohighlight">\(i\)</span>) and
 let <span class="math notranslate nohighlight">\(h_i\)</span> be the corresponding discretization parameter (<span class="math notranslate nohighlight">\(h\)</span>).
@@ -1112,7 +1151,7 @@ hence the <span class="math notranslate nohighlight">\(r_i\)</span> values shoul
 </div>
 </div>
 <div class="section" id="constructing-an-exact-solution-of-the-discrete-equations">
-<h2><span class="section-number">2.4. </span>Constructing an exact solution of the discrete equations<a class="headerlink" href="#constructing-an-exact-solution-of-the-discrete-equations" title="Permalink to this headline">¶</a></h2>
+<h2>Constructing an exact solution of the discrete equations<a class="headerlink" href="#constructing-an-exact-solution-of-the-discrete-equations" title="Permalink to this headline">¶</a></h2>
 <div id="wave:pde2:fd:verify:quadratic"></div>
 <p>With a manufactured or known analytical solution, as outlined above,
 we can estimate convergence rates and see if they have the correct
@@ -1253,8 +1292,8 @@ the section <span class="xref myst">Analysis of the difference equations</span>)
     
     <div class='prev-next-bottom'>
         
-    <a class='left-prev' id="prev-link" href="../vib/vib_undamped.html" title="previous page"><span class="section-number">1. </span>Finite difference discretization</a>
-    <a class='right-next' id="next-link" href="wave1D_prog.html" title="next page"><span class="section-number">3. </span>Implementation</a>
+    <a class='left-prev' id="prev-link" href="../vib/vib_placeholder.html" title="previous page">Coming soon</a>
+    <a class='right-next' id="next-link" href="wave1D_prog.html" title="next page">Implementation</a>
 
     </div>
     <footer class="footer mt-5 mt-md-0">
