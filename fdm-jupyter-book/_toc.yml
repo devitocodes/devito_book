@@ -1,9 +1,10 @@
 - file: index.md
-  numbered: true
 
 - chapter: Vibration ODEs
   sections:
   - file: notebooks/vib/vib_undamped.ipynb
+  - file: notebooks/vib/vib_gen_placeholder1.md
+  - file: notebooks/vib/vib_gen_placeholder2.md
 
 - chapter: Wave equations
   sections:
