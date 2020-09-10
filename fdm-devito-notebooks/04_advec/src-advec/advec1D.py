@@ -183,6 +183,7 @@ def run_FECS(case):
     plt.axis([0, L, -0.75, 1.1])
     plt.show()
 
+
 def run(scheme='UP', case='gaussian', C=1, dt=0.01):
     """General admin routine for explicit and implicit solvers."""
 
@@ -274,6 +275,8 @@ def run(scheme='UP', case='gaussian', C=1, dt=0.01):
         os.system(cmd)
     print('Integral of u:', integral.max(), integral.min())
 
+
+# TODO: IMPLEMENT THIS IN DEVITO
 def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
     """
     Full solver for the model problem using the theta-rule
