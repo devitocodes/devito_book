@@ -1,0 +1,2208 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>One-dimensional time-dependent advection equations &#8212; The Devito Book</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous">
+    <link href="../../_static/css/index.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-dropdown.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/sphinx-book-theme.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
+    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe"
+        const thebe_selector_input = "pre"
+        const thebe_selector_output = ".output"
+    </script>
+    <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Coming soon" href="../nonlin/nonlin_placeholder.html" />
+    <link rel="prev" title="Coming soon" href="../diffu/diffu_placeholder.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="docsearch:language" content="en">
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../../index.html">
+  
+  <img src="../../_static/devito_logo.png" class="logo" alt="logo">
+  
+  
+  <h1 class="site-logo" id="site-title">The Devito Book</h1>
+  
+</a>
+</div>
+
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../index.html">
+   Welcome to the Devito Book!
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Vibration ODEs
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html">
+   Finite difference discretization
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#implementation">
+   Implementation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#visualization-of-long-time-simulations">
+   Visualization of long time simulations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#analysis-of-the-numerical-scheme">
+   Analysis of the numerical scheme
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#alternative-schemes-based-on-1st-order-equations">
+   Alternative schemes based on 1st-order equations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#energy-considerations">
+   Energy considerations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#the-euler-cromer-method">
+   The Euler-Cromer method
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#staggered-mesh">
+   Staggered mesh
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_undamped.html#exercises-and-problems">
+   Exercises and Problems
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../vib/vib_placeholder.html">
+   Coming soon
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Wave equations
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../wave/wave1D_fd1.html">
+   Simulation of waves on a string
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../wave/wave1D_fd1.html#verification">
+   Verification
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../wave/wave1D_prog.html">
+   Implementation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../wave/wave1D_prog.html#exercises">
+   Exercises
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../wave/wave_placeholder.html">
+   Coming soon
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Diffusion equations
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../diffu/diffu_rw.html">
+   Random walk
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../diffu/diffu_placeholder.html">
+   Coming soon
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Advection equations
+ </span>
+</p>
+<ul class="current nav sidenav_l1">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   One-dimensional time-dependent advection equations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="#one-dimensional-stationary-advection-diffusion-equation">
+   One-dimensional stationary advection-diffusion equation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="#time-dependent-convection-diffusion-equations">
+   Time-dependent convection-diffusion equations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="#applications-of-advection-equations">
+   Applications of advection equations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="#exercises">
+   Exercises
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="#bibliography">
+   Bibliography
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  Nonlinear problems
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../nonlin/nonlin_placeholder.html">
+   Coming soon
+  </a>
+ </li>
+</ul>
+
+</nav>
+
+ <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="row topbar fixed-top container-xl">
+    <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show">
+    </div>
+    <div class="col pl-2 topbar-main">
+        
+        <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+            data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+            aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+            title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+            <i class="fas fa-bars"></i>
+            <i class="fas fa-arrow-left"></i>
+            <i class="fas fa-arrow-up"></i>
+        </button>
+        
+        <div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../../_sources/notebooks/advec/advec.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+    
+</div>
+        <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/devitocodes/devito_book"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        
+        
+    </div>
+</div>
+
+
+        <!-- Full screen (wrap in <a> to have style consistency -->
+        <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                data-placement="bottom" onclick="toggleFullScreen()" title="Fullscreen mode"><i
+                    class="fas fa-expand"></i></button></a>
+
+        <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/devitocodes/devito_book/master?urlpath=tree/notebooks/advec/advec.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="../../_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        <a class="colab-button" href="https://colab.research.google.com/github/devitocodes/devito_book/blob/master/notebooks/advec/advec.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
+                title="Launch Colab" data-toggle="tooltip" data-placement="left"><img class="colab-button-logo"
+                    src="../../_static/images/logo_colab.png"
+                    alt="Interact on Colab">Colab</button></a>
+        
+        
+    </div>
+</div>
+
+    </div>
+
+    <!-- Table of contents -->
+    <div class="d-none d-md-block col-md-2 bd-toc show">
+        <div class="tocsection onthispage pt-5 pb-3">
+            <i class="fas fa-list"></i> Contents
+        </div>
+        <nav id="bd-toc-nav">
+            <ul class="nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#simplest-scheme-forward-in-time-centered-in-space">
+   Simplest scheme: forward in time, centered in space
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#method">
+     Method
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#implementation">
+     Implementation
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#test-cases">
+     Test cases
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#bug">
+     Bug?
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#analysis-of-the-scheme">
+   Analysis of the scheme
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#leapfrog-in-time-centered-differences-in-space">
+   Leapfrog in time, centered differences in space
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id1">
+     Method
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id2">
+     Implementation
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#running-a-test-case">
+     Running a test case
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#running-more-test-cases">
+     Running more test cases
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#analysis">
+     Analysis
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#upwind-differences-in-space">
+   Upwind differences in space
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#periodic-boundary-conditions">
+   Periodic boundary conditions
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#id3">
+   Implementation
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#test-condition">
+     Test condition
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#the-code">
+     The code
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#solving-a-specific-problem">
+     Solving a specific problem
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#a-crank-nicolson-discretization-in-time-and-centered-differences-in-space">
+   A Crank-Nicolson discretization in time and centered differences in space
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-lax-wendroff-method">
+   The Lax-Wendroff method
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#analysis-of-dispersion-relations">
+   Analysis of dispersion relations
+  </a>
+ </li>
+</ul>
+
+        </nav>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div id="ch:advec"></div>
+<p>Wave (the chapter <span class="xref myst">ch:wave</span>) and diffusion (the chapter <span class="xref myst">ch:diffu</span>)
+equations are solved reliably by finite difference methods. As soon as
+we add a first-order derivative in space, representing <em>advective</em>
+transport (also known as <em>convective</em> transport), the numerics gets
+more complicated and intuitively attractive methods no longer work
+well. We shall show how and why such methods fail and provide
+remedies. The present chapter builds on basic knowledge about finite
+difference methods for diffusion and wave equations, including the
+analysis by Fourier components, truncation error analysis (<span class="xref myst">ch:trunc</span>), and compact difference notation.</p>
+<p><strong>Remark on terminology.</strong></p>
+<p>It is common to refer to movement of a fluid as convection, while advection
+is the transport of some material dissolved or suspended in the fluid.
+We shall mostly choose the word advection here, but both terms are
+in heavy use, and for mass transport of a substance the PDE has an
+advection term, while the similar term for the heat equation is a
+convection term.</p>
+<p>Much more comprehensive discussion of dispersion analysis for
+advection problems can be found in the book by <cite data-cite="8023556/KKSJA3CM">Duran</cite>.
+This is a an excellent resource for further studies on the topic of
+advection PDEs, with emphasis on gener
+alizations to real geophysical
+problems. The book by <cite data-cite="8023556/J9FF4ZJM">Fletcher</cite> also has a good
+overview of methods for advection and convection problems.</p>
+<div class="section" id="one-dimensional-time-dependent-advection-equations">
+<h1>One-dimensional time-dependent advection equations<a class="headerlink" href="#one-dimensional-time-dependent-advection-equations" title="Permalink to this headline">¶</a></h1>
+<div id="advec:1D"></div>
+<p>We consider the pure advection model</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:pde1:u"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+\frac{\partial u}{\partial t} + v\frac{\partial u}{\partial x} = 0,\quad
+ x\in (0,L),\ t\in (0,T],
+\label{advec:1D:pde1:u} \tag{1}
+\end{equation}
+\]</div>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:pde1:U0"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation} 
+u(x,0) = I(x), x\in (0,L),
+\label{advec:1D:pde1:U0} \tag{2}
+\end{equation}
+\]</div>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:pde1:I"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation} 
+u(0,t) = U_0, t\in (0,T].
+\label{advec:1D:pde1:I} \tag{3}
+\end{equation}
+\]</div>
+<p>In (<a class="reference external" href="#advec:1D:pde1:u">1</a>), <span class="math notranslate nohighlight">\(v\)</span> is a given parameter, typically reflecting
+the transport velocity of a quantity <span class="math notranslate nohighlight">\(u\)</span> with a flow.
+There is only one boundary condition (<a class="reference external" href="#advec:1D:pde1:I">3</a>) since
+the spatial derivative is only first order in the PDE (<a class="reference external" href="#advec:1D:pde1:u">1</a>).
+The information at <span class="math notranslate nohighlight">\(x=0\)</span> and the initial condition get
+transported in the positive <span class="math notranslate nohighlight">\(x\)</span> direction
+if <span class="math notranslate nohighlight">\(v&gt;0\)</span> through the domain.</p>
+<p>It is easiest to find the solution of (<a class="reference external" href="#advec:1D:pde1:u">1</a>) if we remove the
+boundary condition and consider a process on the
+infinite domain <span class="math notranslate nohighlight">\((-\infty, \infty)\)</span>. The solution is simply</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:pde1:sol"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+u(x,t) = I(x-vt)\thinspace .
+\label{advec:1D:pde1:sol} \tag{4}
+\end{equation}
+\]</div>
+<p>This is also the solution we expect locally in a finite domain before boundary
+conditions have reflected or modified the wave.</p>
+<p>A particular feature of the solution (<a class="reference external" href="#advec:1D:pde1:sol">4</a>) is that</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:pde1:uprop1"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+u(x_i, t_{n+1}) = u(x_{i-1}, t_n),
+\label{advec:1D:pde1:uprop1} \tag{5}
+\end{equation}
+\]</div>
+<p>if <span class="math notranslate nohighlight">\(x_i=i\Delta x\)</span> and <span class="math notranslate nohighlight">\(t_n=n\Delta t\)</span> are points in a uniform mesh.
+We see this relation from</p>
+<div class="math notranslate nohighlight">
+\[
+u(i\Delta x, (n+1)\Delta t) = I(i\Delta x - v(n+1)\Delta t) \nonumber
+\]</div>
+<div class="math notranslate nohighlight">
+\[
+= I((i-1)\Delta x - vn\Delta t - v\Delta t + \Delta x) \nonumber
+\]</div>
+<div class="math notranslate nohighlight">
+\[
+= I((i-1)\Delta x - vn\Delta t) \nonumber
+\]</div>
+<div class="math notranslate nohighlight">
+\[
+= u((i-1)\Delta x, n\Delta t), \nonumber
+\]</div>
+<p>provided <span class="math notranslate nohighlight">\(v = \Delta x/\Delta t\)</span>. So, whenever we see a scheme that
+collapses to</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:pde1:uprop2"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+u^{n+1}_i = u_{i-1}^n,
+\label{advec:1D:pde1:uprop2} \tag{6}
+\end{equation}
+\]</div>
+<p>for the PDE in question, we have in fact a scheme that reproduces the
+analytical solution, and many of the schemes to be presented possess
+this nice property!</p>
+<p>Finally, we add that a discussion of appropriate boundary conditions
+for the advection PDE in multiple dimensions is a challenging topic beyond
+the scope of this text.</p>
+<div class="section" id="simplest-scheme-forward-in-time-centered-in-space">
+<h2>Simplest scheme: forward in time, centered in space<a class="headerlink" href="#simplest-scheme-forward-in-time-centered-in-space" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:FTCS"></div>
+<div class="section" id="method">
+<h3>Method<a class="headerlink" href="#method" title="Permalink to this headline">¶</a></h3>
+<p>A first attempt to solve a PDE like (<a class="reference external" href="#advec:1D:pde1:u">1</a>) will normally
+be to look for a time-discretization scheme that is explicit so we avoid
+solving systems of linear equations. In space, we anticipate that
+centered differences are most accurate and therefore best. These
+two arguments lead us to a Forward Euler scheme in time and
+centered differences in space:</p>
+<!-- Equation labels as ordinary links -->
+<div id="_auto1"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+[D_t^+ u + vD_{2x} u = 0]^n_i
+\label{_auto1} \tag{7}
+\end{equation}
+\]</div>
+<p>Written out, we see that this expression implies that</p>
+<div class="math notranslate nohighlight">
+\[
+u^{n+1} = u^n - \frac{1}{2} C (u^n_{i+1}-u_{i-1}^n),
+\]</div>
+<p>with <span class="math notranslate nohighlight">\(C\)</span> as the Courant number</p>
+<div class="math notranslate nohighlight">
+\[
+C = \frac{v\Delta t}{\Delta x}\thinspace .
+\]</div>
+</div>
+<div class="section" id="implementation">
+<h3>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h3>
+<p>A solver function for our scheme goes as follows.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">devito</span> <span class="kn">import</span> <span class="n">Grid</span><span class="p">,</span> <span class="n">Eq</span><span class="p">,</span> <span class="n">solve</span><span class="p">,</span> <span class="n">TimeFunction</span><span class="p">,</span> <span class="n">Operator</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s solver_FECS src-advec/advec1D.py</span>
+<span class="k">def</span> <span class="nf">solver_FECS</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">U0</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">user_action</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">Nt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">dt</span><span class="p">)))</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nt</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">Nt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Mesh points in time</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">v</span><span class="o">*</span><span class="n">dt</span><span class="o">/</span><span class="n">C</span>
+    <span class="n">Nx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">L</span><span class="o">/</span><span class="n">dx</span><span class="p">))</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>      <span class="c1"># Mesh points in space</span>
+    
+    <span class="c1"># Make sure dx and dt are compatible with x and t</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="n">v</span><span class="o">*</span><span class="n">dt</span><span class="o">/</span><span class="n">dx</span>
+
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">,),</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="n">L</span><span class="p">,))</span>
+    <span class="n">t_s</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">time_dim</span>
+
+    <span class="n">u</span> <span class="o">=</span> <span class="n">TimeFunction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">space_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="n">Nt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">pde</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dtr</span> <span class="o">+</span> <span class="n">v</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">dxc</span>
+    
+    <span class="n">stencil</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">pde</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span>
+    <span class="n">eq</span> <span class="o">=</span> <span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="n">stencil</span><span class="p">)</span>
+    
+    <span class="c1"># Set initial condition u(x,0) = I(x)</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">I</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+    
+    <span class="c1"># Insert boundary condition</span>
+    <span class="n">bc</span> <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">U0</span><span class="p">)]</span>
+    
+    <span class="n">op</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">([</span><span class="n">eq</span><span class="p">]</span> <span class="o">+</span> <span class="n">bc</span><span class="p">)</span>
+    <span class="n">op</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">x_m</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">x_M</span><span class="o">=</span><span class="n">Nx</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">user_action</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">user_action</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="test-cases">
+<h3>Test cases<a class="headerlink" href="#test-cases" title="Permalink to this headline">¶</a></h3>
+<p>The typical solution <span class="math notranslate nohighlight">\(u\)</span> has the shape of <span class="math notranslate nohighlight">\(I\)</span> and is transported at
+velocity <span class="math notranslate nohighlight">\(v\)</span> to the right (if <span class="math notranslate nohighlight">\(v&gt;0\)</span>). Let us consider two different
+initial conditions, one smooth (Gaussian pulse) and one non-smooth
+(half-truncated cosine pulse):</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:case_gaussian"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+u(x,0) = Ae^{-\frac{1}{2}\left(\frac{x-L/10}{\sigma}\right)^2},
+\label{advec:1D:case_gaussian} \tag{8}
+\end{equation}
+\]</div>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:case_cos"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation} 
+u(x,0) = A\cos\left(\frac{5\pi}{L}\left( x - \frac{L}{10}\right)\right),\quad
+x &lt; \frac{L}{5} \hbox{ else } 0\thinspace .
+\label{advec:1D:case_cos} \tag{9}
+\end{equation}
+\]</div>
+<p>The parameter <span class="math notranslate nohighlight">\(A\)</span> is the maximum value of the initial condition.</p>
+<p>Before doing numerical simulations, we scale the PDE
+problem and introduce <span class="math notranslate nohighlight">\(\bar x = x/L\)</span> and <span class="math notranslate nohighlight">\(\bar t= vt/L\)</span>,
+which gives</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial\bar u}{\partial \bar t} +
+\frac{\partial\bar u}{\partial\bar x} = 0\thinspace .
+\]</div>
+<p>The unknown <span class="math notranslate nohighlight">\(u\)</span> is scaled by the maximum value of the initial condition:
+<span class="math notranslate nohighlight">\(\bar u = u/\max |I(x)|\)</span> such that <span class="math notranslate nohighlight">\(|\bar u(\bar x, 0)|\in [0,1]\)</span>.
+The scaled problem is solved by setting <span class="math notranslate nohighlight">\(v=1\)</span>, <span class="math notranslate nohighlight">\(L=1\)</span>, and <span class="math notranslate nohighlight">\(A=1\)</span>.
+From now on we drop the bars.</p>
+<p>To run our test cases and plot the solution, we make the function</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_FECS</span><span class="p">(</span><span class="n">case</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Special function for the FECS case.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">case</span> <span class="o">==</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="mi">10</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">case</span> <span class="o">==</span> <span class="s1">&#39;cosinehat&#39;</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mi">5</span><span class="o">/</span><span class="n">L</span><span class="o">*</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">L</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">L</span><span class="o">/</span><span class="mi">5</span> <span class="k">else</span> <span class="mi">0</span>
+
+    <span class="n">L</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.02</span>
+    <span class="n">legends</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Animate and plot every m steps in the same figure.&quot;&quot;&quot;</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+            <span class="c1">#plt.savefig()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="mi">40</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="n">m</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;t=</span><span class="si">%g</span><span class="s1">, n=</span><span class="si">%d</span><span class="s1">, u in [</span><span class="si">%g</span><span class="s1">, </span><span class="si">%g</span><span class="s1">] w/</span><span class="si">%d</span><span class="s1"> points&#39;</span> <span class="o">%</span> \
+              <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">n</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">u</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># Instability?</span>
+            <span class="k">return</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+        <span class="n">legends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;t=</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+    <span class="n">U0</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.001</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">solver</span><span class="p">(</span><span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">U0</span><span class="o">=</span><span class="n">U0</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="n">L</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
+           <span class="n">user_action</span><span class="o">=</span><span class="n">plot</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">legends</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower left&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tmp.png&#39;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tmp.pdf&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.75</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="bug">
+<h3>Bug?<a class="headerlink" href="#bug" title="Permalink to this headline">¶</a></h3>
+<p>Running either of the test cases, the plot becomes a mess, and
+the printout of <span class="math notranslate nohighlight">\(u\)</span> values in the <code class="docutils literal notranslate"><span class="pre">plot</span></code> function reveals that
+<span class="math notranslate nohighlight">\(u\)</span> grows very quickly. We may reduce <span class="math notranslate nohighlight">\(\Delta t\)</span> and make it
+very small, yet the solution just grows.
+Such behavior points to a bug in the code.
+However, choosing a coarse mesh and performing one time step by
+hand calculations produces the same numbers as the code, so
+the implementation seems to be correct.
+The hypothesis is therefore that the solution is unstable.</p>
+</div>
+</div>
+<div class="section" id="analysis-of-the-scheme">
+<h2>Analysis of the scheme<a class="headerlink" href="#analysis-of-the-scheme" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:FTCS:anal"></div>
+<p>It is easy to show that a typical Fourier component</p>
+<div class="math notranslate nohighlight">
+\[
+u(x,t)= B\sin (k(x-ct))
+\]</div>
+<p>is a solution of our PDE for any spatial wave length <span class="math notranslate nohighlight">\(\lambda = 2\pi /k\)</span>
+and any amplitude <span class="math notranslate nohighlight">\(B\)</span>. (Since the PDE to be investigated by this method
+is homogeneous and linear, <span class="math notranslate nohighlight">\(B\)</span> will always cancel out, so we tend to skip
+this amplitude, but keep it here in the beginning for completeness.)</p>
+<p>A general solution may be viewed as a collection of long and
+short waves with different amplitudes. Algebraically, the work
+simplifies if we introduce the complex Fourier component</p>
+<div class="math notranslate nohighlight">
+\[
+u(x,t)=A_\text{e} e^{ikx},
+\]</div>
+<p>with</p>
+<div class="math notranslate nohighlight">
+\[
+A_\text{e}=Be^{-ikv\Delta t} = Be^{-iCk\Delta x}\thinspace .
+\]</div>
+<p>Note that <span class="math notranslate nohighlight">\(|A_\text{e}| \leq 1\)</span>.</p>
+<p>It turns out that many schemes also allow a Fourier wave component as
+solution, and we can use the numerically computed values of <span class="math notranslate nohighlight">\(A_\text{e}\)</span>
+(denoted <span class="math notranslate nohighlight">\(A\)</span>) to learn about the
+quality of the scheme. Hence, to analyze the difference scheme we have just
+implemented, we look at how it treats the Fourier component</p>
+<div class="math notranslate nohighlight">
+\[
+u_q^n = A^n e^{ikq\Delta x}\thinspace .
+\]</div>
+<p>Inserting the numerical component in the scheme,</p>
+<div class="math notranslate nohighlight">
+\[
+[D_t^+ A e^{ikq\Delta x} + v D_{2x}A e^{ikq\Delta x} = 0]^n_q,
+\]</div>
+<p>and making use of (<a class="reference external" href="../A_formulas/formulas.ipynb#form:exp:fd1c:center">form:exp:fd1c:center</a>)
+results in</p>
+<div class="math notranslate nohighlight">
+\[
+[e^{ikq\Delta x} (\frac{A-1}{\Delta t} + v\frac{1}{\Delta x}i\sin (k\Delta x)) = 0]^n_q,
+\]</div>
+<p>which implies</p>
+<div class="math notranslate nohighlight">
+\[
+A = 1 - iC\sin(k\Delta x)\thinspace .
+\]</div>
+<p>The numerical solution features the formula <span class="math notranslate nohighlight">\(A^n\)</span>. To find out whether
+<span class="math notranslate nohighlight">\(A^n\)</span> means growth in time, we rewrite <span class="math notranslate nohighlight">\(A\)</span> in polar form: <span class="math notranslate nohighlight">\(A=A_re^{i\phi}\)</span>,
+for real numbers <span class="math notranslate nohighlight">\(A_r\)</span> and <span class="math notranslate nohighlight">\(\phi\)</span>,
+since we then have <span class="math notranslate nohighlight">\(A^n = A_r^ne^{i\phi n}\)</span>. The magnitude of <span class="math notranslate nohighlight">\(A^n\)</span> is
+<span class="math notranslate nohighlight">\(A_r^n\)</span>. In our case, <span class="math notranslate nohighlight">\(A_r = (1 + C^2\sin^2(kx))^{1/2} &gt; 1\)</span>, so
+<span class="math notranslate nohighlight">\(A_r^n\)</span> will increase in time, whereas the
+exact solution will not. Regardless of <span class="math notranslate nohighlight">\(\Delta t\)</span>, we get unstable
+numerical solutions.</p>
+</div>
+<div class="section" id="leapfrog-in-time-centered-differences-in-space">
+<h2>Leapfrog in time, centered differences in space<a class="headerlink" href="#leapfrog-in-time-centered-differences-in-space" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:leapfrog"></div>
+<div class="section" id="id1">
+<h3>Method<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Another explicit scheme is to do a “leapfrog” jump over <span class="math notranslate nohighlight">\(2\Delta t\)</span> in
+time and combine it with central differences in space:</p>
+<div class="math notranslate nohighlight">
+\[
+[D_{2t} u + vD_{2x} u = 0]_i^n,
+\]</div>
+<p>which results in the updating formula</p>
+<div class="math notranslate nohighlight">
+\[
+u^{n+1}_i = u^{n-1}_i - C(u_{i+1}^n-u_{i-1}^n)\thinspace .
+\]</div>
+<p>A special scheme is needed to compute <span class="math notranslate nohighlight">\(u^1\)</span>, but we leave that problem for
+now. Anyway, this special scheme can be found in
+<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">advec1D.py</span></code></span>.</p>
+</div>
+<div class="section" id="id2">
+<h3>Implementation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>We now need to work with three time levels and must modify our solver a bit:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Nt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">dt</span><span class="p">)))</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nt</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">Nt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># Mesh points in time</span>
+<span class="o">...</span>
+<span class="k">if</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;FE&#39;</span><span class="p">:</span>
+    <span class="n">u</span>   <span class="o">=</span> <span class="n">TimeFunction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">space_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="n">Nt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pde</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dtr</span> <span class="o">+</span> <span class="n">v</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">dxc</span>
+    <span class="o">...</span>
+<span class="k">elif</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;LF&#39;</span><span class="p">:</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="o">...</span>
+    
+    <span class="c1"># Use some scheme for the first step</span>
+    <span class="n">pde0</span> <span class="o">=</span> <span class="o">...</span>
+    <span class="o">...</span>
+    
+    <span class="c1"># Move to the LF scheme after the first step</span>
+    <span class="n">pde</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dtc</span> <span class="o">+</span> <span class="n">v</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">dxc</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-a-test-case">
+<h3>Running a test case<a class="headerlink" href="#running-a-test-case" title="Permalink to this headline">¶</a></h3>
+<p>Let us try a coarse mesh such that the smooth Gaussian initial condition
+is represented by 1 at mesh node 1 and 0 at all other nodes. This
+triangular initial condition should then be advected to the right.
+Choosing scaled variables as <span class="math notranslate nohighlight">\(\Delta t=0.1\)</span>, <span class="math notranslate nohighlight">\(T=1\)</span>, and <span class="math notranslate nohighlight">\(C=1\)</span> gives
+the plot in <a class="reference external" href="#advec:1D:case_gaussian:fig:LFCS">Figure</a>, which
+is in fact identical to the exact solution (!).</p>
+<!-- dom:FIGURE: [fig-advec/solver_FE_Upw.png, width=500 frac=0.8] Exact solution obtained by Leapfrog scheme with $\Delta t = 0.1$ and $C=1$. <div id="advec:1D:case_gaussian:fig:LFCS"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:case_gaussian:fig:LFCS"></div>
+<p>Exact solution obtained by Leapfrog scheme with $\Delta t = 0.1$ and $C=1$.</p>
+<img src="fig-advec/solver_FE_Upw.png" width=500>
+<!-- end figure -->
+</div>
+<div class="section" id="running-more-test-cases">
+<h3>Running more test cases<a class="headerlink" href="#running-more-test-cases" title="Permalink to this headline">¶</a></h3>
+<p>We can run two types of initial conditions for <span class="math notranslate nohighlight">\(C=0.8\)</span>: one very
+smooth with a Gaussian function (<a class="reference external" href="#advec:1D:LF:fig1:C08">Figure</a>) and
+one with a discontinuity in the first derivative (<a class="reference external" href="#advec:1D:LF:fig2:C08">Figure</a>).  Unless we have a very fine mesh, as in
+the left plots in the figures, we get small ripples behind the main
+wave, and this main wave has the amplitude reduced.</p>
+<!-- dom:FIGURE: [fig-advec/gaussian_LF_C08.png, width=800 frac=1] Advection of a Gaussian function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right). <div id="advec:1D:LF:fig1:C08"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:LF:fig1:C08"></div>
+<p>Advection of a Gaussian function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).</p>
+<img src="fig-advec/gaussian_LF_C08.png" width=800>
+<!-- end figure -->
+<p>Advection of the Gaussian function with a leapfrog scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <span class="xref myst">movie file</span>.</p>
+<!-- dom:FIGURE: [fig-advec/cosinehat_LF_C08.png, width=800 frac=1] Advection of frac{1}{2} a cosine function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right). <div id="advec:1D:LF:fig2:C08"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:LF:fig2:C08"></div>
+<p>Advection of half a cosine function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).</p>
+<img src="fig-advec/cosinehat_LF_C08.png" width=800>
+<!-- end figure -->
+<p>Advection of the cosine hat function with a leapfrog scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <span class="xref myst">movie file</span>.</p>
+</div>
+<div class="section" id="analysis">
+<h3>Analysis<a class="headerlink" href="#analysis" title="Permalink to this headline">¶</a></h3>
+<p>We can perform a Fourier analysis again. Inserting the numerical
+Fourier component in the Leapfrog scheme, we get</p>
+<div class="math notranslate nohighlight">
+\[
+A^2 - i2C\sin(k\Delta x) A - 1 = 0,
+\]</div>
+<p>and</p>
+<div class="math notranslate nohighlight">
+\[
+A = -iC\sin(k\Delta x) \pm \sqrt{1-C^2\sin^2(k\Delta x)}\thinspace .
+\]</div>
+<p>Rewriting to polar form, <span class="math notranslate nohighlight">\(A=A_re^{i\phi}\)</span>, we see that <span class="math notranslate nohighlight">\(A_r=1\)</span>, so the
+numerical component is neither increasing nor decreasing in time, which is
+exactly what we want. However, for <span class="math notranslate nohighlight">\(C&gt;1\)</span>, the square root can become
+complex valued, so stability is obtained only as long as <span class="math notranslate nohighlight">\(C\leq 1\)</span>.</p>
+<p><strong>Stability.</strong></p>
+<p>For all the working schemes to be presented in this chapter, we
+get the stability condition <span class="math notranslate nohighlight">\(C\leq 1\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[
+\Delta t \leq \frac{\Delta x}{v}\thinspace .
+\]</div>
+<p>This is called the CFL condition and applies almost always to successful
+schemes for advection problems. Of course, one can use Crank-Nicolson or
+Backward Euler schemes for increased and even unconditional
+stability (no <span class="math notranslate nohighlight">\(\Delta t\)</span> restrictions), but these have other
+less desired damping problems.</p>
+<p>We introduce <span class="math notranslate nohighlight">\(p=k\Delta x\)</span>. The amplification factor now reads</p>
+<div class="math notranslate nohighlight">
+\[
+A = -iC\sin p \pm \sqrt{1-C^2\sin^2 p},
+\]</div>
+<p>and is to be compared to the exact amplification factor</p>
+<div class="math notranslate nohighlight">
+\[
+A_\text{e} = e^{-ikv\Delta t} = e^{-ikC\Delta x} = e^{-iCp}\thinspace .
+\]</div>
+<p>the section <a class="reference external" href="#advec:1D:disprel">Analysis of dispersion relations</a> compares numerical amplification factors
+of many schemes with the exact expression.</p>
+</div>
+</div>
+<div class="section" id="upwind-differences-in-space">
+<h2>Upwind differences in space<a class="headerlink" href="#upwind-differences-in-space" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:FTUP"></div>
+<p>Since the PDE reflects transport of information along with a flow in
+positive <span class="math notranslate nohighlight">\(x\)</span> direction, when <span class="math notranslate nohighlight">\(v&gt;0\)</span>, it could be natural to go (what is called)
+upstream and not
+downstream in the spatial derivative to collect information about the
+change of the function. That is, we approximate</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial u}{\partial x}(x_i,t_n)\approx [D^-_x u]^n_i = \frac{u^n_{i} - u^n_{i-1}}{\Delta x}\thinspace .
+\]</div>
+<p>This is called an <em>upwind difference</em> (the corresponding difference in the
+time direction would be called a backward difference, and we could use that
+name in space too, but <em>upwind</em> is the common name for a difference against
+the flow in advection problems). This spatial approximation does magic
+compared to
+the scheme we had with Forward Euler in time and centered difference in space.
+With an upwind difference,</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:upwind"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation} [D^+_t u + vD^-_x u = 0]^n_i,
+\label{advec:1D:upwind} \tag{10}
+\end{equation}
+\]</div>
+<p>written out as</p>
+<div class="math notranslate nohighlight">
+\[
+u^{n+1}_i = u^n_i - C(u^{n}_{i}-u^{n}_{i-1}),
+\]</div>
+<p>gives a generally popular and robust scheme that is stable if <span class="math notranslate nohighlight">\(C\leq 1\)</span>.
+As with the Leapfrog scheme, it becomes exact if <span class="math notranslate nohighlight">\(C=1\)</span>, exactly as shown in
+<a class="reference external" href="#advec:1D:case_gaussian:fig:LFCS">Figure</a>. This is easy to see since
+<span class="math notranslate nohighlight">\(C=1\)</span> gives the property (<a class="reference external" href="#advec:1D:pde1:uprop2">6</a>).
+However, any <span class="math notranslate nohighlight">\(C&lt;1\)</span> gives a significant reduction in the amplitude of the
+solution, which is a purely numerical effect, see Figures
+<a class="reference external" href="#advec:1D:UP:fig1:C08">advec:1D:UP:fig1:C08</a> and <a class="reference external" href="#advec:1D:UP:fig2:C08">advec:1D:UP:fig2:C08</a>.
+Experiments show, however, that
+reducing <span class="math notranslate nohighlight">\(\Delta t\)</span> or <span class="math notranslate nohighlight">\(\Delta x\)</span>, while keeping <span class="math notranslate nohighlight">\(C\)</span> reduces the
+error.</p>
+<!-- dom:FIGURE: [fig-advec/gaussian_UP_C08.png, width=800 frac=1] Advection of a Gaussian function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.001$ (right). <div id="advec:1D:UP:fig1:C08"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:UP:fig1:C08"></div>
+<p>Advection of a Gaussian function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.001$ (right).</p>
+<img src="fig-advec/gaussian_UP_C08.png" width=800>
+<!-- end figure -->
+<p>Advection of the Gaussian function with a forward in time, upwind in space scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.005\)</span>, we get this <span class="xref myst">movie file</span>.</p>
+<!-- dom:FIGURE: [fig-advec/cosinehat_UP_08.png, width=800 frac=1] Advection of half a cosine function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right). <div id="advec:1D:UP:fig2:C08"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:UP:fig2:C08"></div>
+<p>Advection of half a cosine function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).</p>
+<img src="fig-advec/cosinehat_UP_08.png" width=800>
+<!-- end figure -->
+<p>Advection of the cosine hat function with a forward in time, upwind in space scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <span class="xref myst">movie file</span>.</p>
+<p>The amplification factor can be computed using the
+formula (<a class="reference external" href="/notebooks/A_formulas/formulas.ipynb#form:exp:fd1:bw">form:exp:fd1:bw</a>),</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{A - 1}{\Delta t} + \frac{v}{\Delta x}(1 - e^{-ik\Delta x}) = 0,
+\]</div>
+<p>which means</p>
+<div class="math notranslate nohighlight">
+\[
+A = 1 - C(1 - \cos(p) - i\sin(p))\thinspace .
+\]</div>
+<p>For <span class="math notranslate nohighlight">\(C&lt;1\)</span> there is, unfortunately,
+non-physical damping of discrete Fourier components, giving rise to reduced
+amplitude of <span class="math notranslate nohighlight">\(u^n_i\)</span> as in Figures <a class="reference external" href="#advec:1D:UP:fig1:C08">advec:1D:UP:fig1:C08</a>
+and <a class="reference external" href="#advec:1D:UP:fig2:C08">advec:1D:UP:fig2:C08</a>. The damping seen
+in these figures is quite severe. Stability requires <span class="math notranslate nohighlight">\(C\leq 1\)</span>.</p>
+<p><strong>Interpretation of upwind difference as artificial diffusion.</strong></p>
+<p>One can interpret the upwind difference as extra, artificial diffusion
+in the equation. Solving</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial u}{\partial t} + v\frac{\partial u}{\partial x}
+= \nu\frac{\partial^2 u}{\partial x^2},
+\]</div>
+<p>by a forward difference in time and centered differences in space,</p>
+<div class="math notranslate nohighlight">
+\[
+D^+_t u + vD_{2x} u = \nu D_xD_x u]^n_i,
+\]</div>
+<p>actually gives the upwind scheme (<a class="reference external" href="#advec:1D:upwind">10</a>) if
+<span class="math notranslate nohighlight">\(\nu = v\Delta x/2\)</span>. That is, solving the PDE <span class="math notranslate nohighlight">\(u_t + vu_x=0\)</span>
+by centered differences in space and forward difference in time is
+unsuccessful, but by adding some artificial diffusion <span class="math notranslate nohighlight">\(\nu u_{xx}\)</span>,
+the method becomes stable:</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial u}{\partial t} + v
+\frac{\partial u}{\partial x} = \left(\alpha + \frac{v\Delta x}{2}\right)
+\frac{\partial^2 u}{\partial x^2}\thinspace .
+\]</div>
+</div>
+<div class="section" id="periodic-boundary-conditions">
+<h2>Periodic boundary conditions<a class="headerlink" href="#periodic-boundary-conditions" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:periodic_BC"></div>
+<p>So far, we have given the value on the left boundary, <span class="math notranslate nohighlight">\(u_0^n\)</span>, and used
+the scheme to propagate the solution signal through the domain.
+Often, we want to follow such signals for long time series, and periodic
+boundary conditions are then relevant since they enable a signal that
+leaves the right boundary to immediately enter the left boundary and propagate
+through the domain again.</p>
+<p>The periodic boundary condition is</p>
+<div class="math notranslate nohighlight">
+\[
+u(0,t) = u(L,t),\quad u_0^n = u_{N_x}^n\thinspace .
+\]</div>
+<p>It means that we in the first equation, involving <span class="math notranslate nohighlight">\(u_0^n\)</span>, insert <span class="math notranslate nohighlight">\(u_{N_x}^n\)</span>,
+and that we in the last equation, involving <span class="math notranslate nohighlight">\(u^{n+1}_{N_x}\)</span> insert <span class="math notranslate nohighlight">\(u^{n+1}_0\)</span>.
+Normally, we can do this in the simple way that <code class="docutils literal notranslate"><span class="pre">u[t_s,</span> <span class="pre">0]</span></code> is updated as
+<code class="docutils literal notranslate"><span class="pre">u[t_s,</span> <span class="pre">Nx]</span></code> at the beginning of a new time level.</p>
+<p>In some schemes we may need <span class="math notranslate nohighlight">\(u^{n}_{N_x+1}\)</span> and <span class="math notranslate nohighlight">\(u^{n}_{-1}\)</span>. Periodicity
+then means that these values are equal to <span class="math notranslate nohighlight">\(u^n_1\)</span> and <span class="math notranslate nohighlight">\(u^n_{N_x-1}\)</span>,
+respectively. For the upwind scheme, it is sufficient to set
+<code class="docutils literal notranslate"><span class="pre">u[t_s,</span> <span class="pre">0]=u[t_s,</span> <span class="pre">Nx]</span></code> at a new time level before computing <code class="docutils literal notranslate"><span class="pre">u[t_s+1,</span> <span class="pre">1]</span></code>. This ensures
+that <code class="docutils literal notranslate"><span class="pre">u[t_s+1,</span> <span class="pre">1]</span></code> becomes right and at the next time level <code class="docutils literal notranslate"><span class="pre">u[t_s+1,</span> <span class="pre">0]</span></code> at the current
+time level is correctly updated.
+For the Leapfrog scheme we must update <code class="docutils literal notranslate"><span class="pre">u[t_s+1,</span> <span class="pre">0]</span></code> and <code class="docutils literal notranslate"><span class="pre">u[t_s+1,</span> <span class="pre">Nx]</span></code> using the scheme:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="n">Nx</span><span class="o">-</span><span class="mi">1</span><span class="p">]))]</span>
+<span class="n">pbc</span> <span class="o">+=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])]</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>Implementation<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="test-condition">
+<h3>Test condition<a class="headerlink" href="#test-condition" title="Permalink to this headline">¶</a></h3>
+<p>Analytically, we can show that the integral in space under the <span class="math notranslate nohighlight">\(u(x,t)\)</span> curve
+is constant:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+\int_0^L \left(\frac{\partial u}{\partial t} + v\frac{\partial u}{\partial x}
+\right) dx &amp;= 0\\
+\frac{\partial }{\partial t} \int_0^L udx &amp;=
+- \int_0^L v\frac{\partial u}{\partial x}dx\\
+\frac{\partial u}{\partial t} \int_0^L udx &amp;=
+[v u]_0^L =0
+\end{align*}
+\end{split}\]</div>
+<p>as long as <span class="math notranslate nohighlight">\(u(0)=u(L)=0\)</span>. We can therefore use the property</p>
+<div class="math notranslate nohighlight">
+\[
+\int_0^L u(x,t)dx = \hbox{const}
+\]</div>
+<p>as a partial verification during the simulation. Now, any numerical method
+with <span class="math notranslate nohighlight">\(C\neq 1\)</span> will deviate from the constant, expected value, so
+the integral is a measure of the error in the scheme. The integral can
+be computed by the Trapezoidal integration rule</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dx</span><span class="o">*</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">Nx</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="n">Nx</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>if <code class="docutils literal notranslate"><span class="pre">u</span></code> is a <code class="docutils literal notranslate"><span class="pre">TimeFunction</span></code> with the <code class="docutils literal notranslate"><span class="pre">save</span></code> parameter set to <span class="math notranslate nohighlight">\(Nx+1\)</span> and <code class="docutils literal notranslate"><span class="pre">n</span></code> indicates a current timestep.</p>
+</div>
+<div class="section" id="the-code">
+<h3>The code<a class="headerlink" href="#the-code" title="Permalink to this headline">¶</a></h3>
+<p>An appropriate <code class="docutils literal notranslate"><span class="pre">solver</span></code> function for multiple schemes may go as shown
+below.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s solver src-advec/advec1D.py</span>
+<span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">U0</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">user_action</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;FE&#39;</span><span class="p">,</span> <span class="n">periodic_bc</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">Nt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">dt</span><span class="p">)))</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nt</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">Nt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># Mesh points in time</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">v</span><span class="o">*</span><span class="n">dt</span><span class="o">/</span><span class="n">C</span>
+    <span class="n">Nx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">L</span><span class="o">/</span><span class="n">dx</span><span class="p">))</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>       <span class="c1"># Mesh points in space</span>
+    
+    <span class="c1"># Make sure dx and dt are compatible with x and t</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="n">v</span><span class="o">*</span><span class="n">dt</span><span class="o">/</span><span class="n">dx</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;dt=</span><span class="si">%g</span><span class="s1">, dx=</span><span class="si">%g</span><span class="s1">, Nx=</span><span class="si">%d</span><span class="s1">, C=</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span>
+
+    <span class="n">integral</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">Grid</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">,),</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="n">L</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="n">t_s</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">time_dim</span>
+    
+    <span class="k">def</span> <span class="nf">u</span><span class="p">(</span><span class="n">to</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">so</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">TimeFunction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">time_order</span><span class="o">=</span><span class="n">to</span><span class="p">,</span> <span class="n">space_order</span><span class="o">=</span><span class="n">so</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="n">Nt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">u</span>
+        
+    <span class="k">if</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;FE&#39;</span><span class="p">:</span>
+        <span class="n">u</span>   <span class="o">=</span> <span class="n">u</span><span class="p">(</span><span class="n">so</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">pde</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dtr</span> <span class="o">+</span> <span class="n">v</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">dxc</span>
+        
+        <span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="n">Nx</span><span class="p">]))]</span>
+        <span class="n">pbc</span> <span class="o">+=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])]</span>
+        
+    <span class="k">elif</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;LF&#39;</span><span class="p">:</span>
+        <span class="c1"># Use UP scheme for the first timestep</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="p">(</span><span class="n">to</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">so</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">pde0</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dtr</span><span class="p">(</span><span class="n">fd_order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">v</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">dxl</span><span class="p">(</span><span class="n">fd_order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="n">stencil0</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">pde0</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span>
+        <span class="n">eq0</span>      <span class="o">=</span> <span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="n">stencil0</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">pbc0</span> <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="n">Nx</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+            
+        <span class="c1"># Now continue with LF scheme</span>
+        <span class="n">pde</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dtc</span> <span class="o">+</span> <span class="n">v</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">dxc</span>
+        
+        <span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="n">Nx</span><span class="o">-</span><span class="mi">1</span><span class="p">]))]</span>
+        <span class="n">pbc</span> <span class="o">+=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])]</span>
+    
+    <span class="k">elif</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;UP&#39;</span><span class="p">:</span>
+        <span class="n">u</span>   <span class="o">=</span> <span class="n">u</span><span class="p">()</span>
+        <span class="n">pde</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dtr</span> <span class="o">+</span> <span class="n">v</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">dxl</span>
+        
+        <span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="n">Nx</span><span class="p">])]</span>
+    
+    <span class="k">elif</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;LW&#39;</span><span class="p">:</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="p">(</span><span class="n">so</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">pde</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">dtr</span> <span class="o">+</span> <span class="n">v</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">dxc</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="o">*</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">dx2</span>
+        
+        <span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="n">Nx</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> \
+                  <span class="mf">0.5</span><span class="o">*</span><span class="n">C</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="p">,</span> <span class="n">Nx</span><span class="o">-</span><span class="mi">1</span><span class="p">]))]</span>
+        <span class="n">pbc</span> <span class="o">+=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])]</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;scheme=&quot;</span><span class="si">%s</span><span class="s1">&quot; not implemented&#39;</span> <span class="o">%</span> <span class="n">scheme</span><span class="p">)</span>
+
+    <span class="n">stencil</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">pde</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span>
+    <span class="n">eq</span> <span class="o">=</span> <span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">forward</span><span class="p">,</span> <span class="n">stencil</span><span class="p">)</span>
+    
+    <span class="n">bc_init</span> <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">U0</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">t_s</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+    
+    <span class="c1"># Set initial condition u(x,0) = I(x)</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">I</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+        
+    <span class="c1"># Compute the integral under the curve</span>
+    <span class="n">integral</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span><span class="o">*</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">Nx</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="n">Nx</span><span class="p">]))</span>
+    
+    <span class="k">if</span> <span class="n">user_action</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">user_action</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">bc</span>  <span class="o">=</span> <span class="p">[</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">t_s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">U0</span><span class="p">)]</span>
+    
+    <span class="k">if</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;LF&#39;</span><span class="p">:</span>
+        <span class="n">op</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">((</span><span class="n">pbc0</span> <span class="k">if</span> <span class="n">periodic_bc</span> <span class="k">else</span> <span class="p">[])</span> <span class="o">+</span> <span class="p">[</span><span class="n">eq0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">bc_init</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">periodic_bc</span> <span class="k">else</span> <span class="p">[])</span> \
+                      <span class="o">+</span> <span class="p">(</span><span class="n">pbc</span> <span class="k">if</span> <span class="n">periodic_bc</span> <span class="k">else</span> <span class="p">[])</span> <span class="o">+</span> <span class="p">[</span><span class="n">eq</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">bc</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">periodic_bc</span> <span class="k">else</span> <span class="p">[]))</span>
+    <span class="k">else</span><span class="p">:</span>       
+        <span class="n">op</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">(</span><span class="n">bc_init</span> <span class="o">+</span> <span class="p">(</span><span class="n">pbc</span> <span class="k">if</span> <span class="n">periodic_bc</span> <span class="k">else</span> <span class="p">[])</span> <span class="o">+</span> <span class="p">[</span><span class="n">eq</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">bc</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">periodic_bc</span> <span class="k">else</span> <span class="p">[]))</span>
+        
+    <span class="n">op</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">x_m</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">x_M</span><span class="o">=</span><span class="n">Nx</span> <span class="k">if</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;UP&#39;</span> <span class="k">else</span> <span class="n">Nx</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nt</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># Compute the integral under the curve</span>
+        <span class="n">integral</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span><span class="o">*</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">Nx</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="n">Nx</span><span class="p">]))</span>
+
+        <span class="k">if</span> <span class="n">user_action</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">user_action</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;I:&#39;</span><span class="p">,</span> <span class="n">integral</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">integral</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="solving-a-specific-problem">
+<h3>Solving a specific problem<a class="headerlink" href="#solving-a-specific-problem" title="Permalink to this headline">¶</a></h3>
+<p>We need to call up the <code class="docutils literal notranslate"><span class="pre">solver</span></code> function in some kind of administering
+problem solving function that can solve specific problems and make
+appropriate visualization. The function below makes both static plots,
+screen animation, and hard copy videos in various formats.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;UP&#39;</span><span class="p">,</span> <span class="n">case</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;General admin routine for explicit and implicit solvers.&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">case</span> <span class="o">==</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="mi">10</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">case</span> <span class="o">==</span> <span class="s1">&#39;cosinehat&#39;</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mi">5</span><span class="o">/</span><span class="n">L</span><span class="o">*</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">L</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span> \
+                   <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">L</span><span class="o">/</span><span class="mi">5</span> <span class="k">else</span> <span class="mi">0</span>
+
+    <span class="n">L</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.02</span>
+    <span class="k">global</span> <span class="n">lines</span>  <span class="c1"># needs to be saved between calls to plot</span>
+
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot t=0 and t=0.6 in the same figure.&quot;&quot;&quot;</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">global</span> <span class="n">lines</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;u&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tmp_</span><span class="si">%04d</span><span class="s1">.png&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tmp_</span><span class="si">%04d</span><span class="s1">.pdf&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;C=</span><span class="si">%g</span><span class="s1">, dt=</span><span class="si">%g</span><span class="s1">, dx=</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="o">%</span>
+                      <span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;t=</span><span class="si">%.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;u&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tmp_</span><span class="si">%04d</span><span class="s1">.png&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="mf">1E-14</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.6</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;t=</span><span class="si">%g</span><span class="s1">, n=</span><span class="si">%d</span><span class="s1">, u in [</span><span class="si">%g</span><span class="s1">, </span><span class="si">%g</span><span class="s1">] w/</span><span class="si">%d</span><span class="s1"> points&#39;</span> <span class="o">%</span> \
+              <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">n</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">u</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># Instability?</span>
+            <span class="k">return</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">I</span><span class="p">(</span><span class="n">x_</span><span class="o">-</span><span class="n">v</span><span class="o">*</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="k">for</span> <span class="n">x_</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;k--&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.6</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">eps</span><span class="p">:</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;tmp_</span><span class="si">%s</span><span class="s1">_dt</span><span class="si">%s</span><span class="s1">_C</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> \
+                            <span class="p">(</span><span class="n">scheme</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">C</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="n">u</span><span class="p">,</span> <span class="n">u_e</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+    <span class="n">U0</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="mf">0.7</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="c1"># Define video formats and libraries</span>
+    <span class="n">codecs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">flv</span><span class="o">=</span><span class="s1">&#39;flv&#39;</span><span class="p">,</span> <span class="n">mp4</span><span class="o">=</span><span class="s1">&#39;libx264&#39;</span><span class="p">,</span> <span class="n">webm</span><span class="o">=</span><span class="s1">&#39;libvpx&#39;</span><span class="p">,</span>
+                  <span class="n">ogg</span><span class="o">=</span><span class="s1">&#39;libtheora&#39;</span><span class="p">)</span>
+    <span class="c1"># Remove video files</span>
+    <span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;tmp_*.png&#39;</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">codecs</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;movie.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">ext</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;CN&#39;</span><span class="p">:</span>
+        <span class="n">integral</span> <span class="o">=</span> <span class="n">solver_theta</span><span class="p">(</span>
+            <span class="n">I</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">user_action</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span> <span class="n">FE</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">scheme</span> <span class="o">==</span> <span class="s1">&#39;BE&#39;</span><span class="p">:</span>
+        <span class="n">integral</span> <span class="o">=</span> <span class="n">solver_theta</span><span class="p">(</span>
+            <span class="n">I</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">user_action</span><span class="o">=</span><span class="n">plot</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">integral</span> <span class="o">=</span> <span class="n">solver</span><span class="p">(</span>
+            <span class="n">I</span><span class="o">=</span><span class="n">I</span><span class="p">,</span> <span class="n">U0</span><span class="o">=</span><span class="n">U0</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="n">L</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">scheme</span><span class="o">=</span><span class="n">scheme</span><span class="p">,</span> <span class="n">user_action</span><span class="o">=</span><span class="n">plot</span><span class="p">)</span>
+    <span class="c1"># Finish figure(2)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$x$&#39;</span><span class="p">);</span>  <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;$u$&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tmp1.png&#39;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tmp1.pdf&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="c1"># Make videos from figure(1) animation files</span>
+    <span class="k">for</span> <span class="n">codec</span> <span class="ow">in</span> <span class="n">codecs</span><span class="p">:</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;ffmpeg -i tmp_</span><span class="si">%%</span><span class="s1">04d.png -r 25 -vcodec </span><span class="si">%s</span><span class="s1"> movie.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> \
+              <span class="p">(</span><span class="n">codecs</span><span class="p">[</span><span class="n">codec</span><span class="p">],</span> <span class="n">codec</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Integral of u:&#39;</span><span class="p">,</span> <span class="n">integral</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">integral</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The complete code is found in the file
+<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">advec1D.py</span></code></span>.</p>
+</div>
+</div>
+<div class="section" id="a-crank-nicolson-discretization-in-time-and-centered-differences-in-space">
+<h2>A Crank-Nicolson discretization in time and centered differences in space<a class="headerlink" href="#a-crank-nicolson-discretization-in-time-and-centered-differences-in-space" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:CN"></div>
+<p>Another obvious candidate for time discretization is the Crank-Nicolson
+method combined with centered differences in space:</p>
+<div class="math notranslate nohighlight">
+\[
+[D_t u]^n_i + v\frac{1}{2}([D_{2x} u]^{n+1}_i + [D_{2x} u]^{n}_i) = 0\thinspace .
+\]</div>
+<p>It can be nice to include the Backward Euler scheme too, via the
+<span class="math notranslate nohighlight">\(\theta\)</span>-rule,</p>
+<div class="math notranslate nohighlight">
+\[
+[D_t u]^n_i + v\theta [D_{2x} u]^{n+1}_i + v(1-\theta)[D_{2x} u]^{n}_i = 0\thinspace .
+\]</div>
+<p>When <span class="math notranslate nohighlight">\(\theta\)</span> is different from zero, this gives rise to an <em>implicit</em> scheme,</p>
+<div class="math notranslate nohighlight">
+\[
+u^{n+1}_i + \frac{\theta}{2} C (u^{n+1}_{i+1} - u^{n+1}_{i-1})
+= u^n_i - \frac{1-\theta}{2} C (u^{n}_{i+1} - u^{n}_{i-1})
+\]</div>
+<p>for <span class="math notranslate nohighlight">\(i=1,\ldots,N_x-1\)</span>. At the boundaries we set <span class="math notranslate nohighlight">\(u=0\)</span> and simulate just to
+the point of time when the signal hits the boundary (and gets reflected).</p>
+<div class="math notranslate nohighlight">
+\[
+u^{n+1}_0 = u^{n+1}_{N_x} = 0\thinspace .
+\]</div>
+<p>The elements on the diagonal in the matrix become:</p>
+<div class="math notranslate nohighlight">
+\[
+A_{i,i} = 1,\quad i=0,\ldots,N_x\thinspace .
+\]</div>
+<p>On the subdiagonal and superdiagonal we have</p>
+<div class="math notranslate nohighlight">
+\[
+A_{i-1,i} = -\frac{\theta}{2} C,\quad A_{i+1,i} = \frac{\theta}{2} C,\quad i=1,\ldots,N_x-1,
+\]</div>
+<p>with <span class="math notranslate nohighlight">\(A_{0,1}=0\)</span> and <span class="math notranslate nohighlight">\(A_{N_x-1,N_x}=0\)</span> due to the known boundary conditions.
+And finally, the right-hand side becomes</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+b_0 &amp;= u^n_{N_x}\\
+b_i &amp;= u^n_i - \frac{1-\theta}{2} C (u^{n}_{i+1} - u^{n}_{i-1}),\quad i=1,\ldots,N_x-1\\
+b_{N_x} &amp;= u^n_0
+\end{align*}
+\end{split}\]</div>
+<p>The dispersion relation follows from inserting <span class="math notranslate nohighlight">\(u^n_q = A^ne^{ikx}\)</span>
+and using the formula (<a class="reference external" href="/notebooks/A_formulas/formulas.ipynb#form:exp:fd1c:center">form:exp:fd1c:center</a>) for the spatial
+differences:</p>
+<div class="math notranslate nohighlight">
+\[
+A = \frac{1 - (1-\theta) i C\sin p}{1 + \theta i C\sin p}\thinspace .
+\]</div>
+<!-- dom:FIGURE: [fig-advec/gaussian_CN_C08.png, width=800 frac=1] Crank-Nicolson in time, centered in space, Gaussian profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right). <div id="advec:1D:CN:fig:C08"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:CN:fig:C08"></div>
+<p>Crank-Nicolson in time, centered in space, Gaussian profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right).</p>
+<img src="fig-advec/gaussian_CN_C08.png" width=800>
+<!-- end figure -->
+<!-- dom:FIGURE: [fig-advec/cosinehat_BE_C08.png, width=800 frac=1] Backward-Euler in time, centered in space, frac{1}{2} a cosine profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right). <div id="advec:1D:BE:fig:C08"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:BE:fig:C08"></div>
+<p>Backward-Euler in time, centered in space, half a cosine profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right).</p>
+<img src="fig-advec/cosinehat_BE_C08.png" width=800>
+<!-- end figure -->
+<!-- dom:MOVIE: [https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.ogg] Crank-Nicolson in time, centered in space, $C=0.8$, $\Delta t = 0.005$. <div id="advec:1D:CN:mov:C08:dt2"></div> -->
+<!-- begin movie --><div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">HTML</span>
+<span class="n">_s</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">&lt;div&gt;</span>
+<span class="s2">&lt;video  loop controls width=&#39;640&#39; height=&#39;365&#39; preload=&#39;none&#39;&gt;</span>
+<span class="s2">    &lt;source src=&#39;https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.mp4&#39;  type=&#39;video/mp4;  codecs=&quot;avc1.42E01E, mp4a.40.2&quot;&#39;&gt;</span>
+<span class="s2">    &lt;source src=&#39;https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.webm&#39; type=&#39;video/webm; codecs=&quot;vp8, vorbis&quot;&#39;&gt;</span>
+<span class="s2">    &lt;source src=&#39;https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.ogg&#39;  type=&#39;video/ogg;  codecs=&quot;theora, vorbis&quot;&#39;&gt;</span>
+<span class="s2">&lt;/video&gt;</span>
+<span class="s2">&lt;/div&gt;</span>
+<span class="s2">&lt;p&gt;&lt;em&gt;Crank-Nicolson in time, centered in space, $C=0.8$, $\Delta t = 0.005$. \label{advec:1D:CN:mov:C08:dt2}&lt;/em&gt;&lt;/p&gt;</span>
+
+<span class="s2">&lt;!-- Issue warning if in a Safari browser --&gt;</span>
+<span class="s2">&lt;script language=&quot;javascript&quot;&gt;</span>
+<span class="s2">if (!!(window.safari)) {</span>
+<span class="s2">  document.write(&quot;&lt;div style=</span><span class="se">\&quot;</span><span class="s2">width: 95</span><span class="si">%%</span><span class="s2">; padding: 10px; border: 1px solid #100; border-radius: 4px;</span><span class="se">\&quot;</span><span class="s2">&gt;&lt;p&gt;&lt;font color=</span><span class="se">\&quot;</span><span class="s2">red</span><span class="se">\&quot;</span><span class="s2">&gt;The above movie will not play in Safari - use Chrome, Firefox, or Opera.&lt;/font&gt;&lt;/p&gt;&lt;/div&gt;&quot;)}</span>
+<span class="s2">&lt;/script&gt;</span>
+
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">HTML</span><span class="p">(</span><span class="n">_s</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html">
+<div>
+<video  loop controls width='640' height='365' preload='none'>
+    <source src='https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.mp4'  type='video/mp4;  codecs="avc1.42E01E, mp4a.40.2"'>
+    <source src='https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.webm' type='video/webm; codecs="vp8, vorbis"'>
+    <source src='https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.ogg'  type='video/ogg;  codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em>Crank-Nicolson in time, centered in space, $C=0.8$, $\Delta t = 0.005$. \label{advec:1D:CN:mov:C08:dt2}</em></p>
+
+<!-- Issue warning if in a Safari browser -->
+<script language="javascript">
+if (!!(window.safari)) {
+  document.write("<div style="width: 95%%; padding: 10px; border: 1px solid #100; border-radius: 4px;"><p><font color="red">The above movie will not play in Safari - use Chrome, Firefox, or Opera.</font></p></div>")}
+</script>
+
+</div></div>
+</div>
+<!-- end movie -->
+<!-- dom:MOVIE: [https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/cosinehat/BE/C_08_dt005.ogg] Backward-Euler in time, centered in space, $C=0.8$, $\Delta t = 0.005$. <div id="advec:1D:BE:mov:C08:dt2"></div> -->
+<!-- begin movie --><div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_s</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">&lt;div&gt;</span>
+<span class="s2">&lt;video  loop controls width=&#39;640&#39; height=&#39;365&#39; preload=&#39;none&#39;&gt;</span>
+<span class="s2">    &lt;source src=&#39;https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/cosinehat/BE/C_08_dt005.mp4&#39;  type=&#39;video/mp4;  codecs=&quot;avc1.42E01E, mp4a.40.2&quot;&#39;&gt;</span>
+<span class="s2">    &lt;source src=&#39;https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/cosinehat/BE/C_08_dt005.webm&#39; type=&#39;video/webm; codecs=&quot;vp8, vorbis&quot;&#39;&gt;</span>
+<span class="s2">    &lt;source src=&#39;https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/cosinehat/BE/C_08_dt005.ogg&#39;  type=&#39;video/ogg;  codecs=&quot;theora, vorbis&quot;&#39;&gt;</span>
+<span class="s2">&lt;/video&gt;</span>
+<span class="s2">&lt;/div&gt;</span>
+<span class="s2">&lt;p&gt;&lt;em&gt;Backward-Euler in time, centered in space, $C=0.8$, $\Delta t = 0.005$. \label{advec:1D:BE:mov:C08:dt2}&lt;/em&gt;&lt;/p&gt;</span>
+
+<span class="s2">&lt;!-- Issue warning if in a Safari browser --&gt;</span>
+<span class="s2">&lt;script language=&quot;javascript&quot;&gt;</span>
+<span class="s2">if (!!(window.safari)) {</span>
+<span class="s2">  document.write(&quot;&lt;div style=</span><span class="se">\&quot;</span><span class="s2">width: 95</span><span class="si">%%</span><span class="s2">; padding: 10px; border: 1px solid #100; border-radius: 4px;</span><span class="se">\&quot;</span><span class="s2">&gt;&lt;p&gt;&lt;font color=</span><span class="se">\&quot;</span><span class="s2">red</span><span class="se">\&quot;</span><span class="s2">&gt;The above movie will not play in Safari - use Chrome, Firefox, or Opera.&lt;/font&gt;&lt;/p&gt;&lt;/div&gt;&quot;)}</span>
+<span class="s2">&lt;/script&gt;</span>
+
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">HTML</span><span class="p">(</span><span class="n">_s</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html">
+<div>
+<video  loop controls width='640' height='365' preload='none'>
+    <source src='https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/cosinehat/BE/C_08_dt005.mp4'  type='video/mp4;  codecs="avc1.42E01E, mp4a.40.2"'>
+    <source src='https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/cosinehat/BE/C_08_dt005.webm' type='video/webm; codecs="vp8, vorbis"'>
+    <source src='https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/cosinehat/BE/C_08_dt005.ogg'  type='video/ogg;  codecs="theora, vorbis"'>
+</video>
+</div>
+<p><em>Backward-Euler in time, centered in space, $C=0.8$, $\Delta t = 0.005$. \label{advec:1D:BE:mov:C08:dt2}</em></p>
+
+<!-- Issue warning if in a Safari browser -->
+<script language="javascript">
+if (!!(window.safari)) {
+  document.write("<div style="width: 95%%; padding: 10px; border: 1px solid #100; border-radius: 4px;"><p><font color="red">The above movie will not play in Safari - use Chrome, Firefox, or Opera.</font></p></div>")}
+</script>
+
+</div></div>
+</div>
+<!-- end movie -->
+<p><a class="reference external" href="#advec:1D:CN:fig:C08">Figure</a> depicts a numerical solution for <span class="math notranslate nohighlight">\(C=0.8\)</span>
+and the Crank-Nicolson
+with severe oscillations behind the main wave. These oscillations are
+damped as the mesh is refined. Switching to the Backward Euler scheme
+removes the oscillations, but the amplitude is
+significantly reduced. One could expect that the discontinuous derivative
+in the initial condition of the half a cosine wave would make even
+stronger demands on producing a smooth profile, but <a class="reference external" href="#advec:1D:BE:fig:C08">Figure</a> shows that also here, Backward-Euler is capable of producing a
+smooth profile. All in all, there are no major differences between the
+Gaussian initial condition and the half a cosine condition for any of
+the schemes.</p>
+</div>
+<div class="section" id="the-lax-wendroff-method">
+<h2>The Lax-Wendroff method<a class="headerlink" href="#the-lax-wendroff-method" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:LaxW"></div>
+<p>The Lax-Wendroff method is based on three ideas:</p>
+<ol class="simple">
+<li><p>Express the new unknown <span class="math notranslate nohighlight">\(u^{n+1}_i\)</span> in terms of known
+quantities at <span class="math notranslate nohighlight">\(t=t_n\)</span> by means of a Taylor polynomial of second degree.</p></li>
+<li><p>Replace time-derivatives at <span class="math notranslate nohighlight">\(t=t_n\)</span> by spatial derivatives,
+using the PDE.</p></li>
+<li><p>Discretize the spatial derivatives by second-order differences so we
+achieve a scheme of accuracy <span class="math notranslate nohighlight">\(\mathcal{O}{\Delta t^2} + \mathcal{O}{\Delta x^2}\)</span>.</p></li>
+</ol>
+<p>Let us follow the recipe. First we have the three-term Taylor polynomial,</p>
+<div class="math notranslate nohighlight">
+\[
+u^{n+1}_i = u^n_i + \Delta t\left(\frac{\partial u}{\partial t}\right)^n_i
++ \frac{1}{2}\Delta t^2\left(\frac{\partial^2 u}{\partial t^2}\right)^n_i\thinspace .
+\]</div>
+<p>From the PDE we have that temporal derivatives can be substituted by
+spatial derivatives:</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial u}{\partial t} = -v\frac{\partial u}{\partial x},
+\]</div>
+<p>and furthermore,</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial ^2 u}{\partial t^2} = v^2\frac{\partial^2 u}{\partial x^2}\thinspace .
+\]</div>
+<p>Inserted in the Taylor polynomial formula, we get</p>
+<div class="math notranslate nohighlight">
+\[
+u^{n+1}_i = u^n_i -v \Delta t\left(\frac{\partial u}{\partial x}\right)^n_i
++ \frac{1}{2}\Delta t^2 v^2
+\left(\frac{\partial^2 u}{\partial x^2}\right)^n_i\thinspace .
+\]</div>
+<p>To obtain second-order accuracy in space we now use central differences:</p>
+<div class="math notranslate nohighlight">
+\[
+u^{n+1}_i = u^n_i -v \Delta t [D_{2x} u]^n_i
++ \frac{1}{2}\Delta t^2 v^2 [D_xD_x u]^n_i,
+\]</div>
+<p>or written out,</p>
+<div class="math notranslate nohighlight">
+\[
+u^{n+1}_i = u^n_i - \frac{1}{2} C (u^{n}_{i+1} - u^{n}_{i-1})
++ \frac{1}{2} C^2 (u^{n}_{i+1}-2u^n_i+u^n_{i-1})\thinspace .
+\]</div>
+<p>This is the explicit Lax-Wendroff scheme.</p>
+<p><strong>Lax-Wendroff works because of artificial viscosity.</strong></p>
+<p>From the formulas above, we notice that the Lax-Wendroff method is nothing but
+a Forward Euler, central difference in space scheme, which we have shown
+to be useless because of chronic instability, plus an artificial
+diffusion term of strength <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t v^2\)</span>. It means that we can take
+an unstable scheme and add some diffusion to stabilize it. This is a common
+trick to deal with advection problems. Sometimes, the real physical diffusion
+is not sufficiently large to make schemes stable, so then we also add
+artificial diffusion.</p>
+<!-- FIGURE: [fig-advec/gaussian_LW_C08, width=800 frac=1] Lax-Wendroff scheme, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right). <div id="advec:1D:LW:fig:C08"></div> -->
+<!-- MOVIE: [fig-advec/ -->
+<p>From an analysis similar to the ones carried out above, we get an
+amplification factor for the Lax-Wendroff method that equals</p>
+<div class="math notranslate nohighlight">
+\[
+A = 1 - iC\sin p - 2C^2\sin^2 (p/2)\thinspace .
+\]</div>
+<p>This means that <span class="math notranslate nohighlight">\(|A|=1\)</span> and also that we have an exact solution if <span class="math notranslate nohighlight">\(C=1\)</span>!</p>
+</div>
+<div class="section" id="analysis-of-dispersion-relations">
+<h2>Analysis of dispersion relations<a class="headerlink" href="#analysis-of-dispersion-relations" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:disprel"></div>
+<p>We have developed expressions for <span class="math notranslate nohighlight">\(A(C,p)\)</span> in the exact solution
+<span class="math notranslate nohighlight">\(u_q^n=A^ne^{ikq\Delta x}\)</span> of the discrete equations.
+Note that the Fourier component that solves the original
+PDE problem has no damping and moves with constant velocity <span class="math notranslate nohighlight">\(v\)</span>. There
+are two basic errors in the numerical Fourier component: there may be
+damping and the wave velocity may depend on <span class="math notranslate nohighlight">\(C\)</span> and <span class="math notranslate nohighlight">\(p=k\Delta x\)</span>.</p>
+<p>The shortest wavelength that can be represented is <span class="math notranslate nohighlight">\(\lambda = 2\Delta x\)</span>.
+The corresponding <span class="math notranslate nohighlight">\(k\)</span> is <span class="math notranslate nohighlight">\(k=2\pi/\lambda = \pi/\Delta x\)</span>, so <span class="math notranslate nohighlight">\(p=k\Delta x\in
+(0,\pi]\)</span>.</p>
+<p>Given a complex <span class="math notranslate nohighlight">\(A\)</span> as a function of <span class="math notranslate nohighlight">\(C\)</span> and <span class="math notranslate nohighlight">\(p\)</span>, how can we visualize
+it? The two key ingredients in <span class="math notranslate nohighlight">\(A\)</span> is the magnitude, reflecting damping or
+growth of the wave, and the angle, closely related to the
+velocity of the wave. The Fourier component</p>
+<div class="math notranslate nohighlight">
+\[
+D^n e^{ik(x-ct)}
+\]</div>
+<p>has damping <span class="math notranslate nohighlight">\(D\)</span> and wave velocity <span class="math notranslate nohighlight">\(c\)</span>. Let us express our <span class="math notranslate nohighlight">\(A\)</span> in
+polar form, <span class="math notranslate nohighlight">\(A = A_re^{-i\phi}\)</span>, and insert this expression in
+our discrete component <span class="math notranslate nohighlight">\(u_q^n = A^ne^{ikq\Delta x} = A^ne^{ikx}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[
+u^n_q = A_r^n e^{-i\phi n} e^{ikx} = A_r^n e^{i(kx - n\phi)} =
+A_r^ne^{i(k(x - ct))},
+\]</div>
+<p>for</p>
+<div class="math notranslate nohighlight">
+\[
+c = \frac{\phi}{k\Delta t}\thinspace .
+\]</div>
+<p>Now,</p>
+<div class="math notranslate nohighlight">
+\[
+k\Delta t = \frac{Ck\Delta x}{v}=\frac{Cp}{v},
+\]</div>
+<p>so</p>
+<div class="math notranslate nohighlight">
+\[
+c = \frac{\phi v}{Cp}\thinspace .
+\]</div>
+<p>An appropriate dimensionless quantity to plot is the scaled wave velocity <span class="math notranslate nohighlight">\(c/v\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{c}{v} = \frac{\phi}{Cp}\thinspace .
+\]</div>
+<p>Figures
+<a class="reference external" href="#advec:1D:disprel:C1:1">advec:1D:disprel:C1:1</a>–<a class="reference external" href="#advec:1D:disprel:C05:2">advec:1D:disprel:C05:2</a> contain
+dispersion curves, velocity and damping, for various values of <span class="math notranslate nohighlight">\(C\)</span>.
+The horizontal axis shows the dimensionless frequency <span class="math notranslate nohighlight">\(p\)</span> of the wave,
+while the figures to the left illustrate the error in wave velocity <span class="math notranslate nohighlight">\(c/v\)</span>
+(should ideally be 1 for all <span class="math notranslate nohighlight">\(p\)</span>), and the figures to the right display
+the absolute value (magnitude) of the damping factor <span class="math notranslate nohighlight">\(A_r\)</span>.
+The curves are labeled according to the table below.</p>
+<table border="1">
+<thead>
+<tr><th align="center">Label</th> <th align="center">                       Method                       </th> </tr>
+</thead>
+<tbody>
+<tr><td align="left">   FE       </td> <td align="left">   Forward Euler in time, centered difference in space     </td> </tr>
+<tr><td align="left">   LF       </td> <td align="left">   Leapfrog in time, centered difference in space          </td> </tr>
+<tr><td align="left">   UP       </td> <td align="left">   Forward Euler in time, upwind difference in space       </td> </tr>
+<tr><td align="left">   CN       </td> <td align="left">   Crank-Nicolson in time, centered difference in space    </td> </tr>
+<tr><td align="left">   LW       </td> <td align="left">   Lax-Wendroff's method                                   </td> </tr>
+<tr><td align="left">   BE       </td> <td align="left">   Backward Euler in time, centered difference in space    </td> </tr>
+</tbody>
+</table>
+<!-- dom:FIGURE: [fig-advec/disprel_C1_LW_UP_LF.png, width=800 frac=1] Dispersion relations for $C=1$. <div id="advec:1D:disprel:C1:1"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:disprel:C1:1"></div>
+<p>Dispersion relations for $C=1$.</p>
+<img src="fig-advec/disprel_C1_LW_UP_LF.png" width=800>
+<!-- end figure -->
+<!-- dom:FIGURE: [fig-advec/disprel_C1_CN_BE_FE.png, width=800 frac=1] Dispersion relations for $C=1$. <div id="advec:1D:disprel:C1:2"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:disprel:C1:2"></div>
+<p>Dispersion relations for $C=1$.</p>
+<img src="fig-advec/disprel_C1_CN_BE_FE.png" width=800>
+<!-- end figure -->
+<!-- dom:FIGURE: [fig-advec/disprel_C0_8_LW_UP_LF.png, width=800 frac=1] Dispersion relations for $C=0.8$. <div id="advec:1D:disprel:C08:1"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:disprel:C08:1"></div>
+<p>Dispersion relations for $C=0.8$.</p>
+<img src="fig-advec/disprel_C0_8_LW_UP_LF.png" width=800>
+<!-- end figure -->
+<!-- dom:FIGURE: [fig-advec/disprel_C0_8_CN_BE_FE.png, width=800 frac=1] Dispersion relations for $C=0.8$. <div id="advec:1D:disprel:C08:2"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:disprel:C08:2"></div>
+<p>Dispersion relations for $C=0.8$.</p>
+<img src="fig-advec/disprel_C0_8_CN_BE_FE.png" width=800>
+<!-- end figure -->
+<!-- dom:FIGURE: [fig-advec/disprel_C0_5_LW_UP_LF.png, width=800 frac=1] Dispersion relations for $C=0.5$. <div id="advec:1D:disprel:C05:1"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:disprel:C05:1"></div>
+<p>Dispersion relations for $C=0.5$.</p>
+<img src="fig-advec/disprel_C0_5_LW_UP_LF.png" width=800>
+<!-- end figure -->
+<!-- dom:FIGURE: [fig-advec/disprel_C0_5_CN_BE_FE.png, width=800 frac=1] Dispersion relations for $C=0.5$. <div id="advec:1D:disprel:C05:2"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:disprel:C05:2"></div>
+<p>Dispersion relations for $C=0.5$.</p>
+<img src="fig-advec/disprel_C0_5_CN_BE_FE.png" width=800>
+<!-- end figure -->
+<p>The total damping after some time <span class="math notranslate nohighlight">\(T=n\Delta t\)</span> is reflected by
+<span class="math notranslate nohighlight">\(A_r(C,p)^n\)</span>. Since normally <span class="math notranslate nohighlight">\(A_r&lt;1\)</span>, the damping goes like
+<span class="math notranslate nohighlight">\(A_r^{1/\Delta t}\)</span> and approaches zero as <span class="math notranslate nohighlight">\(\Delta t\rightarrow 0\)</span>.
+The only way to reduce damping is to increase <span class="math notranslate nohighlight">\(C\)</span> and/or the mesh resolution.</p>
+<p>We can learn a lot from the dispersion relation plots. For example,
+looking at the plots for <span class="math notranslate nohighlight">\(C=1\)</span>, the schemes LW, UP, and LF has no
+amplitude reduction, but LF has wrong phase velocity for the
+shortest wave in the mesh. This wave does not (normally) have enough
+amplitude to be seen, so for all practical purposes, there is no
+damping or wrong velocity of the individual waves, so the total shape
+of the wave is also correct. For the CN scheme, see <a class="reference external" href="#advec:1D:CN:fig:C08">Figure</a>, each individual wave has its amplitude, but
+they move with different velocities, so after a while, we see some of
+these waves lagging behind.  For the BE scheme, see <a class="reference external" href="#advec:1D:BE:fig:C08">Figure</a>, all the shorter waves are so heavily
+dampened that we cannot see them after a while. We see only the
+longest waves, which have slightly wrong velocity, but visible
+amplitudes are sufficiently equal to produce what looks like a smooth
+profile.</p>
+<p>Another feature was that the Leapfrog method produced oscillations,
+while the upwind scheme did not. Since the Leapfrog method does not
+dampen the shorter waves, which have wrong wave velocities of order 10
+percent, we can see these waves as noise. The upwind scheme, however,
+dampens these waves. The same effect is also present in the Lax-Wendroff
+scheme, but the damping of the intermediate waves is hardly present, so
+there is visible noise in the total signal.</p>
+<p>We realize that, compared to pure truncation error analysis, dispersion
+analysis sheds more light on the behavior of the computational schemes.
+Truncation analysis just says that Lax-Wendroff is
+better than upwind, because of the increased order in time, but
+most people would say upwind is the better one when looking at the plots.</p>
+</div>
+</div>
+<div class="section" id="one-dimensional-stationary-advection-diffusion-equation">
+<h1>One-dimensional stationary advection-diffusion equation<a class="headerlink" href="#one-dimensional-stationary-advection-diffusion-equation" title="Permalink to this headline">¶</a></h1>
+<div id="advec:1D:stationary"></div>
+<p>Now we pay attention to a physical process where advection (or convection)
+is in balance with diffusion:</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:stat:pde1"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+v\frac{du}{dx} = \alpha\frac{d^2 u}{dx^2}\thinspace .
+\label{advec:1D:stat:pde1} \tag{11}
+\end{equation}
+\]</div>
+<p>For simplicity, we assume <span class="math notranslate nohighlight">\(v\)</span> and <span class="math notranslate nohighlight">\(\alpha\)</span> to be constant, but the extension to
+the variable-coefficient case is trivial.
+This equation can be viewed as the stationary limit of the corresponding
+time-dependent problem</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:stat:pde2"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+\frac{\partial u}{\partial t} + v\frac{\partial u}{\partial x} =
+\alpha\frac{\partial^2 u}{\partial x^2}\thinspace .
+\label{advec:1D:stat:pde2} \tag{12}
+\end{equation}
+\]</div>
+<p>Equations of the form (<a class="reference external" href="#advec:1D:stat:pde1">11</a>) or
+(<a class="reference external" href="#advec:1D:stat:pde2">12</a>) arise from transport phenomena, either mass
+or heat transport. One can also view the equations as a simple model
+problem for the Navier-Stokes equations. With the chosen boundary
+conditions, the differential equation problem models the phenomenon of
+a <em>boundary layer</em>, where the solution changes rapidly very close to
+the boundary. This is a characteristic of many fluid flow problems, which
+makes strong demands to numerical methods. The fundamental numerical
+difficulty is related to non-physical oscillations of the solution
+(instability) if the first-derivative spatial term dominates over the
+second-derivative term.</p>
+<div class="section" id="a-simple-model-problem">
+<h2>A simple model problem<a class="headerlink" href="#a-simple-model-problem" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:stationary:model"></div>
+<p>We consider (<a class="reference external" href="#advec:1D:stat:pde1">11</a>) on <span class="math notranslate nohighlight">\([0,L]\)</span> equipped with the
+boundary conditions <span class="math notranslate nohighlight">\(u(0)=U_0\)</span>, <span class="math notranslate nohighlight">\(u(L)=U_L\)</span>.  By scaling we can reduce the
+number of parameters in the problem. We scale <span class="math notranslate nohighlight">\(x\)</span> by <span class="math notranslate nohighlight">\(\bar x = x/L\)</span>,
+and <span class="math notranslate nohighlight">\(u\)</span> by</p>
+<div class="math notranslate nohighlight">
+\[
+\bar u = \frac{u - U_0}{U_L-U_0}\thinspace .
+\]</div>
+<p>Inserted in the governing equation we get</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{v(U_L-U_0)}{L}\frac{d\bar u}{d\bar x} =
+\frac{\alpha(U_L-U_0)}{L^2}\frac{d^2\bar u}{d\bar x^2},\quad
+\bar u(0)=0,\ \bar u(1)=1\thinspace .
+\]</div>
+<p>Dropping the bars is common. We can then simplify to</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:stat:pde1s"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+\frac{du}{dx} = \epsilon\frac{d^2 u}{d x^2},\quad u(0)=0,\ u(1)=1\thinspace .
+\label{advec:1D:stat:pde1s} \tag{13}
+\end{equation}
+\]</div>
+<p>There are two competing effects in this equation: the advection term
+transports signals to the right, while the diffusion term transports
+signals to the left and the right. The value <span class="math notranslate nohighlight">\(u(0)=0\)</span> is transported
+through the domain if <span class="math notranslate nohighlight">\(\epsilon\)</span> is small, and <span class="math notranslate nohighlight">\(u\approx 0\)</span> except in
+the vicinity of <span class="math notranslate nohighlight">\(x=1\)</span>, where <span class="math notranslate nohighlight">\(u(1)=1\)</span> and the diffusion transports
+some information about <span class="math notranslate nohighlight">\(u(1)=1\)</span> to the left. For large <span class="math notranslate nohighlight">\(\epsilon\)</span>,
+diffusion dominates and the <span class="math notranslate nohighlight">\(u\)</span> takes on the “average” value, i.e.,
+<span class="math notranslate nohighlight">\(u\)</span> gets a linear variation from 0 to 1 throughout the domain.</p>
+<p>It turns out that we can find an exact solution to the differential
+equation problem and also to many of its discretizations. This is one
+reason why this model problem has been so successful in designing and
+investigating numerical methods for mixed convection/advection and
+diffusion.  The exact solution reads</p>
+<div class="math notranslate nohighlight">
+\[
+u_\text{e} (x) = \frac{e^{x/\epsilon} - 1}{e^{1/\epsilon} - 1}\thinspace .
+\]</div>
+<p>The forthcoming plots illustrate this function for various values of
+<span class="math notranslate nohighlight">\(\epsilon\)</span>.</p>
+</div>
+<div class="section" id="a-centered-finite-difference-scheme">
+<h2>A centered finite difference scheme<a class="headerlink" href="#a-centered-finite-difference-scheme" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:stationary:fdm"></div>
+<p>The most obvious idea to solve (<a class="reference external" href="#advec:1D:stat:pde1s">13</a>) is to apply
+centered differences:</p>
+<div class="math notranslate nohighlight">
+\[
+[D_{2x} u = \epsilon D_xD_x u]_i
+\]</div>
+<p>for <span class="math notranslate nohighlight">\(i=1,\ldots,N_x-1\)</span>, with <span class="math notranslate nohighlight">\(u_0=0\)</span> and <span class="math notranslate nohighlight">\(u_{N_x}=1\)</span>.
+Note that this is a coupled system of algebraic equations
+involving <span class="math notranslate nohighlight">\(u_0,\ldots,u_{N_x}\)</span>.</p>
+<p>Written out, the scheme becomes a tridiagonal system</p>
+<div class="math notranslate nohighlight">
+\[
+A_{i-1,i}u_{i-1} + A_{i,i}u_i + A_{i+1.i}u_{i+1} = 0,
+\]</div>
+<p>for <span class="math notranslate nohighlight">\(i=1,\ldots,N_x-1\)</span></p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+A_{0,0} &amp;= 1,\\
+A_{i-1,i} &amp;= -\frac{1}{\Delta x} -\epsilon\frac{1}{\Delta x^2},\\
+A_{i,i} &amp;= 2\epsilon\frac{1}{\Delta x^2},\\
+A_{i,i+1} &amp;=  \frac{1}{\Delta x} -\epsilon\frac{1}{\Delta x^2},\\
+A_{N_x,N_x} &amp;= 1\thinspace .
+\end{align*}
+\end{split}\]</div>
+<p>The right-hand side of the linear system is zero except <span class="math notranslate nohighlight">\(b_{N_x}=1\)</span>.</p>
+<p><a class="reference external" href="#advec:1D:stationary:fdm:fig1">Figure</a> shows reasonably accurate
+results with <span class="math notranslate nohighlight">\(N_x=20 \)</span> and <span class="math notranslate nohighlight">\(N_x=40\)</span> cells in <span class="math notranslate nohighlight">\(x\)</span> direction and a value of
+<span class="math notranslate nohighlight">\(\epsilon = 0.1\)</span>. Decreasing <span class="math notranslate nohighlight">\(\epsilon\)</span> to <span class="math notranslate nohighlight">\(0.01\)</span> leads to oscillatory
+solutions as depicted in <a class="reference external" href="#advec:1D:stationary:fdm:fig2">Figure</a>.
+This is, unfortunately, a typical phenomenon in this type of problem:
+non-physical oscillations arise for small <span class="math notranslate nohighlight">\(\epsilon\)</span> unless the resolution
+<span class="math notranslate nohighlight">\(N_x\)</span> is big enough. <a class="reference external" href="#advec:1D:stationary:exer:analysis1">Exercise 1: Analyze 1D stationary convection-diffusion problem</a>
+develops a precise criterion: <span class="math notranslate nohighlight">\(u\)</span> is oscillation-free if</p>
+<div class="math notranslate nohighlight">
+\[
+\Delta x \leq \frac{2}{\epsilon}\thinspace .
+\]</div>
+<p>If we take the present model as a simplified model for a <em>viscous
+boundary layer</em> in real, industrial fluid flow applications,
+<span class="math notranslate nohighlight">\(\epsilon\sim 10^{-6}\)</span>
+and millions of cells are required to resolve the boundary layer.
+Fortunately, this is not strictly necessary as we have methods in
+the next section to overcome the problem!</p>
+<!-- dom:FIGURE: [fig-advec/twopt_BVP_cen_01.png, width=800 frac=1] Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with centered differences. <div id="advec:1D:stationary:fdm:fig1"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:stationary:fdm:fig1"></div>
+<p>Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with centered differences.</p>
+<img src="fig-advec/twopt_BVP_cen_01.png" width=800>
+<!-- end figure -->
+<!-- dom:FIGURE: [fig-advec/twopt_BVP_cen_001.png, width=800 frac=1] Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with centered differences. <div id="advec:1D:stationary:fdm:fig2"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:stationary:fdm:fig2"></div>
+<p>Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with centered differences.</p>
+<img src="fig-advec/twopt_BVP_cen_001.png" width=800>
+<!-- end figure -->
+<p><strong>Solver.</strong></p>
+<p>A suitable solver for doing the experiments is presented below.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO: IMPLEMENT THIS IN DEVITO</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;centered&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solver for the two point boundary value problem u&#39;=eps*u&#39;&#39;,</span>
+<span class="sd">    u(0)=0, u(1)=1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>       <span class="c1"># Mesh points in space</span>
+    <span class="c1"># Make sure dx and dt are compatible with x and t</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">u</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Representation of sparse matrix and right-hand side</span>
+    <span class="n">diagonal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">lower</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="p">)</span>
+    <span class="n">upper</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="p">)</span>
+    <span class="n">b</span>        <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Precompute sparse matrix (scipy format)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;centered&#39;</span><span class="p">:</span>
+        <span class="n">diagonal</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">eps</span><span class="o">/</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">lower</span><span class="p">[:]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="n">dx</span> <span class="o">-</span> <span class="n">eps</span><span class="o">/</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">upper</span><span class="p">[:]</span> <span class="o">=</span>  <span class="mi">1</span><span class="o">/</span><span class="n">dx</span> <span class="o">-</span> <span class="n">eps</span><span class="o">/</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;upwind&#39;</span><span class="p">:</span>
+        <span class="n">diagonal</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">dx</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">eps</span><span class="o">/</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">lower</span><span class="p">[:]</span> <span class="o">=</span>  <span class="mi">1</span><span class="o">/</span><span class="n">dx</span> <span class="o">-</span> <span class="n">eps</span><span class="o">/</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">upper</span><span class="p">[:]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">eps</span><span class="o">/</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="c1"># Insert boundary conditions</span>
+    <span class="n">upper</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">lower</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">diagonal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">diagonal</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">b</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="c1"># Set up sparse matrix and solve</span>
+    <span class="n">diags</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="kn">import</span> <span class="nn">scipy.sparse</span>
+    <span class="kn">import</span> <span class="nn">scipy.sparse.linalg</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span>
+        <span class="n">diagonals</span><span class="o">=</span><span class="p">[</span><span class="n">diagonal</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">],</span>
+        <span class="n">offsets</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
+        <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;csr&#39;</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">spsolve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">x</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="remedy-upwind-finite-difference-scheme">
+<h2>Remedy: upwind finite difference scheme<a class="headerlink" href="#remedy-upwind-finite-difference-scheme" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:stationary:upwind"></div>
+<p>The scheme can be stabilized by letting the advective transport term, which
+is the dominating term, collect its information in the flow direction, i.e.,
+upstream or upwind of the point in question. So, instead of using a
+centered difference</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{du}{dx}_i\approx \frac{u_{i+1}-u_{i-1}}{2\Delta x},
+\]</div>
+<p>we use the one-sided <em>upwind</em> difference</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{du}{dx}_i\approx \frac{u_{i}-u_{i-1}}{\Delta x},
+\]</div>
+<p>in case <span class="math notranslate nohighlight">\(v&gt;0\)</span>. For <span class="math notranslate nohighlight">\(v&lt;0\)</span> we set</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{du}{dx}_i\approx \frac{u_{i+1}-u_{i}}{\Delta x},
+\]</div>
+<p>On compact operator notation form, our upwind scheme can be expressed
+as</p>
+<div class="math notranslate nohighlight">
+\[
+[D^-_x u = \epsilon D_xD_x u]_i
+\]</div>
+<p>provided <span class="math notranslate nohighlight">\(v&gt;0\)</span> (and <span class="math notranslate nohighlight">\(\epsilon &gt; 0\)</span>).</p>
+<p>We write out the equations and implement them as shown in the program
+in the section <a class="reference external" href="#advec:1D:stationary:fdm">A centered finite difference scheme</a>. The results appear in Figures
+<a class="reference external" href="#advec:1D:stationary:upwind:fig1">advec:1D:stationary:upwind:fig1</a> and
+<a class="reference external" href="#advec:1D:stationary:upwind:fig2">advec:1D:stationary:upwind:fig2</a>: no more oscillations!</p>
+<!-- dom:FIGURE: [fig-advec/twopt_BVP_upw_01.png, width=800 frac=1] Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with upwind difference. <div id="advec:1D:stationary:upwind:fig1"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:stationary:upwind:fig1"></div>
+<p>Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with upwind difference.</p>
+<img src="fig-advec/twopt_BVP_upw_01.png" width=800>
+<!-- end figure -->
+<!-- dom:FIGURE: [fig-advec/twopt_BVP_upw_001.png, width=800 frac=1] Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with upwind difference. <div id="advec:1D:stationary:upwind:fig2"></div> -->
+<!-- begin figure -->
+<div id="advec:1D:stationary:upwind:fig2"></div>
+<p>Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with upwind difference.</p>
+<img src="fig-advec/twopt_BVP_upw_001.png" width=800>
+<!-- end figure -->
+<p>We see that the upwind scheme is always stable, but it gives a thicker
+boundary layer when the centered scheme is also stable.
+Why the upwind scheme is always stable is easy to understand as
+soon as we undertake the mathematical analysis in
+<a class="reference external" href="#advec:1D:stationary:exer:analysis1">Exercise 1: Analyze 1D stationary convection-diffusion problem</a>.
+Moreover, the thicker layer (seemingly larger diffusion) can be
+understood by doing
+<a class="reference external" href="#advec:1D:stationary:exer:analysis2">Exercise 2: Interpret upwind difference as artificial diffusion</a>.</p>
+<p><strong>Exact solution for this model problem.</strong></p>
+<p>It turns out that one can introduce a linear combination of the centered
+and upwind differences for the first-derivative term in this model
+problem. One can then adjust the weight in the linear combination so that
+the numerical solution becomes identical to the analytical solution of
+the differential equation problem at any mesh point.</p>
+<!-- This approach cannot be generalized to more complicated problems. -->
+</div>
+</div>
+<div class="section" id="time-dependent-convection-diffusion-equations">
+<h1>Time-dependent convection-diffusion equations<a class="headerlink" href="#time-dependent-convection-diffusion-equations" title="Permalink to this headline">¶</a></h1>
+<p>Now it is time to combine time-dependency, convection (advection) and
+diffusion into one equation:</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:1D:stat:pde3"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+\frac{\partial u}{\partial t} + v\frac{\partial u}{\partial x} =
+\alpha\frac{\partial^2 u}{\partial x^2}\thinspace .
+\label{advec:1D:stat:pde3} \tag{14}
+\end{equation}
+\]</div>
+<div class="section" id="analytical-insight">
+<h2>Analytical insight<a class="headerlink" href="#analytical-insight" title="Permalink to this headline">¶</a></h2>
+<p>The diffusion is now dominated by convection, a wave, and diffusion, a loss
+of amplitude. One possible analytical solution is a traveling Gaussian
+function</p>
+<div class="math notranslate nohighlight">
+\[
+u(x,t) = B\exp{\left(-\left(\frac{x - vt}{4at}\right)\right)}\thinspace .
+\]</div>
+<p>This function moves with velocity <span class="math notranslate nohighlight">\(v&gt;0\)</span> to the right
+(<span class="math notranslate nohighlight">\(v&lt;0\)</span> to the left) due to convection, but at the same time we have a damping
+<span class="math notranslate nohighlight">\(e^{-16a^2t^2}\)</span> from diffusion.</p>
+</div>
+<div class="section" id="forward-in-time-centered-in-space-scheme">
+<h2>Forward in time, centered in space scheme<a class="headerlink" href="#forward-in-time-centered-in-space-scheme" title="Permalink to this headline">¶</a></h2>
+<p>The Forward Euler for the diffusion equation is a successful scheme, but it
+has a very strict stability condition. The similar Forward in time, centered
+in space strategy always gives unstable solutions for the advection PDE.
+What happens when we have both diffusion and advection present at once?</p>
+<div class="math notranslate nohighlight">
+\[
+[D_t u + vD_{2x} u = \alpha D_xD_x u + f]_i^n\thinspace .
+\]</div>
+<p>We expect that diffusion will stabilize the scheme, but that advection will
+destabilize it.</p>
+<p>Another problem is non-physical oscillations, but not growing amplitudes,
+due to centered differences in the advection term. There will hence be
+two types of instabilities to consider.
+Our analysis showed that pure advection with centered
+differences in space needs some artificial diffusion to become stable
+(and then it produces upwind differences for the advection term).
+Adding more physical diffusion should further help the numerics to stabilize
+the non-physical oscillations.</p>
+<p>The scheme is quickly implemented, but suffers from the need for small
+space and time steps, according to this reasoning. A better approach is
+to get rid of the non-physical oscillations in space by simply applying
+an upwind difference on the advection term.</p>
+</div>
+<div class="section" id="forward-in-time-upwind-in-space-scheme">
+<h2>Forward in time, upwind in space scheme<a class="headerlink" href="#forward-in-time-upwind-in-space-scheme" title="Permalink to this headline">¶</a></h2>
+<p>A good approximation for the pure advection equation is to use upwind
+discretization of the advection term. We also know that centered differences
+are good for the diffusion term, so let us combine these two discretizations:</p>
+<!-- Equation labels as ordinary links -->
+<div id="_auto2"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+[D_t u + vD^-_{x} u = \alpha D_xD_x u + f]_i^n,
+\label{_auto2} \tag{15}
+\end{equation}
+\]</div>
+<p>for <span class="math notranslate nohighlight">\(v&gt;0\)</span>. Use <span class="math notranslate nohighlight">\(vD^+ u\)</span> if <span class="math notranslate nohighlight">\(v&lt;0\)</span>.
+In this case the physical diffusion and the extra numerical diffusion
+<span class="math notranslate nohighlight">\(v\Delta x/2\)</span> will stabilize the solution, but give an overall too large
+reduction in amplitude compared with the exact solution.</p>
+<p>We may also interpret the upwind difference as artificial numerical diffusion
+and centered differences in space everywhere, so the scheme can be expressed as</p>
+<!-- Equation labels as ordinary links -->
+<div id="_auto3"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+[D_t u + vD^-_{2x} u = \alpha \frac{v\Delta x}{2} D_xD_x u + f]_i^n\thinspace .
+\label{_auto3} \tag{16}
+\end{equation}
+\]</div>
+</div>
+</div>
+<div class="section" id="applications-of-advection-equations">
+<h1>Applications of advection equations<a class="headerlink" href="#applications-of-advection-equations" title="Permalink to this headline">¶</a></h1>
+<div id="advec:app"></div>
+<p>There are two major areas where advection and convection applications arise:
+transport of a substance and heat transport <em>in a fluid</em>.
+To derive the models, we may look at the similar derivations of
+diffusion models in the section <span class="xref myst">diffu:app</span>,
+but change the assumption from a solid to fluid medium.
+This gives rise to the extra advection or convection term <span class="math notranslate nohighlight">\(\boldsymbol{v}\cdot\nabla u\)</span>.
+We briefly show how this is done.</p>
+<p>Normally, transport in a fluid is dominated by the fluid flow and not
+diffusion, so we can neglect diffusion compared to advection or convection.
+The end result is anyway an equation of the form</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{\partial u}{\partial t} + \boldsymbol{v}\cdot\nabla u = 0\thinspace .
+\]</div>
+<div class="section" id="transport-of-a-substance">
+<h2>Transport of a substance<a class="headerlink" href="#transport-of-a-substance" title="Permalink to this headline">¶</a></h2>
+<div id="advec:app:mass"></div>
+<p>The diffusion of a substance in the section <a class="reference external" href="/notebooks/03_diffu/diffu_app.ipynb#diffu:app:substance">diffu:app:substance</a> takes place
+in a solid medium, but in a fluid we can have two transport mechanisms:
+one by diffusion and one by advection.
+The latter arises from the fact
+that the substance particles are moved with the fluid velocity <span class="math notranslate nohighlight">\(\v\)</span> such that
+the effective flux now consists of two and not only one component as in
+(<a class="reference external" href="/notebooks/03_diffu/diffu_app.ipynb#diffu:app:substance:Fick">diffu:app:substance:Fick</a>):</p>
+<div class="math notranslate nohighlight">
+\[
+\boldsymbol{q} = -\alpha\nabla c + \boldsymbol{v}_\xi\thinspace .
+\]</div>
+<p>Inserted in the equation <span class="math notranslate nohighlight">\(\nabla\cdot\boldsymbol{q} = 0\)</span> we get the extra advection
+term <span class="math notranslate nohighlight">\(\nabla\cdot (\boldsymbol{v}_\xi)\)</span>. Very often we deal with incompressible flows,
+<span class="math notranslate nohighlight">\(\nabla\cdot\boldsymbol{v} = 0\)</span> such that the advective term becomes <span class="math notranslate nohighlight">\(\boldsymbol{v}\cdot\nabla c\)</span>.
+The mass transport equation for a substance then reads</p>
+<!-- Equation labels as ordinary links -->
+<div id="_auto4"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+\frac{\partial c}{\partial t} + \boldsymbol{v}\cdot\nabla c = \alpha\nabla^2 c\thinspace .
+\label{_auto4} \tag{17}
+\end{equation}
+\]</div>
+</div>
+<div class="section" id="transport-of-heat-in-fluids">
+<h2>Transport of heat in fluids<a class="headerlink" href="#transport-of-heat-in-fluids" title="Permalink to this headline">¶</a></h2>
+<div id="advec:app:heat"></div>
+<p>The derivation of the heat equation in the section <a class="reference external" href="/notebooks/03_diffu/diffu_app.ipynb#diffu:app:heat">diffu:app:heat</a> is limited
+to heat transport in solid bodies. If we turn the attention to heat transport
+in fluids, we get a material derivative of the internal energy in
+(<a class="reference external" href="/notebooks/03_diffu/diffu_app.ipynb#diffu:app:heat:PDE1">diffu:app:heat:PDE1</a>),</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{De}{dt} = - \nabla\cdot\boldsymbol{q},
+\]</div>
+<p>and more terms if work by stresses is also included, where</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{De}{dt} = \frac{\partial e}{\partial t} + \boldsymbol{v}\cdot\nabla e,
+\]</div>
+<p><span class="math notranslate nohighlight">\(\boldsymbol{v}\)</span> being the velocity of the fluid. The convective term
+<span class="math notranslate nohighlight">\(\boldsymbol{v}\cdot\nabla e\)</span> must therefore be added to the governing equation,
+resulting typically in</p>
+<!-- Equation labels as ordinary links -->
+<div id="advec:app:heat:PDE"></div>
+<div class="math notranslate nohighlight">
+\[
+\begin{equation}
+\varrho c\left(\frac{\partial T}{\partial t} + \boldsymbol{v}\cdot\nabla T\right)
+= \nabla\cdot(k\nabla T) + f,
+\label{advec:app:heat:PDE} \tag{18}
+\end{equation}
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(f\)</span> is some external heating inside the medium.</p>
+</div>
+</div>
+<div class="section" id="exercises">
+<h1>Exercises<a class="headerlink" href="#exercises" title="Permalink to this headline">¶</a></h1>
+<!-- --- begin exercise --- -->
+<div class="section" id="exercise-1-analyze-1d-stationary-convection-diffusion-problem">
+<h2>Exercise 1: Analyze 1D stationary convection-diffusion problem<a class="headerlink" href="#exercise-1-analyze-1d-stationary-convection-diffusion-problem" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:stationary:exer:analysis1"></div>
+<p>Explain the observations in the numerical experiments from the sections <a class="reference external" href="#advec:1D:stationary:fdm">A centered finite difference scheme</a> and <a class="reference external" href="#advec:1D:stationary:upwind">Remedy: upwind finite difference scheme</a> by
+finding exact numerical solutions.</p>
+<!-- --- begin hint in exercise --- -->
+<p><strong>Hint.</strong>
+The difference equations allow solutions on the form <span class="math notranslate nohighlight">\(A^i\)</span>, where
+<span class="math notranslate nohighlight">\(A\)</span> is an unknown constant and <span class="math notranslate nohighlight">\(i\)</span> is a mesh point counter.
+There are two solutions for <span class="math notranslate nohighlight">\(A\)</span>, so the general solution is a linear
+combination of the two, where the constants in the linear combination
+are determined from the boundary conditions.</p>
+<!-- --- end hint in exercise --- -->
+<p>Filename: <code class="docutils literal notranslate"><span class="pre">twopt_BVP_analysis1</span></code>.</p>
+<!-- --- end exercise --- -->
+<!-- --- begin exercise --- -->
+</div>
+<div class="section" id="exercise-2-interpret-upwind-difference-as-artificial-diffusion">
+<h2>Exercise 2: Interpret upwind difference as artificial diffusion<a class="headerlink" href="#exercise-2-interpret-upwind-difference-as-artificial-diffusion" title="Permalink to this headline">¶</a></h2>
+<div id="advec:1D:stationary:exer:analysis2"></div>
+<p>Consider an upwind, one-sided difference approximation to
+a term <span class="math notranslate nohighlight">\(du/dx\)</span> in a differential equation. Show that this
+formula can be expressed as a centered difference plus an artificial
+diffusion term of strength proportional to <span class="math notranslate nohighlight">\(\Delta x\)</span>.
+This means that introducing an upwind difference also means introducing
+extra diffusion of order <span class="math notranslate nohighlight">\(\mathcal{O}{\Delta x}\)</span>.
+Filename: <code class="docutils literal notranslate"><span class="pre">twopt_BVP_analysis2</span></code>.</p>
+<!-- --- end exercise --- --></div>
+</div>
+<div class="section" id="bibliography">
+<h1>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this headline">¶</a></h1>
+<div class="cite2c-biblio"></div></div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./notebooks/advec"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        </div>
+    </div>
+    
+    
+    <div class='prev-next-bottom'>
+        
+    <a class='left-prev' id="prev-link" href="../diffu/diffu_placeholder.html" title="previous page">Coming soon</a>
+    <a class='right-next' id="next-link" href="../nonlin/nonlin_placeholder.html" title="next page">Coming soon</a>
+
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By The Devito Project Community<br/>
+        
+            &copy; Copyright 2020.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    <script src="../../_static/js/index.js"></script>
+    
+  </body>
+</html>

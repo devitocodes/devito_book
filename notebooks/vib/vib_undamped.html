@@ -191,8 +191,33 @@
 </p>
 <ul class="nav sidenav_l1">
  <li class="toctree-l1">
-  <a class="reference internal" href="../advec/advec_placeholder.html">
-   Coming soon
+  <a class="reference internal" href="../advec/advec.html">
+   One-dimensional time-dependent advection equations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../advec/advec.html#one-dimensional-stationary-advection-diffusion-equation">
+   One-dimensional stationary advection-diffusion equation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../advec/advec.html#time-dependent-convection-diffusion-equations">
+   Time-dependent convection-diffusion equations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../advec/advec.html#applications-of-advection-equations">
+   Applications of advection equations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../advec/advec.html#exercises">
+   Exercises
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../advec/advec.html#bibliography">
+   Bibliography
   </a>
  </li>
 </ul>
@@ -1509,104 +1534,103 @@ corresponds to.</p>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                        o      0.0
                               |                       o+      0.1
-                              |                   o +         0.1
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |              o  +             0.2
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                   o +         0.1
+                              |              o  +             0.2
                               |       o  +                    0.2
-                              |   +                           0.2
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                      o   +   |                               0.3
-               o  +           |                               0.4
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |   +                           0.2
+                      o   +   |                               0.3
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>          o +                 |                               0.4
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>               o  +           |                               0.4
+          o +                 |                               0.4
       o +                     |                               0.5
-     o                        |                               0.5
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>     o                        |                               0.5
      +o                       |                               0.6
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>        + o                   |                               0.6
              + o              |                               0.7
-                   +  o       |                               0.7
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                           +  |                               0.8
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                   +  o       |                               0.7
+                           +  |                               0.8
                               |   +   o                       0.8
-                              |           +  o                
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.9
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |           +  o                0.9
                               |                 + o           0.9
+                              |                      +o       1.0
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                      +o       1.0
-                              |                        o      1.0
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                        o      1.0
                               |                       o+      1.1
+                              |                   o +         1.1
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                   o +         1.1
-                              |              o +              1.2
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |              o +              1.2
                               |       o  +                    1.2
+                              |  +                            1.2
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |  +                            1.2
-                      o  +    |                               1.3
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>               o  +           |                               1.4
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                      o  +    |                               1.3
+               o  +           |                               1.4
           o +                 |                               1.4
+      o+                      |                               1.5
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o+                      |                               1.5
-     o                        |                               1.5
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>     o                        |                               1.5
      +o                       |                               1.6
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>        + o                   |                               1.6
              + o              |                               1.7
                     + o       |                               1.7
+                           +  |                               1.8
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                           +  |                               1.8
-                              |    +  o                       1.8
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |    +  o                       1.8
                               |           +  o                1.9
+                              |                  +o           1.9
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                  +o           1.9
-                              |                      +o       2.0
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                      +o       2.0
+                              |                        o      2.0
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                        o      2.0
-                              |                       o       2.1
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                       o       2.1
                               |                   o +         2.1
+                              |              o +              2.1
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |              o +              2.1
-                              |       o +                     2.2
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |       o +                     2.2
                               | +                             2.2
+                      o  +    |                               2.3
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                      o  +    |                               2.3
-               o +            |                               2.4
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>               o +            |                               2.4
+          o+                  |                               2.4
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>          o+                  |                               2.4
-      o+                      |                               2.5
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o+                      |                               2.5
+     o                        |                               2.5
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>     o                        |                               2.5
-      o                       |                               2.6
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o                       |                               2.6
+         +o                   |                               2.6
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>         +o                   |                               2.6
-              +o              |                               2.7
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>              +o              |                               2.7
                     + o       |                               2.7
-                            + |                               2.8
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |     + o                       2.8
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                            + |                               2.8
+                              |     + o                       2.8
                               |            + o                2.9
 </pre></div>
 </div>
@@ -1626,67 +1650,63 @@ corresponds to.</p>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                      o +     |                               3.3
                o +            |                               3.4
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>          o+                  |                               3.4
+          o+                  |                               3.4
       o+                      |                               3.5
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>     o                        |                               3.5
       o                       |                               3.6
+         +o                   |                               3.6
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>         +o                   |                               3.6
-              +o              |                               3.7
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                     +o       |                               3.7
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>              +o              |                               3.7
+                     +o       |                               3.7
                              +|                               3.8
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |     + o                       3.8
                               |             +o                3.9
-                              |                  +o           3.9
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                      +o       4.0
-                              |                        o      4.0
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                  +o           3.9
+                              |                      +o       4.0
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                       o       4.0
-                              |                   o+          4.1
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                        o      4.0
+                              |                       o       4.0
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                   o+          4.1
                               |              o+               4.2
+                              |       o+                      4.2
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |       o+                      4.2
-                              |+                              4.2
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |+                              4.2
+                      o+      |                               4.3
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                      o+      |                               4.3
-               o+             |                               4.4
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>               o+             |                               4.4
           o                   |                               4.4
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o+                      |                               4.5
+      o+                      |                               4.5
      o                        |                               4.5
-      o                       |                               4.5
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>         +o                   |                               4.6
-               o              |                               4.7
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o                       |                               4.5
+         +o                   |                               4.6
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>               o              |                               4.7
                      +o       |                               4.7
+                             +|                               4.8
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                             +|                               4.8
-                              |      +o                       4.8
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |             +o                4.9
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |      +o                       4.8
+                              |             +o                4.9
                               |                   o           4.9
-                              |                       o       5.0
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                        o      5.0
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                       o       5.0
+                              |                        o      5.0
 </pre></div>
 </div>
 </div>
