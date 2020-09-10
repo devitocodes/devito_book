@@ -18,7 +18,7 @@
 
 - chapter: Advection equations
   sections:
-  - file: notebooks/advec/advec_placeholder.md
+  - file: notebooks/advec/advec.ipynb
 
 - chapter: Nonlinear problems
   sections:
