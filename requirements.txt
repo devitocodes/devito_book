@@ -24,3 +24,5 @@ jupyter_contrib_nbextensions
 bokeh
 dipy
 xvfbwrapper
+scitools3
+future

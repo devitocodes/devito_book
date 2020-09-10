@@ -1,6 +1,25 @@
 - file: index.md
-  numbered: true
+
+- chapter: Vibration ODEs
+  sections:
+  - file: notebooks/vib/vib_undamped.ipynb
+  - file: notebooks/vib/vib_placeholder.md
 
 - chapter: Wave equations
   sections:
   - file: notebooks/wave/wave1D_fd1.ipynb
+  - file: notebooks/wave/wave1D_prog.ipynb
+  - file: notebooks/wave/wave_placeholder.md
+
+- chapter: Diffusion equations
+  sections:
+  - file: notebooks/diffu/diffu_rw.ipynb
+  - file: notebooks/diffu/diffu_placeholder.md
+
+- chapter: Advection equations
+  sections:
+  - file: notebooks/advec/advec_placeholder.md
+
+- chapter: Nonlinear problems
+  sections:
+  - file: notebooks/nonlin/nonlin_placeholder.md

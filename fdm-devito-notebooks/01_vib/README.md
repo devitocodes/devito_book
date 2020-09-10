@@ -11,6 +11,7 @@ This gives an overview of which notebooks correspond to which chapters in the or
   * **1.6** Energy considerations
   * **1.7** The Euler-Cromer method
   * **1.8** Staggered mesh
+  * **1.9** Exercises and Problems
   
 * `vib_gen.ipynb`
   * **1.10** Generalization: damping, nonlinearities, and excitation

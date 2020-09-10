@@ -1,3 +1,4 @@
+# Workflow for deploying fdm-jupyter-book to GitHub Pages (https://www.devitoproject.org/devito_book/)
 name: Deploy Jupyter Book
 
 # Only run this when the master branch changes
