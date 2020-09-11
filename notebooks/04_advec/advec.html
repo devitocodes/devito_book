@@ -459,7 +459,7 @@
               <div>
                 
   <div id="ch:advec"></div>
-<p>Wave (the chapter <span class="xref myst">ch:wave</span>) and diffusion (the chapter <span class="xref myst">ch:diffu</span>)
+<p>Wave (<span class="xref myst">Wave equations</span> chapter) and diffusion (<span class="xref myst">Diffusion equations</span> chapter)
 equations are solved reliably by finite difference methods. As soon as
 we add a first-order derivative in space, representing <em>advective</em>
 transport (also known as <em>convective</em> transport), the numerics gets
@@ -467,7 +467,7 @@ more complicated and intuitively attractive methods no longer work
 well. We shall show how and why such methods fail and provide
 remedies. The present chapter builds on basic knowledge about finite
 difference methods for diffusion and wave equations, including the
-analysis by Fourier components, truncation error analysis (<span class="xref myst">ch:trunc</span>), and compact difference notation.</p>
+analysis by Fourier components, (<span class="xref myst">truncation error analysis</span>), and compact difference notation.</p>
 <p><strong>Remark on terminology.</strong></p>
 <p>It is common to refer to movement of a fluid as convection, while advection
 is the transport of some material dissolved or suspended in the fluid.
@@ -809,7 +809,7 @@ u_q^n = A^n e^{ikq\Delta x}\thinspace .
 \[
 [D_t^+ A e^{ikq\Delta x} + v D_{2x}A e^{ikq\Delta x} = 0]^n_q,
 \]</div>
-<p>and making use of (<a class="reference external" href="../A_formulas/formulas.ipynb#form:exp:fd1c:center">form:exp:fd1c:center</a>)
+<p>and making use of <a class="reference external" href="../A_formulas/formulas.ipynb#form:exp:fd1c:center">this equation</a>
 results in</p>
 <div class="math notranslate nohighlight">
 \[
@@ -883,8 +883,8 @@ is in fact identical to the exact solution (!).</p>
 <!-- dom:FIGURE: [fig-advec/solver_FE_Upw.png, width=500 frac=0.8] Exact solution obtained by Leapfrog scheme with $\Delta t = 0.1$ and $C=1$. <div id="advec:1D:case_gaussian:fig:LFCS"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:case_gaussian:fig:LFCS"></div>
-<p>Exact solution obtained by Leapfrog scheme with $\Delta t = 0.1$ and $C=1$.</p>
-<img src="fig-advec/solver_FE_Upw.png" width=500>
+<p>Exact solution obtained by Leapfrog scheme with <span class="math notranslate nohighlight">\(\Delta t = 0.1\)</span> and <span class="math notranslate nohighlight">\(C=1\)</span>.
+<img src="fig-advec/solver_FE_Upw.png" width=500></p>
 <!-- end figure -->
 </div>
 <div class="section" id="running-more-test-cases">
@@ -897,15 +897,15 @@ wave, and this main wave has the amplitude reduced.</p>
 <!-- dom:FIGURE: [fig-advec/gaussian_LF_C08.png, width=800 frac=1] Advection of a Gaussian function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right). <div id="advec:1D:LF:fig1:C08"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:LF:fig1:C08"></div>
-<p>Advection of a Gaussian function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).</p>
-<img src="fig-advec/gaussian_LF_C08.png" width=800>
+<p>Advection of a Gaussian function with a leapfrog scheme and <span class="math notranslate nohighlight">\(C=0.8\)</span>, <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span> (left) and <span class="math notranslate nohighlight">\(\Delta t=0.01\)</span> (right).
+<img src="fig-advec/gaussian_LF_C08.png" width=800></p>
 <!-- end figure -->
 <p>Advection of the Gaussian function with a leapfrog scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <span class="xref myst">movie file</span>.</p>
 <!-- dom:FIGURE: [fig-advec/cosinehat_LF_C08.png, width=800 frac=1] Advection of frac{1}{2} a cosine function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right). <div id="advec:1D:LF:fig2:C08"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:LF:fig2:C08"></div>
-<p>Advection of half a cosine function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).</p>
-<img src="fig-advec/cosinehat_LF_C08.png" width=800>
+<p>Advection of half a cosine function with a leapfrog scheme and <span class="math notranslate nohighlight">\(C=0.8\)</span>, <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span> (left) and <span class="math notranslate nohighlight">\(\Delta t=0.01\)</span> (right).
+<img src="fig-advec/cosinehat_LF_C08.png" width=800></p>
 <!-- end figure -->
 <p>Advection of the cosine hat function with a leapfrog scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <span class="xref myst">movie file</span>.</p>
 </div>
@@ -989,27 +989,26 @@ As with the Leapfrog scheme, it becomes exact if <span class="math notranslate n
 <a class="reference external" href="#advec:1D:case_gaussian:fig:LFCS">Figure</a>. This is easy to see since
 <span class="math notranslate nohighlight">\(C=1\)</span> gives the property (<a class="reference external" href="#advec:1D:pde1:uprop2">6</a>).
 However, any <span class="math notranslate nohighlight">\(C&lt;1\)</span> gives a significant reduction in the amplitude of the
-solution, which is a purely numerical effect, see Figures
-<a class="reference external" href="#advec:1D:UP:fig1:C08">advec:1D:UP:fig1:C08</a> and <a class="reference external" href="#advec:1D:UP:fig2:C08">advec:1D:UP:fig2:C08</a>.
+solution, which is a purely numerical effect, see
+<a class="reference external" href="#advec:1D:UP:fig1:C08">this Figure</a> and <a class="reference external" href="#advec:1D:UP:fig2:C08">this Figure</a>.
 Experiments show, however, that
 reducing <span class="math notranslate nohighlight">\(\Delta t\)</span> or <span class="math notranslate nohighlight">\(\Delta x\)</span>, while keeping <span class="math notranslate nohighlight">\(C\)</span> reduces the
 error.</p>
 <!-- dom:FIGURE: [fig-advec/gaussian_UP_C08.png, width=800 frac=1] Advection of a Gaussian function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.001$ (right). <div id="advec:1D:UP:fig1:C08"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:UP:fig1:C08"></div>
-<p>Advection of a Gaussian function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.001$ (right).</p>
-<img src="fig-advec/gaussian_UP_C08.png" width=800>
+<p>Advection of a Gaussian function with a forward in time, upwind in space scheme and <span class="math notranslate nohighlight">\(C=0.8\)</span>, <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> (left) and <span class="math notranslate nohighlight">\(\Delta t=0.001\)</span> (right).
+<img src="fig-advec/gaussian_UP_C08.png" width=800></p>
 <!-- end figure -->
 <p>Advection of the Gaussian function with a forward in time, upwind in space scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.005\)</span>, we get this <span class="xref myst">movie file</span>.</p>
 <!-- dom:FIGURE: [fig-advec/cosinehat_UP_08.png, width=800 frac=1] Advection of half a cosine function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right). <div id="advec:1D:UP:fig2:C08"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:UP:fig2:C08"></div>
-<p>Advection of half a cosine function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).</p>
-<img src="fig-advec/cosinehat_UP_08.png" width=800>
+<p>Advection of half a cosine function with a forward in time, upwind in space scheme and <span class="math notranslate nohighlight">\(C=0.8\)</span>, <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span> (left) and <span class="math notranslate nohighlight">\(\Delta t=0.01\)</span> (right).
+<img src="fig-advec/cosinehat_UP_08.png" width=800></p>
 <!-- end figure -->
 <p>Advection of the cosine hat function with a forward in time, upwind in space scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <span class="xref myst">movie file</span>.</p>
-<p>The amplification factor can be computed using the
-formula (<a class="reference external" href="/notebooks/A_formulas/formulas.ipynb#form:exp:fd1:bw">form:exp:fd1:bw</a>),</p>
+<p>The amplification factor can be computed using <a class="reference external" href="../A_formulas/formulas.ipynb#form:exp:fd1:bw">this formula</a>.</p>
 <div class="math notranslate nohighlight">
 \[
 \frac{A - 1}{\Delta t} + \frac{v}{\Delta x}(1 - e^{-ik\Delta x}) = 0,
@@ -1021,8 +1020,8 @@ A = 1 - C(1 - \cos(p) - i\sin(p))\thinspace .
 \]</div>
 <p>For <span class="math notranslate nohighlight">\(C&lt;1\)</span> there is, unfortunately,
 non-physical damping of discrete Fourier components, giving rise to reduced
-amplitude of <span class="math notranslate nohighlight">\(u^n_i\)</span> as in Figures <a class="reference external" href="#advec:1D:UP:fig1:C08">advec:1D:UP:fig1:C08</a>
-and <a class="reference external" href="#advec:1D:UP:fig2:C08">advec:1D:UP:fig2:C08</a>. The damping seen
+amplitude of <span class="math notranslate nohighlight">\(u^n_i\)</span> as in <a class="reference external" href="#advec:1D:UP:fig1:C08">this Figure</a>
+and <a class="reference external" href="#advec:1D:UP:fig2:C08">this Figure</a>. The damping seen
 in these figures is quite severe. Stability requires <span class="math notranslate nohighlight">\(C\leq 1\)</span>.</p>
 <p><strong>Interpretation of upwind difference as artificial diffusion.</strong></p>
 <p>One can interpret the upwind difference as extra, artificial diffusion
@@ -1374,7 +1373,7 @@ b_{N_x} &amp;= u^n_0
 \end{align*}
 \end{split}\]</div>
 <p>The dispersion relation follows from inserting <span class="math notranslate nohighlight">\(u^n_q = A^ne^{ikx}\)</span>
-and using the formula (<a class="reference external" href="/notebooks/A_formulas/formulas.ipynb#form:exp:fd1c:center">form:exp:fd1c:center</a>) for the spatial
+and using <a class="reference external" href="../A_formulas/formulas.ipynb#form:exp:fd1c:center">this formula</a> for the spatial
 differences:</p>
 <div class="math notranslate nohighlight">
 \[
@@ -1383,14 +1382,14 @@ A = \frac{1 - (1-\theta) i C\sin p}{1 + \theta i C\sin p}\thinspace .
 <!-- dom:FIGURE: [fig-advec/gaussian_CN_C08.png, width=800 frac=1] Crank-Nicolson in time, centered in space, Gaussian profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right). <div id="advec:1D:CN:fig:C08"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:CN:fig:C08"></div>
-<p>Crank-Nicolson in time, centered in space, Gaussian profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right).</p>
-<img src="fig-advec/gaussian_CN_C08.png" width=800>
+<p>Crank-Nicolson in time, centered in space, Gaussian profile, <span class="math notranslate nohighlight">\(C=0.8\)</span>, <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> (left) and <span class="math notranslate nohighlight">\(\Delta t=0.005\)</span> (right).
+<img src="fig-advec/gaussian_CN_C08.png" width=800></p>
 <!-- end figure -->
 <!-- dom:FIGURE: [fig-advec/cosinehat_BE_C08.png, width=800 frac=1] Backward-Euler in time, centered in space, frac{1}{2} a cosine profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right). <div id="advec:1D:BE:fig:C08"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:BE:fig:C08"></div>
-<p>Backward-Euler in time, centered in space, half a cosine profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right).</p>
-<img src="fig-advec/cosinehat_BE_C08.png" width=800>
+<p>Backward-Euler in time, centered in space, half a cosine profile, <span class="math notranslate nohighlight">\(C=0.8\)</span>, <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> (left) and <span class="math notranslate nohighlight">\(\Delta t=0.005\)</span> (right).
+<img src="fig-advec/cosinehat_BE_C08.png" width=800></p>
 <!-- end figure -->
 <!-- dom:MOVIE: [https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.ogg] Crank-Nicolson in time, centered in space, $C=0.8$, $\Delta t = 0.005$. <div id="advec:1D:CN:mov:C08:dt2"></div> -->
 <!-- begin movie --><div class="cell docutils container">
@@ -1404,7 +1403,7 @@ A = \frac{1 - (1-\theta) i C\sin p}{1 + \theta i C\sin p}\thinspace .
 <span class="s2">    &lt;source src=&#39;https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.ogg&#39;  type=&#39;video/ogg;  codecs=&quot;theora, vorbis&quot;&#39;&gt;</span>
 <span class="s2">&lt;/video&gt;</span>
 <span class="s2">&lt;/div&gt;</span>
-<span class="s2">&lt;p&gt;&lt;em&gt;Crank-Nicolson in time, centered in space, $C=0.8$, $\Delta t = 0.005$. \label{advec:1D:CN:mov:C08:dt2}&lt;/em&gt;&lt;/p&gt;</span>
+<span class="s2">Crank-Nicolson in time, centered in space, $C=0.8$, $\Delta t = 0.005$. &lt;!-- \label{advec:1D:CN:mov:C08:dt2} --&gt;</span>
 
 <span class="s2">&lt;!-- Issue warning if in a Safari browser --&gt;</span>
 <span class="s2">&lt;script language=&quot;javascript&quot;&gt;</span>
@@ -1426,7 +1425,7 @@ A = \frac{1 - (1-\theta) i C\sin p}{1 + \theta i C\sin p}\thinspace .
     <source src='https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.ogg'  type='video/ogg;  codecs="theora, vorbis"'>
 </video>
 </div>
-<p><em>Crank-Nicolson in time, centered in space, $C=0.8$, $\Delta t = 0.005$. \label{advec:1D:CN:mov:C08:dt2}</em></p>
+Crank-Nicolson in time, centered in space, $C=0.8$, $\Delta t = 0.005$. <!-- \label{advec:1D:CN:mov:C08:dt2} -->
 
 <!-- Issue warning if in a Safari browser -->
 <script language="javascript">
@@ -1448,7 +1447,7 @@ if (!!(window.safari)) {
 <span class="s2">    &lt;source src=&#39;https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/cosinehat/BE/C_08_dt005.ogg&#39;  type=&#39;video/ogg;  codecs=&quot;theora, vorbis&quot;&#39;&gt;</span>
 <span class="s2">&lt;/video&gt;</span>
 <span class="s2">&lt;/div&gt;</span>
-<span class="s2">&lt;p&gt;&lt;em&gt;Backward-Euler in time, centered in space, $C=0.8$, $\Delta t = 0.005$. \label{advec:1D:BE:mov:C08:dt2}&lt;/em&gt;&lt;/p&gt;</span>
+<span class="s2">Backward-Euler in time, centered in space, $C=0.8$, $\Delta t = 0.005$. &lt;!-- \label{advec:1D:BE:mov:C08:dt2} --&gt;</span>
 
 <span class="s2">&lt;!-- Issue warning if in a Safari browser --&gt;</span>
 <span class="s2">&lt;script language=&quot;javascript&quot;&gt;</span>
@@ -1470,7 +1469,7 @@ if (!!(window.safari)) {
     <source src='https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/cosinehat/BE/C_08_dt005.ogg'  type='video/ogg;  codecs="theora, vorbis"'>
 </video>
 </div>
-<p><em>Backward-Euler in time, centered in space, $C=0.8$, $\Delta t = 0.005$. \label{advec:1D:BE:mov:C08:dt2}</em></p>
+Backward-Euler in time, centered in space, $C=0.8$, $\Delta t = 0.005$. <!-- \label{advec:1D:BE:mov:C08:dt2} -->
 
 <!-- Issue warning if in a Safari browser -->
 <script language="javascript">
@@ -1481,14 +1480,14 @@ if (!!(window.safari)) {
 </div></div>
 </div>
 <!-- end movie -->
-<p><a class="reference external" href="#advec:1D:CN:fig:C08">Figure</a> depicts a numerical solution for <span class="math notranslate nohighlight">\(C=0.8\)</span>
+<p><a class="reference external" href="#advec:1D:CN:fig:C08">This figure</a> depicts a numerical solution for <span class="math notranslate nohighlight">\(C=0.8\)</span>
 and the Crank-Nicolson
 with severe oscillations behind the main wave. These oscillations are
 damped as the mesh is refined. Switching to the Backward Euler scheme
 removes the oscillations, but the amplitude is
 significantly reduced. One could expect that the discontinuous derivative
 in the initial condition of the half a cosine wave would make even
-stronger demands on producing a smooth profile, but <a class="reference external" href="#advec:1D:BE:fig:C08">Figure</a> shows that also here, Backward-Euler is capable of producing a
+stronger demands on producing a smooth profile, but <a class="reference external" href="#advec:1D:BE:fig:C08">this figure</a> shows that also here, Backward-Euler is capable of producing a
 smooth profile. All in all, there are no major differences between the
 Gaussian initial condition and the half a cosine condition for any of
 the schemes.</p>
@@ -1609,8 +1608,7 @@ c = \frac{\phi v}{Cp}\thinspace .
 \[
 \frac{c}{v} = \frac{\phi}{Cp}\thinspace .
 \]</div>
-<p>Figures
-<a class="reference external" href="#advec:1D:disprel:C1:1">advec:1D:disprel:C1:1</a>–<a class="reference external" href="#advec:1D:disprel:C05:2">advec:1D:disprel:C05:2</a> contain
+<p>Figures from <a class="reference external" href="#advec:1D:disprel:C1:1">this</a> up to <a class="reference external" href="#advec:1D:disprel:C05:2">this</a> contain
 dispersion curves, velocity and damping, for various values of <span class="math notranslate nohighlight">\(C\)</span>.
 The horizontal axis shows the dimensionless frequency <span class="math notranslate nohighlight">\(p\)</span> of the wave,
 while the figures to the left illustrate the error in wave velocity <span class="math notranslate nohighlight">\(c/v\)</span>
@@ -1633,38 +1631,38 @@ The curves are labeled according to the table below.</p>
 <!-- dom:FIGURE: [fig-advec/disprel_C1_LW_UP_LF.png, width=800 frac=1] Dispersion relations for $C=1$. <div id="advec:1D:disprel:C1:1"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:disprel:C1:1"></div>
-<p>Dispersion relations for $C=1$.</p>
-<img src="fig-advec/disprel_C1_LW_UP_LF.png" width=800>
+<p>Dispersion relations for <span class="math notranslate nohighlight">\(C=1\)</span>.
+<img src="fig-advec/disprel_C1_LW_UP_LF.png" width=800></p>
 <!-- end figure -->
 <!-- dom:FIGURE: [fig-advec/disprel_C1_CN_BE_FE.png, width=800 frac=1] Dispersion relations for $C=1$. <div id="advec:1D:disprel:C1:2"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:disprel:C1:2"></div>
-<p>Dispersion relations for $C=1$.</p>
-<img src="fig-advec/disprel_C1_CN_BE_FE.png" width=800>
+<p>Dispersion relations for <span class="math notranslate nohighlight">\(C=1\)</span>.
+<img src="fig-advec/disprel_C1_CN_BE_FE.png" width=800></p>
 <!-- end figure -->
 <!-- dom:FIGURE: [fig-advec/disprel_C0_8_LW_UP_LF.png, width=800 frac=1] Dispersion relations for $C=0.8$. <div id="advec:1D:disprel:C08:1"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:disprel:C08:1"></div>
-<p>Dispersion relations for $C=0.8$.</p>
-<img src="fig-advec/disprel_C0_8_LW_UP_LF.png" width=800>
+<p>Dispersion relations for <span class="math notranslate nohighlight">\(C=0.8\)</span>.
+<img src="fig-advec/disprel_C0_8_LW_UP_LF.png" width=800></p>
 <!-- end figure -->
 <!-- dom:FIGURE: [fig-advec/disprel_C0_8_CN_BE_FE.png, width=800 frac=1] Dispersion relations for $C=0.8$. <div id="advec:1D:disprel:C08:2"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:disprel:C08:2"></div>
-<p>Dispersion relations for $C=0.8$.</p>
-<img src="fig-advec/disprel_C0_8_CN_BE_FE.png" width=800>
+<p>Dispersion relations for <span class="math notranslate nohighlight">\(C=0.8\)</span>.
+<img src="fig-advec/disprel_C0_8_CN_BE_FE.png" width=800></p>
 <!-- end figure -->
 <!-- dom:FIGURE: [fig-advec/disprel_C0_5_LW_UP_LF.png, width=800 frac=1] Dispersion relations for $C=0.5$. <div id="advec:1D:disprel:C05:1"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:disprel:C05:1"></div>
-<p>Dispersion relations for $C=0.5$.</p>
-<img src="fig-advec/disprel_C0_5_LW_UP_LF.png" width=800>
+<p>Dispersion relations for <span class="math notranslate nohighlight">\(C=0.5\)</span>.
+<img src="fig-advec/disprel_C0_5_LW_UP_LF.png" width=800></p>
 <!-- end figure -->
 <!-- dom:FIGURE: [fig-advec/disprel_C0_5_CN_BE_FE.png, width=800 frac=1] Dispersion relations for $C=0.5$. <div id="advec:1D:disprel:C05:2"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:disprel:C05:2"></div>
-<p>Dispersion relations for $C=0.5$.</p>
-<img src="fig-advec/disprel_C0_5_CN_BE_FE.png" width=800>
+<p>Dispersion relations for <span class="math notranslate nohighlight">\(C=0.5\)</span>.
+<img src="fig-advec/disprel_C0_5_CN_BE_FE.png" width=800></p>
 <!-- end figure -->
 <p>The total damping after some time <span class="math notranslate nohighlight">\(T=n\Delta t\)</span> is reflected by
 <span class="math notranslate nohighlight">\(A_r(C,p)^n\)</span>. Since normally <span class="math notranslate nohighlight">\(A_r&lt;1\)</span>, the damping goes like
@@ -1676,9 +1674,9 @@ amplitude reduction, but LF has wrong phase velocity for the
 shortest wave in the mesh. This wave does not (normally) have enough
 amplitude to be seen, so for all practical purposes, there is no
 damping or wrong velocity of the individual waves, so the total shape
-of the wave is also correct. For the CN scheme, see <a class="reference external" href="#advec:1D:CN:fig:C08">Figure</a>, each individual wave has its amplitude, but
+of the wave is also correct. For the CN scheme, see <a class="reference external" href="#advec:1D:CN:fig:C08">this figure</a>, each individual wave has its amplitude, but
 they move with different velocities, so after a while, we see some of
-these waves lagging behind.  For the BE scheme, see <a class="reference external" href="#advec:1D:BE:fig:C08">Figure</a>, all the shorter waves are so heavily
+these waves lagging behind.  For the BE scheme, see <a class="reference external" href="#advec:1D:BE:fig:C08">this figure</a>, all the shorter waves are so heavily
 dampened that we cannot see them after a while. We see only the
 longest waves, which have slightly wrong velocity, but visible
 amplitudes are sufficiently equal to produce what looks like a smooth
@@ -1813,10 +1811,10 @@ A_{N_x,N_x} &amp;= 1\thinspace .
 \end{align*}
 \end{split}\]</div>
 <p>The right-hand side of the linear system is zero except <span class="math notranslate nohighlight">\(b_{N_x}=1\)</span>.</p>
-<p><a class="reference external" href="#advec:1D:stationary:fdm:fig1">Figure</a> shows reasonably accurate
+<p><a class="reference external" href="#advec:1D:stationary:fdm:fig1">This figure</a> shows reasonably accurate
 results with <span class="math notranslate nohighlight">\(N_x=20 \)</span> and <span class="math notranslate nohighlight">\(N_x=40\)</span> cells in <span class="math notranslate nohighlight">\(x\)</span> direction and a value of
 <span class="math notranslate nohighlight">\(\epsilon = 0.1\)</span>. Decreasing <span class="math notranslate nohighlight">\(\epsilon\)</span> to <span class="math notranslate nohighlight">\(0.01\)</span> leads to oscillatory
-solutions as depicted in <a class="reference external" href="#advec:1D:stationary:fdm:fig2">Figure</a>.
+solutions as depicted in <a class="reference external" href="#advec:1D:stationary:fdm:fig2">this figure</a>.
 This is, unfortunately, a typical phenomenon in this type of problem:
 non-physical oscillations arise for small <span class="math notranslate nohighlight">\(\epsilon\)</span> unless the resolution
 <span class="math notranslate nohighlight">\(N_x\)</span> is big enough. <a class="reference external" href="#advec:1D:stationary:exer:analysis1">Exercise 1: Analyze 1D stationary convection-diffusion problem</a>
@@ -1834,14 +1832,14 @@ the next section to overcome the problem!</p>
 <!-- dom:FIGURE: [fig-advec/twopt_BVP_cen_01.png, width=800 frac=1] Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with centered differences. <div id="advec:1D:stationary:fdm:fig1"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:stationary:fdm:fig1"></div>
-<p>Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with centered differences.</p>
-<img src="fig-advec/twopt_BVP_cen_01.png" width=800>
+<p>Comparison of exact and numerical solution for <span class="math notranslate nohighlight">\(\epsilon =0.1\)</span> and <span class="math notranslate nohighlight">\(N_x=20,40\)</span> with centered differences.
+<img src="fig-advec/twopt_BVP_cen_01.png" width=800></p>
 <!-- end figure -->
 <!-- dom:FIGURE: [fig-advec/twopt_BVP_cen_001.png, width=800 frac=1] Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with centered differences. <div id="advec:1D:stationary:fdm:fig2"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:stationary:fdm:fig2"></div>
-<p>Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with centered differences.</p>
-<img src="fig-advec/twopt_BVP_cen_001.png" width=800>
+<p>Comparison of exact and numerical solution for <span class="math notranslate nohighlight">\(\epsilon =0.01\)</span> and <span class="math notranslate nohighlight">\(N_x=20,40\)</span> with centered differences.
+<img src="fig-advec/twopt_BVP_cen_001.png" width=800></p>
 <!-- end figure -->
 <p><strong>Solver.</strong></p>
 <p>A suitable solver for doing the experiments is presented below.</p>
@@ -1926,20 +1924,19 @@ as</p>
 \]</div>
 <p>provided <span class="math notranslate nohighlight">\(v&gt;0\)</span> (and <span class="math notranslate nohighlight">\(\epsilon &gt; 0\)</span>).</p>
 <p>We write out the equations and implement them as shown in the program
-in the section <a class="reference external" href="#advec:1D:stationary:fdm">A centered finite difference scheme</a>. The results appear in Figures
-<a class="reference external" href="#advec:1D:stationary:upwind:fig1">advec:1D:stationary:upwind:fig1</a> and
-<a class="reference external" href="#advec:1D:stationary:upwind:fig2">advec:1D:stationary:upwind:fig2</a>: no more oscillations!</p>
+in the section <a class="reference external" href="#advec:1D:stationary:fdm">A centered finite difference scheme</a>. The results appear in <a class="reference external" href="#advec:1D:stationary:upwind:fig1">this figure</a> and
+<a class="reference external" href="#advec:1D:stationary:upwind:fig2">this figure</a>: no more oscillations!</p>
 <!-- dom:FIGURE: [fig-advec/twopt_BVP_upw_01.png, width=800 frac=1] Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with upwind difference. <div id="advec:1D:stationary:upwind:fig1"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:stationary:upwind:fig1"></div>
-<p>Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with upwind difference.</p>
-<img src="fig-advec/twopt_BVP_upw_01.png" width=800>
+<p>Comparison of exact and numerical solution for <span class="math notranslate nohighlight">\(\epsilon =0.1\)</span> and <span class="math notranslate nohighlight">\(N_x=20,40\)</span> with upwind difference.
+<img src="fig-advec/twopt_BVP_upw_01.png" width=800></p>
 <!-- end figure -->
 <!-- dom:FIGURE: [fig-advec/twopt_BVP_upw_001.png, width=800 frac=1] Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with upwind difference. <div id="advec:1D:stationary:upwind:fig2"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:stationary:upwind:fig2"></div>
-<p>Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with upwind difference.</p>
-<img src="fig-advec/twopt_BVP_upw_001.png" width=800>
+<p>Comparison of exact and numerical solution for <span class="math notranslate nohighlight">\(\epsilon =0.01\)</span> and <span class="math notranslate nohighlight">\(N_x=20,40\)</span> with upwind difference.
+<img src="fig-advec/twopt_BVP_upw_001.png" width=800></p>
 <!-- end figure -->
 <p>We see that the upwind scheme is always stable, but it gives a thicker
 boundary layer when the centered scheme is also stable.
@@ -2047,7 +2044,7 @@ and centered differences in space everywhere, so the scheme can be expressed as<
 <p>There are two major areas where advection and convection applications arise:
 transport of a substance and heat transport <em>in a fluid</em>.
 To derive the models, we may look at the similar derivations of
-diffusion models in the section <span class="xref myst">diffu:app</span>,
+diffusion models in the <span class="xref myst">Applications</span> section of the Diffusion equations chapter,
 but change the assumption from a solid to fluid medium.
 This gives rise to the extra advection or convection term <span class="math notranslate nohighlight">\(\boldsymbol{v}\cdot\nabla u\)</span>.
 We briefly show how this is done.</p>
@@ -2061,13 +2058,13 @@ The end result is anyway an equation of the form</p>
 <div class="section" id="transport-of-a-substance">
 <h2>Transport of a substance<a class="headerlink" href="#transport-of-a-substance" title="Permalink to this headline">¶</a></h2>
 <div id="advec:app:mass"></div>
-<p>The diffusion of a substance in the section <a class="reference external" href="/notebooks/03_diffu/diffu_app.ipynb#diffu:app:substance">diffu:app:substance</a> takes place
+<p>The diffusion of a substance in the section <a class="reference external" href="../03_diffu/diffu_app.ipynb#diffu:app:substance">Diffusion of a substance</a> takes place
 in a solid medium, but in a fluid we can have two transport mechanisms:
 one by diffusion and one by advection.
 The latter arises from the fact
-that the substance particles are moved with the fluid velocity <span class="math notranslate nohighlight">\(\v\)</span> such that
+that the substance particles are moved with the fluid velocity <span class="math notranslate nohighlight">\(\boldsymbol{v}\)</span> such that
 the effective flux now consists of two and not only one component as in
-(<a class="reference external" href="/notebooks/03_diffu/diffu_app.ipynb#diffu:app:substance:Fick">diffu:app:substance:Fick</a>):</p>
+<a class="reference external" href="../03_diffu/diffu_app.ipynb#diffu:app:substance:Fick">this equation</a>:</p>
 <div class="math notranslate nohighlight">
 \[
 \boldsymbol{q} = -\alpha\nabla c + \boldsymbol{v}_\xi\thinspace .
@@ -2089,10 +2086,10 @@ The mass transport equation for a substance then reads</p>
 <div class="section" id="transport-of-heat-in-fluids">
 <h2>Transport of heat in fluids<a class="headerlink" href="#transport-of-heat-in-fluids" title="Permalink to this headline">¶</a></h2>
 <div id="advec:app:heat"></div>
-<p>The derivation of the heat equation in the section <a class="reference external" href="/notebooks/03_diffu/diffu_app.ipynb#diffu:app:heat">diffu:app:heat</a> is limited
+<p>The derivation of the heat equation in the section <a class="reference external" href="../03_diffu/diffu_app.ipynb#diffu:app:heat">Heat conduction</a> is limited
 to heat transport in solid bodies. If we turn the attention to heat transport
 in fluids, we get a material derivative of the internal energy in
-(<a class="reference external" href="/notebooks/03_diffu/diffu_app.ipynb#diffu:app:heat:PDE1">diffu:app:heat:PDE1</a>),</p>
+<a class="reference external" href="../03_diffu/diffu_app.ipynb#diffu:app:heat:PDE1">this equation</a>,</p>
 <div class="math notranslate nohighlight">
 \[
 \frac{De}{dt} = - \nabla\cdot\boldsymbol{q},
