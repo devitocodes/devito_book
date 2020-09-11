@@ -24,7 +24,7 @@ This work is licensed under a
 The most important subdirectories in this repository are:
 
 * `fdm-devito-notebooks`, which contains the Jupyter notebooks from the original book with Devito implementations (WIP)
-* `fdm-jupyter-book`, which contains the **completed** Jupyter notebooks from `fdm-devito-notebooks`, deployed using GitHub pages [here](https://devitoproject.org/devito_book)
+* `fdm-jupyter-book`, which contains the **completed** Jupyter notebooks from `fdm-devito-notebooks`, deployed using GitHub pages [here](https://www.devitoproject.org/devito_book)
 
 ### How to use the Devito Book
 
