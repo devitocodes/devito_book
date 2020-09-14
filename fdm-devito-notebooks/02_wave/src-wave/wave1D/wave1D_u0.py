@@ -54,6 +54,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
     t_s = grid.stepping_dim
         
     # Create and initialise u
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
     u.data[0,:] = I(x[:])
     
     if user_action is not None:
@@ -67,7 +68,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
     
     # Source term and injection into equation
     dt_symbolic = grid.time_dim.spacing    
-    u = F(name='u', grid=grid, npoint=Nx+1, nt=Nt+1)
+    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt+1)
     
     for i in range(Nt):
         src.data[i] = f(x, t[i])
@@ -102,7 +103,6 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
                 break
     
     cpu_time = time.perf_counter() - t0
-#     print(u.data)
     
     return u.data[Nt], x, t, cpu_time
 
@@ -130,19 +130,15 @@ def test_quadratic():
 
     def assert_no_error(u, x, t, n):
         u_e = u_exact(x, t[n])
+        # Debugging
+        print('*********')
+        print(n)
         print(u_e)
-        print('OOOOOOOOOOOOOOO')
         print(u)
-        print('OOOOOOOOOOOOOOOOOOO')
-        print(u-u_e)
+        print('*********')
         print(np.abs(u- u_e).min())
         diff = np.abs(u - u_e).max()
         tol = 1E-7
-        if diff >= tol:
-            print('---------------')
-            print(diff)
-            print(diff - tol)
-            print('-------------')
         assert diff < tol
 
     solver(I, V, f, c, L, dt, C, T,
