@@ -14,7 +14,7 @@
 
 The Devito Book is a set of tutorials that focus on the finite difference (FD) method for solving partial differential equations (PDEs), using [Devito](https://github.com/devitocodes/devito). It is largely based on ["Finite Difference Computing with PDEs - A Modern Software Approach"](https://github.com/hplgit/fdm-book) by H. P. Langtangen and S. Linge.
 
-The tutorials are available as a [Jupyter Book](https://devitoproject.org/devito_book). They are also available on [MyBinder](https://mybinder.org/v2/gh/devitocodes/devito_book/master) as a set of Jupyter notebooks, under the `fdm-devito-notebooks` directory.
+The tutorials are available as a [Jupyter Book](https://www.devitoproject.org/devito_book). They are also available on [MyBinder](https://mybinder.org/v2/gh/devitocodes/devito_book/master) as a set of Jupyter notebooks, under the `fdm-devito-notebooks` directory.
 
 This work is licensed under a
 [Creative Commons Attribution 4.0 International License][cc-by].
@@ -34,4 +34,4 @@ For an interactive experience with the book, you can run the Jupyter notebooks i
 docker-compose up devito_book
 ```
 
-Alternatively, the non-interactive version of the book is available [here](https://devitoproject.org/devito_book).
+Alternatively, the non-interactive version of the book is available [here](https://www.devitoproject.org/devito_book).
