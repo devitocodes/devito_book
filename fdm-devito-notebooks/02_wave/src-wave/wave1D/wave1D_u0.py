@@ -50,12 +50,14 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
     t0 = time.perf_counter()  # Measure CPU time
 
     # Set up grid
-    grid = Grid(shape=(Nx+1), extent=(L))
+    grid = Grid(shape=(Nx+1), extent=(L), dtype=np.float64)
     t_s = grid.stepping_dim
         
     # Create and initialise u
-    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
-    u.data[:,:] = I(x[:])
+    u.data[0,:] = I(x[:])
+    
+    if user_action is not None:
+        user_action(u.data[0], x, t, 0)
 
     x_dim = grid.dimensions[0]
     t_dim = grid.time_dim
@@ -65,7 +67,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
     
     # Source term and injection into equation
     dt_symbolic = grid.time_dim.spacing    
-    src = SparseTimeFunction(name='f', grid=grid, npoint=Nx+1, nt=Nt+1)
+    u = F(name='u', grid=grid, npoint=Nx+1, nt=Nt+1)
     
     for i in range(Nt):
         src.data[i] = f(x, t[i])
@@ -88,11 +90,21 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
     op = Operator([stencil]+src_term+bc)
     
     op_init.apply(time_M=1, dt=dt)
-    op.apply(time_m=1, time_M=Nt, dt=dt)
+    
+    if user_action is not None:
+        user_action(u.data[1], x, t, 1)
+        
+    op.apply(time_m=1, dt=dt)
+    
+    for n in range(2, Nt+1):
+        if user_action is not None:
+            if user_action(u.data[n], x, t, n):
+                break
     
     cpu_time = time.perf_counter() - t0
+#     print(u.data)
     
-    return u.data[-1], x, t, cpu_time
+    return u.data[Nt], x, t, cpu_time
 
 def test_quadratic():
     """Check that u(x,t)=x(L-x)(1+t/2) is exactly reproduced."""
@@ -118,9 +130,19 @@ def test_quadratic():
 
     def assert_no_error(u, x, t, n):
         u_e = u_exact(x, t[n])
+        print(u_e)
+        print('OOOOOOOOOOOOOOO')
+        print(u)
+        print('OOOOOOOOOOOOOOOOOOO')
+        print(u-u_e)
         print(np.abs(u- u_e).min())
         diff = np.abs(u - u_e).max()
         tol = 1E-7
+        if diff >= tol:
+            print('---------------')
+            print(diff)
+            print(diff - tol)
+            print('-------------')
         assert diff < tol
 
     solver(I, V, f, c, L, dt, C, T,
