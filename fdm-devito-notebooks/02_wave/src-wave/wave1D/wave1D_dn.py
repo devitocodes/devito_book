@@ -85,9 +85,11 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
     t_s = grid.stepping_dim
     
     # Create and initialise u
-    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
-    for i in range(Nx+1):
-        u.data[:,i] = I(x[i])
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2, save=Nt+1)
+    u.data[0, :] = I(x[:])
+    
+    if user_action is not None:
+        user_action(u.data[0], x, t, 0)
 
     x_dim = grid.dimensions[0]
     t_dim = grid.time_dim
@@ -125,7 +127,16 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
     op = Operator([stencil]+src_term+bc)
     
     op_init.apply(time_M=1, dt=dt)
+    
+    if user_action is not None:
+        user_action(u.data[1], x, t, 1)
+    
     op.apply(time_m=1,time_M=Nt, dt=dt)
+    
+    for n in range(1, Nt+1):
+        if user_action is not None:
+            if user_action(u.data[n], x, t, n):
+                break
 
     cpu_time = time.perf_counter() - t0
 

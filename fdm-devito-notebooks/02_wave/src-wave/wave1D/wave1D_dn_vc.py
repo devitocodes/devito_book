@@ -102,10 +102,12 @@ def devito_solver(
     grid = Grid(shape=(Nx+1), extent=(L))
     t_s = grid.stepping_dim
     
-    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2, save=Nt+1)
     # Initialise values
-    for i in range(Nx+1):
-        u.data[:,i] = I(x[i])
+    u.data[0, :] = I(x[:])
+    
+    if user_action is not None:
+        user_action(u.data[0], x, t, 0)
     
     x_dim = grid.dimensions[0]
     t_dim = grid.time_dim
@@ -144,7 +146,16 @@ def devito_solver(
     
     cpu = time.perf_counter()
     op_init.apply(time_M=1, dt=dt)
+    
+    if user_action is not None:
+        user_action(u.data[1], x, t, 1)
+    
     op.apply(time_m=1,time_M=Nt, dt=dt)
+    
+    for n in range(1, Nt+1):
+        if user_action is not None:
+            if user_action(u.data[n], x, t, n):
+                break
     
     cpu = time.perf_counter() - cpu
 

@@ -55,7 +55,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
         
     # Create and initialise u
     u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2, save=Nt+1)
-    u.data[0,:] = I(x[:])
+    u.data[0, :] = I(x[:])
     
     if user_action is not None:
         user_action(u.data[0], x, t, 0)
