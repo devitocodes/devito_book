@@ -15,7 +15,8 @@
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-dropdown.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/spanels-index--0afa1ebdab0bb23b98b56d34c23d9f57.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/spanels-variables--ffc7f74dcb1b9eecba2dbcbc22818714.css" />
     <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
@@ -688,6 +689,11 @@ input <span class="math notranslate nohighlight">\(I\)</span>, <span class="math
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Matplotlib is building the font cache; this may take a moment.
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -800,7 +806,7 @@ the algorithm, is to compute <span class="math notranslate nohighlight">\(u^1\)<
 with the aid of a calculator
 and make a function for comparing these results with those from the <code class="docutils literal notranslate"><span class="pre">solver</span></code>
 function. The <code class="docutils literal notranslate"><span class="pre">test_three_steps</span></code> function in
-the file <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_undamped.py</span></code></span>
+the file <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_undamped.py"><code class="docutils literal notranslate"><span class="pre">vib_undamped.py</span></code></a>
 shows the details of how we use the hand calculations to test the code:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -990,14 +996,14 @@ function here. The unit test goes like</p>
 </div>
 </div>
 </div>
-<p>The complete code appears in the file <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_undamped.py</span></code></span>.</p>
+<p>The complete code appears in the file <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_undamped.py"><code class="docutils literal notranslate"><span class="pre">vib_undamped.py</span></code></a>.</p>
 </div>
 <div class="section" id="visualizing-convergence-rates-with-slope-markers">
 <h3>Visualizing convergence rates with slope markers<a class="headerlink" href="#visualizing-convergence-rates-with-slope-markers" title="Permalink to this headline">¶</a></h3>
 <p>Tony S. Yu has written a script <a class="reference external" href="http://goo.gl/A4Utm7"><code class="docutils literal notranslate"><span class="pre">plotslopes.py</span></code></a>
 that is very useful to indicate the slope of a graph, especially
 a graph like <span class="math notranslate nohighlight">\(\ln E = r\ln \Delta t + \ln C\)</span> arising from the model
-<span class="math notranslate nohighlight">\(E=C\Delta t^r\)</span>. A copy of the script resides in the <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">src-vib</span></code></span>
+<span class="math notranslate nohighlight">\(E=C\Delta t^r\)</span>. A copy of the script resides in the <a class="reference external" href="https://github.com/devitocodes/devito_book/tree/master/fdm-devito-notebooks/01_vib/src-vib"><code class="docutils literal notranslate"><span class="pre">src-vib</span></code></a>
 directory. Let us use it to compare the original method for <span class="math notranslate nohighlight">\(u'' + \omega^2u =0\)</span>
 with the same method applied to the equation with a modified
 <span class="math notranslate nohighlight">\(\omega\)</span>. We make log-log plots of the error versus <span class="math notranslate nohighlight">\(\Delta t\)</span>.
@@ -1538,26 +1544,23 @@ corresponds to.</p>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                   o +         0.1
                               |              o  +             0.2
-                              |       o  +                    
+                              |       o  +                    0.2
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2
-                              |   +                           0.2
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |   +                           0.2
+                      o   +   |                               0.3
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                      o   +   |                               0.3
-               o  +           |                               0.4
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>               o  +           |                               0.4
+          o +                 |                               0.4
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>          o +                 |                               0.4
-      o +                     |                               0.5
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o +                     |                               0.5
+     o                        |                               0.5
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>     o                        |                               0.5
-     +o                       |                               0.6
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>        + o                   |                               0.6
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>     +o                       |                               0.6
+        + o                   |                               0.6
              + o              |                               0.7
 </pre></div>
 </div>
@@ -1575,14 +1578,14 @@ corresponds to.</p>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                        o      1.0
                               |                       o+      1.1
-                              |                   o +         1.1
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |              o +              1.2
-                              |       o  +                    1.2
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                   o +         1.1
+                              |              o +              1.2
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |  +                            1.2
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |       o  +                    1.2
+                              |  +                            1.2
                       o  +    |                               1.3
 </pre></div>
 </div>
@@ -1592,10 +1595,10 @@ corresponds to.</p>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o+                      |                               1.5
      o                        |                               1.5
+     +o                       |                               1.6
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>     +o                       |                               1.6
-        + o                   |                               1.6
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>        + o                   |                               1.6
              + o              |                               1.7
 </pre></div>
 </div>
@@ -1605,64 +1608,66 @@ corresponds to.</p>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |    +  o                       1.8
                               |           +  o                1.9
-                              |                  +o           
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1.9
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                  +o           1.9
                               |                      +o       2.0
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                        o      2.0
                               |                       o       2.1
-                              |                   o +         2.1
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |              o +              2.1
-                              |       o +                     2.2
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                   o +         2.1
+                              |              o +              2.1
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |       o +                     2.2
                               | +                             2.2
+                      o  +    |                               2.3
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                      o  +    |                               2.3
-               o +            |                               2.4
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>               o +            |                               2.4
           o+                  |                               2.4
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o+                      |                               2.5
      o                        |                               2.5
+      o                       |                               2.6
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o                       |                               2.6
-         +o                   |                               2.6
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>         +o                   |                               2.6
+              +o              |                               2.7
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>              +o              |                               2.7
-                    + o       |                               2.7
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                    + o       |                               2.7
                             + |                               2.8
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |     + o                       2.8
                               |            + o                2.9
-                              |                  +o           2.9
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                      +o       3.0
-                              |                        o      3.0
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                  +o           2.9
+                              |                      +o       3.0
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                       o       3.1
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                        o      3.0
+                              |                       o       3.1
                               |                   o+          3.1
-                              |              o+               3.2
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |       o+                      3.2
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |              o+               3.2
+                              |       o+                      3.2
                               | +                             3.2
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                      o +     |                               3.3
                o +            |                               3.4
+          o+                  |                               
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>          o+                  |                               3.4
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>3.4
       o+                      |                               3.5
 </pre></div>
 </div>
@@ -1673,11 +1678,13 @@ corresponds to.</p>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>              +o              |                               3.7
                      +o       |                               3.7
-                             +|                               3.8
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |     + o                       3.8
-                              |             +o                3.9
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                             +|                               3.8
+                              |     + o                       3.8
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |             +o                3.9
                               |                  +o           3.9
 </pre></div>
 </div>
@@ -1703,25 +1710,24 @@ corresponds to.</p>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o+                      |                               4.5
      o                        |                               4.5
+      o                       |                               4.5
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>      o                       |                               4.5
-         +o                   |                               4.6
-               o              |                               
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>         +o                   |                               4.6
+               o              |                               4.7
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>4.7
-                     +o       |                               4.7
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                     +o       |                               4.7
+                             +|                               4.8
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                             +|                               4.8
-                              |      +o                       4.8
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |             +o                4.9
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |      +o                       4.8
+                              |             +o                4.9
                               |                   o           4.9
                               |                       o       5.0
-                              |                        o      5.0
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                              |                        o      5.0
 </pre></div>
 </div>
 </div>
@@ -1822,7 +1828,7 @@ maximum points:</p>
 </div>
 </div>
 </div>
-<p>The code segments are found in the file <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_empirical_analysis.py</span></code></span>.</p>
+<p>The code segments are found in the file <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_empirical_analysis.py"><code class="docutils literal notranslate"><span class="pre">vib_empirical_analysis.py</span></code></a>.</p>
 <p>Since <code class="docutils literal notranslate"><span class="pre">a[i]</span></code> and <code class="docutils literal notranslate"><span class="pre">p[i]</span></code> correspond to
 the <span class="math notranslate nohighlight">\(i\)</span>-th amplitude estimate and the <span class="math notranslate nohighlight">\(i\)</span>-th period estimate, respectively,
 it is most convenient to visualize the <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">p</span></code> values with the
@@ -2073,7 +2079,7 @@ left plot in <a class="reference external" href="#vib:ode1:2dt">Figure</a>.</p>
 <p><a class="reference external" href="#vib:ode1:tildeomega:plot">Figure</a> plots the discrete frequency
 (<a class="reference external" href="#vib:ode1:tildeomega">18</a>) and its approximation
 (<a class="reference external" href="#vib:ode1:tildeomega:series">19</a>) for <span class="math notranslate nohighlight">\(\omega =1\)</span> (based on the
-program <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_plot_freq.py</span></code></span>).
+program <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_plot_freq.py"><code class="docutils literal notranslate"><span class="pre">vib_plot_freq.py</span></code></a>).
 Although <span class="math notranslate nohighlight">\(\tilde\omega\)</span> is a function of <span class="math notranslate nohighlight">\(\Delta t\)</span> in
 (<a class="reference external" href="#vib:ode1:tildeomega:series">19</a>), it is misleading to think of
 <span class="math notranslate nohighlight">\(\Delta t\)</span> as the important discretization parameter. mathcal{I}_t is the
@@ -2743,7 +2749,7 @@ a sketch of the code.</p>
 </pre></div>
 </div>
 <p>There is quite some more code dealing with plots also, and we refer
-to the source file <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_undamped_odespy.py</span></code></span>
+to the source file <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_undamped_odespy.py"><code class="docutils literal notranslate"><span class="pre">vib_undamped_odespy.py</span></code></a>
 for details. Observe that keyword arguments in <code class="docutils literal notranslate"><span class="pre">f(u,t,w=1)</span></code> can
 be supplied through a solver parameter <code class="docutils literal notranslate"><span class="pre">f_kwargs</span></code> (dictionary of
 additional keyword arguments to <code class="docutils literal notranslate"><span class="pre">f</span></code>).</p>
@@ -3145,7 +3151,7 @@ of the energy, and then the maximum value is of particular relevance.</p>
 verification.  The value of <code class="docutils literal notranslate"><span class="pre">e_E_norm</span></code> is also useful for comparing
 schemes through their ability to preserve energy. Below is a table
 demonstrating the relative error in total energy for various schemes
-(computed by the <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_undamped_odespy.py</span></code></span> program). The test problem is
+(computed by the <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_undamped_odespy.py"><code class="docutils literal notranslate"><span class="pre">vib_undamped_odespy.py</span></code></a> program). The test problem is
 <span class="math notranslate nohighlight">\(u^{\prime\prime} + 4\pi^2 u =0\)</span> with <span class="math notranslate nohighlight">\(u(0)=1\)</span> and <span class="math notranslate nohighlight">\(u'(0)=0\)</span>, so the
 period is 1 and <span class="math notranslate nohighlight">\(E(t)\approx 4.93\)</span>. We clearly see that the
 Crank-Nicolson and the Runge-Kutta schemes are superior to the Forward
@@ -3442,7 +3448,7 @@ different values for <span class="math notranslate nohighlight">\(u^1\)</span> c
 <div id="vib:model2x2:EulerCromer:impl"></div>
 <div class="section" id="solver-function">
 <h3>Solver function<a class="headerlink" href="#solver-function" title="Permalink to this headline">¶</a></h3>
-<p>The function below, found in <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_undamped_EulerCromer.py</span></code></span>, implements the Euler-Cromer scheme
+<p>The function below, found in <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_undamped_EulerCromer.py"><code class="docutils literal notranslate"><span class="pre">vib_undamped_EulerCromer.py</span></code></a>, implements the Euler-Cromer scheme
 (<a class="reference external" href="#vib:model2x2:EulerCromer:veq1b">54</a>)-(<a class="reference external" href="#vib:model2x2:EulerCromer:ueq1b">55</a>):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -3522,7 +3528,7 @@ scheme!</p>
 <p>To verify the implementation of the Euler-Cromer method we can adjust
 <code class="docutils literal notranslate"><span class="pre">v[1]</span></code> so that the computer-generated values can be compared with the
 formula (<a class="reference external" href="#vib:ode1:un:exact">20</a>) from in the section <a class="reference external" href="#vib:ode1:analysis:sol">Exact discrete solution</a>. This adjustment is done in an alternative
-solver function, <code class="docutils literal notranslate"><span class="pre">solver_ic_fix</span></code> in <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_undamped_EulerCromer.py</span></code></span>. Since we now
+solver function, <code class="docutils literal notranslate"><span class="pre">solver_ic_fix</span></code> in <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_undamped_EulerCromer.py"><code class="docutils literal notranslate"><span class="pre">vib_undamped_EulerCromer.py</span></code></a>. Since we now
 have an exact solution of the discrete equations available, we can
 write a test function <code class="docutils literal notranslate"><span class="pre">test_solver</span></code> for checking the equality of
 computed values with the formula (<a class="reference external" href="#vib:ode1:un:exact">20</a>):</p>
@@ -3553,9 +3559,9 @@ second-oder ODE, arising from the mismatch in the first time level.</p>
 <div class="section" id="convergence-rates">
 <h3>Convergence rates<a class="headerlink" href="#convergence-rates" title="Permalink to this headline">¶</a></h3>
 <p>We may use the <code class="docutils literal notranslate"><span class="pre">convergence_rates</span></code> function in the file
-<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_undamped.py</span></code></span> to investigate the convergence rate of the
+<a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_undamped.py"><code class="docutils literal notranslate"><span class="pre">vib_undamped.py</span></code></a> to investigate the convergence rate of the
 Euler-Cromer method, see the <code class="docutils literal notranslate"><span class="pre">convergence_rate</span></code> function in the file
-<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_undamped_EulerCromer.py</span></code></span>.  Since we could eliminate <span class="math notranslate nohighlight">\(v\)</span> to get a
+<a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_undamped_EulerCromer.py"><code class="docutils literal notranslate"><span class="pre">vib_undamped_EulerCromer.py</span></code></a>.  Since we could eliminate <span class="math notranslate nohighlight">\(v\)</span> to get a
 scheme for <span class="math notranslate nohighlight">\(u\)</span> that is equivalent to the finite difference method for
 the second-order equation in <span class="math notranslate nohighlight">\(u\)</span>, we would expect the convergence
 rates to be the same, i.e., <span class="math notranslate nohighlight">\(r = 2\)</span>. However,
@@ -3922,7 +3928,7 @@ while <code class="docutils literal notranslate"><span class="pre">v</span></cod
 <code class="docutils literal notranslate"><span class="pre">vib_undamped.py</span></code> (which solves <span class="math notranslate nohighlight">\(u''+\omega^2u=0\)</span> directly).  The
 values should coincide to machine precision since the two numerical
 methods are mathematically equivalent.  We refer to the file
-<span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib_undamped_staggered.py</span></code></span>
+<a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib_undamped_staggered.py"><code class="docutils literal notranslate"><span class="pre">vib_undamped_staggered.py</span></code></a>
 for the details of a unit test (<code class="docutils literal notranslate"><span class="pre">test_staggered</span></code>) that checks this property.</p>
 </div>
 </div>
@@ -4043,7 +4049,10 @@ fulfilled exactly for the chosen <span class="math notranslate nohighlight">\(\u
 <p><strong>c)</strong>
 Use <code class="docutils literal notranslate"><span class="pre">sympy</span></code> to do the symbolic calculations above. Here is a
 sketch of the program <code class="docutils literal notranslate"><span class="pre">vib_undamped_verify_mms.py</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sym</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sym</span>
 <span class="n">V</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;V t I w dt&#39;</span><span class="p">)</span>  <span class="c1"># global symbols</span>
 <span class="n">f</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># global variable for the source term in the ODE</span>
 
@@ -4096,12 +4105,25 @@ sketch of the program <code class="docutils literal notranslate"><span class="pr
     <span class="n">linear</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">  File</span><span class="nn"> &quot;&lt;ipython-input-39-ab0147f940de&gt;&quot;</span><span class="gt">, line </span><span class="mi">36</span>
+    <span class="nb">print</span> <span class="s1">&#39;=== Testing exact solution: </span><span class="si">%s</span><span class="s1"> ===&#39;</span> <span class="o">%</span> <span class="n">u</span>
+                                             <span class="o">^</span>
+<span class="ne">SyntaxError</span>: Missing parentheses in call to &#39;print&#39;. Did you mean print(&#39;=== Testing exact solution: %s ===&#39; % u)?
+</pre></div>
+</div>
+</div>
+</div>
 <p>Fill in the various functions such that the calls in the <code class="docutils literal notranslate"><span class="pre">main</span></code>
 function works.</p>
 <!-- --- begin solution of exercise --- -->
 <p><strong>Solution.</strong>
 This part of the code goes as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sym</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sym</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="n">V</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;V t I w dt&#39;</span><span class="p">)</span>  <span class="c1"># global symbols</span>
@@ -4153,6 +4175,8 @@ This part of the code goes as follows:</p>
     <span class="nb">print</span> <span class="s1">&#39;residual:&#39;</span><span class="p">,</span> <span class="n">residual_discrete_eq</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+</div>
 <!-- --- end solution of exercise --- -->
 <p><strong>d)</strong>
 The purpose now is to choose a quadratic function
@@ -4166,12 +4190,17 @@ to <code class="docutils literal notranslate"><span class="pre">linear</span></c
 <p><strong>Solution.</strong>
 Yes, a quadratic function will fulfill the discrete equations exactly.
 The implementation becomes</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">quadratic</span><span class="p">():</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="k">def</span> <span class="nf">quadratic</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Test quadratic function q*t**2 + V*t + I.&quot;&quot;&quot;</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">)</span>  <span class="c1"># arbitrary constant in t**2 term</span>
     <span class="n">u_e</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">q</span><span class="o">*</span><span class="n">t</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">*</span><span class="n">t</span> <span class="o">+</span> <span class="n">I</span>
     <span class="n">main</span><span class="p">(</span><span class="n">u_e</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
 </div>
 <p>Calling <code class="docutils literal notranslate"><span class="pre">quadratic()</span></code> shows that the residual vanishes, and the quadratic
 function is an exact solution of the discrete equations.</p>
@@ -4181,10 +4210,15 @@ Will a polynomial of degree three fulfill the discrete equations?</p>
 <!-- --- begin solution of exercise --- -->
 <p><strong>Solution.</strong>
 We can easily make a test:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cubic</span><span class="p">():</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="k">def</span> <span class="nf">cubic</span><span class="p">():</span>
     <span class="n">r</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;r q&#39;</span><span class="p">)</span>
     <span class="n">main</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">r</span><span class="o">*</span><span class="n">t</span><span class="o">**</span><span class="mi">3</span> <span class="o">+</span> <span class="n">q</span><span class="o">*</span><span class="n">t</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">*</span><span class="n">t</span> <span class="o">+</span> <span class="n">I</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
 </div>
 <p>When running the final code presented below, the printout shows that the
 step1 residual for the cubic function is not zero.</p>
@@ -4219,7 +4253,10 @@ The <code class="docutils literal notranslate"><span class="pre">solver</span></
 </div>
 </div>
 <p>We can verify the implementation by the following test function:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_quadratic_exact_solution</span><span class="p">():</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="k">def</span> <span class="nf">test_quadratic_exact_solution</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Verify solver function via quadratic solution.&quot;&quot;&quot;</span>
     <span class="c1"># Transform global symbolic variables to functions and numbers</span>
     <span class="c1"># for numerical computations</span>
@@ -4239,6 +4276,8 @@ The <code class="docutils literal notranslate"><span class="pre">solver</span></
     <span class="nb">print</span> <span class="s1">&#39;Error in computing a quadratic solution:&#39;</span><span class="p">,</span> <span class="n">error</span>
 </pre></div>
 </div>
+</div>
+</div>
 <!-- --- end solution of exercise --- -->
 <p><strong>g)</strong>
 Write a test function for checking that the quadratic solution
@@ -4248,7 +4287,10 @@ function.</p>
 <!-- --- begin solution of exercise --- -->
 <p><strong>Solution.</strong>
 Here is the complete code for this exercise:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sym</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sym</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="n">V</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;V t I w dt&#39;</span><span class="p">)</span>  <span class="c1"># global symbols</span>
@@ -4356,6 +4398,8 @@ Here is the complete code for this exercise:</p>
     <span class="n">cubic</span><span class="p">()</span>
     <span class="n">test_quadratic_exact_solution</span><span class="p">()</span>
 </pre></div>
+</div>
+</div>
 </div>
 <!-- --- end solution of exercise --- -->
 <p>Filename: <code class="docutils literal notranslate"><span class="pre">vib_undamped_verify_mms</span></code>.</p>
@@ -4662,7 +4706,10 @@ v^{n+1} = v^n -\frac{1}{2}\Delta t\omega^2 (u^n + u^{n+1}),
 Observe that this scheme is explicit since <span class="math notranslate nohighlight">\(u^{n+1}\)</span> in the second
 equation is already computed by the first equation.</p>
 <p>The algorithm can be straightforwardly implemented as shown below:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vib_undamped</span> <span class="kn">import</span> <span class="n">convergence_rates</span><span class="p">,</span> <span class="n">main</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">from</span> <span class="nn">vib_undamped</span> <span class="kn">import</span> <span class="n">convergence_rates</span><span class="p">,</span> <span class="n">main</span>
 
 <span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">return_v</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -4687,6 +4734,8 @@ equation is already computed by the first equation.</p>
         <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">t</span>
 </pre></div>
 </div>
+</div>
+</div>
 <p>We provide the option that this <code class="docutils literal notranslate"><span class="pre">solver</span></code> function returns the same data
 as the <code class="docutils literal notranslate"><span class="pre">solver</span></code> function from the section <a class="reference external" href="#vib:impl1:solver">Making a solver function</a> (if <code class="docutils literal notranslate"><span class="pre">return_v</span></code>
 is <code class="docutils literal notranslate"><span class="pre">False</span></code>), but alternatively, it may return <code class="docutils literal notranslate"><span class="pre">v</span></code> along with <code class="docutils literal notranslate"><span class="pre">u</span></code> and <code class="docutils literal notranslate"><span class="pre">t</span></code>.</p>
@@ -4696,9 +4745,14 @@ in the central difference for <span class="math notranslate nohighlight">\(v\)</
 error is then no better than <span class="math notranslate nohighlight">\(\mathcal{O}{\Delta t^2}\)</span>, which can be verified
 empirically using the <code class="docutils literal notranslate"><span class="pre">convergence_rates</span></code> function from
 the section <a class="reference external" href="#vib:ode1:verify">Verification</a>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">vib_undamped_velocity_Verlet</span> <span class="k">as</span> <span class="nn">m</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">vib_undamped_velocity_Verlet</span> <span class="k">as</span> <span class="nn">m</span>
 <span class="n">m</span><span class="o">.</span><span class="n">convergence_rates</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">solver_function</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">solver</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
 </div>
 <p>The output confirms that the overall convergence rate is 2.</p>
 <!-- --- end solution of exercise --- -->
@@ -4807,7 +4861,8 @@ E = \left(\frac{2}{\omega\Delta t}\right)^2 \left(-\frac{1}{2}\left( \left(1-2\s
 \]</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sym</span>
 
@@ -4822,7 +4877,7 @@ E = \left(\frac{2}{\omega\Delta t}\right)^2 \left(-\frac{1}{2}\left( \left(1-2\s
 <span class="n">p_</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;p_&#39;</span><span class="p">)</span>
 <span class="n">E</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.</span><span class="o">/</span><span class="n">p_</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">p_</span><span class="o">/</span><span class="mf">2.</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
 <span class="n">E_series</span> <span class="o">=</span> <span class="n">E</span><span class="o">.</span><span class="n">series</span><span class="p">(</span><span class="n">p_</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">removeO</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">E_series</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">E_series</span>
 <span class="n">E_pyfunc</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">lambdify</span><span class="p">([</span><span class="n">p_</span><span class="p">],</span> <span class="n">E_series</span><span class="p">,</span> <span class="n">modules</span><span class="o">=</span><span class="s1">&#39;numpy&#39;</span><span class="p">)</span>
 
 <span class="c1"># To avoid division by zero when p is 0, we rather take the limit</span>
@@ -4839,10 +4894,12 @@ E = \left(\frac{2}{\omega\Delta t}\right)^2 \left(-\frac{1}{2}\left( \left(1-2\s
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1.0 - 0.0833333333333333*p_**2
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">  File</span><span class="nn"> &quot;&lt;ipython-input-19-8ac6d8c081b7&gt;&quot;</span><span class="gt">, line </span><span class="mi">16</span>
+    <span class="nb">print</span> <span class="n">E_series</span>
+          <span class="o">^</span>
+<span class="ne">SyntaxError</span>: Missing parentheses in call to &#39;print&#39;. Did you mean print(E_series)?
 </pre></div>
 </div>
-<img alt="../../_images/vib_undamped_442_1.png" src="../../_images/vib_undamped_442_1.png" />
 </div>
 </div>
 <p>From the plot seen below, we realize
@@ -4875,7 +4932,10 @@ itself.</p>
 <!-- --- begin solution of exercise --- -->
 <p><strong>Solution.</strong>
 The complete code with test functions goes as follows.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">,</span> <span class="s1">&#39;src-vib&#39;</span><span class="p">))</span>
 <span class="kn">from</span> <span class="nn">vib_undamped</span> <span class="kn">import</span> <span class="n">solver</span><span class="p">,</span> <span class="n">u_exact</span><span class="p">,</span> <span class="n">visualize</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -4932,6 +4992,8 @@ The complete code with test functions goes as follows.</p>
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">test_convergence_rates</span><span class="p">()</span>
 </pre></div>
+</div>
+</div>
 </div>
 <!-- --- end solution of exercise --- -->
 <p>Filename: <code class="docutils literal notranslate"><span class="pre">test_error_conv</span></code>.</p>
@@ -5124,7 +5186,10 @@ is quadratic.</p>
 <p>When the exact solution is changed to become quadratic or cubic, the situation is more complicated.</p>
 <p>For a quadratic solution <span class="math notranslate nohighlight">\(u_e\)</span> combined with (zero damping or) linear damping, the output from the program below shows that the discrete equations are fulfilled exactly. However, this is not the case with nonlinear damping, where only the first step gives zero residual.</p>
 <p>For a cubic solution <span class="math notranslate nohighlight">\(u_e\)</span>, we get a nonzero residual for (zero damping and) linear and nonlinear damping.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sym</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sym</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># The code in vib_undamped_verify_mms.py is here generalized</span>
@@ -5307,6 +5372,8 @@ is quadratic.</p>
         <span class="n">test_quadratic_exact_solution</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+</div>
 <!-- --- end solution of exercise --- -->
 <p>Filename: <code class="docutils literal notranslate"><span class="pre">vib_verify_mms</span></code>.</p>
 <!-- --- end exercise --- -->
@@ -5322,7 +5389,10 @@ that employs the exact discrete solution
 <!-- --- begin solution of exercise --- -->
 <p><strong>Solution.</strong>
 The code goes like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">vib_undamped</span> <span class="kn">import</span> <span class="n">solver</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">from</span> <span class="nn">vib_undamped</span> <span class="kn">import</span> <span class="n">solver</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">arcsin</span> <span class="k">as</span> <span class="n">asin</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="nb">abs</span>
 
 <span class="k">def</span> <span class="nf">test_solver_exact_discrete_solution</span><span class="p">():</span>
@@ -5356,6 +5426,8 @@ The code goes like this:</p>
     <span class="n">test_solver_exact_discrete_solution</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+</div>
 <!-- --- end solution of exercise --- -->
 <p>Filename: <code class="docutils literal notranslate"><span class="pre">test_vib_undamped_exact_discrete_sol</span></code>.</p>
 <!-- --- end exercise --- -->
@@ -5376,7 +5448,10 @@ model.  Verify that the error is of order <span class="math notranslate nohighli
 <!-- --- begin solution of exercise --- -->
 <p><strong>Solution.</strong>
 The code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">vib_verify_mms</span> <span class="kn">import</span> <span class="n">solver</span>
 
@@ -5429,7 +5504,7 @@ The code:</p>
     <span class="n">r</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">E_values</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">E_values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span>
          <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">dt_values</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">dt_values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
          <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">r</span>
     <span class="k">return</span> <span class="n">r</span>
 
 <span class="k">def</span> <span class="nf">test_convergence_rates</span><span class="p">():</span>
@@ -5444,6 +5519,8 @@ The code:</p>
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">test_convergence_rates</span><span class="p">()</span>
 </pre></div>
+</div>
+</div>
 </div>
 <p>The output from the program shows that <span class="math notranslate nohighlight">\(r\)</span> approaches 2.</p>
 <!-- --- end solution of exercise --- -->
@@ -5486,7 +5563,10 @@ show that <code class="docutils literal notranslate"><span class="pre">RK4</span
 <!-- --- begin solution of exercise --- -->
 <p><strong>Solution.</strong>
 We modify the proposed code to the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">scitools.std</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">scitools.std</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="c1">#import matplotlib.pyplot as plt</span>
 <span class="kn">from</span> <span class="nn">vib_empirical_analysis</span> <span class="kn">import</span> <span class="n">minmax</span><span class="p">,</span> <span class="n">amplitudes</span>
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -5556,6 +5636,8 @@ We modify the proposed code to the following:</p>
                                      <span class="n">timesteps_per_period</span><span class="p">,</span>
                                      <span class="n">num_periods</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
 </div>
 <!-- --- end solution of exercise --- -->
 <p>Filename: <code class="docutils literal notranslate"><span class="pre">vib_amplitude_errors</span></code>.</p>
@@ -5646,7 +5728,7 @@ second column of the data (the <code class="docutils literal notranslate"><span 
 <div class="section" id="problem-15-minimize-memory-usage-of-a-general-vibration-solver">
 <h2>Problem 15: Minimize memory usage of a general vibration solver<a class="headerlink" href="#problem-15-minimize-memory-usage-of-a-general-vibration-solver" title="Permalink to this headline">¶</a></h2>
 <div id="vib:exer:memsave"></div>
-<p>The program <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">vib.py</span></code></span> stores the complete
+<p>The program <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/01_vib/src-vib/vib.py"><code class="docutils literal notranslate"><span class="pre">vib.py</span></code></a> stores the complete
 solution <span class="math notranslate nohighlight">\(u^0,u^1,\ldots,u^{N_t}\)</span> in memory, which is convenient for
 later plotting.  Make a memory minimizing version of this program
 where only the last three <span class="math notranslate nohighlight">\(u^{n+1}\)</span>, <span class="math notranslate nohighlight">\(u^n\)</span>, and <span class="math notranslate nohighlight">\(u^{n-1}\)</span> values are
@@ -5660,7 +5742,10 @@ trivial to visualize very long time simulations).</p>
 <!-- --- begin solution of exercise --- -->
 <p><strong>Solution.</strong>
 Here is the complete program:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scitools.std</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="k">def</span> <span class="nf">solve_and_store</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span>
@@ -5776,6 +5861,8 @@ Here is the complete program:</p>
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+</div>
 <!-- --- end solution of exercise --- -->
 <p>Filename: <code class="docutils literal notranslate"><span class="pre">vib_memsave</span></code>.</p>
 <!-- --- end exercise --- -->
@@ -5794,7 +5881,10 @@ Implement the Euler-Cromer method from the section <a class="reference external"
 <!-- --- begin solution of exercise --- -->
 <p><strong>Solution.</strong>
 A suitable function is</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span>
 
 <span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">damping</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">):</span>
@@ -5819,6 +5909,8 @@ A suitable function is</p>
     <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">t</span>
 </pre></div>
 </div>
+</div>
+</div>
 <!-- --- end solution of exercise --- -->
 <p><strong>b)</strong>
 We expect the Euler-Cromer method to have first-order convergence rate.
@@ -5830,7 +5922,10 @@ We may use SymPy to derive a problem based on a manufactured solution
 divided by <span class="math notranslate nohighlight">\(\Delta t\)</span>, and check that this ratio remains approximately
 constant. (An alternative is to compute true convergence rates and check
 that they are close to unity.)</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_solver</span><span class="p">():</span>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_SKIP</span>
+<span class="k">def</span> <span class="nf">test_solver</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Check 1st order convergence rate.&quot;&quot;&quot;</span>
     <span class="n">m</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span> <span class="n">b</span> <span class="o">=</span> <span class="mf">0.1</span>
     <span class="n">s</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">u</span><span class="p">:</span> <span class="mi">2</span><span class="o">*</span><span class="n">u</span>
@@ -5868,6 +5963,8 @@ that they are close to unity.)</p>
         <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">error_vs_dt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span>
                    <span class="n">error_vs_dt</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">0.1</span>
 </pre></div>
+</div>
+</div>
 </div>
 <!-- --- end solution of exercise --- -->
 <p><strong>c)</strong>

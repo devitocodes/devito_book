@@ -1,0 +1,80 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.7.9/x64/lib/python3.7/site-packages/jupyter_cache/executors/utils.py", line 56, in single_nb_execution
+    record_timing=False,
+  File "/opt/hostedtoolcache/Python/3.7.9/x64/lib/python3.7/site-packages/nbclient/client.py", line 1082, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+  File "/opt/hostedtoolcache/Python/3.7.9/x64/lib/python3.7/site-packages/nbclient/util.py", line 74, in wrapped
+    return just_run(coro(*args, **kwargs))
+  File "/opt/hostedtoolcache/Python/3.7.9/x64/lib/python3.7/site-packages/nbclient/util.py", line 53, in just_run
+    return loop.run_until_complete(coro)
+  File "/opt/hostedtoolcache/Python/3.7.9/x64/lib/python3.7/asyncio/base_events.py", line 587, in run_until_complete
+    return future.result()
+  File "/opt/hostedtoolcache/Python/3.7.9/x64/lib/python3.7/site-packages/nbclient/client.py", line 536, in async_execute
+    cell, index, execution_count=self.code_cells_executed + 1
+  File "/opt/hostedtoolcache/Python/3.7.9/x64/lib/python3.7/site-packages/nbclient/client.py", line 827, in async_execute_cell
+    self._check_raise_for_error(cell, exec_reply)
+  File "/opt/hostedtoolcache/Python/3.7.9/x64/lib/python3.7/site-packages/nbclient/client.py", line 735, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply['content'])
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+# NBVAL_SKIP
+import sympy as sym
+V, t, I, w, dt = sym.symbols('V t I w dt')  # global symbols
+f = None  # global variable for the source term in the ODE
+
+def ode_source_term(u):
+    """Return the terms in the ODE that the source term
+    must balance, here u'' + w**2*u.
+    u is symbolic Python function of t."""
+    return sym.diff(u(t), t, t) + w**2*u(t)
+
+def residual_discrete_eq(u):
+    """Return the residual of the discrete eq. with u inserted."""
+    R = ...
+    return sym.simplify(R)
+
+def residual_discrete_eq_step1(u):
+    """Return the residual of the discrete eq. at the first
+    step with u inserted."""
+    R = ...
+    return sym.simplify(R)
+
+def DtDt(u, dt):
+    """Return 2nd-order finite difference for u_tt.
+    u is a symbolic Python function of t.
+    """
+    return ...
+
+def main(u):
+    """
+    Given some chosen solution u (as a function of t, implemented
+    as a Python function), use the method of manufactured solutions
+    to compute the source term f, and check if u also solves
+    the discrete equations.
+    """
+    print '=== Testing exact solution: %s ===' % u
+    print "Initial conditions u(0)=%s, u'(0)=%s:" % \
+          (u(t).subs(t, 0), sym.diff(u(t), t).subs(t, 0))
+
+    # Method of manufactured solution requires fitting f
+    global f  # source term in the ODE
+    f = sym.simplify(ode_lhs(u))
+
+    # Residual in discrete equations (should be 0)
+    print 'residual step1:', residual_discrete_eq_step1(u)
+    print 'residual:', residual_discrete_eq(u)
+
+def linear():
+    main(lambda t: V*t + I)
+
+if __name__ == '__main__':
+    linear()
+------------------
+
+[0;36m  File [0;32m"<ipython-input-39-ab0147f940de>"[0;36m, line [0;32m36[0m
+[0;31m    print '=== Testing exact solution: %s ===' % u[0m
+[0m                                             ^[0m
+[0;31mSyntaxError[0m[0;31m:[0m Missing parentheses in call to 'print'. Did you mean print('=== Testing exact solution: %s ===' % u)?
+
+SyntaxError: Missing parentheses in call to 'print'. Did you mean print('=== Testing exact solution: %s ===' % u)? (<ipython-input-39-ab0147f940de>, line 36)
+
