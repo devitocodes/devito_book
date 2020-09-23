@@ -1,11 +1,16 @@
 import numpy as np
 
 def FE_logistic(u0, dt, Nt):
-    u = np.zeros(N+1)
-    u[0] = u0
-    for n in range(Nt):
-        u[n+1] = u[n] + dt*(u[n] - u[n]**2)
-    return u
+    t = Dimension('t', spacing=Constant('h_t'))
+    
+    u = TimeFunction(name='u', dimensions=(t,), shape=(Nt+1), save=Nt+1)
+    u.data[0] = u0
+    
+    pde = u.dtr - u + u**2
+    stencil = Eq(u.forward, solve(pde, u.forward))
+    op = Operator(stencil)
+    op.apply(h_t=dt, t_M=Nt-1)
+    return u.data
 
 def quadratic_roots(a, b, c):
     delta = b**2 - 4*a*c
