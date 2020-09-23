@@ -1,8 +1,9 @@
 import numpy as np
 import sympy as sp
 from devito import Dimension, Constant, TimeFunction, Eq, solve, Operator
-#import matplotlib.pyplot as plt
-import scitools.std as plt
+import matplotlib.pyplot as plt
+# import scitools.std as plt
+
 
 def solver(I, V, m, b, s, F, dt, T, damping='linear'):
     """
@@ -32,14 +33,22 @@ def solver(I, V, m, b, s, F, dt, T, damping='linear'):
         # fd_order set as backward derivative used is 1st order
         eqn = m*u.dt2 + b*u.dt*sp.Abs(u.dtl(fd_order=1)) + s(u) - F(u)
         stencil = Eq(u.forward, solve(eqn, u.forward))
+
     # First timestep needs to have the backward timestep substituted
-    stencil_init = stencil.subs(u.backward, u.forward-2*t.spacing*V)
+    # Has to be done to the equation otherwise the stencil will have
+    # forward timestep on both sides
+    # FIXME: Doesn't look like you can do subs or solve on anything inside an Abs
+    eqn_init = eqn.subs(u.backward, u.forward-2*t.spacing*V)
+    stencil_init = Eq(u.forward, solve(eqn_init, u.forward))
+    # stencil_init = stencil.subs(u.backward, u.forward-2*t.spacing*V)
+
     op_init = Operator(stencil_init, name='first_timestep')
     op = Operator(stencil, name='main_loop')
     op_init.apply(h_t=dt, t_M=1)
     op.apply(h_t=dt, t_m=1, t_M=Nt-1)
 
     return u.data, np.linspace(0, Nt*dt, Nt+1)
+
 
 def visualize(u, t, title='', filename='tmp'):
     plt.plot(t, u, 'b-')
@@ -54,10 +63,14 @@ def visualize(u, t, title='', filename='tmp'):
     plt.savefig(filename + '.pdf')
     plt.show()
 
+
 def test_constant():
     """Verify a constant solution."""
     u_exact = lambda t: I
-    I = 1.2; V = 0; m = 2; b = 0.9
+    I = 1.2
+    V = 0
+    m = 2
+    b = 0.9
     w = 1.5
     s = lambda u: w**2*u
     F = lambda t: w**2*u_exact(t)
@@ -71,6 +84,7 @@ def test_constant():
     u, t = solver(I, V, m, b, s, F, dt, T, 'quadratic')
     difference = np.abs(u_exact(t) - u).max()
     assert difference < tol
+
 
 def lhs_eq(t, m, b, s, u, damping='linear'):
     """Return lhs of differential equation as sympy expression."""
@@ -211,10 +225,10 @@ def plot_empirical_freq_and_amplitude(u, t):
     a = amplitudes(minima, maxima)
     plt.figure()
     from math import pi
-    w = 2*pi/p    
-    plt.plot(range(len(p)), w, 'r-')
+    w = 2*pi/p
+    plt.plot(list(range(len(p))), w, 'r-')
     plt.hold('on')
-    plt.plot(range(len(a)), a, 'b-')
+    plt.plot(list(range(len(a))), a, 'b-')
     ymax = 1.1*max(w.max(), a.max())
     ymin = 0.9*min(w.min(), a.min())
     plt.axis([0, max(len(p), len(a)), ymin, ymax])
@@ -247,7 +261,7 @@ def visualize_front(u, t, window_width, savefig=False):
                     axis=plot_manager.axis(),
                     show=not savefig) # drop window if savefig
             if savefig:
-                print 't=%g' % t[n]
+                print('t=%g' % t[n])
                 st.savefig('tmp_vib%04d.png' % n)
         plot_manager.update(n)
 
@@ -263,7 +277,7 @@ def visualize_front_ascii(u, t, fps=10):
 
     p = Plotter(ymin=umin, ymax=umax, width=60, symbols='+o')
     for n in range(len(u)):
-        print p.plot(t[n], u[n]), '%.2f' % (t[n])
+        print(p.plot(t[n], u[n]), '%.2f' % (t[n]))
         time.sleep(1/float(fps))
 
 def minmax(t, u):
