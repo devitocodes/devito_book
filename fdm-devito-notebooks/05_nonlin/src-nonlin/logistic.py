@@ -3,7 +3,7 @@ import numpy as np
 def FE_logistic(u0, dt, Nt):
     t = Dimension('t', spacing=Constant('h_t'))
     
-    u = TimeFunction(name='u', dimensions=(t,), shape=(Nt+1), save=Nt+1)
+    u = TimeFunction(name='u', dimensions=(t,), shape=(Nt+1))
     u.data[0] = u0
     
     pde = u.dtr - u + u**2
