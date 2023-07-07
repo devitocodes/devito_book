@@ -2,463 +2,426 @@
 
 <!DOCTYPE html>
 
-<html>
+
+<html lang="en" >
+
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
     <title>One-dimensional time-dependent advection equations &#8212; The Devito Book</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous">
-    <link href="../../_static/css/index.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/spanels-index--0afa1ebdab0bb23b98b56d34c23d9f57.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/spanels-variables--ffc7f74dcb1b9eecba2dbcbc22818714.css" />
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/language_data.js"></script>
-    <script src="../../_static/togglebutton.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/sphinx-book-theme.js"></script>
-    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
-    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
-    <script >
-        const thebe_selector = ".thebe"
-        const thebe_selector_input = "pre"
-        const thebe_selector_output = ".output"
-    </script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/04_advec/advec';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Coming soon" href="../05_nonlin/nonlin_placeholder.html" />
     <link rel="prev" title="Coming soon" href="../03_diffu/diffu_placeholder.html" />
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="docsearch:language" content="en">
-
-
-
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
-    
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-    <div class="container-xl">
-      <div class="row">
-          
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
     
-        <div class="navbar-brand-box">
-<a class="navbar-brand text-wrap" href="../../index.html">
+    
+    
+    
+  </div>
   
-  <img src="../../_static/devito_logo.png" class="logo" alt="logo">
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
   
   
-  <h1 class="site-logo" id="site-title">The Devito Book</h1>
   
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/devito_logo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../../_static/devito_logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    Welcome to the Devito Book!
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Vibration ODEs</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../01_vib/vib_undamped.html">Finite difference discretization</a></li>
+
+
+
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../01_vib/vib_placeholder.html">Coming soon</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Wave equations</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../02_wave/wave1D_fd1.html">Simulation of waves on a string</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../02_wave/wave1D_prog.html">Implementation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../02_wave/wave_placeholder.html">Coming soon</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Diffusion equations</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../03_diffu/diffu_rw.html">Random walk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03_diffu/diffu_placeholder.html">Coming soon</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advection equations</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">One-dimensional time-dependent advection equations</a></li>
+
+
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Nonlinear problems</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../05_nonlin/nonlin_placeholder.html">Coming soon</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/devitocodes/devito_book" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
 </a>
-</div>
 
-<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
-</form>
 
-<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
-  <ul class="nav sidenav_l1">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../index.html">
-   Welcome to the Devito Book!
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Vibration ODEs
- </span>
-</p>
-<ul class="nav sidenav_l1">
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html">
-   Finite difference discretization
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#implementation">
-   Implementation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#visualization-of-long-time-simulations">
-   Visualization of long time simulations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#analysis-of-the-numerical-scheme">
-   Analysis of the numerical scheme
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#alternative-schemes-based-on-1st-order-equations">
-   Alternative schemes based on 1st-order equations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#energy-considerations">
-   Energy considerations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#the-euler-cromer-method">
-   The Euler-Cromer method
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#staggered-mesh">
-   Staggered mesh
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#exercises-and-problems">
-   Exercises and Problems
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_placeholder.html">
-   Coming soon
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Wave equations
- </span>
-</p>
-<ul class="nav sidenav_l1">
- <li class="toctree-l1">
-  <a class="reference internal" href="../02_wave/wave1D_fd1.html">
-   Simulation of waves on a string
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../02_wave/wave1D_fd1.html#verification">
-   Verification
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../02_wave/wave1D_prog.html">
-   Implementation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../02_wave/wave1D_prog.html#exercises">
-   Exercises
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../02_wave/wave_placeholder.html">
-   Coming soon
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Diffusion equations
- </span>
-</p>
-<ul class="nav sidenav_l1">
- <li class="toctree-l1">
-  <a class="reference internal" href="../03_diffu/diffu_rw.html">
-   Random walk
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../03_diffu/diffu_placeholder.html">
-   Coming soon
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Advection equations
- </span>
-</p>
-<ul class="current nav sidenav_l1">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   One-dimensional time-dependent advection equations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="#one-dimensional-stationary-advection-diffusion-equation">
-   One-dimensional stationary advection-diffusion equation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="#time-dependent-convection-diffusion-equations">
-   Time-dependent convection-diffusion equations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="#applications-of-advection-equations">
-   Applications of advection equations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="#exercises">
-   Exercises
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="#bibliography">
-   Bibliography
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Nonlinear problems
- </span>
-</p>
-<ul class="nav sidenav_l1">
- <li class="toctree-l1">
-  <a class="reference internal" href="../05_nonlin/nonlin_placeholder.html">
-   Coming soon
-  </a>
- </li>
-</ul>
 
-</nav>
 
- <!-- To handle the deprecated key -->
 
-<div class="navbar_extra_footer">
-  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
-</div>
 
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/notebooks/04_advec/advec.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
 </div>
 
 
-          
 
 
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="row topbar fixed-top container-xl">
-    <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show">
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
     </div>
-    <div class="col pl-2 topbar-main">
-        
-        <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-            data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-            aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-            title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-            <i class="fas fa-bars"></i>
-            <i class="fas fa-arrow-left"></i>
-            <i class="fas fa-arrow-up"></i>
-        </button>
-        
-        <div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../../_sources/notebooks/04_advec/advec.ipynb"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.ipynb</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-    
+  
 </div>
-        <!-- Source interaction buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/devitocodes/devito_book"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        
-        
-    </div>
 </div>
+              
+              
 
-
-        <!-- Full screen (wrap in <a> to have style consistency -->
-        <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-                data-placement="bottom" onclick="toggleFullScreen()" title="Fullscreen mode"><i
-                    class="fas fa-expand"></i></button></a>
-
-        <!-- Launch buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
-    <div class="dropdown-buttons">
-        
-        <a class="binder-button" href="https://mybinder.org/v2/gh/devitocodes/devito_book/master?urlpath=tree/notebooks/04_advec/advec.ipynb"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
-                data-placement="left"><img class="binder-button-logo"
-                    src="../../_static/images/logo_binder.svg"
-                    alt="Interact on binder">Binder</button></a>
-        
-        
-        
-        <a class="colab-button" href="https://colab.research.google.com/github/devitocodes/devito_book/blob/master/notebooks/04_advec/advec.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
-                title="Launch Colab" data-toggle="tooltip" data-placement="left"><img class="colab-button-logo"
-                    src="../../_static/images/logo_colab.png"
-                    alt="Interact on Colab">Colab</button></a>
-        
-        
-    </div>
-</div>
-
-    </div>
-
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>One-dimensional time-dependent advection equations</h1>
     <!-- Table of contents -->
-    <div class="d-none d-md-block col-md-2 bd-toc show">
-        <div class="tocsection onthispage pt-5 pb-3">
-            <i class="fas fa-list"></i> Contents
-        </div>
-        <nav id="bd-toc-nav">
-            <ul class="nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#simplest-scheme-forward-in-time-centered-in-space">
-   Simplest scheme: forward in time, centered in space
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#method">
-     Method
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#implementation">
-     Implementation
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#test-cases">
-     Test cases
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#bug">
-     Bug?
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#analysis-of-the-scheme">
-   Analysis of the scheme
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#leapfrog-in-time-centered-differences-in-space">
-   Leapfrog in time, centered differences in space
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id1">
-     Method
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#id2">
-     Implementation
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#running-a-test-case">
-     Running a test case
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#running-more-test-cases">
-     Running more test cases
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#analysis">
-     Analysis
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#upwind-differences-in-space">
-   Upwind differences in space
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#periodic-boundary-conditions">
-   Periodic boundary conditions
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id3">
-   Implementation
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#test-condition">
-     Test condition
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#the-code">
-     The code
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#solving-a-specific-problem">
-     Solving a specific problem
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#a-crank-nicolson-discretization-in-time-and-centered-differences-in-space">
-   A Crank-Nicolson discretization in time and centered differences in space
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#the-lax-wendroff-method">
-   The Lax-Wendroff method
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#analysis-of-dispersion-relations">
-   Analysis of dispersion relations
-  </a>
- </li>
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">One-dimensional time-dependent advection equations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simplest-scheme-forward-in-time-centered-in-space">Simplest scheme: forward in time, centered in space</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#method">Method</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#test-cases">Test cases</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bug">Bug?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-of-the-scheme">Analysis of the scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#leapfrog-in-time-centered-differences-in-space">Leapfrog in time, centered differences in space</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Method</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-test-case">Running a test case</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-more-test-cases">Running more test cases</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis">Analysis</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upwind-differences-in-space">Upwind differences in space</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#periodic-boundary-conditions">Periodic boundary conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#test-condition">Test condition</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-code">The code</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#solving-a-specific-problem">Solving a specific problem</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-crank-nicolson-discretization-in-time-and-centered-differences-in-space">A Crank-Nicolson discretization in time and centered differences in space</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-lax-wendroff-method">The Lax-Wendroff method</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-of-dispersion-relations">Analysis of dispersion relations</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#one-dimensional-stationary-advection-diffusion-equation">One-dimensional stationary advection-diffusion equation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-simple-model-problem">A simple model problem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-centered-finite-difference-scheme">A centered finite difference scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#remedy-upwind-finite-difference-scheme">Remedy: upwind finite difference scheme</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#time-dependent-convection-diffusion-equations">Time-dependent convection-diffusion equations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analytical-insight">Analytical insight</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-in-time-centered-in-space-scheme">Forward in time, centered in space scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-in-time-upwind-in-space-scheme">Forward in time, upwind in space scheme</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#applications-of-advection-equations">Applications of advection equations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transport-of-a-substance">Transport of a substance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transport-of-heat-in-fluids">Transport of heat in fluids</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#exercises">Exercises</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise-1-analyze-1d-stationary-convection-diffusion-problem">Exercise 1: Analyze 1D stationary convection-diffusion problem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise-2-interpret-upwind-difference-as-artificial-diffusion">Exercise 2: Interpret upwind difference as artificial diffusion</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">Bibliography</a></li>
 </ul>
 
-        </nav>
+            </nav>
+        </div>
     </div>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-        
-              <div>
+
+              
                 
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
   <div id="ch:advec"></div>
 <p>Wave (<span class="xref myst">Wave equations</span> chapter) and diffusion (<span class="xref myst">Diffusion equations</span> chapter)
 equations are solved reliably by finite difference methods. As soon as
@@ -483,8 +446,8 @@ advection PDEs, with emphasis on gener
 alizations to real geophysical
 problems. The book by <cite data-cite="8023556/J9FF4ZJM">Fletcher</cite> also has a good
 overview of methods for advection and convection problems.</p>
-<div class="section" id="one-dimensional-time-dependent-advection-equations">
-<h1>One-dimensional time-dependent advection equations<a class="headerlink" href="#one-dimensional-time-dependent-advection-equations" title="Permalink to this headline">¶</a></h1>
+<section class="tex2jax_ignore mathjax_ignore" id="one-dimensional-time-dependent-advection-equations">
+<h1>One-dimensional time-dependent advection equations<a class="headerlink" href="#one-dimensional-time-dependent-advection-equations" title="Permalink to this heading">#</a></h1>
 <div id="advec:1D"></div>
 <p>We consider the pure advection model</p>
 <!-- Equation labels as ordinary links -->
@@ -515,14 +478,14 @@ u(0,t) = U_0, t\in (0,T].
 \label{advec:1D:pde1:I} \tag{3}
 \end{equation}
 \]</div>
-<p>In (<a class="reference external" href="#advec:1D:pde1:u">1</a>), <span class="math notranslate nohighlight">\(v\)</span> is a given parameter, typically reflecting
+<p>In (<span class="xref myst">1</span>), <span class="math notranslate nohighlight">\(v\)</span> is a given parameter, typically reflecting
 the transport velocity of a quantity <span class="math notranslate nohighlight">\(u\)</span> with a flow.
-There is only one boundary condition (<a class="reference external" href="#advec:1D:pde1:I">3</a>) since
-the spatial derivative is only first order in the PDE (<a class="reference external" href="#advec:1D:pde1:u">1</a>).
+There is only one boundary condition (<span class="xref myst">3</span>) since
+the spatial derivative is only first order in the PDE (<span class="xref myst">1</span>).
 The information at <span class="math notranslate nohighlight">\(x=0\)</span> and the initial condition get
 transported in the positive <span class="math notranslate nohighlight">\(x\)</span> direction
 if <span class="math notranslate nohighlight">\(v&gt;0\)</span> through the domain.</p>
-<p>It is easiest to find the solution of (<a class="reference external" href="#advec:1D:pde1:u">1</a>) if we remove the
+<p>It is easiest to find the solution of (<span class="xref myst">1</span>) if we remove the
 boundary condition and consider a process on the
 infinite domain <span class="math notranslate nohighlight">\((-\infty, \infty)\)</span>. The solution is simply</p>
 <!-- Equation labels as ordinary links -->
@@ -536,7 +499,7 @@ u(x,t) = I(x-vt)\thinspace .
 \]</div>
 <p>This is also the solution we expect locally in a finite domain before boundary
 conditions have reflected or modified the wave.</p>
-<p>A particular feature of the solution (<a class="reference external" href="#advec:1D:pde1:sol">4</a>) is that</p>
+<p>A particular feature of the solution (<span class="xref myst">4</span>) is that</p>
 <!-- Equation labels as ordinary links -->
 <div id="advec:1D:pde1:uprop1"></div>
 <div class="math notranslate nohighlight">
@@ -581,12 +544,12 @@ this nice property!</p>
 <p>Finally, we add that a discussion of appropriate boundary conditions
 for the advection PDE in multiple dimensions is a challenging topic beyond
 the scope of this text.</p>
-<div class="section" id="simplest-scheme-forward-in-time-centered-in-space">
-<h2>Simplest scheme: forward in time, centered in space<a class="headerlink" href="#simplest-scheme-forward-in-time-centered-in-space" title="Permalink to this headline">¶</a></h2>
+<section id="simplest-scheme-forward-in-time-centered-in-space">
+<h2>Simplest scheme: forward in time, centered in space<a class="headerlink" href="#simplest-scheme-forward-in-time-centered-in-space" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:FTCS"></div>
-<div class="section" id="method">
-<h3>Method<a class="headerlink" href="#method" title="Permalink to this headline">¶</a></h3>
-<p>A first attempt to solve a PDE like (<a class="reference external" href="#advec:1D:pde1:u">1</a>) will normally
+<section id="method">
+<h3>Method<a class="headerlink" href="#method" title="Permalink to this heading">#</a></h3>
+<p>A first attempt to solve a PDE like (<span class="xref myst">1</span>) will normally
 be to look for a time-discretization scheme that is explicit so we avoid
 solving systems of linear equations. In space, we anticipate that
 centered differences are most accurate and therefore best. These
@@ -611,9 +574,9 @@ u^{n+1} = u^n - \frac{1}{2} C (u^n_{i+1}-u_{i-1}^n),
 \[
 C = \frac{v\Delta t}{\Delta x}\thinspace .
 \]</div>
-</div>
-<div class="section" id="implementation">
-<h3>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="implementation">
+<h3>Implementation<a class="headerlink" href="#implementation" title="Permalink to this heading">#</a></h3>
 <p>A solver function for our scheme goes as follows.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -667,9 +630,9 @@ C = \frac{v\Delta t}{\Delta x}\thinspace .
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="test-cases">
-<h3>Test cases<a class="headerlink" href="#test-cases" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="test-cases">
+<h3>Test cases<a class="headerlink" href="#test-cases" title="Permalink to this heading">#</a></h3>
 <p>The typical solution <span class="math notranslate nohighlight">\(u\)</span> has the shape of <span class="math notranslate nohighlight">\(I\)</span> and is transported at
 velocity <span class="math notranslate nohighlight">\(v\)</span> to the right (if <span class="math notranslate nohighlight">\(v&gt;0\)</span>). Let us consider two different
 initial conditions, one smooth (Gaussian pulse) and one non-smooth
@@ -710,7 +673,7 @@ From now on we drop the bars.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_FECS</span><span class="p">(</span><span class="n">case</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Special function for the FECS case.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Special function for the FECS case.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">case</span> <span class="o">==</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">:</span>
         <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="mi">10</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
@@ -723,7 +686,7 @@ From now on we drop the bars.</p>
     <span class="n">legends</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Animate and plot every m steps in the same figure.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Animate and plot every m steps in the same figure.&quot;&quot;&quot;</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">lines</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
@@ -757,9 +720,9 @@ From now on we drop the bars.</p>
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="bug">
-<h3>Bug?<a class="headerlink" href="#bug" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="bug">
+<h3>Bug?<a class="headerlink" href="#bug" title="Permalink to this heading">#</a></h3>
 <p>Running either of the test cases, the plot becomes a mess, and
 the printout of <span class="math notranslate nohighlight">\(u\)</span> values in the <code class="docutils literal notranslate"><span class="pre">plot</span></code> function reveals that
 <span class="math notranslate nohighlight">\(u\)</span> grows very quickly. We may reduce <span class="math notranslate nohighlight">\(\Delta t\)</span> and make it
@@ -769,10 +732,10 @@ However, choosing a coarse mesh and performing one time step by
 hand calculations produces the same numbers as the code, so
 the implementation seems to be correct.
 The hypothesis is therefore that the solution is unstable.</p>
-</div>
-</div>
-<div class="section" id="analysis-of-the-scheme">
-<h2>Analysis of the scheme<a class="headerlink" href="#analysis-of-the-scheme" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="analysis-of-the-scheme">
+<h2>Analysis of the scheme<a class="headerlink" href="#analysis-of-the-scheme" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:FTCS:anal"></div>
 <p>It is easy to show that a typical Fourier component</p>
 <div class="math notranslate nohighlight">
@@ -810,7 +773,7 @@ u_q^n = A^n e^{ikq\Delta x}\thinspace .
 \[
 [D_t^+ A e^{ikq\Delta x} + v D_{2x}A e^{ikq\Delta x} = 0]^n_q,
 \]</div>
-<p>and making use of <a class="reference external" href="../A_formulas/formulas.ipynb#form:exp:fd1c:center">this equation</a>
+<p>and making use of <span class="xref myst">this equation</span>
 results in</p>
 <div class="math notranslate nohighlight">
 \[
@@ -829,12 +792,12 @@ since we then have <span class="math notranslate nohighlight">\(A^n = A_r^ne^{i\
 <span class="math notranslate nohighlight">\(A_r^n\)</span> will increase in time, whereas the
 exact solution will not. Regardless of <span class="math notranslate nohighlight">\(\Delta t\)</span>, we get unstable
 numerical solutions.</p>
-</div>
-<div class="section" id="leapfrog-in-time-centered-differences-in-space">
-<h2>Leapfrog in time, centered differences in space<a class="headerlink" href="#leapfrog-in-time-centered-differences-in-space" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="leapfrog-in-time-centered-differences-in-space">
+<h2>Leapfrog in time, centered differences in space<a class="headerlink" href="#leapfrog-in-time-centered-differences-in-space" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:leapfrog"></div>
-<div class="section" id="id1">
-<h3>Method<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<section id="id1">
+<h3>Method<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
 <p>Another explicit scheme is to do a “leapfrog” jump over <span class="math notranslate nohighlight">\(2\Delta t\)</span> in
 time and combine it with central differences in space:</p>
 <div class="math notranslate nohighlight">
@@ -849,9 +812,9 @@ u^{n+1}_i = u^{n-1}_i - C(u_{i+1}^n-u_{i-1}^n)\thinspace .
 <p>A special scheme is needed to compute <span class="math notranslate nohighlight">\(u^1\)</span>, but we leave that problem for
 now. Anyway, this special scheme can be found in
 <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/04_advec/src-advec/advec1D.py"><code class="docutils literal notranslate"><span class="pre">advec1D.py</span></code></a>.</p>
-</div>
-<div class="section" id="id2">
-<h3>Implementation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="id2">
+<h3>Implementation<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
 <p>We now need to work with three time levels and must modify our solver a bit:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Nt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">T</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">dt</span><span class="p">)))</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Nt</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">Nt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># Mesh points in time</span>
@@ -872,14 +835,14 @@ now. Anyway, this special scheme can be found in
     <span class="o">...</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="running-a-test-case">
-<h3>Running a test case<a class="headerlink" href="#running-a-test-case" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="running-a-test-case">
+<h3>Running a test case<a class="headerlink" href="#running-a-test-case" title="Permalink to this heading">#</a></h3>
 <p>Let us try a coarse mesh such that the smooth Gaussian initial condition
 is represented by 1 at mesh node 1 and 0 at all other nodes. This
 triangular initial condition should then be advected to the right.
 Choosing scaled variables as <span class="math notranslate nohighlight">\(\Delta t=0.1\)</span>, <span class="math notranslate nohighlight">\(T=1\)</span>, and <span class="math notranslate nohighlight">\(C=1\)</span> gives
-the plot in <a class="reference external" href="#advec:1D:case_gaussian:fig:LFCS">Figure</a>, which
+the plot in <span class="xref myst">Figure</span>, which
 is in fact identical to the exact solution (!).</p>
 <!-- dom:FIGURE: [fig-advec/solver_FE_Upw.png, width=500 frac=0.8] Exact solution obtained by Leapfrog scheme with $\Delta t = 0.1$ and $C=1$. <div id="advec:1D:case_gaussian:fig:LFCS"></div> -->
 <!-- begin figure -->
@@ -887,12 +850,12 @@ is in fact identical to the exact solution (!).</p>
 <p>Exact solution obtained by Leapfrog scheme with <span class="math notranslate nohighlight">\(\Delta t = 0.1\)</span> and <span class="math notranslate nohighlight">\(C=1\)</span>.
 <img src="fig-advec/solver_FE_Upw.png" width=500></p>
 <!-- end figure -->
-</div>
-<div class="section" id="running-more-test-cases">
-<h3>Running more test cases<a class="headerlink" href="#running-more-test-cases" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="running-more-test-cases">
+<h3>Running more test cases<a class="headerlink" href="#running-more-test-cases" title="Permalink to this heading">#</a></h3>
 <p>We can run two types of initial conditions for <span class="math notranslate nohighlight">\(C=0.8\)</span>: one very
-smooth with a Gaussian function (<a class="reference external" href="#advec:1D:LF:fig1:C08">Figure</a>) and
-one with a discontinuity in the first derivative (<a class="reference external" href="#advec:1D:LF:fig2:C08">Figure</a>).  Unless we have a very fine mesh, as in
+smooth with a Gaussian function (<span class="xref myst">Figure</span>) and
+one with a discontinuity in the first derivative (<span class="xref myst">Figure</span>).  Unless we have a very fine mesh, as in
 the left plots in the figures, we get small ripples behind the main
 wave, and this main wave has the amplitude reduced.</p>
 <!-- dom:FIGURE: [fig-advec/gaussian_LF_C08.png, width=800 frac=1] Advection of a Gaussian function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right). <div id="advec:1D:LF:fig1:C08"></div> -->
@@ -901,17 +864,17 @@ wave, and this main wave has the amplitude reduced.</p>
 <p>Advection of a Gaussian function with a leapfrog scheme and <span class="math notranslate nohighlight">\(C=0.8\)</span>, <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span> (left) and <span class="math notranslate nohighlight">\(\Delta t=0.01\)</span> (right).
 <img src="fig-advec/gaussian_LF_C08.png" width=800></p>
 <!-- end figure -->
-<p>Advection of the Gaussian function with a leapfrog scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <span class="xref myst">movie file</span>.</p>
+<p>Advection of the Gaussian function with a leapfrog scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <a class="reference download internal" download="" href="../../_downloads/302e74f29321955d7a4b49d83ee0ed76/C08_dt01.ogg"><span class="xref download myst">movie file</span></a>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <a class="reference download internal" download="" href="../../_downloads/050b9985a2798a731b89b725798bc60b/C08_dt001.ogg"><span class="xref download myst">movie file</span></a>.</p>
 <!-- dom:FIGURE: [fig-advec/cosinehat_LF_C08.png, width=800 frac=1] Advection of frac{1}{2} a cosine function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right). <div id="advec:1D:LF:fig2:C08"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:LF:fig2:C08"></div>
 <p>Advection of half a cosine function with a leapfrog scheme and <span class="math notranslate nohighlight">\(C=0.8\)</span>, <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span> (left) and <span class="math notranslate nohighlight">\(\Delta t=0.01\)</span> (right).
 <img src="fig-advec/cosinehat_LF_C08.png" width=800></p>
 <!-- end figure -->
-<p>Advection of the cosine hat function with a leapfrog scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <span class="xref myst">movie file</span>.</p>
-</div>
-<div class="section" id="analysis">
-<h3>Analysis<a class="headerlink" href="#analysis" title="Permalink to this headline">¶</a></h3>
+<p>Advection of the cosine hat function with a leapfrog scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <a class="reference download internal" download="" href="../../_downloads/2cfeefc3e749de5f0e1ccff8cb482d31/C08_dt01.ogg"><span class="xref download myst">movie file</span></a>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <a class="reference download internal" download="" href="../../_downloads/04cd4c20142b2061683651ad28021d8f/C08_dt001.ogg"><span class="xref download myst">movie file</span></a>.</p>
+</section>
+<section id="analysis">
+<h3>Analysis<a class="headerlink" href="#analysis" title="Permalink to this heading">#</a></h3>
 <p>We can perform a Fourier analysis again. Inserting the numerical
 Fourier component in the Leapfrog scheme, we get</p>
 <div class="math notranslate nohighlight">
@@ -949,12 +912,12 @@ A = -iC\sin p \pm \sqrt{1-C^2\sin^2 p},
 \[
 A_\text{e} = e^{-ikv\Delta t} = e^{-ikC\Delta x} = e^{-iCp}\thinspace .
 \]</div>
-<p>the section <a class="reference external" href="#advec:1D:disprel">Analysis of dispersion relations</a> compares numerical amplification factors
+<p>the section <span class="xref myst">Analysis of dispersion relations</span> compares numerical amplification factors
 of many schemes with the exact expression.</p>
-</div>
-</div>
-<div class="section" id="upwind-differences-in-space">
-<h2>Upwind differences in space<a class="headerlink" href="#upwind-differences-in-space" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="upwind-differences-in-space">
+<h2>Upwind differences in space<a class="headerlink" href="#upwind-differences-in-space" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:FTUP"></div>
 <p>Since the PDE reflects transport of information along with a flow in
 positive <span class="math notranslate nohighlight">\(x\)</span> direction, when <span class="math notranslate nohighlight">\(v&gt;0\)</span>, it could be natural to go (what is called)
@@ -987,11 +950,11 @@ u^{n+1}_i = u^n_i - C(u^{n}_{i}-u^{n}_{i-1}),
 \]</div>
 <p>gives a generally popular and robust scheme that is stable if <span class="math notranslate nohighlight">\(C\leq 1\)</span>.
 As with the Leapfrog scheme, it becomes exact if <span class="math notranslate nohighlight">\(C=1\)</span>, exactly as shown in
-<a class="reference external" href="#advec:1D:case_gaussian:fig:LFCS">Figure</a>. This is easy to see since
-<span class="math notranslate nohighlight">\(C=1\)</span> gives the property (<a class="reference external" href="#advec:1D:pde1:uprop2">6</a>).
+<span class="xref myst">Figure</span>. This is easy to see since
+<span class="math notranslate nohighlight">\(C=1\)</span> gives the property (<span class="xref myst">6</span>).
 However, any <span class="math notranslate nohighlight">\(C&lt;1\)</span> gives a significant reduction in the amplitude of the
 solution, which is a purely numerical effect, see
-<a class="reference external" href="#advec:1D:UP:fig1:C08">this Figure</a> and <a class="reference external" href="#advec:1D:UP:fig2:C08">this Figure</a>.
+<span class="xref myst">this Figure</span> and <span class="xref myst">this Figure</span>.
 Experiments show, however, that
 reducing <span class="math notranslate nohighlight">\(\Delta t\)</span> or <span class="math notranslate nohighlight">\(\Delta x\)</span>, while keeping <span class="math notranslate nohighlight">\(C\)</span> reduces the
 error.</p>
@@ -1001,15 +964,15 @@ error.</p>
 <p>Advection of a Gaussian function with a forward in time, upwind in space scheme and <span class="math notranslate nohighlight">\(C=0.8\)</span>, <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> (left) and <span class="math notranslate nohighlight">\(\Delta t=0.001\)</span> (right).
 <img src="fig-advec/gaussian_UP_C08.png" width=800></p>
 <!-- end figure -->
-<p>Advection of the Gaussian function with a forward in time, upwind in space scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.005\)</span>, we get this <span class="xref myst">movie file</span>.</p>
+<p>Advection of the Gaussian function with a forward in time, upwind in space scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <a class="reference download internal" download="" href="../../_downloads/e725c94a194ea2583c623aef8ace6924/movie.ogg"><span class="xref download myst">movie file</span></a>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.005\)</span>, we get this <a class="reference download internal" download="" href="../../_downloads/d7877a1d8b056ba48e0f6f400deb6efc/movie.ogg"><span class="xref download myst">movie file</span></a>.</p>
 <!-- dom:FIGURE: [fig-advec/cosinehat_UP_08.png, width=800 frac=1] Advection of half a cosine function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right). <div id="advec:1D:UP:fig2:C08"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:UP:fig2:C08"></div>
 <p>Advection of half a cosine function with a forward in time, upwind in space scheme and <span class="math notranslate nohighlight">\(C=0.8\)</span>, <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span> (left) and <span class="math notranslate nohighlight">\(\Delta t=0.01\)</span> (right).
 <img src="fig-advec/cosinehat_UP_08.png" width=800></p>
 <!-- end figure -->
-<p>Advection of the cosine hat function with a forward in time, upwind in space scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <span class="xref myst">movie file</span>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <span class="xref myst">movie file</span>.</p>
-<p>The amplification factor can be computed using <a class="reference external" href="../A_formulas/formulas.ipynb#form:exp:fd1:bw">this formula</a>.</p>
+<p>Advection of the cosine hat function with a forward in time, upwind in space scheme, using <span class="math notranslate nohighlight">\(C=0.8\)</span> and <span class="math notranslate nohighlight">\(\Delta t = 0.01\)</span> can be seen in a <a class="reference download internal" download="" href="../../_downloads/b93bfb2a9112fd204deef1d31f4de514/C08_dt01.ogg"><span class="xref download myst">movie file</span></a>. Alternatively, with <span class="math notranslate nohighlight">\(\Delta t = 0.001\)</span>, we get this <a class="reference download internal" download="" href="../../_downloads/bd97884fab210afdbbe05e7a43331868/C08_dt001.ogg"><span class="xref download myst">movie file</span></a>.</p>
+<p>The amplification factor can be computed using <span class="xref myst">this formula</span>.</p>
 <div class="math notranslate nohighlight">
 \[
 \frac{A - 1}{\Delta t} + \frac{v}{\Delta x}(1 - e^{-ik\Delta x}) = 0,
@@ -1021,8 +984,8 @@ A = 1 - C(1 - \cos(p) - i\sin(p))\thinspace .
 \]</div>
 <p>For <span class="math notranslate nohighlight">\(C&lt;1\)</span> there is, unfortunately,
 non-physical damping of discrete Fourier components, giving rise to reduced
-amplitude of <span class="math notranslate nohighlight">\(u^n_i\)</span> as in <a class="reference external" href="#advec:1D:UP:fig1:C08">this Figure</a>
-and <a class="reference external" href="#advec:1D:UP:fig2:C08">this Figure</a>. The damping seen
+amplitude of <span class="math notranslate nohighlight">\(u^n_i\)</span> as in <span class="xref myst">this Figure</span>
+and <span class="xref myst">this Figure</span>. The damping seen
 in these figures is quite severe. Stability requires <span class="math notranslate nohighlight">\(C\leq 1\)</span>.</p>
 <p><strong>Interpretation of upwind difference as artificial diffusion.</strong></p>
 <p>One can interpret the upwind difference as extra, artificial diffusion
@@ -1037,7 +1000,7 @@ in the equation. Solving</p>
 \[
 D^+_t u + vD_{2x} u = \nu D_xD_x u]^n_i,
 \]</div>
-<p>actually gives the upwind scheme (<a class="reference external" href="#advec:1D:upwind">10</a>) if
+<p>actually gives the upwind scheme (<span class="xref myst">10</span>) if
 <span class="math notranslate nohighlight">\(\nu = v\Delta x/2\)</span>. That is, solving the PDE <span class="math notranslate nohighlight">\(u_t + vu_x=0\)</span>
 by centered differences in space and forward difference in time is
 unsuccessful, but by adding some artificial diffusion <span class="math notranslate nohighlight">\(\nu u_{xx}\)</span>,
@@ -1048,9 +1011,9 @@ the method becomes stable:</p>
 \frac{\partial u}{\partial x} = \left(\alpha + \frac{v\Delta x}{2}\right)
 \frac{\partial^2 u}{\partial x^2}\thinspace .
 \]</div>
-</div>
-<div class="section" id="periodic-boundary-conditions">
-<h2>Periodic boundary conditions<a class="headerlink" href="#periodic-boundary-conditions" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="periodic-boundary-conditions">
+<h2>Periodic boundary conditions<a class="headerlink" href="#periodic-boundary-conditions" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:periodic_BC"></div>
 <p>So far, we have given the value on the left boundary, <span class="math notranslate nohighlight">\(u_0^n\)</span>, and used
 the scheme to propagate the solution signal through the domain.
@@ -1079,11 +1042,11 @@ For the Leapfrog scheme we must update <code class="docutils literal notranslate
 <span class="o">...</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="id3">
-<h2>Implementation<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="test-condition">
-<h3>Test condition<a class="headerlink" href="#test-condition" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="id3">
+<h2>Implementation<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h2>
+<section id="test-condition">
+<h3>Test condition<a class="headerlink" href="#test-condition" title="Permalink to this heading">#</a></h3>
 <p>Analytically, we can show that the integral in space under the <span class="math notranslate nohighlight">\(u(x,t)\)</span> curve
 is constant:</p>
 <div class="math notranslate nohighlight">
@@ -1110,9 +1073,9 @@ be computed by the Trapezoidal integration rule</p>
 </pre></div>
 </div>
 <p>if <code class="docutils literal notranslate"><span class="pre">u</span></code> is a <code class="docutils literal notranslate"><span class="pre">TimeFunction</span></code> with the <code class="docutils literal notranslate"><span class="pre">save</span></code> parameter set to <span class="math notranslate nohighlight">\(Nx+1\)</span> and <code class="docutils literal notranslate"><span class="pre">n</span></code> indicates a current timestep.</p>
-</div>
-<div class="section" id="the-code">
-<h3>The code<a class="headerlink" href="#the-code" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="the-code">
+<h3>The code<a class="headerlink" href="#the-code" title="Permalink to this heading">#</a></h3>
 <p>An appropriate <code class="docutils literal notranslate"><span class="pre">solver</span></code> function for multiple schemes may go as shown
 below.</p>
 <div class="cell docutils container">
@@ -1219,9 +1182,9 @@ below.</p>
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="solving-a-specific-problem">
-<h3>Solving a specific problem<a class="headerlink" href="#solving-a-specific-problem" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="solving-a-specific-problem">
+<h3>Solving a specific problem<a class="headerlink" href="#solving-a-specific-problem" title="Permalink to this heading">#</a></h3>
 <p>We need to call up the <code class="docutils literal notranslate"><span class="pre">solver</span></code> function in some kind of administering
 problem solving function that can solve specific problems and make
 appropriate visualization. The function below makes both static plots,
@@ -1229,7 +1192,7 @@ screen animation, and hard copy videos in various formats.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;UP&#39;</span><span class="p">,</span> <span class="n">case</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;General admin routine for explicit and implicit solvers.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;General admin routine for explicit and implicit solvers.&quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">case</span> <span class="o">==</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">:</span>
         <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -1244,7 +1207,7 @@ screen animation, and hard copy videos in various formats.</p>
     <span class="k">global</span> <span class="n">lines</span>  <span class="c1"># needs to be saved between calls to plot</span>
 
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Plot t=0 and t=0.6 in the same figure.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot t=0 and t=0.6 in the same figure.&quot;&quot;&quot;</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">global</span> <span class="n">lines</span>
         <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1324,10 +1287,10 @@ screen animation, and hard copy videos in various formats.</p>
 </div>
 <p>The complete code is found in the file
 <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/04_advec/src-advec/advec1D.py"><code class="docutils literal notranslate"><span class="pre">advec1D.py</span></code></a>.</p>
-</div>
-</div>
-<div class="section" id="a-crank-nicolson-discretization-in-time-and-centered-differences-in-space">
-<h2>A Crank-Nicolson discretization in time and centered differences in space<a class="headerlink" href="#a-crank-nicolson-discretization-in-time-and-centered-differences-in-space" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="a-crank-nicolson-discretization-in-time-and-centered-differences-in-space">
+<h2>A Crank-Nicolson discretization in time and centered differences in space<a class="headerlink" href="#a-crank-nicolson-discretization-in-time-and-centered-differences-in-space" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:CN"></div>
 <p>Another obvious candidate for time discretization is the Crank-Nicolson
 method combined with centered differences in space:</p>
@@ -1374,7 +1337,7 @@ b_{N_x} &amp;= u^n_0
 \end{align*}
 \end{split}\]</div>
 <p>The dispersion relation follows from inserting <span class="math notranslate nohighlight">\(u^n_q = A^ne^{ikx}\)</span>
-and using <a class="reference external" href="../A_formulas/formulas.ipynb#form:exp:fd1c:center">this formula</a> for the spatial
+and using <span class="xref myst">this formula</span> for the spatial
 differences:</p>
 <div class="math notranslate nohighlight">
 \[
@@ -1481,23 +1444,23 @@ if (!!(window.safari)) {
 </div></div>
 </div>
 <!-- end movie -->
-<p><a class="reference external" href="#advec:1D:CN:fig:C08">This figure</a> depicts a numerical solution for <span class="math notranslate nohighlight">\(C=0.8\)</span>
+<p><span class="xref myst">This figure</span> depicts a numerical solution for <span class="math notranslate nohighlight">\(C=0.8\)</span>
 and the Crank-Nicolson
 with severe oscillations behind the main wave. These oscillations are
 damped as the mesh is refined. Switching to the Backward Euler scheme
 removes the oscillations, but the amplitude is
 significantly reduced. One could expect that the discontinuous derivative
 in the initial condition of the half a cosine wave would make even
-stronger demands on producing a smooth profile, but <a class="reference external" href="#advec:1D:BE:fig:C08">this figure</a> shows that also here, Backward-Euler is capable of producing a
+stronger demands on producing a smooth profile, but <span class="xref myst">this figure</span> shows that also here, Backward-Euler is capable of producing a
 smooth profile. All in all, there are no major differences between the
 Gaussian initial condition and the half a cosine condition for any of
 the schemes.</p>
-</div>
-<div class="section" id="the-lax-wendroff-method">
-<h2>The Lax-Wendroff method<a class="headerlink" href="#the-lax-wendroff-method" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="the-lax-wendroff-method">
+<h2>The Lax-Wendroff method<a class="headerlink" href="#the-lax-wendroff-method" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:LaxW"></div>
 <p>The Lax-Wendroff method is based on three ideas:</p>
-<ol class="simple">
+<ol class="arabic simple">
 <li><p>Express the new unknown <span class="math notranslate nohighlight">\(u^{n+1}_i\)</span> in terms of known
 quantities at <span class="math notranslate nohighlight">\(t=t_n\)</span> by means of a Taylor polynomial of second degree.</p></li>
 <li><p>Replace time-derivatives at <span class="math notranslate nohighlight">\(t=t_n\)</span> by spatial derivatives,
@@ -1560,9 +1523,9 @@ amplification factor for the Lax-Wendroff method that equals</p>
 A = 1 - iC\sin p - 2C^2\sin^2 (p/2)\thinspace .
 \]</div>
 <p>This means that <span class="math notranslate nohighlight">\(|A|=1\)</span> and also that we have an exact solution if <span class="math notranslate nohighlight">\(C=1\)</span>!</p>
-</div>
-<div class="section" id="analysis-of-dispersion-relations">
-<h2>Analysis of dispersion relations<a class="headerlink" href="#analysis-of-dispersion-relations" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="analysis-of-dispersion-relations">
+<h2>Analysis of dispersion relations<a class="headerlink" href="#analysis-of-dispersion-relations" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:disprel"></div>
 <p>We have developed expressions for <span class="math notranslate nohighlight">\(A(C,p)\)</span> in the exact solution
 <span class="math notranslate nohighlight">\(u_q^n=A^ne^{ikq\Delta x}\)</span> of the discrete equations.
@@ -1609,7 +1572,7 @@ c = \frac{\phi v}{Cp}\thinspace .
 \[
 \frac{c}{v} = \frac{\phi}{Cp}\thinspace .
 \]</div>
-<p>Figures from <a class="reference external" href="#advec:1D:disprel:C1:1">this</a> up to <a class="reference external" href="#advec:1D:disprel:C05:2">this</a> contain
+<p>Figures from <span class="xref myst">this</span> up to <span class="xref myst">this</span> contain
 dispersion curves, velocity and damping, for various values of <span class="math notranslate nohighlight">\(C\)</span>.
 The horizontal axis shows the dimensionless frequency <span class="math notranslate nohighlight">\(p\)</span> of the wave,
 while the figures to the left illustrate the error in wave velocity <span class="math notranslate nohighlight">\(c/v\)</span>
@@ -1675,9 +1638,9 @@ amplitude reduction, but LF has wrong phase velocity for the
 shortest wave in the mesh. This wave does not (normally) have enough
 amplitude to be seen, so for all practical purposes, there is no
 damping or wrong velocity of the individual waves, so the total shape
-of the wave is also correct. For the CN scheme, see <a class="reference external" href="#advec:1D:CN:fig:C08">this figure</a>, each individual wave has its amplitude, but
+of the wave is also correct. For the CN scheme, see <span class="xref myst">this figure</span>, each individual wave has its amplitude, but
 they move with different velocities, so after a while, we see some of
-these waves lagging behind.  For the BE scheme, see <a class="reference external" href="#advec:1D:BE:fig:C08">this figure</a>, all the shorter waves are so heavily
+these waves lagging behind.  For the BE scheme, see <span class="xref myst">this figure</span>, all the shorter waves are so heavily
 dampened that we cannot see them after a while. We see only the
 longest waves, which have slightly wrong velocity, but visible
 amplitudes are sufficiently equal to produce what looks like a smooth
@@ -1694,10 +1657,10 @@ analysis sheds more light on the behavior of the computational schemes.
 Truncation analysis just says that Lax-Wendroff is
 better than upwind, because of the increased order in time, but
 most people would say upwind is the better one when looking at the plots.</p>
-</div>
-</div>
-<div class="section" id="one-dimensional-stationary-advection-diffusion-equation">
-<h1>One-dimensional stationary advection-diffusion equation<a class="headerlink" href="#one-dimensional-stationary-advection-diffusion-equation" title="Permalink to this headline">¶</a></h1>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="one-dimensional-stationary-advection-diffusion-equation">
+<h1>One-dimensional stationary advection-diffusion equation<a class="headerlink" href="#one-dimensional-stationary-advection-diffusion-equation" title="Permalink to this heading">#</a></h1>
 <div id="advec:1D:stationary"></div>
 <p>Now we pay attention to a physical process where advection (or convection)
 is in balance with diffusion:</p>
@@ -1724,8 +1687,8 @@ time-dependent problem</p>
 \label{advec:1D:stat:pde2} \tag{12}
 \end{equation}
 \]</div>
-<p>Equations of the form (<a class="reference external" href="#advec:1D:stat:pde1">11</a>) or
-(<a class="reference external" href="#advec:1D:stat:pde2">12</a>) arise from transport phenomena, either mass
+<p>Equations of the form (<span class="xref myst">11</span>) or
+(<span class="xref myst">12</span>) arise from transport phenomena, either mass
 or heat transport. One can also view the equations as a simple model
 problem for the Navier-Stokes equations. With the chosen boundary
 conditions, the differential equation problem models the phenomenon of
@@ -1735,10 +1698,10 @@ makes strong demands to numerical methods. The fundamental numerical
 difficulty is related to non-physical oscillations of the solution
 (instability) if the first-derivative spatial term dominates over the
 second-derivative term.</p>
-<div class="section" id="a-simple-model-problem">
-<h2>A simple model problem<a class="headerlink" href="#a-simple-model-problem" title="Permalink to this headline">¶</a></h2>
+<section id="a-simple-model-problem">
+<h2>A simple model problem<a class="headerlink" href="#a-simple-model-problem" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:stationary:model"></div>
-<p>We consider (<a class="reference external" href="#advec:1D:stat:pde1">11</a>) on <span class="math notranslate nohighlight">\([0,L]\)</span> equipped with the
+<p>We consider (<span class="xref myst">11</span>) on <span class="math notranslate nohighlight">\([0,L]\)</span> equipped with the
 boundary conditions <span class="math notranslate nohighlight">\(u(0)=U_0\)</span>, <span class="math notranslate nohighlight">\(u(L)=U_L\)</span>.  By scaling we can reduce the
 number of parameters in the problem. We scale <span class="math notranslate nohighlight">\(x\)</span> by <span class="math notranslate nohighlight">\(\bar x = x/L\)</span>,
 and <span class="math notranslate nohighlight">\(u\)</span> by</p>
@@ -1782,11 +1745,11 @@ u_\text{e} (x) = \frac{e^{x/\epsilon} - 1}{e^{1/\epsilon} - 1}\thinspace .
 \]</div>
 <p>The forthcoming plots illustrate this function for various values of
 <span class="math notranslate nohighlight">\(\epsilon\)</span>.</p>
-</div>
-<div class="section" id="a-centered-finite-difference-scheme">
-<h2>A centered finite difference scheme<a class="headerlink" href="#a-centered-finite-difference-scheme" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="a-centered-finite-difference-scheme">
+<h2>A centered finite difference scheme<a class="headerlink" href="#a-centered-finite-difference-scheme" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:stationary:fdm"></div>
-<p>The most obvious idea to solve (<a class="reference external" href="#advec:1D:stat:pde1s">13</a>) is to apply
+<p>The most obvious idea to solve (<span class="xref myst">13</span>) is to apply
 centered differences:</p>
 <div class="math notranslate nohighlight">
 \[
@@ -1812,13 +1775,13 @@ A_{N_x,N_x} &amp;= 1\thinspace .
 \end{align*}
 \end{split}\]</div>
 <p>The right-hand side of the linear system is zero except <span class="math notranslate nohighlight">\(b_{N_x}=1\)</span>.</p>
-<p><a class="reference external" href="#advec:1D:stationary:fdm:fig1">This figure</a> shows reasonably accurate
+<p><span class="xref myst">This figure</span> shows reasonably accurate
 results with <span class="math notranslate nohighlight">\(N_x=20 \)</span> and <span class="math notranslate nohighlight">\(N_x=40\)</span> cells in <span class="math notranslate nohighlight">\(x\)</span> direction and a value of
 <span class="math notranslate nohighlight">\(\epsilon = 0.1\)</span>. Decreasing <span class="math notranslate nohighlight">\(\epsilon\)</span> to <span class="math notranslate nohighlight">\(0.01\)</span> leads to oscillatory
-solutions as depicted in <a class="reference external" href="#advec:1D:stationary:fdm:fig2">this figure</a>.
+solutions as depicted in <span class="xref myst">this figure</span>.
 This is, unfortunately, a typical phenomenon in this type of problem:
 non-physical oscillations arise for small <span class="math notranslate nohighlight">\(\epsilon\)</span> unless the resolution
-<span class="math notranslate nohighlight">\(N_x\)</span> is big enough. <a class="reference external" href="#advec:1D:stationary:exer:analysis1">Exercise 1: Analyze 1D stationary convection-diffusion problem</a>
+<span class="math notranslate nohighlight">\(N_x\)</span> is big enough. <span class="xref myst">Exercise 1: Analyze 1D stationary convection-diffusion problem</span>
 develops a precise criterion: <span class="math notranslate nohighlight">\(u\)</span> is oscillation-free if</p>
 <div class="math notranslate nohighlight">
 \[
@@ -1850,7 +1813,7 @@ the next section to overcome the problem!</p>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;centered&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solver for the two point boundary value problem u&#39;=eps*u&#39;&#39;,</span>
 <span class="sd">    u(0)=0, u(1)=1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1895,9 +1858,9 @@ the next section to overcome the problem!</p>
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="remedy-upwind-finite-difference-scheme">
-<h2>Remedy: upwind finite difference scheme<a class="headerlink" href="#remedy-upwind-finite-difference-scheme" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="remedy-upwind-finite-difference-scheme">
+<h2>Remedy: upwind finite difference scheme<a class="headerlink" href="#remedy-upwind-finite-difference-scheme" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:stationary:upwind"></div>
 <p>The scheme can be stabilized by letting the advective transport term, which
 is the dominating term, collect its information in the flow direction, i.e.,
@@ -1925,8 +1888,8 @@ as</p>
 \]</div>
 <p>provided <span class="math notranslate nohighlight">\(v&gt;0\)</span> (and <span class="math notranslate nohighlight">\(\epsilon &gt; 0\)</span>).</p>
 <p>We write out the equations and implement them as shown in the program
-in the section <a class="reference external" href="#advec:1D:stationary:fdm">A centered finite difference scheme</a>. The results appear in <a class="reference external" href="#advec:1D:stationary:upwind:fig1">this figure</a> and
-<a class="reference external" href="#advec:1D:stationary:upwind:fig2">this figure</a>: no more oscillations!</p>
+in the section <span class="xref myst">A centered finite difference scheme</span>. The results appear in <span class="xref myst">this figure</span> and
+<span class="xref myst">this figure</span>: no more oscillations!</p>
 <!-- dom:FIGURE: [fig-advec/twopt_BVP_upw_01.png, width=800 frac=1] Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with upwind difference. <div id="advec:1D:stationary:upwind:fig1"></div> -->
 <!-- begin figure -->
 <div id="advec:1D:stationary:upwind:fig1"></div>
@@ -1943,10 +1906,10 @@ in the section <a class="reference external" href="#advec:1D:stationary:fdm">A c
 boundary layer when the centered scheme is also stable.
 Why the upwind scheme is always stable is easy to understand as
 soon as we undertake the mathematical analysis in
-<a class="reference external" href="#advec:1D:stationary:exer:analysis1">Exercise 1: Analyze 1D stationary convection-diffusion problem</a>.
+<span class="xref myst">Exercise 1: Analyze 1D stationary convection-diffusion problem</span>.
 Moreover, the thicker layer (seemingly larger diffusion) can be
 understood by doing
-<a class="reference external" href="#advec:1D:stationary:exer:analysis2">Exercise 2: Interpret upwind difference as artificial diffusion</a>.</p>
+<span class="xref myst">Exercise 2: Interpret upwind difference as artificial diffusion</span>.</p>
 <p><strong>Exact solution for this model problem.</strong></p>
 <p>It turns out that one can introduce a linear combination of the centered
 and upwind differences for the first-derivative term in this model
@@ -1954,10 +1917,10 @@ problem. One can then adjust the weight in the linear combination so that
 the numerical solution becomes identical to the analytical solution of
 the differential equation problem at any mesh point.</p>
 <!-- This approach cannot be generalized to more complicated problems. -->
-</div>
-</div>
-<div class="section" id="time-dependent-convection-diffusion-equations">
-<h1>Time-dependent convection-diffusion equations<a class="headerlink" href="#time-dependent-convection-diffusion-equations" title="Permalink to this headline">¶</a></h1>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="time-dependent-convection-diffusion-equations">
+<h1>Time-dependent convection-diffusion equations<a class="headerlink" href="#time-dependent-convection-diffusion-equations" title="Permalink to this heading">#</a></h1>
 <p>Now it is time to combine time-dependency, convection (advection) and
 diffusion into one equation:</p>
 <!-- Equation labels as ordinary links -->
@@ -1970,8 +1933,8 @@ diffusion into one equation:</p>
 \label{advec:1D:stat:pde3} \tag{14}
 \end{equation}
 \]</div>
-<div class="section" id="analytical-insight">
-<h2>Analytical insight<a class="headerlink" href="#analytical-insight" title="Permalink to this headline">¶</a></h2>
+<section id="analytical-insight">
+<h2>Analytical insight<a class="headerlink" href="#analytical-insight" title="Permalink to this heading">#</a></h2>
 <p>The diffusion is now dominated by convection, a wave, and diffusion, a loss
 of amplitude. One possible analytical solution is a traveling Gaussian
 function</p>
@@ -1982,9 +1945,9 @@ u(x,t) = B\exp{\left(-\left(\frac{x - vt}{4at}\right)\right)}\thinspace .
 <p>This function moves with velocity <span class="math notranslate nohighlight">\(v&gt;0\)</span> to the right
 (<span class="math notranslate nohighlight">\(v&lt;0\)</span> to the left) due to convection, but at the same time we have a damping
 <span class="math notranslate nohighlight">\(e^{-16a^2t^2}\)</span> from diffusion.</p>
-</div>
-<div class="section" id="forward-in-time-centered-in-space-scheme">
-<h2>Forward in time, centered in space scheme<a class="headerlink" href="#forward-in-time-centered-in-space-scheme" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="forward-in-time-centered-in-space-scheme">
+<h2>Forward in time, centered in space scheme<a class="headerlink" href="#forward-in-time-centered-in-space-scheme" title="Permalink to this heading">#</a></h2>
 <p>The Forward Euler for the diffusion equation is a successful scheme, but it
 has a very strict stability condition. The similar Forward in time, centered
 in space strategy always gives unstable solutions for the advection PDE.
@@ -2007,9 +1970,9 @@ the non-physical oscillations.</p>
 space and time steps, according to this reasoning. A better approach is
 to get rid of the non-physical oscillations in space by simply applying
 an upwind difference on the advection term.</p>
-</div>
-<div class="section" id="forward-in-time-upwind-in-space-scheme">
-<h2>Forward in time, upwind in space scheme<a class="headerlink" href="#forward-in-time-upwind-in-space-scheme" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="forward-in-time-upwind-in-space-scheme">
+<h2>Forward in time, upwind in space scheme<a class="headerlink" href="#forward-in-time-upwind-in-space-scheme" title="Permalink to this heading">#</a></h2>
 <p>A good approximation for the pure advection equation is to use upwind
 discretization of the advection term. We also know that centered differences
 are good for the diffusion term, so let us combine these two discretizations:</p>
@@ -2037,10 +2000,10 @@ and centered differences in space everywhere, so the scheme can be expressed as<
 \label{_auto3} \tag{16}
 \end{equation}
 \]</div>
-</div>
-</div>
-<div class="section" id="applications-of-advection-equations">
-<h1>Applications of advection equations<a class="headerlink" href="#applications-of-advection-equations" title="Permalink to this headline">¶</a></h1>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="applications-of-advection-equations">
+<h1>Applications of advection equations<a class="headerlink" href="#applications-of-advection-equations" title="Permalink to this heading">#</a></h1>
 <div id="advec:app"></div>
 <p>There are two major areas where advection and convection applications arise:
 transport of a substance and heat transport <em>in a fluid</em>.
@@ -2056,16 +2019,16 @@ The end result is anyway an equation of the form</p>
 \[
 \frac{\partial u}{\partial t} + \boldsymbol{v}\cdot\nabla u = 0\thinspace .
 \]</div>
-<div class="section" id="transport-of-a-substance">
-<h2>Transport of a substance<a class="headerlink" href="#transport-of-a-substance" title="Permalink to this headline">¶</a></h2>
+<section id="transport-of-a-substance">
+<h2>Transport of a substance<a class="headerlink" href="#transport-of-a-substance" title="Permalink to this heading">#</a></h2>
 <div id="advec:app:mass"></div>
-<p>The diffusion of a substance in the section <a class="reference external" href="../03_diffu/diffu_app.ipynb#diffu:app:substance">Diffusion of a substance</a> takes place
+<p>The diffusion of a substance in the section <span class="xref myst">Diffusion of a substance</span> takes place
 in a solid medium, but in a fluid we can have two transport mechanisms:
 one by diffusion and one by advection.
 The latter arises from the fact
 that the substance particles are moved with the fluid velocity <span class="math notranslate nohighlight">\(\boldsymbol{v}\)</span> such that
 the effective flux now consists of two and not only one component as in
-<a class="reference external" href="../03_diffu/diffu_app.ipynb#diffu:app:substance:Fick">this equation</a>:</p>
+<span class="xref myst">this equation</span>:</p>
 <div class="math notranslate nohighlight">
 \[
 \boldsymbol{q} = -\alpha\nabla c + \boldsymbol{v}_\xi\thinspace .
@@ -2083,14 +2046,14 @@ The mass transport equation for a substance then reads</p>
 \label{_auto4} \tag{17}
 \end{equation}
 \]</div>
-</div>
-<div class="section" id="transport-of-heat-in-fluids">
-<h2>Transport of heat in fluids<a class="headerlink" href="#transport-of-heat-in-fluids" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="transport-of-heat-in-fluids">
+<h2>Transport of heat in fluids<a class="headerlink" href="#transport-of-heat-in-fluids" title="Permalink to this heading">#</a></h2>
 <div id="advec:app:heat"></div>
-<p>The derivation of the heat equation in the section <a class="reference external" href="../03_diffu/diffu_app.ipynb#diffu:app:heat">Heat conduction</a> is limited
+<p>The derivation of the heat equation in the section <span class="xref myst">Heat conduction</span> is limited
 to heat transport in solid bodies. If we turn the attention to heat transport
 in fluids, we get a material derivative of the internal energy in
-<a class="reference external" href="../03_diffu/diffu_app.ipynb#diffu:app:heat:PDE1">this equation</a>,</p>
+<span class="xref myst">this equation</span>,</p>
 <div class="math notranslate nohighlight">
 \[
 \frac{De}{dt} = - \nabla\cdot\boldsymbol{q},
@@ -2114,15 +2077,15 @@ resulting typically in</p>
 \end{equation}
 \]</div>
 <p>where <span class="math notranslate nohighlight">\(f\)</span> is some external heating inside the medium.</p>
-</div>
-</div>
-<div class="section" id="exercises">
-<h1>Exercises<a class="headerlink" href="#exercises" title="Permalink to this headline">¶</a></h1>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="exercises">
+<h1>Exercises<a class="headerlink" href="#exercises" title="Permalink to this heading">#</a></h1>
 <!-- --- begin exercise --- -->
-<div class="section" id="exercise-1-analyze-1d-stationary-convection-diffusion-problem">
-<h2>Exercise 1: Analyze 1D stationary convection-diffusion problem<a class="headerlink" href="#exercise-1-analyze-1d-stationary-convection-diffusion-problem" title="Permalink to this headline">¶</a></h2>
+<section id="exercise-1-analyze-1d-stationary-convection-diffusion-problem">
+<h2>Exercise 1: Analyze 1D stationary convection-diffusion problem<a class="headerlink" href="#exercise-1-analyze-1d-stationary-convection-diffusion-problem" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:stationary:exer:analysis1"></div>
-<p>Explain the observations in the numerical experiments from the sections <a class="reference external" href="#advec:1D:stationary:fdm">A centered finite difference scheme</a> and <a class="reference external" href="#advec:1D:stationary:upwind">Remedy: upwind finite difference scheme</a> by
+<p>Explain the observations in the numerical experiments from the sections <span class="xref myst">A centered finite difference scheme</span> and <span class="xref myst">Remedy: upwind finite difference scheme</span> by
 finding exact numerical solutions.</p>
 <!-- --- begin hint in exercise --- -->
 <p><strong>Hint.</strong>
@@ -2135,9 +2098,9 @@ are determined from the boundary conditions.</p>
 <p>Filename: <code class="docutils literal notranslate"><span class="pre">twopt_BVP_analysis1</span></code>.</p>
 <!-- --- end exercise --- -->
 <!-- --- begin exercise --- -->
-</div>
-<div class="section" id="exercise-2-interpret-upwind-difference-as-artificial-diffusion">
-<h2>Exercise 2: Interpret upwind difference as artificial diffusion<a class="headerlink" href="#exercise-2-interpret-upwind-difference-as-artificial-diffusion" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="exercise-2-interpret-upwind-difference-as-artificial-diffusion">
+<h2>Exercise 2: Interpret upwind difference as artificial diffusion<a class="headerlink" href="#exercise-2-interpret-upwind-difference-as-artificial-diffusion" title="Permalink to this heading">#</a></h2>
 <div id="advec:1D:stationary:exer:analysis2"></div>
 <p>Consider an upwind, one-sided difference approximation to
 a term <span class="math notranslate nohighlight">\(du/dx\)</span> in a differential equation. Show that this
@@ -2146,11 +2109,11 @@ diffusion term of strength proportional to <span class="math notranslate nohighl
 This means that introducing an upwind difference also means introducing
 extra diffusion of order <span class="math notranslate nohighlight">\(\mathcal{O}{\Delta x}\)</span>.
 Filename: <code class="docutils literal notranslate"><span class="pre">twopt_BVP_analysis2</span></code>.</p>
-<!-- --- end exercise --- --></div>
-</div>
-<div class="section" id="bibliography">
-<h1>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this headline">¶</a></h1>
-<div class="cite2c-biblio"></div></div>
+<!-- --- end exercise --- --></section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="bibliography">
+<h1>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this heading">#</a></h1>
+<div class="cite2c-biblio"></div></section>
 
     <script type="text/x-thebe-config">
     {
@@ -2164,7 +2127,7 @@ Filename: <code class="docutils literal notranslate"><span class="pre">twopt_BVP
             mode: "python"
         },
         kernelOptions: {
-            kernelName: "python3",
+            name: "python3",
             path: "./notebooks/04_advec"
         },
         predefinedOutput: true
@@ -2172,35 +2135,158 @@ Filename: <code class="docutils literal notranslate"><span class="pre">twopt_BVP
     </script>
     <script>kernelName = 'python3'</script>
 
-              </div>
+                </article>
               
-        </div>
-    </div>
-    
-    
-    <div class='prev-next-bottom'>
-        
-    <a class='left-prev' id="prev-link" href="../03_diffu/diffu_placeholder.html" title="previous page">Coming soon</a>
-    <a class='right-next' id="next-link" href="../05_nonlin/nonlin_placeholder.html" title="next page">Coming soon</a>
 
-    </div>
-    <footer class="footer mt-5 mt-md-0">
-    <div class="container">
-      <p>
-        
-          By The Devito Project Community<br/>
-        
-            &copy; Copyright 2020.<br/>
-      </p>
-    </div>
-  </footer>
-</main>
-
-
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../03_diffu/diffu_placeholder.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Coming soon</p>
       </div>
-    </div>
+    </a>
+    <a class="right-next"
+       href="../05_nonlin/nonlin_placeholder.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Coming soon</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
 
-    <script src="../../_static/js/index.js"></script>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">One-dimensional time-dependent advection equations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simplest-scheme-forward-in-time-centered-in-space">Simplest scheme: forward in time, centered in space</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#method">Method</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#test-cases">Test cases</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bug">Bug?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-of-the-scheme">Analysis of the scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#leapfrog-in-time-centered-differences-in-space">Leapfrog in time, centered differences in space</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Method</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-test-case">Running a test case</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-more-test-cases">Running more test cases</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis">Analysis</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upwind-differences-in-space">Upwind differences in space</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#periodic-boundary-conditions">Periodic boundary conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#test-condition">Test condition</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-code">The code</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#solving-a-specific-problem">Solving a specific problem</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-crank-nicolson-discretization-in-time-and-centered-differences-in-space">A Crank-Nicolson discretization in time and centered differences in space</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-lax-wendroff-method">The Lax-Wendroff method</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-of-dispersion-relations">Analysis of dispersion relations</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#one-dimensional-stationary-advection-diffusion-equation">One-dimensional stationary advection-diffusion equation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-simple-model-problem">A simple model problem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-centered-finite-difference-scheme">A centered finite difference scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#remedy-upwind-finite-difference-scheme">Remedy: upwind finite difference scheme</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#time-dependent-convection-diffusion-equations">Time-dependent convection-diffusion equations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analytical-insight">Analytical insight</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-in-time-centered-in-space-scheme">Forward in time, centered in space scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-in-time-upwind-in-space-scheme">Forward in time, upwind in space scheme</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#applications-of-advection-equations">Applications of advection equations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transport-of-a-substance">Transport of a substance</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transport-of-heat-in-fluids">Transport of heat in fluids</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#exercises">Exercises</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise-1-analyze-1d-stationary-convection-diffusion-problem">Exercise 1: Analyze 1D stationary convection-diffusion problem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise-2-interpret-upwind-difference-as-artificial-diffusion">Exercise 2: Interpret upwind difference as artificial diffusion</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">Bibliography</a></li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
     
+<p class="component-author">
+By The Devito Project Community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
   </body>
 </html>

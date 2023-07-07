@@ -2,428 +2,392 @@
 
 <!DOCTYPE html>
 
-<html>
+
+<html lang="en" >
+
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
     <title>Random walk &#8212; The Devito Book</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha384-KA6wR/X5RY4zFAHpv/CnoG2UW1uogYfdnP67Uv7eULvTveboZJg0qUpmJZb5VqzN" crossorigin="anonymous">
-    <link href="../../_static/css/index.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../_static/sphinx-book-theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/spanels-index--0afa1ebdab0bb23b98b56d34c23d9f57.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/spanels-variables--ffc7f74dcb1b9eecba2dbcbc22818714.css" />
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/language_data.js"></script>
-    <script src="../../_static/togglebutton.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/sphinx-book-theme.js"></script>
-    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["\\(", "\\)"]], "displayMath": [["\\[", "\\]"]], "processRefs": false, "processEnvironments": false}})</script>
-    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
-    <script >
-        const thebe_selector = ".thebe"
-        const thebe_selector_input = "pre"
-        const thebe_selector_output = ".output"
-    </script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
     <script async="async" src="../../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/03_diffu/diffu_rw';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Coming soon" href="diffu_placeholder.html" />
     <link rel="prev" title="Coming soon" href="../02_wave/wave_placeholder.html" />
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="docsearch:language" content="en">
-
-
-
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
   </head>
-  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
-    
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-    <div class="container-xl">
-      <div class="row">
-          
-<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
     
-        <div class="navbar-brand-box">
-<a class="navbar-brand text-wrap" href="../../index.html">
+    
+    
+    
+  </div>
   
-  <img src="../../_static/devito_logo.png" class="logo" alt="logo">
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
   
   
-  <h1 class="site-logo" id="site-title">The Devito Book</h1>
   
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/devito_logo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../../_static/devito_logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    Welcome to the Devito Book!
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Vibration ODEs</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../01_vib/vib_undamped.html">Finite difference discretization</a></li>
+
+
+
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../01_vib/vib_placeholder.html">Coming soon</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Wave equations</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../02_wave/wave1D_fd1.html">Simulation of waves on a string</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../02_wave/wave1D_prog.html">Implementation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../02_wave/wave_placeholder.html">Coming soon</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Diffusion equations</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Random walk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffu_placeholder.html">Coming soon</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Advection equations</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../04_advec/advec.html">One-dimensional time-dependent advection equations</a></li>
+
+
+
+
+
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Nonlinear problems</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../05_nonlin/nonlin_placeholder.html">Coming soon</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/devitocodes/devito_book" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
 </a>
-</div>
 
-<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
-  <i class="icon fas fa-search"></i>
-  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
-</form>
 
-<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
-  <ul class="nav sidenav_l1">
- <li class="toctree-l1">
-  <a class="reference internal" href="../../index.html">
-   Welcome to the Devito Book!
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Vibration ODEs
- </span>
-</p>
-<ul class="nav sidenav_l1">
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html">
-   Finite difference discretization
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#implementation">
-   Implementation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#visualization-of-long-time-simulations">
-   Visualization of long time simulations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#analysis-of-the-numerical-scheme">
-   Analysis of the numerical scheme
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#alternative-schemes-based-on-1st-order-equations">
-   Alternative schemes based on 1st-order equations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#energy-considerations">
-   Energy considerations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#the-euler-cromer-method">
-   The Euler-Cromer method
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#staggered-mesh">
-   Staggered mesh
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_undamped.html#exercises-and-problems">
-   Exercises and Problems
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../01_vib/vib_placeholder.html">
-   Coming soon
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Wave equations
- </span>
-</p>
-<ul class="nav sidenav_l1">
- <li class="toctree-l1">
-  <a class="reference internal" href="../02_wave/wave1D_fd1.html">
-   Simulation of waves on a string
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../02_wave/wave1D_fd1.html#verification">
-   Verification
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../02_wave/wave1D_prog.html">
-   Implementation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../02_wave/wave1D_prog.html#exercises">
-   Exercises
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../02_wave/wave_placeholder.html">
-   Coming soon
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Diffusion equations
- </span>
-</p>
-<ul class="current nav sidenav_l1">
- <li class="toctree-l1 current active">
-  <a class="current reference internal" href="#">
-   Random walk
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="diffu_placeholder.html">
-   Coming soon
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Advection equations
- </span>
-</p>
-<ul class="nav sidenav_l1">
- <li class="toctree-l1">
-  <a class="reference internal" href="../04_advec/advec.html">
-   One-dimensional time-dependent advection equations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../04_advec/advec.html#one-dimensional-stationary-advection-diffusion-equation">
-   One-dimensional stationary advection-diffusion equation
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../04_advec/advec.html#time-dependent-convection-diffusion-equations">
-   Time-dependent convection-diffusion equations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../04_advec/advec.html#applications-of-advection-equations">
-   Applications of advection equations
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../04_advec/advec.html#exercises">
-   Exercises
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../04_advec/advec.html#bibliography">
-   Bibliography
-  </a>
- </li>
-</ul>
-<p class="caption">
- <span class="caption-text">
-  Nonlinear problems
- </span>
-</p>
-<ul class="nav sidenav_l1">
- <li class="toctree-l1">
-  <a class="reference internal" href="../05_nonlin/nonlin_placeholder.html">
-   Coming soon
-  </a>
- </li>
-</ul>
 
-</nav>
 
- <!-- To handle the deprecated key -->
 
-<div class="navbar_extra_footer">
-  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
-</div>
 
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/notebooks/03_diffu/diffu_rw.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
 </div>
 
 
-          
 
 
-          
-<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
-    
-    <div class="row topbar fixed-top container-xl">
-    <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show">
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
     </div>
-    <div class="col pl-2 topbar-main">
-        
-        <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
-            data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
-            aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
-            title="Toggle navigation" data-toggle="tooltip" data-placement="left">
-            <i class="fas fa-bars"></i>
-            <i class="fas fa-arrow-left"></i>
-            <i class="fas fa-arrow-up"></i>
-        </button>
-        
-        <div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
-            class="fas fa-download"></i></button>
-
-    
-    <div class="dropdown-buttons">
-        <!-- ipynb file if we had a myst markdown file -->
-        
-        <!-- Download raw file -->
-        <a class="dropdown-buttons" href="../../_sources/notebooks/03_diffu/diffu_rw.ipynb"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
-                data-placement="left">.ipynb</button></a>
-        <!-- Download PDF via print -->
-        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
-            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
-    </div>
-    
+  
 </div>
-        <!-- Source interaction buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
-    <div class="dropdown-buttons sourcebuttons">
-        <a class="repository-button"
-            href="https://github.com/devitocodes/devito_book"><button type="button" class="btn btn-secondary topbarbtn"
-                data-toggle="tooltip" data-placement="left" title="Source repository"><i
-                    class="fab fa-github"></i>repository</button></a>
-        
-        
-    </div>
 </div>
+              
+              
 
-
-        <!-- Full screen (wrap in <a> to have style consistency -->
-        <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
-                data-placement="bottom" onclick="toggleFullScreen()" title="Fullscreen mode"><i
-                    class="fas fa-expand"></i></button></a>
-
-        <!-- Launch buttons -->
-
-<div class="dropdown-buttons-trigger">
-    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
-        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
-    <div class="dropdown-buttons">
-        
-        <a class="binder-button" href="https://mybinder.org/v2/gh/devitocodes/devito_book/master?urlpath=tree/notebooks/03_diffu/diffu_rw.ipynb"><button type="button"
-                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
-                data-placement="left"><img class="binder-button-logo"
-                    src="../../_static/images/logo_binder.svg"
-                    alt="Interact on binder">Binder</button></a>
-        
-        
-        
-        <a class="colab-button" href="https://colab.research.google.com/github/devitocodes/devito_book/blob/master/notebooks/03_diffu/diffu_rw.ipynb"><button type="button" class="btn btn-secondary topbarbtn"
-                title="Launch Colab" data-toggle="tooltip" data-placement="left"><img class="colab-button-logo"
-                    src="../../_static/images/logo_colab.png"
-                    alt="Interact on Colab">Colab</button></a>
-        
-        
-    </div>
-</div>
-
-    </div>
-
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Random walk</h1>
     <!-- Table of contents -->
-    <div class="d-none d-md-block col-md-2 bd-toc show">
-        <div class="tocsection onthispage pt-5 pb-3">
-            <i class="fas fa-list"></i> Contents
-        </div>
-        <nav id="bd-toc-nav">
-            <ul class="nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#random-walk-in-1d">
-   Random walk in 1D
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#statistical-considerations">
-   Statistical considerations
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#playing-around-with-some-code">
-   Playing around with some code
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#fixing-the-random-sequence">
-     Fixing the random sequence
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#equivalence-with-diffusion">
-   Equivalence with diffusion
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#implementation-of-multiple-walks">
-   Implementation of multiple walks
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#vectorized-version">
-     Vectorized version
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#test-function">
-     Test function
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#demonstration-of-multiple-walks">
-   Demonstration of multiple walks
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#ascii-visualization-of-1d-random-walk">
-   Ascii visualization of 1D random walk
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#random-walk-as-a-stochastic-equation">
-   Random walk as a stochastic equation
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#random-walk-in-2d">
-   Random walk in 2D
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#random-walk-in-any-number-of-space-dimensions">
-   Random walk in any number of space dimensions
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#multiple-random-walks-in-any-number-of-space-dimensions">
-   Multiple random walks in any number of space dimensions
-  </a>
- </li>
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#random-walk-in-1d">Random walk in 1D</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statistical-considerations">Statistical considerations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#playing-around-with-some-code">Playing around with some code</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixing-the-random-sequence">Fixing the random sequence</a></li>
 </ul>
-
-        </nav>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#equivalence-with-diffusion">Equivalence with diffusion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-of-multiple-walks">Implementation of multiple walks</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vectorized-version">Vectorized version</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#test-function">Test function</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration-of-multiple-walks">Demonstration of multiple walks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ascii-visualization-of-1d-random-walk">Ascii visualization of 1D random walk</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#random-walk-as-a-stochastic-equation">Random walk as a stochastic equation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#random-walk-in-2d">Random walk in 2D</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#random-walk-in-any-number-of-space-dimensions">Random walk in any number of space dimensions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-random-walks-in-any-number-of-space-dimensions">Multiple random walks in any number of space dimensions</a></li>
+</ul>
+            </nav>
+        </div>
     </div>
 </div>
-    <div id="main-content" class="row">
-        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
-        
-              <div>
+
+              
                 
-  <div class="section" id="random-walk">
-<h1>Random walk<a class="headerlink" href="#random-walk" title="Permalink to this headline">¶</a></h1>
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="random-walk">
+<h1>Random walk<a class="headerlink" href="#random-walk" title="Permalink to this heading">#</a></h1>
 <div id="diffu:randomwalk"></div>
 <p>Models leading to diffusion equations, see the section <span class="xref myst">Applications of diffusion equations</span>, are
 usually based on reasoning with <em>averaged</em> physical quantities such as
@@ -455,9 +419,9 @@ solve the same type of problems. The simplicity of the random walk
 algorithm makes it particularly attractive for solving diffusion
 equations on massively parallel computers.
 The exposition here is as simple as possible, and good thorough
-derivation of the models is provided by Hjorth-Jensen <a class="reference external" href="#hjorten">[hjorten]</a>.</p>
-<div class="section" id="random-walk-in-1d">
-<h2>Random walk in 1D<a class="headerlink" href="#random-walk-in-1d" title="Permalink to this headline">¶</a></h2>
+derivation of the models is provided by Hjorth-Jensen <span class="xref myst">[hjorten]</span>.</p>
+<section id="random-walk-in-1d">
+<h2>Random walk in 1D<a class="headerlink" href="#random-walk-in-1d" title="Permalink to this heading">#</a></h2>
 <div id="diffu:randomwalk:1D"></div>
 <p>Imagine that we have some particles that perform random moves, either
 to the right or to the left. We may flip a coin to decide the movement
@@ -468,7 +432,7 @@ The movement is also known as <a class="reference external" href="https://en.wik
 You may try this yourself: flip the coin and make one step to the left
 or right, and repeat the process.</p>
 <p>We introduce the symbol <span class="math notranslate nohighlight">\(N\)</span> for the number of steps in a random walk.
-<a class="reference external" href="#diffu:randomwalk:1D:fig:ensemble">Figure</a> shows four different
+<span class="xref myst">Figure</span> shows four different
 random walks with <span class="math notranslate nohighlight">\(N=200\)</span>.</p>
 <!-- dom:FIGURE: [fig-diffu/rw1D_ensemble4.png, width=800 frac=1] Ensemble of 4 random walks, each with 200 steps. <div id="diffu:randomwalk:1D:fig:ensemble"></div> -->
 <!-- begin figure -->
@@ -476,9 +440,9 @@ random walks with <span class="math notranslate nohighlight">\(N=200\)</span>.</
 <p>Ensemble of 4 random walks, each with 200 steps.</p>
 <img src="fig-diffu/rw1D_ensemble4.png" width=800>
 <!-- end figure -->
-</div>
-<div class="section" id="statistical-considerations">
-<h2>Statistical considerations<a class="headerlink" href="#statistical-considerations" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="statistical-considerations">
+<h2>Statistical considerations<a class="headerlink" href="#statistical-considerations" title="Permalink to this heading">#</a></h2>
 <div id="diffu:randomwalk:1D:EVar"></div>
 <p>Let <span class="math notranslate nohighlight">\(S_k\)</span> be the stochastic variable representing a step to the left
 or to the right in step number <span class="math notranslate nohighlight">\(k\)</span>. We have that <span class="math notranslate nohighlight">\(S_k=-1\)</span> with
@@ -516,7 +480,7 @@ For the very important case <span class="math notranslate nohighlight">\(p=q=\fr
 <span class="math notranslate nohighlight">\(\hbox{Var}\lbrack{\bar X_k}\rbrack=k\)</span>.</p>
 <p>How can we estimate <span class="math notranslate nohighlight">\(\hbox{E}\lbrack{\bar X_k}\rbrack=0\)</span> and <span class="math notranslate nohighlight">\(\hbox{Var}\lbrack{\bar X_k}\rbrack=N\)</span>?
 We must have many random walks of the type in
-<a class="reference external" href="#diffu:randomwalk:1D:fig:ensemble">Figure</a>. For a given <span class="math notranslate nohighlight">\(k\)</span>, say <span class="math notranslate nohighlight">\(k=100\)</span>,
+<span class="xref myst">Figure</span>. For a given <span class="math notranslate nohighlight">\(k\)</span>, say <span class="math notranslate nohighlight">\(k=100\)</span>,
 we find all the values of <span class="math notranslate nohighlight">\(\bar X_k\)</span>, name them <span class="math notranslate nohighlight">\(\bar x_{0,k}\)</span>, <span class="math notranslate nohighlight">\(\bar x_{1,k}\)</span>,
 <span class="math notranslate nohighlight">\(\bar x_{2,k}\)</span>, and so on. The empirical estimate of <span class="math notranslate nohighlight">\(\hbox{E}\lbrack{\bar X_k}\rbrack\)</span> is the
 average,</p>
@@ -532,11 +496,11 @@ average,</p>
 \]</div>
 <p>That is, we take the statistics for a given <span class="math notranslate nohighlight">\(K\)</span> across the ensemble
 of random walks (“vertically” in
-<a class="reference external" href="#diffu:randomwalk:1D:fig:ensemble">Figure</a>). The key quantities
+<span class="xref myst">Figure</span>). The key quantities
 to record are <span class="math notranslate nohighlight">\(\sum_i \bar x_{i,k}\)</span> and <span class="math notranslate nohighlight">\(\sum_i \bar x_{i,k}^2\)</span>.</p>
-</div>
-<div class="section" id="playing-around-with-some-code">
-<h2>Playing around with some code<a class="headerlink" href="#playing-around-with-some-code" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="playing-around-with-some-code">
+<h2>Playing around with some code<a class="headerlink" href="#playing-around-with-some-code" title="Permalink to this heading">#</a></h2>
 <div id="diffu:randomwalk:1D:code1"></div>
 <p>Python has a <code class="docutils literal notranslate"><span class="pre">random</span></code> module for drawing random numbers, and this
 module has a function <code class="docutils literal notranslate"><span class="pre">uniform(a,</span> <span class="pre">b)</span></code> for drawing a uniformly
@@ -566,7 +530,7 @@ with probability <span class="math notranslate nohighlight">\(1-p\)</span> can n
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walk1D, src-diffu/random_walk.py</span>
 <span class="k">def</span> <span class="nf">random_walk1D</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;1D random walk with 1 particle and N moves.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;1D random walk with 1 particle and N moves.&quot;&quot;&quot;</span>
     <span class="c1"># random is argument so we can use np.random instead</span>
     <span class="c1"># and use it for testing</span>
 
@@ -620,7 +584,7 @@ otherwise the step is <span class="math notranslate nohighlight">\(1\)</span>:</
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walk1D_vec, src-diffu/random_walk.py</span>
 <span class="k">def</span> <span class="nf">random_walk1D_vec</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Vectorized version of random_walk1D.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Vectorized version of random_walk1D.&quot;&quot;&quot;</span>
     <span class="c1"># Create and initialise r with dimension x_d</span>
     <span class="n">x_d</span> <span class="o">=</span> <span class="n">Dimension</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;x_d&#39;</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="n">Constant</span><span class="p">(</span><span class="s1">&#39;h_x&#39;</span><span class="p">))</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">TimeFunction</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">dimensions</span><span class="o">=</span><span class="p">(</span><span class="n">x_d</span><span class="p">,),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,))</span>
@@ -639,8 +603,8 @@ otherwise the step is <span class="math notranslate nohighlight">\(1\)</span>:</
 </div>
 </div>
 </div>
-<div class="section" id="fixing-the-random-sequence">
-<h3>Fixing the random sequence<a class="headerlink" href="#fixing-the-random-sequence" title="Permalink to this headline">¶</a></h3>
+<section id="fixing-the-random-sequence">
+<h3>Fixing the random sequence<a class="headerlink" href="#fixing-the-random-sequence" title="Permalink to this heading">#</a></h3>
 <p>During software development with random numbers it is advantageous to
 always generate the same sequence of random numbers, as this may help
 debugging processes. To fix the sequence, we set a <em>seed</em> of the random
@@ -653,7 +617,7 @@ number generator to some chosen integer, e.g.,</p>
 </div>
 </div>
 <p>Calls to <code class="docutils literal notranslate"><span class="pre">random_walk1D</span></code> give positions of the particle as
-depicted in <a class="reference external" href="#diffu:randomwalk:1D:code1:fig1">Figure</a>. The particle starts
+depicted in <span class="xref myst">Figure</span>. The particle starts
 at the origin and moves with <span class="math notranslate nohighlight">\(p=\frac{1}{2}\)</span>. Since the seed is the same,
 the plot to the left is just a magnification of the first 1,000 steps in
 the plot to the right.</p>
@@ -664,10 +628,10 @@ the plot to the right.</p>
 <p>1,000 (left) and 50,000 (right) steps of a random walk.</p>
 <img src="fig-diffu/rw1D_1sample.png" width=800>
 <!-- end figure -->
-</div>
-</div>
-<div class="section" id="equivalence-with-diffusion">
-<h2>Equivalence with diffusion<a class="headerlink" href="#equivalence-with-diffusion" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="equivalence-with-diffusion">
+<h2>Equivalence with diffusion<a class="headerlink" href="#equivalence-with-diffusion" title="Permalink to this heading">#</a></h2>
 <div id="diffu:randomwalk:1D:pde"></div>
 <p>The original random walk algorithm can be said to work with
 dimensionless coordinates <span class="math notranslate nohighlight">\(\bar x_i = -N + i\)</span>, <span class="math notranslate nohighlight">\(i=0,1,\ldots, 2N+1\)</span>
@@ -698,7 +662,7 @@ P^{n+1}_i = \frac{1}{2} P^{n}_{i-1} + \frac{1}{2} P^{n}_{i+1}\thinspace .
 <p>(This equation is easiest to understand if one looks at the random walk
 as a Markov process and applies the transition probabilities, but this is
 beyond scope of the present text.)</p>
-<p>Subtracting <span class="math notranslate nohighlight">\(P^{n}_i\)</span> from (<a class="reference external" href="#diffu:randomwalk:1D:pde:Markov">1</a>) results
+<p>Subtracting <span class="math notranslate nohighlight">\(P^{n}_i\)</span> from (<span class="xref myst">1</span>) results
 in</p>
 <div class="math notranslate nohighlight">
 \[
@@ -729,7 +693,7 @@ discretization. We have</p>
 P^{n}_{i-1} -2P^{n}_i + \frac{1}{2} P^{n}_{i+1}\thinspace .
 \end{align*}
 \end{split}\]</div>
-<p>Equation (<a class="reference external" href="#diffu:randomwalk:1D:pde:Markov">1</a>) is therefore equivalent with
+<p>Equation (<span class="xref myst">1</span>) is therefore equivalent with
 the dimensionless diffusion equation</p>
 <!-- Equation labels as ordinary links -->
 <div id="diffu:randomwalk:1D:pde:dimless"></div>
@@ -763,7 +727,7 @@ of the positions will approximate the solution of the diffusion equation
 for the local probability <span class="math notranslate nohighlight">\(P^n_i\)</span>.</p>
 <p>Suppose all the random walks start at the origin. Then the initial
 condition for the probability distribution is the Dirac delta
-function <span class="math notranslate nohighlight">\(\delta(x)\)</span>. The solution of (<a class="reference external" href="#diffu:randomwalk:1D:pde:dimless">2</a>)
+function <span class="math notranslate nohighlight">\(\delta(x)\)</span>. The solution of (<span class="xref myst">2</span>)
 can be shown to be</p>
 <!-- Equation labels as ordinary links -->
 <div id="diffu:randomwalk:1D:pde:dimless:sol"></div>
@@ -775,18 +739,18 @@ can be shown to be</p>
 \end{equation}
 \]</div>
 <p>where <span class="math notranslate nohighlight">\(\alpha = \frac{1}{2}\)</span>.</p>
-</div>
-<div class="section" id="implementation-of-multiple-walks">
-<h2>Implementation of multiple walks<a class="headerlink" href="#implementation-of-multiple-walks" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="implementation-of-multiple-walks">
+<h2>Implementation of multiple walks<a class="headerlink" href="#implementation-of-multiple-walks" title="Permalink to this heading">#</a></h2>
 <div id="diffu:randomwalk:1D:multiplewalks"></div>
 <p>Our next task is to implement an ensemble of walks (for statistics,
-see the section <a class="reference external" href="#diffu:randomwalk:1D:EVar">Statistical considerations</a>) and also provide data from
+see the section <span class="xref myst">Statistical considerations</span>) and also provide data from
 the walks such that we can compute the probabilities of the positions
 as introduced in the previous section. An appropriate representation
 of probabilities <span class="math notranslate nohighlight">\(P^n_i\)</span> are histograms (with <span class="math notranslate nohighlight">\(i\)</span> along the <span class="math notranslate nohighlight">\(x\)</span> axis)
 for a few selected values of <span class="math notranslate nohighlight">\(n\)</span>.</p>
 <p>To estimate the expectation and variance of the random walks,
-the section <a class="reference external" href="#diffu:randomwalk:1D:EVar">Statistical considerations</a> points to recording
+the section <span class="xref myst">Statistical considerations</span> points to recording
 <span class="math notranslate nohighlight">\(\sum_j x_{j,k}\)</span> and <span class="math notranslate nohighlight">\(\sum_j x_{j,k}^2\)</span>, where <span class="math notranslate nohighlight">\(x_{j,k}\)</span> is the
 position at time/step level <span class="math notranslate nohighlight">\(k\)</span> in random walk number <span class="math notranslate nohighlight">\(j\)</span>.
 The histogram of positions needs the individual values <span class="math notranslate nohighlight">\(x_{i,k}\)</span>
@@ -801,8 +765,8 @@ spaced through time:</p>
 </div>
 <p>This is one of the few situations where we want integer division (<code class="docutils literal notranslate"><span class="pre">//</span></code>) or
 real division rounded to an integer.</p>
-<div class="section" id="vectorized-version">
-<h3>Vectorized version<a class="headerlink" href="#vectorized-version" title="Permalink to this headline">¶</a></h3>
+<section id="vectorized-version">
+<h3>Vectorized version<a class="headerlink" href="#vectorized-version" title="Permalink to this heading">#</a></h3>
 <p>We have already vectorized a single random walk. The additional
 challenge here is to vectorize the computation of the data for the
 histogram, <code class="docutils literal notranslate"><span class="pre">pos_hist</span></code>, but given the selected steps in <code class="docutils literal notranslate"><span class="pre">pos_hist_times</span></code>,
@@ -813,7 +777,7 @@ inserted in <code class="docutils literal notranslate"><span class="pre">pos_his
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walks1D_vec, src-diffu/random_walk.py</span>
 <span class="k">def</span> <span class="nf">random_walks1D_vec</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">num_walks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_times</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Vectorized version of random_walks1D.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Vectorized version of random_walks1D.&quot;&quot;&quot;</span>
     <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># Accumulated positions</span>
     <span class="n">position2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># Accumulated positions**2</span>
     <span class="c1"># Histogram at num_times selected time points</span>
@@ -862,9 +826,9 @@ version, with <code class="docutils literal notranslate"><span class="pre">rando
 <!-- CPU: -->
 <!-- N=1000, 50K walks -->
 <!-- scalar: 42, vec1: 1.7, vec2: 1.7, factors 25 and 25 -->
-</div>
-<div class="section" id="test-function">
-<h3>Test function<a class="headerlink" href="#test-function" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="test-function">
+<h3>Test function<a class="headerlink" href="#test-function" title="Permalink to this heading">#</a></h3>
 <p>During program development, it is highly recommended to carry out
 computations by hand for, e.g., <code class="docutils literal notranslate"><span class="pre">N=4</span></code> and <code class="docutils literal notranslate"><span class="pre">num_walks=3</span></code>.  Normally,
 this is done by executing the program with these parameters and
@@ -905,10 +869,10 @@ same.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Operator `Kernel` run in 0.01 s
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Operator `Kernel` ran in 0.01 s
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Operator `Kernel` run in 0.01 s
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Operator `Kernel` ran in 0.01 s
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Computed:  [0. 1. 0. 1. 2.]
@@ -924,24 +888,24 @@ test functions and fixed seeds, we always experience variations from run to
 run, and it can be very difficult to spot bugs through averaged statistical
 quantities.</p>
 <p>A full test suite for this notebook, along with the rest of the functions for random walks, can be found in <a class="reference external" href="https://github.com/devitocodes/devito_book/blob/master/fdm-devito-notebooks/03_diffu/src-diffu/random_walk.py"><code class="docutils literal notranslate"><span class="pre">random_walk.py</span></code></a>.</p>
-</div>
-</div>
-<div class="section" id="demonstration-of-multiple-walks">
-<h2>Demonstration of multiple walks<a class="headerlink" href="#demonstration-of-multiple-walks" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="demonstration-of-multiple-walks">
+<h2>Demonstration of multiple walks<a class="headerlink" href="#demonstration-of-multiple-walks" title="Permalink to this heading">#</a></h2>
 <p>Assuming now that the code works, we can just scale up the number of
 steps in each walk and the number of walks. The latter influences the
-accuracy of the statistical estimates.  <a class="reference external" href="#diffu:randomwalk:1D:fig:demo1:EX">Figure</a> shows the impact of the number
-of walks on the expectation, which should approach zero.  <a class="reference external" href="#diffu:randomwalk:1D:fig:demo1:VarX">Figure</a> displays the corresponding
+accuracy of the statistical estimates.  <span class="xref myst">Figure</span> shows the impact of the number
+of walks on the expectation, which should approach zero.  <span class="xref myst">Figure</span> displays the corresponding
 estimate of the variance of the position, which should grow linearly
 with the number of steps. mathcal{I}_t does, seemingly very accurately, but
 notice that the scale on the <span class="math notranslate nohighlight">\(y\)</span> axis is so much larger than for the
 expectation, so irregularities due to the stochastic nature of the
 process become so much less visible in the variance plots.  The
 probability of finding a particle at a certain position at time (or
-step) 800 is shown in <a class="reference external" href="#diffu:randomwalk:1D:fig:demo1:HistX">Figure</a>. The dashed red line is the
-theoretical distribution (<a class="reference external" href="#diffu:randomwalk:1D:pde:dimless:sol">4</a>)
+step) 800 is shown in <span class="xref myst">Figure</span>. The dashed red line is the
+theoretical distribution (<span class="xref myst">4</span>)
 arising from solving the diffusion equation
-(<a class="reference external" href="#diffu:randomwalk:1D:pde:dimless">2</a>) instead. As always, we realize
+(<span class="xref myst">2</span>) instead. As always, we realize
 that one needs significantly more statistical samples to estimate a
 histogram accurately than the expectation or variance.</p>
 <!-- dom:FIGURE: [fig-diffu/rw1D_EX_100_10000_100000_1000000.png, width=800 frac=1] Estimated expected value for 1000 steps, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right). <div id="diffu:randomwalk:1D:fig:demo1:EX"></div> -->
@@ -962,9 +926,9 @@ histogram accurately than the expectation or variance.</p>
 <p>Estimated probability distribution at step 800, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right).</p>
 <img src="fig-diffu/rw1D_HistX_100_10000_100000_1000000.png" width=800>
 <!-- end figure -->
-</div>
-<div class="section" id="ascii-visualization-of-1d-random-walk">
-<h2>Ascii visualization of 1D random walk<a class="headerlink" href="#ascii-visualization-of-1d-random-walk" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="ascii-visualization-of-1d-random-walk">
+<h2>Ascii visualization of 1D random walk<a class="headerlink" href="#ascii-visualization-of-1d-random-walk" title="Permalink to this heading">#</a></h2>
 <div id="diffu:randomwalk:1D:avplotter"></div>
 <p>If we want to study (very) long time series of random walks, it can be
 convenient to plot the position in a terminal window with the time axis
@@ -1032,9 +996,9 @@ exception. This is a useful recipe that can be used in many occasions!</p>
 contains the complete ascii plot corresponding to the
 function <code class="docutils literal notranslate"><span class="pre">run_random_walk</span></code> above.</p>
 <!-- "https://github.com/hplgit/fdm-book/blob/master/doc/.src/chapters/diffu/fig-diffu/rw_ascii.txt" -->
-</div>
-<div class="section" id="random-walk-as-a-stochastic-equation">
-<h2>Random walk as a stochastic equation<a class="headerlink" href="#random-walk-as-a-stochastic-equation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="random-walk-as-a-stochastic-equation">
+<h2>Random walk as a stochastic equation<a class="headerlink" href="#random-walk-as-a-stochastic-equation" title="Permalink to this heading">#</a></h2>
 <div id="diffu:randomwalk:1D:ode"></div>
 <p>The (dimensionless) position in a random walk, <span class="math notranslate nohighlight">\(\bar X_k\)</span>, can be expressed as
 a stochastic difference equation:</p>
@@ -1063,7 +1027,7 @@ values <span class="math notranslate nohighlight">\(r=0\)</span> and <span class
 The variable <span class="math notranslate nohighlight">\(s=2r-1\)</span> then has expectation
 <span class="math notranslate nohighlight">\(2\hbox{E}\lbrack{r}\rbrack-1=2p-1=0\)</span> and variance <span class="math notranslate nohighlight">\(2^2\hbox{Var}\lbrack{r}\rbrack=4p(1-p)=1\)</span>.  The position
 <span class="math notranslate nohighlight">\(X_k\)</span> is normally distributed with zero expectation and variance <span class="math notranslate nohighlight">\(k\)</span>,
-as we found in the section <a class="reference external" href="#diffu:randomwalk:1D:EVar">Statistical considerations</a>.</p>
+as we found in the section <span class="xref myst">Statistical considerations</span>.</p>
 <p>The central limit theorem tells that as long as <span class="math notranslate nohighlight">\(k\)</span> is not small,
 the distribution of <span class="math notranslate nohighlight">\(X_k\)</span> remains the same if
 we replace the Bernoulli variable <span class="math notranslate nohighlight">\(s\)</span> by any other stochastic variable with
@@ -1074,7 +1038,7 @@ standardized Gaussian variable (zero mean, unit variance).</p>
 <!-- x_k = \Delta x\bar x_k,\] -->
 <!-- !et -->
 <!-- such that we take steps of length $\Delta x$. -->
-<p>Dividing (<a class="reference external" href="#diffu:randomwalk:1D:ode:x">5</a>) by <span class="math notranslate nohighlight">\(\Delta t\)</span> gives</p>
+<p>Dividing (<span class="xref myst">5</span>) by <span class="math notranslate nohighlight">\(\Delta t\)</span> gives</p>
 <div class="math notranslate nohighlight">
 \[
 \frac{\bar X_k - \bar X_{k-1}}{\Delta t} = \frac{1}{\Delta t} s\thinspace .
@@ -1097,13 +1061,13 @@ d\bar X = dW,
 Wiener process. It follows from the stochastic ODE <span class="math notranslate nohighlight">\(dX=dW\)</span> that the
 probability distribution of <span class="math notranslate nohighlight">\(X\)</span> is given by the <a class="reference external" href="https://en.wikipedia.org/wiki/Fokker-Planck_equation">Fokker-Planck
 equation</a>
-(<a class="reference external" href="#diffu:randomwalk:1D:pde:dimless">2</a>).  In other words, the key
+(<span class="xref myst">2</span>).  In other words, the key
 results for random walk we found earlier can alternatively be
 derived via a stochastic ordinary differential equation and its
 related Fokker-Planck equation.</p>
-</div>
-<div class="section" id="random-walk-in-2d">
-<h2>Random walk in 2D<a class="headerlink" href="#random-walk-in-2d" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="random-walk-in-2d">
+<h2>Random walk in 2D<a class="headerlink" href="#random-walk-in-2d" title="Permalink to this heading">#</a></h2>
 <p>The most obvious generalization of 1D random walk to two spatial
 dimensions is to allow movements to the north, east, south, and west,
 with equal probability <span class="math notranslate nohighlight">\(\frac{1}{4}\)</span>. This can be intuitively demonstrated using the following scalar implementation:</p>
@@ -1111,7 +1075,7 @@ with equal probability <span class="math notranslate nohighlight">\(\frac{1}{4}\
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walk2D, src-diffu/random_walk.py</span>
 <span class="k">def</span> <span class="nf">random_walk2D</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;2D random walk with 1 particle and N moves: N, E, W, S.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;2D random walk with 1 particle and N moves: N, E, W, S.&quot;&quot;&quot;</span>
     <span class="c1"># Store position in step k in position[k]</span>
     <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
     <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
@@ -1133,7 +1097,7 @@ with equal probability <span class="math notranslate nohighlight">\(\frac{1}{4}\
 </div>
 </div>
 </div>
-<p>The left plot in <a class="reference external" href="#diffu:randomwalk:2D:fig:rect_vs_diag">Figure</a> provides
+<p>The left plot in <span class="xref myst">Figure</span> provides
 an example on 200 steps with this kind of walk. We may refer to this walk
 as a walk on a <em>rectangular mesh</em> as we move from any spatial
 mesh point <span class="math notranslate nohighlight">\((i,j)\)</span> to one of its four neighbors in the rectangular directions:
@@ -1144,22 +1108,22 @@ mesh point <span class="math notranslate nohighlight">\((i,j)\)</span> to one of
 <p>Random walks in 2D with 200 steps: rectangular mesh (left) and diagonal mesh (right).</p>
 <img src="fig-diffu/rw2D_sample200.png" width=800>
 <!-- end figure -->
-</div>
-<div class="section" id="random-walk-in-any-number-of-space-dimensions">
-<h2>Random walk in any number of space dimensions<a class="headerlink" href="#random-walk-in-any-number-of-space-dimensions" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="random-walk-in-any-number-of-space-dimensions">
+<h2>Random walk in any number of space dimensions<a class="headerlink" href="#random-walk-in-any-number-of-space-dimensions" title="Permalink to this heading">#</a></h2>
 <p>From a programming point of view, especially when implementing a random
 walk in any number of dimensions, it is more natural to consider a walk
 in the diagonal directions NW, NE, SW, and SE. On a two-dimensional spatial mesh
 it means that we go from <span class="math notranslate nohighlight">\((i,j)\)</span> to either <span class="math notranslate nohighlight">\((i+1,j+1)\)</span>, <span class="math notranslate nohighlight">\((i-1,j+1)\)</span>,
 <span class="math notranslate nohighlight">\((i+1,j-1)\)</span>, or <span class="math notranslate nohighlight">\((i-1,j-1)\)</span>. We can with such a <em>diagonal mesh</em>
-(see right plot in <a class="reference external" href="#diffu:randomwalk:2D:fig:rect_vs_diag">Figure</a>)
+(see right plot in <span class="xref myst">Figure</span>)
 draw a Bernoulli variable for the step in each spatial direction and
 trivially write code that works in any number of spatial directions:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walkdD, src-diffu/random_walk.py</span>
 <span class="k">def</span> <span class="nf">random_walkdD</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Any-D (diagonal) random walk with 1 particle and N moves.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Any-D (diagonal) random walk with 1 particle and N moves.&quot;&quot;&quot;</span>
     <span class="c1"># Store position in step k in position[k]</span>
     <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
     <span class="n">position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
@@ -1178,12 +1142,12 @@ trivially write code that works in any number of spatial directions:</p>
 </div>
 </div>
 </div>
-<p>A vectorized version is desired. We follow the ideas from the section <a class="reference external" href="#diffu:randomwalk:1D:code1">Playing around with some code</a>. We need to add an extra <code class="docutils literal notranslate"><span class="pre">Dimension</span></code> to our <code class="docutils literal notranslate"><span class="pre">TimeFunction</span></code>, representing the number of space dimensions. We also need to generate <code class="docutils literal notranslate"><span class="pre">N*d</span></code> random values, which we can do using the <code class="docutils literal notranslate"><span class="pre">uniform</span></code> function from before and specifying the <code class="docutils literal notranslate"><span class="pre">size</span></code> argument as <code class="docutils literal notranslate"><span class="pre">N*d</span></code>. This can be represented as follows:</p>
+<p>A vectorized version is desired. We follow the ideas from the section <span class="xref myst">Playing around with some code</span>. We need to add an extra <code class="docutils literal notranslate"><span class="pre">Dimension</span></code> to our <code class="docutils literal notranslate"><span class="pre">TimeFunction</span></code>, representing the number of space dimensions. We also need to generate <code class="docutils literal notranslate"><span class="pre">N*d</span></code> random values, which we can do using the <code class="docutils literal notranslate"><span class="pre">uniform</span></code> function from before and specifying the <code class="docutils literal notranslate"><span class="pre">size</span></code> argument as <code class="docutils literal notranslate"><span class="pre">N*d</span></code>. This can be represented as follows:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walkdD_vec, src-diffu/random_walk.py</span>
 <span class="k">def</span> <span class="nf">random_walkdD_vec</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Vectorized version of random_walkdD.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Vectorized version of random_walkdD.&quot;&quot;&quot;</span>
 
     <span class="c1"># Here, x0 is an array of initial values in each spatial dimension</span>
     <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
@@ -1213,15 +1177,15 @@ trivially write code that works in any number of spatial directions:</p>
 <p>Four random walks with 5000 steps in 2D.</p>
 <img src="fig-diffu/rw2D_samples_5000.png" width=800>
 <!-- end figure -->
-</div>
-<div class="section" id="multiple-random-walks-in-any-number-of-space-dimensions">
-<h2>Multiple random walks in any number of space dimensions<a class="headerlink" href="#multiple-random-walks-in-any-number-of-space-dimensions" title="Permalink to this headline">¶</a></h2>
-<p>As we did in 1D, we extend one single walk to a number of walks (<code class="docutils literal notranslate"><span class="pre">num_walks</span></code> in the code). We can take a look at our function for multiple random walks (<code class="docutils literal notranslate"><span class="pre">random_walks1D</span></code>) from the <a class="reference external" href="#diffu:randomwalk:1D:multiplewalks">Implementation of multiple walks</a> section. The changes we make here are similar to those we made for <code class="docutils literal notranslate"><span class="pre">random_walkdD_vec</span></code>, in that we add an extra <code class="docutils literal notranslate"><span class="pre">Dimension</span></code> to represent the number of space dimensions.</p>
+</section>
+<section id="multiple-random-walks-in-any-number-of-space-dimensions">
+<h2>Multiple random walks in any number of space dimensions<a class="headerlink" href="#multiple-random-walks-in-any-number-of-space-dimensions" title="Permalink to this heading">#</a></h2>
+<p>As we did in 1D, we extend one single walk to a number of walks (<code class="docutils literal notranslate"><span class="pre">num_walks</span></code> in the code). We can take a look at our function for multiple random walks (<code class="docutils literal notranslate"><span class="pre">random_walks1D</span></code>) from the <span class="xref myst">Implementation of multiple walks</span> section. The changes we make here are similar to those we made for <code class="docutils literal notranslate"><span class="pre">random_walkdD_vec</span></code>, in that we add an extra <code class="docutils literal notranslate"><span class="pre">Dimension</span></code> to represent the number of space dimensions.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %load -s random_walksdD_vec, src-diffu/random_walk.py</span>
 <span class="k">def</span> <span class="nf">random_walksdD_vec</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">num_walks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_times</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Vectorized version of random_walksdD.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Vectorized version of random_walksdD.&quot;&quot;&quot;</span>
     <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
     <span class="n">position</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>  <span class="c1"># Accumulated positions</span>
     <span class="n">position2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>  <span class="c1"># Accumulated positions**2</span>
@@ -1268,8 +1232,8 @@ trivially write code that works in any number of spatial directions:</p>
 <!-- scalar/vec=50 -->
 <!-- 3D: 40 -->
 <!-- 1D: 100 -->
-<!-- scalar is about the same for 1D, 2D, 3D, but vec is 0.3, 0.7, 1.0 --></div>
-</div>
+<!-- scalar is about the same for 1D, 2D, 3D, but vec is 0.3, 0.7, 1.0 --></section>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -1283,7 +1247,7 @@ trivially write code that works in any number of spatial directions:</p>
             mode: "python"
         },
         kernelOptions: {
-            kernelName: "python3",
+            name: "python3",
             path: "./notebooks/03_diffu"
         },
         predefinedOutput: true
@@ -1291,35 +1255,122 @@ trivially write code that works in any number of spatial directions:</p>
     </script>
     <script>kernelName = 'python3'</script>
 
-              </div>
+                </article>
               
-        </div>
-    </div>
-    
-    
-    <div class='prev-next-bottom'>
-        
-    <a class='left-prev' id="prev-link" href="../02_wave/wave_placeholder.html" title="previous page">Coming soon</a>
-    <a class='right-next' id="next-link" href="diffu_placeholder.html" title="next page">Coming soon</a>
 
-    </div>
-    <footer class="footer mt-5 mt-md-0">
-    <div class="container">
-      <p>
-        
-          By The Devito Project Community<br/>
-        
-            &copy; Copyright 2020.<br/>
-      </p>
-    </div>
-  </footer>
-</main>
-
-
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../02_wave/wave_placeholder.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Coming soon</p>
       </div>
-    </div>
+    </a>
+    <a class="right-next"
+       href="diffu_placeholder.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Coming soon</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
 
-    <script src="../../_static/js/index.js"></script>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#random-walk-in-1d">Random walk in 1D</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statistical-considerations">Statistical considerations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#playing-around-with-some-code">Playing around with some code</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixing-the-random-sequence">Fixing the random sequence</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#equivalence-with-diffusion">Equivalence with diffusion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-of-multiple-walks">Implementation of multiple walks</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vectorized-version">Vectorized version</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#test-function">Test function</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration-of-multiple-walks">Demonstration of multiple walks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ascii-visualization-of-1d-random-walk">Ascii visualization of 1D random walk</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#random-walk-as-a-stochastic-equation">Random walk as a stochastic equation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#random-walk-in-2d">Random walk in 2D</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#random-walk-in-any-number-of-space-dimensions">Random walk in any number of space dimensions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-random-walks-in-any-number-of-space-dimensions">Multiple random walks in any number of space dimensions</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
     
+<p class="component-author">
+By The Devito Project Community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
   </body>
 </html>
