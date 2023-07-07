@@ -2,10 +2,10 @@ pytest-runner
 nbval
 cached-property
 py-cpuinfo
-devito<4.9
+devito<4.8.2
 jupyter-book
 matplotlib
-vtk==8.1.2
+vtk==9.2.2
 mayavi
 ipyevents
 ipywidgets
