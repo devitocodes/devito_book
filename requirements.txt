@@ -5,7 +5,7 @@ py-cpuinfo
 devito<4.9
 jupyter-book
 matplotlib
-vtk==8.1.2
+vtk==9.0.1
 mayavi
 ipyevents
 ipywidgets
