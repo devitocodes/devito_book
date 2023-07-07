@@ -20,29 +20,29 @@ jobs:
       DEVITO_ARCH: "${{ matrix.compiler }}"
       DEVITO_LANGUAGE: ${{ matrix.language }}
       DEVITO_BACKEND: "core"
-      PYTHON_VERSION: "3.7"
+      PYTHON_VERSION: "3.9"
       RUN_CMD: ""
 
     strategy:
       # Prevent all build to stop if a single one fails
       fail-fast: false
       matrix:
-        name: [tutos-ubuntu-gcc-py37,
-          tutos-osx-gcc-py37,
-          tutos-osx-clang-py37]
+        name: [tutos-ubuntu-gcc-py39,
+          tutos-osx-gcc-py39,
+          tutos-osx-clang-py39]
 
         include:
-          - name: tutos-ubuntu-gcc-py37
-            os: ubuntu-16.04
-            compiler: gcc-7
+          - name: tutos-ubuntu-gcc-py39
+            os: ubuntu-latest
+            compiler: gcc-9
             language: "openmp"
 
-          - name: tutos-osx-gcc-py37
+          - name: tutos-osx-gcc-py39
             os: macos-latest
             compiler: gcc-9
             language: "openmp"
 
-          - name: tutos-osx-clang-py37
+          - name: tutos-osx-clang-py39
             os: macos-latest
             compiler: clang
             language: "C"
@@ -51,10 +51,10 @@ jobs:
     - name: Checkout devito_book
       uses: actions/checkout@v1
 
-    - name: Set up Python 3.7
+    - name: Set up Python 3.9
       uses: actions/setup-python@v1
       with:
-        python-version: 3.7
+        python-version: 3.9
 
     - name: Install compilers for OSX
       if: runner.os == 'macOS'
