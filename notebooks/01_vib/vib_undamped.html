@@ -850,14 +850,14 @@ a given number of periods (<code class="docutils literal notranslate"><span clas
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Equation is not affine w.r.t the target, falling back to standardsympy.solve that may be slow
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/devito-jitcache-uid1001/a9e4b2cddcc6ac433372d92ace04317fe82c5578.c: In function ‘Kernel’:
-/tmp/devito-jitcache-uid1001/a9e4b2cddcc6ac433372d92ace04317fe82c5578.c:42:57: error: array subscript is not an integer
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/devito-jitcache-uid1001/f79d8171926c667d1a5e2a8fcbd01f488f0e038d.c: In function ‘Kernel’:
+/tmp/devito-jitcache-uid1001/f79d8171926c667d1a5e2a8fcbd01f488f0e038d.c:42:57: error: array subscript is not an integer
    42 |     u[t + 1] = -3.94784176043574e+1F*r0*h_t*h_t + 2.0F*u[-39*r0] - 1.0F*u[-39*r0 - 1];
       |                                                         ^
-/tmp/devito-jitcache-uid1001/a9e4b2cddcc6ac433372d92ace04317fe82c5578.c:42:74: error: array subscript is not an integer
+/tmp/devito-jitcache-uid1001/f79d8171926c667d1a5e2a8fcbd01f488f0e038d.c:42:74: error: array subscript is not an integer
    42 |     u[t + 1] = -3.94784176043574e+1F*r0*h_t*h_t + 2.0F*u[-39*r0] - 1.0F*u[-39*r0 - 1];
       |                                                                          ^
-FAILED compiler invocation: gcc -O3 -g -fPIC -Wall -std=c99 -march=native -Wno-unused-result -Wno-unused-variable -Wno-unused-but-set-variable -ffast-math -shared -fopenmp /tmp/devito-jitcache-uid1001/a9e4b2cddcc6ac433372d92ace04317fe82c5578.c -lm -o /tmp/devito-jitcache-uid1001/a9e4b2cddcc6ac433372d92ace04317fe82c5578.so
+FAILED compiler invocation: gcc -O3 -g -fPIC -Wall -std=c99 -march=native -Wno-unused-result -Wno-unused-variable -Wno-unused-but-set-variable -ffast-math -shared -fopenmp /tmp/devito-jitcache-uid1001/f79d8171926c667d1a5e2a8fcbd01f488f0e038d.c -lm -o /tmp/devito-jitcache-uid1001/f79d8171926c667d1a5e2a8fcbd01f488f0e038d.so
 </pre></div>
 </div>
 <div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
@@ -1081,8 +1081,7 @@ to be valid.</p>
 </div>
 </div>
 <p>The error analysis in the section <span class="xref myst">Analysis of the numerical scheme</span> is quite
-detailed and suggests that <span class="math notranslate nohighlight">\(r=2\)</span>.
-mathcal{I}_t is also a intuitively reasonable result, since we used a
+detailed and suggests that <span class="math notranslate nohighlight">\(r=2\)</span>. It is also a intuitively reasonable result, since we used a
 second-order accurate finite difference approximation <span class="math notranslate nohighlight">\([D_tD_tu]^n\)</span> to
 the ODE and a second-order accurate finite difference formula for the
 initial condition for <span class="math notranslate nohighlight">\(u^{\prime}\)</span>.</p>

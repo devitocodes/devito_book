@@ -28,14 +28,14 @@ visualize(u, t, I, w)
 ----- stderr -----
 Equation is not affine w.r.t the target, falling back to standardsympy.solve that may be slow
 ----- stderr -----
-/tmp/devito-jitcache-uid1001/a9e4b2cddcc6ac433372d92ace04317fe82c5578.c: In function ‘Kernel’:
-/tmp/devito-jitcache-uid1001/a9e4b2cddcc6ac433372d92ace04317fe82c5578.c:42:57: error: array subscript is not an integer
+/tmp/devito-jitcache-uid1001/f79d8171926c667d1a5e2a8fcbd01f488f0e038d.c: In function ‘Kernel’:
+/tmp/devito-jitcache-uid1001/f79d8171926c667d1a5e2a8fcbd01f488f0e038d.c:42:57: error: array subscript is not an integer
    42 |     u[t + 1] = -3.94784176043574e+1F*r0*h_t*h_t + 2.0F*u[-39*r0] - 1.0F*u[-39*r0 - 1];
       |                                                         ^
-/tmp/devito-jitcache-uid1001/a9e4b2cddcc6ac433372d92ace04317fe82c5578.c:42:74: error: array subscript is not an integer
+/tmp/devito-jitcache-uid1001/f79d8171926c667d1a5e2a8fcbd01f488f0e038d.c:42:74: error: array subscript is not an integer
    42 |     u[t + 1] = -3.94784176043574e+1F*r0*h_t*h_t + 2.0F*u[-39*r0] - 1.0F*u[-39*r0 - 1];
       |                                                                          ^
-FAILED compiler invocation: gcc -O3 -g -fPIC -Wall -std=c99 -march=native -Wno-unused-result -Wno-unused-variable -Wno-unused-but-set-variable -ffast-math -shared -fopenmp /tmp/devito-jitcache-uid1001/a9e4b2cddcc6ac433372d92ace04317fe82c5578.c -lm -o /tmp/devito-jitcache-uid1001/a9e4b2cddcc6ac433372d92ace04317fe82c5578.so
+FAILED compiler invocation: gcc -O3 -g -fPIC -Wall -std=c99 -march=native -Wno-unused-result -Wno-unused-variable -Wno-unused-but-set-variable -ffast-math -shared -fopenmp /tmp/devito-jitcache-uid1001/f79d8171926c667d1a5e2a8fcbd01f488f0e038d.c -lm -o /tmp/devito-jitcache-uid1001/f79d8171926c667d1a5e2a8fcbd01f488f0e038d.so
 ------------------
 
 [0;31m---------------------------------------------------------------------------[0m
