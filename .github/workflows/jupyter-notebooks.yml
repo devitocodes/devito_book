@@ -21,7 +21,6 @@ jobs:
       DEVITO_LANGUAGE: ${{ matrix.language }}
       DEVITO_BACKEND: "core"
       PYTHON_VERSION: "3.9"
-      RUN_CMD: ""
 
     strategy:
       # Prevent all build to stop if a single one fails
@@ -61,8 +60,6 @@ jobs:
       run: |
         if [ "${{ matrix.compiler }}" = "gcc-9" ]; then
           brew install gcc
-        else
-          sudo xcode-select -s /Applications/Xcode_11.app/Contents/Developer
         fi
     - name: Install dependencies
       run: |
@@ -72,21 +69,21 @@ jobs:
         pip install --user git+https://github.com/devitocodes/devito.git
     - name: Vibration ODE notebooks (1.1 to 1.8)
       run: |
-        $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:vib_coverage.xml $SKIP fdm-devito-notebooks/01_vib/vib_undamped.ipynb  
+        python -m pytest --nbval --cov . --cov-config=.coveragerc --cov-report=xml:vib_coverage.xml fdm-devito-notebooks/01_vib/vib_undamped.ipynb
     - name: Waves notebooks (2.1 and 2.2)
       run: |
-        $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/02_wave/wave1D_fd1.ipynb
+        python -m pytest  --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml fdm-devito-notebooks/02_wave/wave1D_fd1.ipynb
     - name: Waves notebooks (2.3 to 2.5)
       run: |
-        $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml $SKIP fdm-devito-notebooks/02_wave/wave1D_prog.ipynb
+        python -m pytest  --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml fdm-devito-notebooks/02_wave/wave1D_prog.ipynb
     - name: Diffusion notebooks (3.7)
       run: |
-        $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:diffu_coverage.xml $SKIP fdm-devito-notebooks/03_diffu/diffu_rw.ipynb
+        python -m pytest  --nbval --cov . --cov-config=.coveragerc --cov-report=xml:diffu_coverage.xml fdm-devito-notebooks/03_diffu/diffu_rw.ipynb
     - name: Advection notebook (4)
       run: |
-        $RUN_CMD python -m pytest -W ignore::DeprecationWarning --nbval --cov . --cov-config=.coveragerc --cov-report=xml:advec_coverage.xml $SKIP fdm-devito-notebooks/04_advec/advec.ipynb
+        python -m pytest  --nbval --cov . --cov-config=.coveragerc --cov-report=xml:advec_coverage.xml fdm-devito-notebooks/04_advec/advec.ipynb
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1.0.6
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         name: ${{ matrix.name }}

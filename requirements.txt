@@ -2,7 +2,7 @@ pytest-runner
 nbval
 cached-property
 py-cpuinfo
-devito<4.8.2
+devito
 jupyter-book
 matplotlib
 vtk==9.2.2
