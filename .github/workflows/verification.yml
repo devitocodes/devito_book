@@ -68,7 +68,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install matplotlib
-        pip install --user git+https://github.com/devitocodes/devito.git
     - name: Waves (2.1 to 2.5)
       run: |
         cd fdm-devito-notebooks/02_wave/src-wave/wave1D

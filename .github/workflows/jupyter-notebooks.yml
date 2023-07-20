@@ -66,16 +66,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install matplotlib
-        pip install --user git+https://github.com/devitocodes/devito.git
     - name: Vibration ODE notebooks (1.1 to 1.8)
       run: |
-        python -m pytest --nbval --cov . --cov-config=.coveragerc --cov-report=xml:vib_coverage.xml fdm-devito-notebooks/01_vib/vib_undamped.ipynb
-    - name: Waves notebooks (2.1 and 2.2)
+        python -m py.test --nbval --cov . --cov-config=.coveragerc --cov-report=xml:vib_coverage.xml fdm-devito-notebooks/01_vib/vib_undamped.ipynb
+        - name: Waves notebooks (2.1 and 2.2)
       run: |
-        python -m pytest  --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml fdm-devito-notebooks/02_wave/wave1D_fd1.ipynb
+        python -m py.test  --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml fdm-devito-notebooks/02_wave/wave1D_fd1.ipynb
     - name: Waves notebooks (2.3 to 2.5)
       run: |
-        python -m pytest  --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml fdm-devito-notebooks/02_wave/wave1D_prog.ipynb
+        python -m py.test  --nbval --cov . --cov-config=.coveragerc --cov-report=xml:waves_coverage.xml fdm-devito-notebooks/02_wave/wave1D_prog.ipynb
     - name: Diffusion notebooks (3.7)
       run: |
         python -m pytest  --nbval --cov . --cov-config=.coveragerc --cov-report=xml:diffu_coverage.xml fdm-devito-notebooks/03_diffu/diffu_rw.ipynb
