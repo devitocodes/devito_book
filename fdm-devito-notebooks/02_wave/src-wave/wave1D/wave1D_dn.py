@@ -266,7 +266,7 @@ def test_constant():
             solver(I, V, f, c, U_0, U_L, L, dt, C, T,
                    user_action=assert_no_error,
                    version='vectorized')
-            print U_0, U_L
+            print(U_0, U_L)
 
 def test_quadratic():
     """
@@ -383,7 +383,7 @@ def guitar(C=1, Nx=50, animate=True, version='scalar', T=2):
 
     cpu = viz(I, None, None, c, U_0, U_L, L, dt, C, T,
               umin=-1.1, umax=1.1, version=version, animate=True)
-    print 'CPU time: %s version =' % version, cpu
+    print('CPU time: %s version =' % version, cpu)
 
 
 def moving_end(C=1, Nx=50, reflecting_right_boundary=True, T=2,
