@@ -33,14 +33,12 @@ jobs:
             texlive-science \
             texlive-pictures \
             texlive-bibtex-extra \
+            texlive-plain-generic \
             biber \
             latexmk \
             cm-super \
             dvipng \
             ghostscript
-          # Install any missing LaTeX packages via tlmgr
-          sudo tlmgr init-usertree || true
-          sudo tlmgr install soul || true
 
       - name: Install Python dependencies
         run: |
