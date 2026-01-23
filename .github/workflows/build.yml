@@ -1,0 +1,104 @@
+name: Build Book PDF
+
+on:
+  push:
+    branches: [main, master, maximum-effort]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-science \
+            texlive-pictures \
+            texlive-bibtex-extra \
+            biber \
+            latexmk \
+            cm-super \
+            dvipng \
+            ghostscript
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Verify installations
+        run: |
+          echo "=== Python packages ==="
+          pip list | grep -E "doconce|mako|pygments"
+          echo ""
+          echo "=== DocOnce version ==="
+          doconce --version
+          echo ""
+          echo "=== LaTeX version ==="
+          pdflatex --version | head -2
+          echo ""
+          echo "=== Available LaTeX packages (sample) ==="
+          kpsewhich mdframed.sty listings.sty hyperref.sty || true
+
+      - name: Build book PDF
+        run: |
+          cd doc/.src/book
+          # Set HOME to a writable directory to avoid DocOnce config issues
+          export HOME=$(mktemp -d)
+          bash make.sh nospell
+        env:
+          # Ensure non-interactive LaTeX runs
+          TEXINPUTS: ".:.//:$TEXINPUTS"
+
+      - name: Run pdflatex (second pass for references)
+        run: |
+          cd doc/.src/book
+          pdflatex -interaction=nonstopmode book.tex || true
+          pdflatex -interaction=nonstopmode book.tex || true
+          bibtex book || true
+          pdflatex -interaction=nonstopmode book.tex || true
+
+      - name: Verify PDF was created
+        run: |
+          if [ -f doc/.src/book/book.pdf ]; then
+            echo "PDF successfully created!"
+            ls -lh doc/.src/book/book.pdf
+          else
+            echo "ERROR: PDF was not created"
+            exit 1
+          fi
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fdm-book-pdf
+          path: doc/.src/book/book.pdf
+          retention-days: 30
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            doc/.src/book/*.log
+            doc/.src/book/*.dlog
+          retention-days: 7

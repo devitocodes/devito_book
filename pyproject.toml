@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fdm-book"
+version = "1.0.0"
+description = "Finite Difference Computing with PDEs - A Modern Software Approach"
+readme = "README.md"
+license = {text = "CC BY-NC 4.0"}
+authors = [
+    {name = "Hans Petter Langtangen"},
+    {name = "Svein Linge"},
+]
+maintainers = [
+    {name = "Gerard Gorman", email = "g.gorman@imperial.ac.uk"},
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+keywords = ["finite difference", "PDE", "numerical methods", "scientific computing"]
+
+dependencies = [
+    "doconce>=1.5.15",
+    "publish-doconce>=1.1.4",
+    "preprocess>=2.0.0",
+    "mako>=1.3.0",
+    "pygments>=2.17.0",
+    "pygments-doconce>=1.0.2",
+    "regex>=2023.0.0",
+    "future>=1.0.0",
+    "requests>=2.31.0",
+    "nbformat>=5.9.0",
+    "jupyter-client>=8.0.0",
+    "lxml>=5.0.0",
+    "sphinx>=7.0.0",
+    "matplotlib>=3.7.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "sympy>=1.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/devitocodes/devito_book"
+Documentation = "https://hplgit.github.io/fdm-book/doc/web/"
+Repository = "https://github.com/devitocodes/devito_book"
+
+[tool.setuptools]
+packages = ["src"]
+package-dir = {"" = "."}
+
+[tool.setuptools.package-data]
+"*" = ["*.do.txt", "*.dict4spell.txt"]

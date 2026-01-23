@@ -1,0 +1,31 @@
+# Python dependencies for building the FDM Book
+#
+# Recommended: Use `pip install -e .` instead, which reads from pyproject.toml
+#
+# This file is maintained for compatibility with workflows that expect
+# requirements.txt. It contains the core dependencies needed to build the book.
+
+# DocOnce document processor and dependencies
+doconce>=1.5.15
+publish-doconce>=1.1.4
+preprocess>=2.0.0
+mako>=1.3.0
+pygments>=2.17.0
+pygments-doconce>=1.0.2
+
+# Required by DocOnce
+regex>=2023.0.0
+future>=1.0.0
+requests>=2.31.0
+nbformat>=5.9.0
+jupyter-client>=8.0.0
+lxml>=5.0.0
+
+# Documentation
+sphinx>=7.0.0
+
+# Scientific Python stack (used in examples)
+matplotlib>=3.7.0
+numpy>=1.24.0
+scipy>=1.10.0
+sympy>=1.12

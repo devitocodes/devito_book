@@ -12,8 +12,6 @@ __Preface.__
 
 DATE: today
 
-# Externaldocuments: ../../../../decay-book/doc/.src/book/book, ../../../../scaling-book/doc/.src/book
-
 ## Handy mako variables and functions for the preprocessing step
 # #include "../chapters/mako_code.txt"
 

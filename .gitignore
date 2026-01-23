@@ -3,8 +3,16 @@ syntax: glob
 *.o
 *.so
 *.a
+# Python:
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
 # temporary files:
-build
 *.bak
 *.swp
 *~
@@ -43,3 +51,15 @@ _minted-*
 .*.copyright
 sphinx-rootdir
 Trash
+# Generated LaTeX files (in doc/.src/book/):
+book.tex
+book.pdf
+book.dlog
+latex_figs/
+svmonodo.cls
+t4do.sty
+newcommands_keep.tex
+tmp_mako__*.do.txt
+tmp_preprocess__*.do.txt
+# Test files:
+title_test.*

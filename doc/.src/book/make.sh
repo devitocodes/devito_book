@@ -33,10 +33,10 @@ else
   spellcheck=spell
 fi
 
-system doconce spellcheck -d .dict4spell.txt book.do.txt preface.do.txt
-# No spellchecking of local files here since book.do.txt just includes files.
-# Spellcheck all *.do.txt files in each chapter.
 if [ "$spellcheck" != 'nospell' ]; then
+    system doconce spellcheck -d .dict4spell.txt book.do.txt preface.do.txt
+    # No spellchecking of local files here since book.do.txt just includes files.
+    # Spellcheck all *.do.txt files in each chapter.
     python -c 'import scripts; scripts.spellcheck()'
     if [ $? -ne 0 ]; then
 	echo "Go to relevant directory, run bash make.sh and update dictionary!"
@@ -61,7 +61,7 @@ function edit_solution_admons {
     doconce replace 'notice_mdfboxadmon}[Solution.]' 'question_mdfboxadmon}[Solution.]' ${name}.tex
     doconce replace 'end{notice_mdfboxadmon} % title: Solution.' 'end{question_mdfboxadmon} % title: Solution.' ${name}.tex
     doconce subst -s '% "question" admon.+?question_mdfboxmdframed\}' '% "question" admon
-\colorlet{mdfbox_question_background}{gray!5}
+\\colorlet{mdfbox_question_background}{gray!5}
 \\newmdenv[        % edited for solution admons in exercises
   skipabove=15pt,
   skipbelow=15pt,
@@ -87,6 +87,44 @@ system doconce format pdflatex $name $opt1 --exercise_numbering=chapter --exerci
 
 # Auto edits
 edit_solution_admons
+# Post-process generated LaTeX file to fix known issues.
+NAME=$name python - <<'PY'
+import os
+from pathlib import Path
+
+path = Path(os.environ["NAME"] + ".tex")
+text = path.read_text()
+
+# Fix 1: Replace title block with minimal version to avoid nested center environments.
+start = text.find("% ----------------- title -------------------------")
+end = text.find(r"\clearpage", start) if start != -1 else -1
+
+if start != -1 and end != -1:
+    head = text[:start]
+    tail = text[end:]
+    minimal_title = r"""% ----------------- title -------------------------
+\thispagestyle{empty}
+\hbox{\ \ }
+\vfill
+\begin{center}
+{\Huge\bfseries Finite Difference Computing with PDEs - A Modern Software Approach\par}
+\vspace{6mm}
+{\Large Hans Petter Langtangen\par}
+{\Large Svein Linge\par}
+\vspace{6mm}
+{\large Jan 23, 2026}
+\end{center}
+\vfill
+"""
+    text = head + minimal_title + tail
+
+# Fix 2: Change from utf8x (with ucs package) to standard utf8 encoding.
+# The utf8x/ucs combination causes "Argument of X has an extra }" errors.
+text = text.replace(r"\usepackage{ucs}", r"%\usepackage{ucs}  % DISABLED: causes encoding issues with utf8x")
+text = text.replace(r"\usepackage[utf8x]{inputenc}", r"\usepackage[utf8]{inputenc}  % Changed from utf8x to utf8")
+
+path.write_text(text)
+PY
 # With t4/svmono linewidth has some too large value before \mymainmatter
 # is called, so the box width as linewidth+2mm is wrong, it must be
 # explicitly set to 120mm.
