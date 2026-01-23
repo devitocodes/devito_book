@@ -123,6 +123,17 @@ if start != -1 and end != -1:
 text = text.replace(r"\usepackage{ucs}", r"%\usepackage{ucs}  % DISABLED: causes encoding issues with utf8x")
 text = text.replace(r"\usepackage[utf8x]{inputenc}", r"\usepackage[utf8]{inputenc}  % Changed from utf8x to utf8")
 
+# Fix 3: Add Cython language definition for listings package.
+# DocOnce generates language=cython for .pyx files, but listings doesn't have cython built-in.
+cython_def = r'''
+% Cython language definition for listings (Cython is a superset of Python)
+\lstdefinelanguage{cython}[]{python}{
+  morekeywords={cdef,cpdef,ctypedef,cimport,DEF,IF,ELIF,ELSE,nogil,gil,with,extern,namespace,fused,readonly,public,api,inline,bint,Py_ssize_t},
+}
+'''
+# Insert after \begin{document}
+text = text.replace(r"\begin{document}", cython_def + r"\begin{document}")
+
 path.write_text(text)
 PY
 # With t4/svmono linewidth has some too large value before \mymainmatter
