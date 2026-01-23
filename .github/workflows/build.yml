@@ -64,9 +64,6 @@ jobs:
           # Set HOME to a writable directory to avoid DocOnce config issues
           export HOME=$(mktemp -d)
           bash make.sh nospell
-        env:
-          # Ensure non-interactive LaTeX runs
-          TEXINPUTS: ".:.//:$TEXINPUTS"
 
       - name: Run pdflatex (second pass for references)
         run: |
