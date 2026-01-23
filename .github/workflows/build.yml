@@ -38,6 +38,9 @@ jobs:
             cm-super \
             dvipng \
             ghostscript
+          # Install any missing LaTeX packages via tlmgr
+          sudo tlmgr init-usertree || true
+          sudo tlmgr install soul || true
 
       - name: Install Python dependencies
         run: |
