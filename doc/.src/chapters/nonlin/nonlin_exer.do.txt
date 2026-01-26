@@ -434,23 +434,8 @@ label{nonlin:exer:1D:1pu2:fem:pde}
 \end{equation}
 !et
 
-% if FEM_BOOK:
-!bsubex
 Discretize (ref{nonlin:exer:1D:1pu2:fem:pde}) by a centered
 finite difference method on a uniform mesh.
-!esubex
-
-!bsubex
-Discretize (ref{nonlin:exer:1D:1pu2:fem:pde}) by a finite
-element method with P1 elements of equal length.
-Use the Trapezoidal method to compute all integrals.
-Set up the resulting matrix system in symbolic form such that the
-equations can be compared with those in a).
-!esubex
-% else:
-Discretize (ref{nonlin:exer:1D:1pu2:fem:pde}) by a centered
-finite difference method on a uniform mesh.
-% endif
 
 ===== Problem: Linearize a 1D problem with a nonlinear coefficient =====
 label{nonlin:exer:1D:1pu2:PicardNewton}
@@ -550,117 +535,6 @@ in each iteration, where $u$ is solution in the current iteration and
 $u^{-}$ is the solution in the previous iteration.
 !esubex
 
-% if FEM_BOOK:
-===== Problem: Integrate functions of finite element expansions =====
-label{nonlin:exer:fu:fem:int}
-file=fu_fem_int
-
-idx{`latex.codecogs.com` web site}
-idx{online rendering of LaTeX formulas}
-
-We shall investigate integrals on the form
-
-!bt
-\begin{equation}
-\int_0^L f(\sum_ku_k\basphi_k(x))\basphi_i(x)\dx,
-label{nonlin:exer:fu:fem:int:global}
-\end{equation}
-!et
-where $\basphi_i(x)$ are P1 finite element basis functions and $u_k$
-are unknown coefficients, more precisely the values of the unknown
-function $u$ at nodes $\xno{k}$. We introduce a node numbering that
-goes from left to right and also that all cells have
-the same length $h$. Given $i$, the integral
-only gets contributions from $[\xno{i-1},\xno{i+1}]$. On this
-interval $\basphi_k(x)=0$ for $k<i-1$ and $k>i+1$, so only three
-basis functions will contribute:
-
-!bt
-\[
-\sum_k u_k\basphi_k(x) = u_{i-1}\basphi_{i-1}(x) +
-u_{i}\basphi_{i}(x) + u_{i+1}\basphi_{i+1}(x)\tp
-\]
-!et
-The integral (ref{nonlin:exer:fu:fem:int:global}) now takes the
-simplified form
-
-!bt
-\[
-\int_{\xno{i-1}}^{\xno{i+1}}
-f(u_{i-1}\basphi_{i-1}(x) +
-u_{i}\basphi_{i}(x) + u_{i+1}\basphi_{i+1}(x))\basphi_i(x)\dx\tp
-\]
-!et
-Split this integral in two integrals over cell L (left),
-$[\xno{i-1},\xno{i}]$, and cell R (right), $[\xno{i},\xno{i+1}]$. Over
-cell L, $u$ simplifies to $u_{i-1}\basphi_{i-1} + u_{i}\basphi_{i}$
-(since $\basphi_{i+1}=0$ on this cell), and over cell R, $u$
-simplifies to $u_{i}\basphi_{i} + u_{i+1}\basphi_{i+1}$.  Make a
-`sympy` program that can compute the integral and write it out as a
-difference equation. Give the $f(u)$ formula on the command line.
-Try out $f(u)=u^2, \sin u, \exp u$.
-
-!bhint
-Introduce symbols `u_i`, `u_im1`, and `u_ip1` for $u_i$, $u_{i-1}$,
-and $u_{i+1}$, respectively, and similar symbols for $x_i$, $x_{i-1}$,
-and $x_{i+1}$. Find formulas for the basis functions on each of the
-two cells, make expressions for $u$ on the two cells, integrate over
-each cell, expand the answer and simplify. You can ask `sympy` for
-LaTeX code and render it either by creating a LaTeX document and
-compiling it to a PDF document or by using
-URL: "http://latex.codecogs.com" to display LaTeX formulas in a web
-page. Here are some appropriate Python statements
-for the latter purpose:
-
-!bc pycod
-from sympy import *
-...
-# expr_i holdes the integral as a sympy expression
-latex_code = latex(expr_i, mode='plain')
-# Replace u_im1 sympy symbol name by latex symbol u_{i-1}
-latex_code = latex_code.replace('im1', '{i-1}')
-# Replace u_ip1 sympy symbol name by latex symbol u_{i+1}
-latex_code = latex_code.replace('ip1', '{i+1}')
-# Escape (quote) latex_code so it can be sent as HTML text
-import cgi
-html_code = cgi.escape(latex_code)
-# Make a file with HTML code for displaying the LaTeX formula
-f = open('tmp.html', 'w')
-# Include an image that can be clicked on to yield a new
-# page with an interactive editor and display area where the
-# formula can be further edited
-text = """
-<a href="http://www.codecogs.com/eqnedit.php?latex=%(html_code)s"
- target="_blank">
-<img src="http://latex.codecogs.com/gif.latex?%(html_code)s"
- title="%(latex_code)s"/>
-</a>
- """ % vars()
-f.write(text)
-f.close()
-!ec
-The formula is displayed by loading `tmp.html` into a web browser.
-!ehint
-
-===== Problem: Finite elements for the 1D Bratu problem =====
-label{nonlin:exer:1D:fu:discretize:fe}
-file=nonlin_1D_Bratu_fe
-
-We address the same 1D Bratu problem as described in
-Problem ref{nonlin:exer:1D:fu:discretize:fd}.
-
-!bsubex
-Discretize (ref{nonlin:exer:1D:fu:discretize:fe}) by a finite element
-method using a uniform mesh with P1 elements. Use a group
-finite element method for the $e^u$ term.
-!esubex
-
-!bsubex
-Set up the nonlinear equations $F_i(u_0,u_1,\ldots,u_{N_x})=0$
-from a). Calculate the associated Jacobian.
-!esubex
-% endif
-
 
 ===== Problem: Discretize a nonlinear 1D heat conduction PDE by finite differences =====
 label{nonlin:exer:1D:heat:nonlinear:fdm}
@@ -708,78 +582,6 @@ to the space-time discretized PDE.
 Derive the matrix and right-hand side of a Newton method applied
 to the discretized PDE in d).
 !esubex
-
-% if FEM_BOOK:
-===== Exercise: Use different symbols for different approximations of the solution =====
-label{nonlin:exer:dD:nonlinear:usymbols}
-file=nonlin_heat_FE_usymbols
-
-The symbol $u$ has several meanings, depending on the context, as
-briefly mentioned in Section ref{nonlin:alglevel:dD:fe}.
-Go through the derivation of the Picard iteration method in
-that section and use different symbols for all the different
-approximations of $u$:
-
- * $\uex(\x,t)$ for the exact solution of the PDE problem
- * $\uex(\x)^n$ for the exact solution after time discretization
- * $u^n(\x)$ for the spatially discrete solution $\sum_jc_j\baspsi_j$
- * $u^{n,k}$ for approximation in Picard/Newton iteration no $k$
-   to $u^n(\x)$
-
-===== Exercise: Derive Picard and Newton systems from a variational form =====
-label{nonlin:exer:dD:heat:nonlinear:c:a}
-file=nonlin_heat_FE
-
-We study the multi-dimensional heat conduction PDE
-
-!bt
-\[ \varrho c(T) T_t = \nabla\cdot (k(T)\nabla T)\]
-!et
-in a spatial domain $\Omega$, with a nonlinear Robin boundary condition
-
-!bt
-\[ -k(T)\frac{\partial T}{\partial n} = h(T)(T-T_s(t)),\]
-!et
-at the boundary $\partial\Omega$.
-The primary unknown is the temperature $T$, $\varrho$ is the density
-of the solid material, $c(T)$ is the heat capacity, $k(T)$ is
-the heat conduction, $h(T)$ is a heat transfer coefficient, and
-$T_s(T)$ is a possibly time-dependent temperature of the surroundings.
-
-!bsubex
-Use a Backward Euler or Crank-Nicolson time discretization and
-derive the variational form for the spatial problem to be solved
-at each time level.
-!esubex
-
-!bsubex
-Define a Picard iteration method from the variational form at
-a time level.
-!esubex
-
-!bsubex
-Derive expressions for the matrix and the right-hand side of the
-equation system that arises from applying Newton's method to
-the variational form at a time level.
-!esubex
-
-!bsubex
-Apply the Backward Euler or Crank-Nicolson scheme in time first.
-Derive a Newton method at the PDE level. Make a variational
-form of the resulting PDE at a time level.
-!esubex
-
-===== Exercise: Derive algebraic equations for nonlinear 1D heat conduction =====
-label{nonlin:exer:1D:heat:nonlinear:c:a}
-file=nonlin_1D_heat_FE
-
-We consider the same problem as in Exercise ref{nonlin:exer:dD:heat:nonlinear:c:a}, but restricted to one space dimension: $\Omega = [0,L]$.
-Simplify the boundary condition to $T_x=0$ (i.e., $h(T)=0$).
-Use a uniform finite element mesh of P1 elements, the group
-finite element method, and the Trapezoidal
-rule for integration at the nodes to derive symbolic expressions for
-the algebraic equations arising from this diffusion problem.
-% endif
 
 ===== Problem: Differentiate a highly nonlinear term =====
 label{nonlin:exer:grad:pow:term}

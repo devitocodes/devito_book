@@ -422,15 +422,10 @@ animations in time instead. Especially the free body diagram will show both the
 motion of the pendulum *and* the size of the forces during the motion.
 The present section exemplifies how to make such a dynamic body
 diagram.
-% if FORMAT == 'pdflatex':
 Two typical snapshots of free body diagrams are displayed below
 (the drag force is magnified 5 times to become more visual!).
 
 FIGURE: [fig-vib/pendulum_body_dia, width=800 frac=1]
-
-% else:
-MOVIE: [https://github.com/hplgit/pysketcher/raw/master/doc/pub/tutorial/mov-tut/pendulum/movie.mp4] The drag force is magnified 5 times!
-% endif
 
 Dynamic physical sketches, coupled to the numerical solution of
 differential equations, requires a program to produce a sketch for
@@ -931,11 +926,7 @@ the motion like we did in Section ref{vib:app:pendulum_bodydia}
 is found in a separate project on the web:
 URL: "https://github.com/hplgit/bumpy". You may start looking at the
 "tutorial":
-% if FORMAT == 'pdflatex':
 "http://hplgit.github.io/bumpy/doc/pub/bumpy.pdf".
-% else:
-"http://hplgit.github.io/bumpy/doc/pub/bumpy.html".
-% endif
 
 ===== Bouncing ball =====
 label{vib:app:bouncing_ball}

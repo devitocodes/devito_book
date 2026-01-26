@@ -67,14 +67,12 @@ label{diffu:pde1:FEsec}
 Explicit finite difference methods for the wave equation $u_{tt}=c^2u_{xx}$
 can be used, with small modifications, for solving $u_t = \dfc u_{xx}$
 as well.
-% if BOOK == "book":
 The exposition below assumes that the reader is familiar with the
 basic ideas of discretization and implementation of wave
 equations from Chapter ref{ch:wave}. Readers not familiar with the
 Forward Euler, Backward Euler, and Crank-Nicolson (or centered or
-midpoint) discretization methods in time should consult, e.g., Section 1.1 
+midpoint) discretization methods in time should consult, e.g., Section 1.1
 in cite{Langtangen_decay}.
-% endif
 
 ===== The initial-boundary value problem for 1D diffusion =====
 
@@ -327,11 +325,7 @@ Inserted in the PDE, it requires a source term
 !bt
 \[ f(x,t) = 10\dfc t + 5x(L-x)\tp\]
 !et
-% if BOOK == 'book':
 With the formulas from Appendix ref{sec:form:fdtn} we can easily check
-% else:
-Let us check
-% endif
 that the manufactured `u` fulfills the scheme:
 
 !bt
@@ -561,14 +555,8 @@ simulation. This non-physical noise is smoothed out with time, but
 solutions of the diffusion equations are known to be smooth, and
 this numerical solution is definitely not smooth.
 Lowering $F$ helps: $F\leq 0.25$ gives a smooth solution, see
-% if FORMAT == "pdflatex":
 Figure ref{diffu:pde1:FE:fig:F=0.25} (and a
 "movie": "${docraw}/mov-diffu/diffu1D_u0_FE_plug_F025/movie.ogg").
-% else:
-Figure ref{diffu:pde1:FE:fig:F=0.25}.
-
-MOVIE: [mov-diffu/diffu1D_u0_FE_plug_F025/movie.ogg]
-% endif
 
 Increasing $F$ slightly beyond the limit 0.5, to $F=0.51$,
 gives growing, non-physical instabilities,
@@ -585,10 +573,6 @@ Instead of a discontinuous initial condition we now try the smooth
 Gaussian function for $I(x)$. A simulation for $F=0.5$
 is shown in Figure ref{diffu:pde1:FE:fig:gauss:F=0.5}. Now the numerical solution
 is smooth for all times, and this is true for any $F\leq 0.5$.
-
-% if FORMAT != "pdflatex":
-MOVIE: [mov-diffu/diffu1D_u0_FE_gaussian1/movie.ogg]
-% endif
 
 FIGURE: [fig-diffu/gaussian_FE_F05, width=800 frac=1] Forward Euler scheme for $F=0.5$. label{diffu:pde1:FE:fig:gauss:F=0.5}
 

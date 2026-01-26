@@ -532,10 +532,8 @@ empirical convergence rate of the method.
 
 An introduction to the computing of convergence rates is given in Section 3.1.6
  in cite{Langtangen_decay}.
-% if BOOK == "book":
 There is also a detailed example on computing convergence rates in
 Section ref{vib:ode1:verify}.
-% endif
 
 In the present problem, one expects the method to have a convergence rate
 of 2 (see Section ref{wave:pde1:analysis}), so if the computed rates

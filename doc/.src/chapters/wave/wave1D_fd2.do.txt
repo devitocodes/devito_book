@@ -771,11 +771,7 @@ The harmonic mean is often preferred when $q(x)$ exhibits large
 jumps (which is typical for geological media).
 The geometric mean is less used, but popular in
 discretizations to linearize quadratic
-% if BOOK == "book":
 nonlinearities (see Section ref{vib:ode2:fdm:fquad} for an example).
-% else:
-nonlinearities.
-% endif
 
 With the operator notation from (ref{wave:pde2:var:c:mean:arithmetic})
 we can specify the discretization of the complete variable-coefficient
@@ -1113,9 +1109,7 @@ preceding text. We refer to the `solver` function in the
 `wave1D_dn_vc.py` file for all the details. Note in that
  `solver` function, however, that the technique of ``hashing'' is
 used to check whether a certain simulation has been run before, or not.
-% if BOOK == 'book':
 This technique is further explained in Section ref{softeng2:wave1D:filestorage:hash}.
-% endif
 
 The vectorization is only applied inside the time loop, not for the
 initial condition or the first time steps, since this initial work

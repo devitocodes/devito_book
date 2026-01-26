@@ -235,9 +235,7 @@ idx{FD operator notation}
 === Operator notation ===
 
 We may write the scheme using a compact difference notation
-% if BOOK == "book":
 listed in Appendix ref{sec:form:fdop}
-% endif
 (see also Section 1.1.8 in cite{Langtangen_decay}).
 The difference (ref{vib:ode1:step3}) has the operator
 notation $[D_tD_t u]^n$ such that we can write:
@@ -422,10 +420,8 @@ framework for Python code, because
  * the function takes no arguments
  * the test is formulated as a boolean condition and executed by `assert`
 
-% if BOOK == "book":
 We shall in this book implement all software verification via such
 proper test functions, also known as unit testing.
-% endif
 See Section 5.3.2 in cite{Langtangen_decay}
 for more details on how to construct test functions and utilize nose
 or pytest for automatic execution of tests. Our recommendation is to
@@ -1167,12 +1163,8 @@ call to `convergence_rates` with this solver reveals that the rate is
 4.0! With the original, physical $\omega$ the rate is 2.0  - as expected
 from using second-order finite difference approximations,
 as expected from the forthcoming derivation of the global error,
-and as expected from truncation error analysis
-% if BOOK == "book":
+and as expected from truncation error
 analysis as explained in Appendix ref{trunc:vib:undamped}.
-% else:
-analysis.
-% endif
 
 Adjusting $\omega$ is an ideal trick for this simple problem, but when
 adding damping and nonlinear terms, we have no simple formula for the
@@ -2232,9 +2224,7 @@ $u^n = I\cos(\tilde\omega t_n)$. Using that
 !bt
 \[ u^n=e^{i\tilde\omega t_n}:\quad [D_{2t} u]^n = u^n\frac{1}{\Delta t}i\sin{(\tilde\omega\Delta t)},\]
 !et
-% if BOOK == "book":
 (see formula (ref{form:exp:fd1c:center}) in Appendix ref{sec:form:fdexp}),
-% endif
 we get
 
 !bt

@@ -10,12 +10,6 @@ set -x
 name=book
 topicname=fdm
 
-encoding="--encoding=utf-8"
-
-CHAPTER=chapter
-BOOK=book
-APPENDIX=appendix
-
 function system {
   "$@"
   if [ $? -ne 0 ]; then
@@ -48,11 +42,7 @@ cp ../chapters/newcommands_keep.p.tex newcommands_keep.tex
 doconce replace 'newcommand{\E}' 'renewcommand{\E}' newcommands_keep.tex
 doconce replace 'newcommand{\I}' 'renewcommand{\I}' newcommands_keep.tex
 
-# TASKS: generate book with solutions, also in the html version
-# Make pdfnup with two-pages per sheet
-
-opt1="CHAPTER=$CHAPTER BOOK=$BOOK APPENDIX=$APPENDIX DOCUMENT=book $encoding FEM_BOOK=False"
-devices="screen paper"
+opt1="DOCUMENT=book --encoding=utf-8"
 
 function edit_solution_admons {
     # We use question admon for typesetting solution, but let's edit to
@@ -155,43 +145,13 @@ system makeindex $name
 system pdflatex $name
 }
 
-# Important: run with solutions first such that the .aux file
-# for the book, referred to by other documents, uses the .aux
-# file corresponding to a version without solutions.
-
-# With solutions, password protected
+# Compile with solutions for screen
 compile --device=screen --skip_inline_comments
-newname=${topicname}-book-4screen-sol
-password="f!d!mbk"
-pdftk $name.pdf output $newname.pdf owner_pw foo user_pw $password
-cp $name.pdf ${name}-sol.pdf # good to have a copy without password
 
-compile --device=screen --without_solutions --without_answers --skip_inline_comments
-newname=${topicname}-book-4screen
-cp $name.pdf $newname.pdf
-
-#--latex_index_in_margin
-compile --device=paper --without_solutions --without_answers --skip_inline_comments
-newname=${topicname}-book-4print
-cp $name.pdf $newname.pdf
-pdfnup --frame true --outfile ${newname}-2up.pdf $newname.pdf
-cp $name.aux ${newname}.aux-final
-
-# Report typical problems with the book (too long lines,
-# undefined labels, etc.). Here we report lines that are more than 10pt
-# too long.
+# Report typical problems (lines more than 10pt too long)
 doconce latex_problems $name.log 10
 
-# Check grammar in MS Word:
-# doconce spellcheck tmp_mako__book.do.txt
-# load tmp_stripped_book.do.txt into Word
-
 # Publish
-repo=../../..
-dest=${repo}/doc/pub/book
-if [ ! -d $dest ]; then mkdir $dest; fi
-if [ ! -d $dest/pdf ]; then mkdir $dest/pdf; fi
-cp ${topicname}-book*.pdf $dest/pdf
-cd $dest; git add .; cd -
-
-# What about slides? They are published chapter wise!
+dest=../../../doc/pub/book/pdf
+mkdir -p $dest
+cp $name.pdf $dest/${topicname}-book.pdf

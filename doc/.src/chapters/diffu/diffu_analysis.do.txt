@@ -663,9 +663,7 @@ Both roots have $|A|>1$ so the amplitude always grows, which is not in
 accordance with the physics of the problem.
 However, for a PDE with a first-order derivative in space, instead of
 a second-order one, the Leapfrog scheme performs very well.
-% if BOOK == 'book':
 Details are provided in Section ref{advec:1D:leapfrog}.
-% endif
 
 ===== Summary of accuracy of amplification factors =====
 

@@ -108,12 +108,7 @@ we want to apply the idea of a forward-backward discretization:
 $u$ is marched forward by a one-sided Forward Euler scheme applied
 to the first equation, and
 thereafter $v$ can be marched forward by a Backward Euler scheme in the
-second
-% if BOOK == "book":
-equation, see in Section ref{vib:model2x2:EulerCromer}.
-% else:
-equation.
-% endif
+second equation, see in Section ref{vib:model2x2:EulerCromer}.
 Express the idea in operator notation and write out the
 scheme. Unfortunately, the backward difference for the $v$ equation
 creates a nonlinearity $|v^{n+1}|v^{n+1}$.  To linearize this
@@ -127,11 +122,9 @@ and the linearization trick play together in ``the right way'' such that
 the scheme is as good as when we (in Section ref{vib:ode2:staggered})
 carefully apply centered differences and a geometric mean on a
 staggered mesh to achieve second-order accuracy.
-% if BOOK == "book":
 There is a
 difference in the handling of the initial conditions, though, as
 explained at the end of Section ref{vib:model2x2:EulerCromer}.
-% endif
 
 
 ======= Partial differential equations =======
