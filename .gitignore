@@ -69,4 +69,5 @@ tmp_preprocess__*.do.txt
 title_test.*
 
 /.quarto/
+/_book/
 **/*.quarto_ipynb
