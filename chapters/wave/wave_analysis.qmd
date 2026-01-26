@@ -665,4 +665,4 @@ an axis are the most accurate.
 
 @@@CODE src-wave/analysis/dispersion_relation_2D.py def disp@# See
 
-![Error in numerical dispersion in 2D.](fig/disprel2D){#fig-wave-pde1-fig-disprel2D width="600px"}
+![Error in numerical dispersion in 2D.](fig/disprel2D.png){#fig-wave-pde1-fig-disprel2D width="600px"}
