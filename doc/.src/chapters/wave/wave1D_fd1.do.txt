@@ -243,7 +243,7 @@ ref{wave:pde1:fig:mesh}. One also often refers to the algebraic
 equations as *discrete equations*, *(finite) difference equations* or
 a *finite difference scheme*.
 
-FIGURE: [mov-wave/D_stencil_gpl/stencil_n_interior, width=500] Mesh in space and time. The circles show points connected in a finite difference equation. label{wave:pde1:fig:mesh}
+FIGURE: [fig-wave/stencil_n_interior, width=500] Mesh in space and time. The circles show points connected in a finite difference equation. label{wave:pde1:fig:mesh}
 
 
 === Algebraic version of the initial conditions ===
@@ -344,7 +344,7 @@ label{wave:pde1:step4:1}
 Figure ref{wave:pde1:fig:stencil:u1} illustrates how (ref{wave:pde1:step4:1})
 connects four instead of five points: $u^1_2$, $u_1^0$, $u_2^0$, and $u_3^0$.
 
-FIGURE: [mov-wave/D_stencil_gpl/stencil_n0_interior, width=500] Modified stencil for the first time step. label{wave:pde1:fig:stencil:u1}
+FIGURE: [fig-wave/stencil_n0_interior, width=500] Modified stencil for the first time step. label{wave:pde1:fig:stencil:u1}
 
 We can now summarize the computational algorithm:
 
@@ -656,7 +656,7 @@ The important point is that the error measure ($E$) for the simulation is repres
 
 === Computing rates ===
 
-Let $E_i$ be the error measure in experiment (mesh) number $i$ 
+Let $E_i$ be the error measure in experiment (mesh) number $i$
 (not to be confused with the spatial index $i$) and
 let $h_i$ be the corresponding discretization parameter ($h$).
 With the error model $E_i = Dh_i^r$, we can

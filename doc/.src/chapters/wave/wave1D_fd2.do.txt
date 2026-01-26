@@ -131,7 +131,7 @@ Figure ref{wave:pde1:fig:Neumann:stencil} visualizes this equation
 for computing $u^3_0$ in terms of $u^2_0$, $u^1_0$, and
 $u^2_1$.
 
-FIGURE: [mov-wave/N_stencil_gpl/stencil_n_left, width=500] Modified stencil at a boundary with a Neumann condition. label{wave:pde1:fig:Neumann:stencil}
+FIGURE: [fig-wave/stencil_n_left, width=500] Modified stencil at a boundary with a Neumann condition. label{wave:pde1:fig:Neumann:stencil}
 
 Similarly, (ref{wave:pde1:Neumann:0}) applied at $x=L$
 is discretized by a central difference
@@ -726,7 +726,7 @@ dominates and very few mention the alternative in
 !ewarning
 
 # Needs some better explanation here - maybe the exact solution of a
-# poisson type problem (piecewise linear solution) failes if we use
+# poisson type problem (piecewise linear solution) fails if we use
 # the chain rule? Wesserling has an example, but it is tedious to
 # work out.
 
