@@ -28,7 +28,9 @@ Function viz::
 calls solver with a user_action function that can plot the
 solution on the screen (as an animation).
 """
+
 import numpy as np
+
 
 def solver(I, V, f, c, L, dt, C, T, user_action=None):
     """
@@ -36,81 +38,89 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
     u(0,t)=U_0(t) or du/dn=0 (U_0=None),
     u(L,t)=U_L(t) or du/dn=0 (u_L=None).
     """
-    Nt = int(round(T/dt))
-    t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
-    dx = dt*c/float(C)
-    Nx = int(round(L/dx))
-    x = np.linspace(0, L, Nx+1)       # Mesh points in space
-    C2 = C**2; dt2 = dt*dt            # Help variables in the scheme
+    Nt = int(round(T / dt))
+    t = np.linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
+    dx = dt * c / float(C)
+    Nx = int(round(L / dx))
+    x = np.linspace(0, L, Nx + 1)  # Mesh points in space
+    C2 = C**2
+    dt2 = dt * dt  # Help variables in the scheme
     # Make sure dx and dt are compatible with x and t
     dx = x[1] - x[0]
     dt = t[1] - t[0]
 
     # Wrap user-given f, V
     if f is None or f == 0:
-        f = (lambda x, t: 0)
+        f = lambda x, t: 0
     if V is None or V == 0:
-        V = (lambda x: 0)
+        V = lambda x: 0
 
-    u     = np.zeros(Nx+3)   # Solution array at new time level
-    u_n   = np.zeros(Nx+3)   # Solution at 1 time level back
-    u_nm1 = np.zeros(Nx+3)   # Solution at 2 time levels back
+    u = np.zeros(Nx + 3)  # Solution array at new time level
+    u_n = np.zeros(Nx + 3)  # Solution at 1 time level back
+    u_nm1 = np.zeros(Nx + 3)  # Solution at 2 time levels back
 
-    Ix = range(1, u.shape[0]-1)
-    It = range(0, t.shape[0])
+    Ix = range(1, u.shape[0] - 1)
+    range(0, t.shape[0])
 
-    import time;  t0 = time.clock()  # CPU time measurement
+    import time
 
+    t0 = time.clock()  # CPU time measurement
     # Load initial condition into u_n
     for i in Ix:
-        u_n[i] = I(x[i-Ix[0]])  # Note the index transformation in x
+        u_n[i] = I(x[i - Ix[0]])  # Note the index transformation in x
     # Ghost values set according to du/dx=0
     i = Ix[0]
-    u_n[i-1] = u_n[i+1]
+    u_n[i - 1] = u_n[i + 1]
     i = Ix[-1]
-    u_n[i+1] = u_n[i-1]
+    u_n[i + 1] = u_n[i - 1]
 
     if user_action is not None:
         # Make sure to send the part of u that corresponds to x
-        user_action(u_n[Ix[0]:Ix[-1]+1], x, t, 0)
+        user_action(u_n[Ix[0] : Ix[-1] + 1], x, t, 0)
 
     # Special formula for the first step
     for i in Ix:
-        u[i] = u_n[i] + dt*V(x[i-Ix[0]]) + \
-               0.5*C2*(u_n[i-1] - 2*u_n[i] + u_n[i+1]) + \
-               0.5*dt2*f(x[i-Ix[0]], t[0])
+        u[i] = (
+            u_n[i]
+            + dt * V(x[i - Ix[0]])
+            + 0.5 * C2 * (u_n[i - 1] - 2 * u_n[i] + u_n[i + 1])
+            + 0.5 * dt2 * f(x[i - Ix[0]], t[0])
+        )
     # Ghost values set according to du/dx=0
     i = Ix[0]
-    u[i-1] = u[i+1]
+    u[i - 1] = u[i + 1]
     i = Ix[-1]
-    u[i+1] = u[i-1]
+    u[i + 1] = u[i - 1]
 
     if user_action is not None:
         # Make sure to send the part of u that corresponds to x
-        user_action(u[Ix[0]:Ix[-1]+1], x, t, 1)
+        user_action(u[Ix[0] : Ix[-1] + 1], x, t, 1)
 
     # Update data structures for next step
-    #u_nm1[:] = u_n;  u_n[:] = u  # safe, but slower
+    # u_nm1[:] = u_n;  u_n[:] = u  # safe, but slower
     u_nm1, u_n, u = u_n, u, u_nm1
 
     for n in range(1, Nt):
         for i in Ix:
-            u[i] = - u_nm1[i] + 2*u_n[i] + \
-                   C2*(u_n[i-1] - 2*u_n[i] + u_n[i+1]) + \
-                   dt2*f(x[i-Ix[0]], t[n])
+            u[i] = (
+                -u_nm1[i]
+                + 2 * u_n[i]
+                + C2 * (u_n[i - 1] - 2 * u_n[i] + u_n[i + 1])
+                + dt2 * f(x[i - Ix[0]], t[n])
+            )
         # Ghost values set according to du/dx=0
         i = Ix[0]
-        u[i-1] = u[i+1]
+        u[i - 1] = u[i + 1]
         i = Ix[-1]
-        u[i+1] = u[i-1]
+        u[i + 1] = u[i - 1]
 
         if user_action is not None:
             # Make sure to send the part of u that corresponds to x
-            if user_action(u[Ix[0]:Ix[-1]+1], x, t, n+1):
+            if user_action(u[Ix[0] : Ix[-1] + 1], x, t, n + 1):
                 break
 
         # Update data structures for next step
-        #u_nm1[:] = u_n;  u_n[:] = u  # safe, but slower
+        # u_nm1[:] = u_n;  u_n[:] = u  # safe, but slower
         u_nm1, u_n, u = u_n, u, u_nm1
 
     # Important to correct the mathematically wrong u=u_nm1 above
@@ -120,10 +130,9 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
     return u[1:-1], x, t, cpu_time
 
 
-from wave1D_u0 import viz
-from wave1D_n0 import plug
 # Cannot just import test_plug because wave1D_n0.test_plug will
 # then call wave1D.solver, not the solver above
+
 
 def test_plug():
     """
@@ -131,21 +140,22 @@ def test_plug():
     if C=1.
     """
     L = 1.0
-    I = lambda x: 0 if abs(x-L/2.0) > 0.1 else 1
+    I = lambda x: 0 if abs(x - L / 2.0) > 0.1 else 1
 
     Nx = 10
     c = 0.5
     C = 1
-    dt = C*(L/Nx)/c
+    dt = C * (L / Nx) / c
     nperiods = 4
-    T = L/c*nperiods  # One period: c*T = L
+    T = L / c * nperiods  # One period: c*T = L
     u, x, t, cpu = solver(
-        I=I, V=None, f=None, c=c, L=L,
-        dt=dt, C=C, T=T, user_action=None)
+        I=I, V=None, f=None, c=c, L=L, dt=dt, C=C, T=T, user_action=None
+    )
     u_0 = np.array([I(x_) for x_ in x])
     diff = np.abs(u - u_0).max()
-    tol = 1E-13
+    tol = 1e-13
     assert diff < tol
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test_plug()

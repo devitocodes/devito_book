@@ -1,10 +1,11 @@
-from scipy.sparse import spdiags
-from scipy.sparse.linalg import spsolve, use_solver
-from numpy import linspace, zeros
 import time
 
-def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
-           user_action=None):
+from numpy import linspace, zeros
+from scipy.sparse import spdiags
+from scipy.sparse.linalg import spsolve
+
+
+def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0, user_action=None):
     """
     Solve the diffusion equation u_t = a*u_xx on (0,L) with
     boundary conditions u(0,t) = u_L and u(L,t) = u_R,
@@ -28,30 +29,31 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
     diagonals with nonzero entries in the matrix.
     """
     import time
+
     t0 = time.clock()
 
-    x = linspace(0, L, Nx+1)   # mesh points in space
+    x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
-    dt = F*dx**2/a
-    Nt = int(round(T/float(dt)))
-    print 'Nt:', Nt
-    t = linspace(0, T, Nt+1)    # mesh points in time
+    dt = F * dx**2 / a
+    Nt = int(round(T / float(dt)))
+    print("Nt:", Nt)
+    t = linspace(0, T, Nt + 1)  # mesh points in time
 
-    u   = zeros(Nx+1)   # solution array at t[n+1]
-    u_n = zeros(Nx+1)   # solution at t[n]
+    u = zeros(Nx + 1)  # solution array at t[n+1]
+    u_n = zeros(Nx + 1)  # solution at t[n]
 
     # Representation of sparse matrix and right-hand side
-    diagonal = zeros(Nx+1)
-    lower    = zeros(Nx+1)
-    upper    = zeros(Nx+1)
-    b        = zeros(Nx+1)
+    diagonal = zeros(Nx + 1)
+    lower = zeros(Nx + 1)
+    upper = zeros(Nx + 1)
+    b = zeros(Nx + 1)
 
     # Precompute sparse matrix (scipy format)
-    Fl = F*theta
-    Fr = F*(1-theta)
-    diagonal[:] = 1 + 2*Fl
-    lower[:] = -Fl  #1
-    upper[:] = -Fl  #1
+    Fl = F * theta
+    Fr = F * (1 - theta)
+    diagonal[:] = 1 + 2 * Fl
+    lower[:] = -Fl  # 1
+    upper[:] = -Fl  # 1
     # Insert boundary conditions
     # (upper[1:] and lower[:-1] are the active alues)
     upper[0:2] = 0
@@ -60,11 +62,11 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
     diagonal[Nx] = 1
 
     diags = [0, -1, 1]
-    A = spdiags([diagonal, lower, upper], diags, Nx+1, Nx+1)
-    #print A.todense()
+    A = spdiags([diagonal, lower, upper], diags, Nx + 1, Nx + 1)
+    # print A.todense()
 
     # Set initial condition
-    for i in range(0,Nx+1):
+    for i in range(0, Nx + 1):
         u_n[i] = I(x[i])
 
     if user_action is not None:
@@ -72,18 +74,19 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
 
     # Time loop
     for n in range(0, Nt):
-        b[1:-1] = u_n[1:-1] + Fr*(u_n[:-2] - 2*u_n[1:-1] + u_n[2:])
-        b[0] = u_L; b[-1] = u_R  # boundary conditions
+        b[1:-1] = u_n[1:-1] + Fr * (u_n[:-2] - 2 * u_n[1:-1] + u_n[2:])
+        b[0] = u_L
+        b[-1] = u_R  # boundary conditions
         u[:] = spsolve(A, b)
 
         if user_action is not None:
-            user_action(u, x, t, n+1)
+            user_action(u, x, t, n + 1)
 
         # Switch variables before next step
         u_n, u = u, u_n
 
     t1 = time.clock()
-    return u, x, t, t1-t0
+    return u, x, t, t1 - t0
 
 
 # Case: initial discontinuity
@@ -91,8 +94,10 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
 
 def plot_u(u, x, t, n):
     from scitools.std import plot
-    umin = -0.1; umax = 1.1  # axis limits for plotting
-    plot(x, u, 'r-', axis=[0, L, umin, umax], title='t=%f' % t[n])
+
+    umin = -0.1
+    umax = 1.1  # axis limits for plotting
+    plot(x, u, "r-", axis=[0, L, umin, umax], title="t=%f" % t[n])
 
     # Pause the animation initially, otherwise 0.2 s between frames
     if t[n] == 0:
@@ -104,24 +109,29 @@ def plot_u(u, x, t, n):
 L = 1
 a = 1
 
+
 def I(x):
-    return 0 if x > L/2. else 1
+    return 0 if x > L / 2.0 else 1
+
 
 # Command-line arguments: Nx F theta
-import sys
+
 Nx = 15
 F = 0.5
 theta = 0
 T = 3
-#theta = 1
-#Nx = int(sys.argv[1])
-#F = float(sys.argv[2])
-#theta = float(sys.argv[3])
+# theta = 1
+# Nx = int(sys.argv[1])
+# F = float(sys.argv[2])
+# theta = float(sys.argv[3])
 
-cases = [(7, 5, 0.5, 3), (15, 0.5, 0, 0.5),]
+cases = [
+    (7, 5, 0.5, 3),
+    (15, 0.5, 0, 0.5),
+]
 for Nx, F, theta, T in cases:
-    print 'theta=%g, F=%g, Nx=%d' % (theta, F, Nx)
-    u, x, t, cpu = solver(I, a, L, Nx, F, T,
-                          theta=theta, u_L=1, u_R=0,
-                          user_action=plot_u)
-    raw_input('CR: ')
+    print("theta=%g, F=%g, Nx=%d" % (theta, F, Nx))
+    u, x, t, cpu = solver(
+        I, a, L, Nx, F, T, theta=theta, u_L=1, u_R=0, user_action=plot_u
+    )
+    raw_input("CR: ")

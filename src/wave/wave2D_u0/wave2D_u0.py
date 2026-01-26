@@ -24,8 +24,10 @@ level (x and y are one-dimensional coordinate vectors).
 This function allows the calling code to plot the solution,
 compute errors, etc.
 """
-import time, sys
+import time
+
 from scitools.std import *
+
 
 def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
            user_action=None, version='scalar'):
@@ -49,8 +51,8 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
         safety_factor = -dt    # use negative dt as safety factor
         dt = safety_factor*stability_limit
     elif dt > stability_limit:
-        print 'error: dt=%g exceeds the stability limit %g' % \
-              (dt, stability_limit)
+        print('error: dt=%g exceeds the stability limit %g' %
+              (dt, stability_limit))
     Nt = int(round(T/float(dt)))
     t = linspace(0, Nt*dt, Nt+1)    # mesh points in time
     Cx2 = (c*dt/dx)**2;  Cy2 = (c*dt/dy)**2    # help variables
@@ -77,7 +79,6 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     It = range(0, t.shape[0])
 
     import time; t0 = time.clock()  # For measuring CPU time
-
     # Load initial condition into u_n
     if version == 'scalar':
         for i in Ix:
@@ -228,7 +229,7 @@ def test_quadratic():
     for Nx in range(2, 6, 2):
         for Ny in range(2, 6, 2):
             for version in versions:
-                print 'testing', version, 'for %dx%d mesh' % (Nx, Ny)
+                print('testing', version, 'for %dx%d mesh' % (Nx, Ny))
                 quadratic(Nx, Ny, version)
 
 def run_efficiency(nrefinements=4):
@@ -240,7 +241,7 @@ def run_efficiency(nrefinements=4):
     T = 100
     versions = ['scalar', 'vectorized', 'cython', 'f77',
                'c_f2py', 'c_cy']
-    print ' '*15, ''.join(['%-13s' % v for v in versions])
+    print(' '*15, ''.join(['%-13s' % v for v in versions]))
     for Nx in 15, 30, 60, 120:
         cpu = {}
         for version in versions:
@@ -250,12 +251,12 @@ def run_efficiency(nrefinements=4):
             cpu[version] = cpu_
         cpu_min = min(list(cpu.values()))
         if cpu_min < 1E-6:
-            print 'Ignored %dx%d grid (too small execution time)' \
-                  % (Nx, Nx)
+            print('Ignored %dx%d grid (too small execution time)'
+                  % (Nx, Nx))
         else:
             cpu = {version: cpu[version]/cpu_min for version in cpu}
-            print '%-15s' % '%dx%d' % (Nx, Nx),
-            print ''.join(['%13.1f' % cpu[version] for version in versions])
+            print('%-15s' % '%dx%d' % (Nx, Nx), end=' ')
+            print(''.join(['%13.1f' % cpu[version] for version in versions]))
 
 def gaussian(plot_method=2, version='vectorized', save_plot=True):
     """
@@ -275,9 +276,7 @@ def gaussian(plot_method=2, version='vectorized', save_plot=True):
         return exp(-0.5*(x-Lx/2.0)**2 - 0.5*(y-Ly/2.0)**2)
 
     if plot_method == 3:
-        from mpl_toolkits.mplot3d import axes3d
         import matplotlib.pyplot as plt
-        from matplotlib import cm
         plt.ion()
         fig = plt.figure()
         u_surf = None
@@ -293,7 +292,7 @@ def gaussian(plot_method=2, version='vectorized', save_plot=True):
                   colorbar=True, colormap=hot(), caxis=[-1,1],
                   shading='flat')
         elif plot_method == 3:
-            print 'Experimental 3D matplotlib...under development...'
+            print('Experimental 3D matplotlib...under development...')
             #plt.clf()
             ax = fig.add_subplot(111, projection='3d')
             u_surf = ax.plot_surface(xv, yv, u, alpha=0.3)

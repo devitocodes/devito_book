@@ -39,12 +39,14 @@ The LaTeX build now completes successfully, producing a 730-page PDF.
 ### The Encoding Error
 
 Original error:
-```
+
+```text
 ! Argument of Â has an extra }.
 l.462 \clearpage
 ```
 
 **Problem:** DocOnce generates LaTeX with deprecated `utf8x` input encoding:
+
 ```latex
 \usepackage{ucs}
 \usepackage[utf8x]{inputenc}
@@ -53,6 +55,7 @@ l.462 \clearpage
 The `utf8x`/`ucs` combination causes issues with certain character/package combinations. The `Â` in the error is a `0xC2` byte being misinterpreted.
 
 **Solution:** The `make.sh` post-processing script now converts to standard UTF-8:
+
 ```latex
 %\usepackage{ucs}  % DISABLED
 \usepackage[utf8]{inputenc}  % Changed from utf8x
@@ -69,6 +72,7 @@ This file defines custom macros (e.g., `\u` for bold vectors). It must remain **
 Install with: `pip install -e .` (uses pyproject.toml)
 
 Core packages:
+
 - `doconce>=1.5.15` - Document processor
 - `mako>=1.3.0` - Template engine
 - `pygments>=2.17.0` - Syntax highlighting
@@ -77,6 +81,7 @@ Core packages:
 ### LaTeX (TeX Live)
 
 **macOS (BasicTeX + packages):**
+
 ```bash
 brew install --cask basictex
 sudo tlmgr update --self
@@ -92,6 +97,7 @@ sudo tlmgr install \
 ```
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt-get install -y \
     texlive-latex-base \
@@ -107,6 +113,7 @@ sudo apt-get install -y \
 ## CI/CD
 
 GitHub Actions workflow (`.github/workflows/build.yml`) runs on every push:
+
 1. Sets up Python 3.12
 2. Installs TeX Live packages
 3. Installs Python dependencies via `pip install -e .`

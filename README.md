@@ -135,7 +135,7 @@ bash make.sh
 
 ## Directory Structure
 
-```
+```text
 devito_book/
 ├── src/                      # Source code for book examples
 │   └── X/                    # Source code from chapter X
@@ -185,6 +185,7 @@ The build script automatically fixes encoding issues by converting from `utf8x` 
 ### Build Logs
 
 Check these files for detailed error information:
+
 - `book.log` - LaTeX compilation log
 - `book.dlog` - DocOnce processing log
 
@@ -210,5 +211,6 @@ This work is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/
 ## Acknowledgments
 
 This book is part of a series on computational science. See also:
+
 - [A Primer on Scientific Programming with Python](https://github.com/hplgit/primer)
 - [Scaling of Differential Equations](https://github.com/hplgit/scaling-book)

@@ -35,8 +35,10 @@ spatial mesh point x[i] at time t[n], where the calling code
 can add visualization, error computations, data analysis,
 store solutions, etc.
 """
+
 from scipy.sparse import spdiags
-from scipy.sparse.linalg import spsolve, use_solver
+from scipy.sparse.linalg import spsolve
+
 
 def solver_FE_simple(I, a, L, Nx, F, T):
     """
@@ -44,51 +46,52 @@ def solver_FE_simple(I, a, L, Nx, F, T):
     using the Forward Euler method and explicit Python loops.
     For this method F <= 0.5 for stability.
     """
-    x = linspace(0, L, Nx+1)   # mesh points in space
+    x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
-    dt = F*dx**2/a
-    Nt = int(round(T/float(dt)))
-    t = linspace(0, T, Nt+1)   # mesh points in time
-    u   = zeros(Nx+1)
-    u_n = zeros(Nx+1)
+    dt = F * dx**2 / a
+    Nt = int(round(T / float(dt)))
+    linspace(0, T, Nt + 1)  # mesh points in time
+    u = zeros(Nx + 1)
+    u_n = zeros(Nx + 1)
 
     # Set initial condition u(x,0) = I(x)
-    for i in range(0, Nx+1):
+    for i in range(0, Nx + 1):
         u_n[i] = I(x[i])
 
-    for n in range(0, Nt):
+    for _n in range(0, Nt):
         # Compute u at inner mesh points
         for i in range(1, Nx):
-            u[i] = u_n[i] + F*(u_n[i-1] - 2*u_n[i] + u_n[i+1])
+            u[i] = u_n[i] + F * (u_n[i - 1] - 2 * u_n[i] + u_n[i + 1])
 
         # Insert boundary conditions
-        u[0] = 0;  u[Nx] = 0
+        u[0] = 0
+        u[Nx] = 0
 
         # Switch variables before next step
         u_n, u = u, u_n
     return u
 
 
-def solver_FE(I, a, L, Nx, F, T,
-              user_action=None, version='scalar'):
+def solver_FE(I, a, L, Nx, F, T, user_action=None, version="scalar"):
     """
     Vectorized implementation of solver_FE_simple.
     """
     import time
+
     t0 = time.clock()
 
-    x = linspace(0, L, Nx+1)   # mesh points in space
+    x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
-    dt = F*dx**2/a
-    Nt = int(round(T/float(dt)))
-    t = linspace(0, T, Nt+1)   # mesh points in time
+    dt = F * dx**2 / a
+    Nt = int(round(T / float(dt)))
+    t = linspace(0, T, Nt + 1)  # mesh points in time
 
-    u   = zeros(Nx+1)   # solution array
-    u_n = zeros(Nx+1)   # solution at t-dt
-    u_2 = zeros(Nx+1)   # solution at t-2*dt
+    u = zeros(Nx + 1)  # solution array
+    u_n = zeros(Nx + 1)  # solution at t-dt
+    zeros(Nx + 1)  # solution at t-2*dt
 
     # Set initial condition
-    for i in range(0,Nx+1):
+    for i in range(0, Nx + 1):
         u_n[i] = I(x[i])
 
     if user_action is not None:
@@ -96,27 +99,27 @@ def solver_FE(I, a, L, Nx, F, T,
 
     for n in range(0, Nt):
         # Update all inner points
-        if version == 'scalar':
+        if version == "scalar":
             for i in range(1, Nx):
-                u[i] = u_n[i] + F*(u_n[i-1] - 2*u_n[i] + u_n[i+1])
+                u[i] = u_n[i] + F * (u_n[i - 1] - 2 * u_n[i] + u_n[i + 1])
 
-        elif version == 'vectorized':
-            u[1:Nx] = u_n[1:Nx] +  \
-                      F*(u_n[0:Nx-1] - 2*u_n[1:Nx] + u_n[2:Nx+1])
+        elif version == "vectorized":
+            u[1:Nx] = u_n[1:Nx] + F * (u_n[0 : Nx - 1] - 2 * u_n[1:Nx] + u_n[2 : Nx + 1])
         else:
-            raise ValueError('version=%s' % version)
+            raise ValueError(f"version={version}")
 
         # Insert boundary conditions
-        u[0] = 0;  u[Nx] = 0
+        u[0] = 0
+        u[Nx] = 0
         if user_action is not None:
-            user_action(u, x, t, n+1)
+            user_action(u, x, t, n + 1)
 
         # Switch variables before next step
-        #u_n[:] = u  # slow
+        # u_n[:] = u  # slow
         u_n, u = u, u_n
 
     t1 = time.clock()
-    return u, x, t, t1-t0
+    return u, x, t, t1 - t0
 
 
 def solver_BE_simple(I, a, L, Nx, F, T):
@@ -125,29 +128,29 @@ def solver_BE_simple(I, a, L, Nx, F, T):
     for the Backward Euler method, using explicit Python loops
     and a dense matrix format for the coefficient matrix.
     """
-    x = linspace(0, L, Nx+1)   # mesh points in space
+    x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
-    dt = F*dx**2/a
-    Nt = int(round(T/float(dt)))
-    t = linspace(0, T, Nt+1)   # mesh points in time
-    u   = zeros(Nx+1)
-    u_n = zeros(Nx+1)
+    dt = F * dx**2 / a
+    Nt = int(round(T / float(dt)))
+    linspace(0, T, Nt + 1)  # mesh points in time
+    u = zeros(Nx + 1)
+    u_n = zeros(Nx + 1)
 
     # Data structures for the linear system
-    A = zeros((Nx+1, Nx+1))
-    b = zeros(Nx+1)
+    A = zeros((Nx + 1, Nx + 1))
+    b = zeros(Nx + 1)
 
     for i in range(1, Nx):
-        A[i,i-1] = -F
-        A[i,i+1] = -F
-        A[i,i] = 1 + 2*F
-    A[0,0] = A[Nx,Nx] = 1
+        A[i, i - 1] = -F
+        A[i, i + 1] = -F
+        A[i, i] = 1 + 2 * F
+    A[0, 0] = A[Nx, Nx] = 1
 
     # Set initial condition u(x,0) = I(x)
-    for i in range(0, Nx+1):
+    for i in range(0, Nx + 1):
         u_n[i] = I(x[i])
 
-    for n in range(0, Nt):
+    for _n in range(0, Nt):
         # Compute b and solve linear system
         for i in range(1, Nx):
             b[i] = -u_n[i]
@@ -159,35 +162,35 @@ def solver_BE_simple(I, a, L, Nx, F, T):
     return u
 
 
-
 def solver_BE(I, a, L, Nx, F, T, user_action=None):
     """
     Vectorized implementation of solver_BE_simple using also
     a sparse (tridiagonal) matrix for efficiency.
     """
     import time
+
     t0 = time.clock()
 
-    x = linspace(0, L, Nx+1)   # mesh points in space
+    x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
-    dt = F*dx**2/a
-    Nt = int(round(T/float(dt)))
-    t = linspace(0, T, Nt+1)   # mesh points in time
+    dt = F * dx**2 / a
+    Nt = int(round(T / float(dt)))
+    t = linspace(0, T, Nt + 1)  # mesh points in time
 
-    u   = zeros(Nx+1)   # solution array at t[n+1]
-    u_n = zeros(Nx+1)   # solution at t[n]
+    u = zeros(Nx + 1)  # solution array at t[n+1]
+    u_n = zeros(Nx + 1)  # solution at t[n]
 
     # Representation of sparse matrix and right-hand side
-    diagonal = zeros(Nx+1)
-    lower    = zeros(Nx+1)
-    upper    = zeros(Nx+1)
-    b        = zeros(Nx+1)
+    diagonal = zeros(Nx + 1)
+    lower = zeros(Nx + 1)
+    upper = zeros(Nx + 1)
+    b = zeros(Nx + 1)
     # "Active" values: diagonal[:], upper[1:], lower[:-1]
 
     # Precompute sparse matrix
-    diagonal[:] = 1 + 2*F
-    lower[:] = -F  #1
-    upper[:] = -F  #1
+    diagonal[:] = 1 + 2 * F
+    lower[:] = -F  # 1
+    upper[:] = -F  # 1
     # Insert boundary conditions
     diagonal[0] = 1
     diagonal[Nx] = 1
@@ -196,11 +199,11 @@ def solver_BE(I, a, L, Nx, F, T, user_action=None):
     lower[-2:] = 0
 
     diags = [0, -1, 1]
-    A = spdiags([diagonal, lower, upper], diags, Nx+1, Nx+1)
-    print A.todense()
+    A = spdiags([diagonal, lower, upper], diags, Nx + 1, Nx + 1)
+    print(A.todense())
 
     # Set initial condition
-    for i in range(0,Nx+1):
+    for i in range(0, Nx + 1):
         u_n[i] = I(x[i])
 
     if user_action is not None:
@@ -212,17 +215,16 @@ def solver_BE(I, a, L, Nx, F, T, user_action=None):
         u[:] = spsolve(A, b)
 
         if user_action is not None:
-            user_action(u, x, t, n+1)
+            user_action(u, x, t, n + 1)
 
         # Switch variables before next step
         u_n, u = u, u_n
 
     t1 = time.clock()
-    return u, x, t, t1-t0
+    return u, x, t, t1 - t0
 
 
-def solver_theta(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
-                 user_action=None):
+def solver_theta(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0, user_action=None):
     """
     Full solver for the model problem using the theta-rule
     difference approximation in time (no restriction on F,
@@ -231,28 +233,29 @@ def solver_theta(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
     coefficient matrix.
     """
     import time
+
     t0 = time.clock()
 
-    x = linspace(0, L, Nx+1)   # mesh points in space
+    x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
-    dt = F*dx**2/a
-    Nt = int(round(T/float(dt)))
-    t = linspace(0, T, Nt+1)   # mesh points in time
+    dt = F * dx**2 / a
+    Nt = int(round(T / float(dt)))
+    t = linspace(0, T, Nt + 1)  # mesh points in time
 
-    u   = zeros(Nx+1)   # solution array at t[n+1]
-    u_n = zeros(Nx+1)   # solution at t[n]
+    u = zeros(Nx + 1)  # solution array at t[n+1]
+    u_n = zeros(Nx + 1)  # solution at t[n]
 
     # Representation of sparse matrix and right-hand side
-    diagonal = zeros(Nx+1)
-    lower    = zeros(Nx+1)
-    upper    = zeros(Nx+1)
-    b        = zeros(Nx+1)
+    diagonal = zeros(Nx + 1)
+    lower = zeros(Nx + 1)
+    upper = zeros(Nx + 1)
+    b = zeros(Nx + 1)
     # "Active" values: diagonal[:], upper[1:], lower[:-1]
 
     # Precompute sparse matrix (scipy format)
-    diagonal[:] = 1 + 2*Fl
-    lower[:] = -Fl  #1
-    upper[:] = -Fl  #1
+    diagonal[:] = 1 + 2 * Fl
+    lower[:] = -Fl  # 1
+    upper[:] = -Fl  # 1
     # Insert boundary conditions
     diagonal[0] = 1
     diagonal[Nx] = 1
@@ -261,11 +264,11 @@ def solver_theta(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
     lower[-2:] = 0
 
     diags = [0, -1, 1]
-    A = spdiags([diagonal, lower, upper], diags, Nx+1, Nx+1)
-    #print A.todense()
+    A = spdiags([diagonal, lower, upper], diags, Nx + 1, Nx + 1)
+    # print A.todense()
 
     # Set initial condition
-    for i in range(0,Nx+1):
+    for i in range(0, Nx + 1):
         u_n[i] = I(x[i])
 
     if user_action is not None:
@@ -273,71 +276,66 @@ def solver_theta(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0,
 
     # Time loop
     for n in range(0, Nt):
-        b[1:-1] = u_n[1:-1] + Fr*(u_n[:-2] - 2*u_n[1:-1] + u_n[2:])
-        b[0] = u_L; b[-1] = u_R  # boundary conditions
+        b[1:-1] = u_n[1:-1] + Fr * (u_n[:-2] - 2 * u_n[1:-1] + u_n[2:])
+        b[0] = u_L
+        b[-1] = u_R  # boundary conditions
         u[:] = spsolve(A, b)
 
         if user_action is not None:
-            user_action(u, x, t, n+1)
+            user_action(u, x, t, n + 1)
 
         # Switch variables before next step
         u_n, u = u, u_n
 
     t1 = time.clock()
-    return u, x, t, t1-t0
+    return u, x, t, t1 - t0
 
 
-def viz(I, a, L, Nx, F, T, umin, umax,
-        scheme='FE', animate=True):
-
+def viz(I, a, L, Nx, F, T, umin, umax, scheme="FE", animate=True):
     def plot_u(u, x, t, n):
-        plot(x, u, 'r-', axis=[0, L, umin, umax], title='t=%f' % t[n])
+        plot(x, u, "r-", axis=[0, L, umin, umax], title=f"t={t[n]:f}")
         if t[n] == 0:
             time.sleep(2)
         else:
             time.sleep(0.2)
 
-    user_action = plot_u if animate else lambda u,x,t,n: None
+    user_action = plot_u if animate else lambda u, x, t, n: None
 
-    u, x, t, cpu = eval('solver_'+scheme)\
-                   (I, a, L, Nx, F, T,
-                    user_action=user_action)
+    u, x, t, cpu = eval("solver_" + scheme)(I, a, L, Nx, F, T, user_action=user_action)
     return u, cpu
 
 
-def plug(scheme='FE', F=0.5, Nx=50):
-    L = 1.
+def plug(scheme="FE", F=0.5, Nx=50):
+    L = 1.0
     a = 1
     T = 0.1
 
     def I(x):
         """Plug profile as initial condition."""
-        if abs(x-L/2.0) > 0.1:
+        if abs(x - L / 2.0) > 0.1:
             return 0
         else:
             return 1
 
-    u, cpu = viz(I, a, L, Nx, F, T,
-                 umin=-0.1, umax=1.1,
-                 scheme=scheme, animate=True)
-    print 'CPU time:', cpu
+    u, cpu = viz(I, a, L, Nx, F, T, umin=-0.1, umax=1.1, scheme=scheme, animate=True)
+    print("CPU time:", cpu)
 
     """
     if not allclose(solutions[0], solutions[-1],
                     atol=1.0E-10, rtol=1.0E-12):
-        print 'error in computations'
+        print('error in computations')
     else:
-        print 'correct solution'
+        print('correct solution')
     """
 
 
-def expsin(scheme='FE', F=0.5, m=3):
+def expsin(scheme="FE", F=0.5, m=3):
     L = 10.0
     a = 1
     T = 1.2
 
     def exact(x, t):
-        return exp(-m**2*pi**2*a/L**2*t)*sin(m*pi/L*x)
+        return exp(-(m**2) * pi**2 * a / L**2 * t) * sin(m * pi / L * x)
 
     def I(x):
         return exact(x, 0)
@@ -353,17 +351,20 @@ def expsin(scheme='FE', F=0.5, m=3):
     errors = []
     Nx_values = [10, 20, 40, 80, 160]
     for Nx in Nx_values:
-        eval('solver_'+scheme)(I, a, L, Nx, F, T, user_action=action)
-        dt = F*(L/Nx)**2/a
-        print dt, errors[-1]
+        eval("solver_" + scheme)(I, a, L, Nx, F, T, user_action=action)
+        dt = F * (L / Nx) ** 2 / a
+        print(dt, errors[-1])
 
-if __name__ == '__main__':
-    import sys, time
+
+if __name__ == "__main__":
+    import sys
+    import time
+
     from scitools.std import *
 
     if len(sys.argv) < 2:
-        print """Usage %s function arg1 arg2 arg3 ...""" % sys.argv[0]
+        print(f"""Usage {sys.argv[0]} function arg1 arg2 arg3 ...""")
         sys.exit(0)
-    cmd = '%s(%s)' % (sys.argv[1], ', '.join(sys.argv[2:]))
-    print cmd
+    cmd = "{}({})".format(sys.argv[1], ", ".join(sys.argv[2:]))
+    print(cmd)
     eval(cmd)

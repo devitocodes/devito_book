@@ -35,53 +35,51 @@ Function viz::
 calls solver with a user_action function that can plot the
 solution on the screen (as an animation).
 """
+
 import numpy as np
 import scitools.std as plt
 
-def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
-           user_action=None, version='scalar'):
+
+def solver(I, V, f, c, U_0, U_L, L, dt, C, T, user_action=None, version="scalar"):
     """
     Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].
     u(0,t)=U_0(t) or du/dn=0 (U_0=None), u(L,t)=U_L(t) or du/dn=0 (u_L=None).
     """
-    Nt = int(round(T/dt))
-    t = np.linspace(0, Nt*dt, Nt+1)   # Mesh points in time
-    dx = dt*c/float(C)
-    Nx = int(round(L/dx))
-    x = np.linspace(0, L, Nx+1)       # Mesh points in space
-    C2 = C**2; dt2 = dt*dt            # Help variables in the scheme
+    Nt = int(round(T / dt))
+    t = np.linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
+    dx = dt * c / float(C)
+    Nx = int(round(L / dx))
+    x = np.linspace(0, L, Nx + 1)  # Mesh points in space
+    C2 = C**2
+    dt2 = dt * dt  # Help variables in the scheme
     # Make sure dx and dt are compatible with x and t
     dx = x[1] - x[0]
     dt = t[1] - t[0]
 
     # Wrap user-given f, I, V, U_0, U_L if None or 0
     if f is None or f == 0:
-        f = (lambda x, t: 0) if version == 'scalar' else \
-            lambda x, t: np.zeros(x.shape)
+        f = (lambda x, t: 0) if version == "scalar" else lambda x, t: np.zeros(x.shape)
     if I is None or I == 0:
-        I = (lambda x: 0) if version == 'scalar' else \
-            lambda x: np.zeros(x.shape)
+        I = (lambda x: 0) if version == "scalar" else lambda x: np.zeros(x.shape)
     if V is None or V == 0:
-        V = (lambda x: 0) if version == 'scalar' else \
-            lambda x: np.zeros(x.shape)
-    if U_0 is not None:
-        if isinstance(U_0, (float,int)) and U_0 == 0:
-            U_0 = lambda t: 0
+        V = (lambda x: 0) if version == "scalar" else lambda x: np.zeros(x.shape)
+    if U_0 is not None and isinstance(U_0, (float, int)) and U_0 == 0:
+        U_0 = lambda t: 0
         # else: U_0(t) is a function
-    if U_L is not None:
-        if isinstance(U_L, (float,int)) and U_L == 0:
-            U_L = lambda t: 0
+    if U_L is not None and isinstance(U_L, (float, int)) and U_L == 0:
+        U_L = lambda t: 0
         # else: U_L(t) is a function
 
-    u     = np.zeros(Nx+1)   # Solution array at new time level
-    u_n   = np.zeros(Nx+1)   # Solution at 1 time level back
-    u_nm1 = np.zeros(Nx+1)   # Solution at 2 time levels back
+    u = np.zeros(Nx + 1)  # Solution array at new time level
+    u_n = np.zeros(Nx + 1)  # Solution at 1 time level back
+    u_nm1 = np.zeros(Nx + 1)  # Solution at 2 time levels back
 
-    Ix = range(0, Nx+1)
-    It = range(0, Nt+1)
+    Ix = range(0, Nx + 1)
+    It = range(0, Nt + 1)
 
-    import time;  t0 = time.clock()  # CPU time measurement
+    import time
 
+    t0 = time.clock()  # CPU time measurement
     # Load initial condition into u_n
     for i in Ix:
         u_n[i] = I(x[i])
@@ -91,30 +89,39 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
 
     # Special formula for the first step
     for i in Ix[1:-1]:
-        u[i] = u_n[i] + dt*V(x[i]) + \
-               0.5*C2*(u_n[i-1] - 2*u_n[i] + u_n[i+1]) + \
-               0.5*dt2*f(x[i], t[0])
+        u[i] = (
+            u_n[i]
+            + dt * V(x[i])
+            + 0.5 * C2 * (u_n[i - 1] - 2 * u_n[i] + u_n[i + 1])
+            + 0.5 * dt2 * f(x[i], t[0])
+        )
 
     i = Ix[0]
     if U_0 is None:
         # Set boundary values du/dn = 0
         # x=0: i-1 -> i+1 since u[i-1]=u[i+1]
         # x=L: i+1 -> i-1 since u[i+1]=u[i-1])
-        ip1 = i+1
+        ip1 = i + 1
         im1 = ip1  # i-1 -> i+1
-        u[i] = u_n[i] + dt*V(x[i]) + \
-               0.5*C2*(u_n[im1] - 2*u_n[i] + u_n[ip1]) + \
-               0.5*dt2*f(x[i], t[0])
+        u[i] = (
+            u_n[i]
+            + dt * V(x[i])
+            + 0.5 * C2 * (u_n[im1] - 2 * u_n[i] + u_n[ip1])
+            + 0.5 * dt2 * f(x[i], t[0])
+        )
     else:
         u[0] = U_0(dt)
 
     i = Ix[-1]
     if U_L is None:
-        im1 = i-1
+        im1 = i - 1
         ip1 = im1  # i+1 -> i-1
-        u[i] = u_n[i] + dt*V(x[i]) + \
-               0.5*C2*(u_n[im1] - 2*u_n[i] + u_n[ip1]) + \
-               0.5*dt2*f(x[i], t[0])
+        u[i] = (
+            u_n[i]
+            + dt * V(x[i])
+            + 0.5 * C2 * (u_n[im1] - 2 * u_n[i] + u_n[ip1])
+            + 0.5 * dt2 * f(x[i], t[0])
+        )
     else:
         u[i] = U_L(dt)
 
@@ -122,23 +129,29 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
         user_action(u, x, t, 1)
 
     # Update data structures for next step
-    #u_nm1[:] = u_n;  u_n[:] = u  # safe, but slower
+    # u_nm1[:] = u_n;  u_n[:] = u  # safe, but slower
     u_nm1, u_n, u = u_n, u, u_nm1
 
     for n in It[1:-1]:
         # Update all inner points
-        if version == 'scalar':
+        if version == "scalar":
             for i in Ix[1:-1]:
-                u[i] = - u_nm1[i] + 2*u_n[i] + \
-                       C2*(u_n[i-1] - 2*u_n[i] + u_n[i+1]) + \
-                       dt2*f(x[i], t[n])
+                u[i] = (
+                    -u_nm1[i]
+                    + 2 * u_n[i]
+                    + C2 * (u_n[i - 1] - 2 * u_n[i] + u_n[i + 1])
+                    + dt2 * f(x[i], t[n])
+                )
 
-        elif version == 'vectorized':
-            u[1:-1] = - u_nm1[1:-1] + 2*u_n[1:-1] + \
-                      C2*(u_n[0:-2] - 2*u_n[1:-1] + u_n[2:]) + \
-                      dt2*f(x[1:-1], t[n])
+        elif version == "vectorized":
+            u[1:-1] = (
+                -u_nm1[1:-1]
+                + 2 * u_n[1:-1]
+                + C2 * (u_n[0:-2] - 2 * u_n[1:-1] + u_n[2:])
+                + dt2 * f(x[1:-1], t[n])
+            )
         else:
-            raise ValueError('version=%s' % version)
+            raise ValueError(f"version={version}")
 
         # Insert boundary conditions
         i = Ix[0]
@@ -146,30 +159,35 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
             # Set boundary values
             # x=0: i-1 -> i+1 since u[i-1]=u[i+1] when du/dn=0
             # x=L: i+1 -> i-1 since u[i+1]=u[i-1] when du/dn=0
-            ip1 = i+1
+            ip1 = i + 1
             im1 = ip1
-            u[i] = - u_nm1[i] + 2*u_n[i] + \
-                   C2*(u_n[im1] - 2*u_n[i] + u_n[ip1]) + \
-                   dt2*f(x[i], t[n])
+            u[i] = (
+                -u_nm1[i]
+                + 2 * u_n[i]
+                + C2 * (u_n[im1] - 2 * u_n[i] + u_n[ip1])
+                + dt2 * f(x[i], t[n])
+            )
         else:
-            u[0] = U_0(t[n+1])
+            u[0] = U_0(t[n + 1])
 
         i = Ix[-1]
         if U_L is None:
-            im1 = i-1
+            im1 = i - 1
             ip1 = im1
-            u[i] = - u_nm1[i] + 2*u_n[i] + \
-                   C2*(u_n[im1] - 2*u_n[i] + u_n[ip1]) + \
-                   dt2*f(x[i], t[n])
+            u[i] = (
+                -u_nm1[i]
+                + 2 * u_n[i]
+                + C2 * (u_n[im1] - 2 * u_n[i] + u_n[ip1])
+                + dt2 * f(x[i], t[n])
+            )
         else:
-            u[i] = U_L(t[n+1])
+            u[i] = U_L(t[n + 1])
 
-        if user_action is not None:
-            if user_action(u, x, t, n+1):
-                break
+        if user_action is not None and user_action(u, x, t, n + 1):
+            break
 
         # Update data structures for next step
-        #u_nm1[:] = u_n;  u_n[:] = u  # safe, but slower
+        # u_nm1[:] = u_n;  u_n[:] = u  # safe, but slower
         u_nm1, u_n, u = u_n, u, u_nm1
 
     # Important to correct the mathematically wrong u=u_nm1 above
@@ -179,58 +197,62 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T,
     return u, x, t, cpu_time
 
 
-def viz(I, V, f, c, U_0, U_L, L, dt, C, T, umin, umax,
-        version='scalar', animate=True):
+def viz(I, V, f, c, U_0, U_L, L, dt, C, T, umin, umax, version="scalar", animate=True):
     """Run solver and visualize u at each time level."""
-    import time, glob, os
+    import glob
+    import os
+    import time
+
     if callable(U_0):
-        bc_left = 'u(0,t)=U_0(t)'
+        bc_left = "u(0,t)=U_0(t)"
     elif U_0 is None:
-        bc_left = 'du(0,t)/dx=0'
+        bc_left = "du(0,t)/dx=0"
     else:
-        bc_left = 'u(0,t)=0'
+        bc_left = "u(0,t)=0"
     if callable(U_L):
-        bc_right = 'u(L,t)=U_L(t)'
+        bc_right = "u(L,t)=U_L(t)"
     elif U_L is None:
-        bc_right = 'du(L,t)/dx=0'
+        bc_right = "du(L,t)/dx=0"
     else:
-        bc_right = 'u(L,t)=0'
+        bc_right = "u(L,t)=0"
 
     def plot_u(u, x, t, n):
         """user_action function for solver."""
         # Works only with scitools, see wave1D_u0.py for matplotlib versions
-        plt.plot(x, u, 'r-',
-                 xlabel='x', ylabel='u',
-                 axis=[0, L, umin, umax],
-                 title='t=%.3f, %s, %s' % (t[n], bc_left, bc_right))
+        plt.plot(
+            x,
+            u,
+            "r-",
+            xlabel="x",
+            ylabel="u",
+            axis=[0, L, umin, umax],
+            title=f"t={t[n]:.3f}, {bc_left}, {bc_right}",
+        )
         # Let the initial condition stay on the screen for 2
         # seconds, else insert a pause of 0.2 s between each plot
         time.sleep(2) if t[n] == 0 else time.sleep(0.2)
-        plt.savefig('frame_%04d.png' % n)  # for movie making
+        plt.savefig("frame_%04d.png" % n)  # for movie making
 
     # Clean up old movie frames
-    for filename in glob.glob('frame_*.png'):
+    for filename in glob.glob("frame_*.png"):
         os.remove(filename)
 
     user_action = plot_u if animate else None
-    u, x, t, cpu = solver(I, V, f, c, U_0, U_L, L, dt, C, T,
-                          user_action, version)
+    u, x, t, cpu = solver(I, V, f, c, U_0, U_L, L, dt, C, T, user_action, version)
     if animate:
-        plt.movie('frame_*.png', encoder='html', fps=4,
-                  output_file='movie.html')
+        plt.movie("frame_*.png", encoder="html", fps=4, output_file="movie.html")
         # Make other movie formats: Flash, Webm, Ogg, MP4
-        codec2ext = dict(flv='flv', libx264='mp4', libvpx='webm',
-                         libtheora='ogg')
-        fps = 6
-        filespec = 'frame_%04d.png'
-        movie_program = 'ffmpeg'  # or 'avconv'
+        codec2ext = dict(flv="flv", libx264="mp4", libvpx="webm", libtheora="ogg")
         for codec in codec2ext:
-            ext = codec2ext[codec]
-            cmd = '%(movie_program)s -r %(fps)d -i %(filespec)s '\
-                  '-vcodec %(codec)s movie.%(ext)s' % vars()
-            print cmd
+            codec2ext[codec]
+            cmd = (
+                "%(movie_program)s -r %(fps)d -i %(filespec)s "
+                "-vcodec %(codec)s movie.%(ext)s" % vars()
+            )
+            print(cmd)
             os.system(cmd)
     return cpu
+
 
 def test_constant():
     """
@@ -247,8 +269,8 @@ def test_constant():
     def assert_no_error(u, x, t, n):
         u_e = u_exact(x, t[n])
         diff = np.abs(u - u_e).max()
-        msg = 'diff=%E, t_%d=%g' % (diff, n, t[n])
-        tol = 1E-13
+        msg = "diff=%E, t_%d=%g" % (diff, n, t[n])
+        tol = 1e-13
         assert diff < tol, msg
 
     for U_0 in (None, lambda t: u_const):
@@ -257,16 +279,39 @@ def test_constant():
             c = 1.5
             C = 0.75
             Nx = 3  # Very coarse mesh for this exact test
-            dt = C*(L/Nx)/c
+            dt = C * (L / Nx) / c
             T = 18  # long time integration
 
-            solver(I, V, f, c, U_0, U_L, L, dt, C, T,
-                   user_action=assert_no_error,
-                   version='scalar')
-            solver(I, V, f, c, U_0, U_L, L, dt, C, T,
-                   user_action=assert_no_error,
-                   version='vectorized')
-            print U_0, U_L
+            solver(
+                I,
+                V,
+                f,
+                c,
+                U_0,
+                U_L,
+                L,
+                dt,
+                C,
+                T,
+                user_action=assert_no_error,
+                version="scalar",
+            )
+            solver(
+                I,
+                V,
+                f,
+                c,
+                U_0,
+                U_L,
+                L,
+                dt,
+                C,
+                T,
+                user_action=assert_no_error,
+                version="vectorized",
+            )
+            print(U_0, U_L)
+
 
 def test_quadratic():
     """
@@ -277,10 +322,10 @@ def test_quadratic():
     (U_0=None, L=L/2 in call to solver) is *not* exactly reproduced
     because of the numerics in the boundary condition implementation.
     """
-    u_exact = lambda x, t: x*(L-x)*(1+0.5*t)
+    u_exact = lambda x, t: x * (L - x) * (1 + 0.5 * t)
     I = lambda x: u_exact(x, 0)
-    V = lambda x: 0.5*u_exact(x, 0)
-    f = lambda x, t: 2*(1+0.5*t)*c**2
+    V = lambda x: 0.5 * u_exact(x, 0)
+    f = lambda x, t: 2 * (1 + 0.5 * t) * c**2
     U_0 = lambda t: u_exact(0, t)
     U_L = None
     U_L = 0
@@ -288,131 +333,249 @@ def test_quadratic():
     c = 1.5
     C = 0.75
     Nx = 3  # Very coarse mesh for this exact test
-    dt = C*(L/Nx)/c
+    dt = C * (L / Nx) / c
     T = 18  # long time integration
 
     def assert_no_error(u, x, t, n):
         u_e = u_exact(x, t[n])
         diff = np.abs(u - u_e).max()
-        msg = 'diff=%E, t_%d=%g' % (diff, n, t[n])
-        tol = 1E-13
+        msg = "diff=%E, t_%d=%g" % (diff, n, t[n])
+        tol = 1e-13
         assert diff < tol, msg
 
-    solver(I, V, f, c, U_0, U_L, L, dt, C, T,
-           user_action=assert_no_error, version='scalar')
-    solver(I, V, f, c, U_0, U_L, L, dt, C, T,
-           user_action=assert_no_error, version='vectorized')
+    solver(
+        I, V, f, c, U_0, U_L, L, dt, C, T, user_action=assert_no_error, version="scalar"
+    )
+    solver(
+        I,
+        V,
+        f,
+        c,
+        U_0,
+        U_L,
+        L,
+        dt,
+        C,
+        T,
+        user_action=assert_no_error,
+        version="vectorized",
+    )
 
 
-def plug(C=1, Nx=50, animate=True, version='scalar', T=2, loc=0.5,
-         bc_left='u=0', ic='u'):
+def plug(C=1, Nx=50, animate=True, version="scalar", T=2, loc=0.5, bc_left="u=0", ic="u"):
     """Plug profile as initial condition."""
-    L = 1.
+    L = 1.0
     c = 1
 
     def I(x):
-        if abs(x-loc) > 0.1:
+        if abs(x - loc) > 0.1:
             return 0
         else:
             return 1
 
-    u_L = 0 if bc_left == 'u=0' else None
-    dt = (L/Nx)/c  # choose the stability limit with given Nx
-    if ic == 'u':
+    u_L = 0 if bc_left == "u=0" else None
+    dt = (L / Nx) / c  # choose the stability limit with given Nx
+    if ic == "u":
         # u(x,0)=plug, u_t(x,0)=0
-        cpu = viz(lambda x: 0 if abs(x-loc) > 0.1 else 1,
-                  None, None, c, u_L, None, L, dt, C, T,
-                  umin=-1.1, umax=1.1, version=version, animate=animate)
+        viz(
+            lambda x: 0 if abs(x - loc) > 0.1 else 1,
+            None,
+            None,
+            c,
+            u_L,
+            None,
+            L,
+            dt,
+            C,
+            T,
+            umin=-1.1,
+            umax=1.1,
+            version=version,
+            animate=animate,
+        )
     else:
         # u(x,0)=0, u_t(x,0)=plug
-        cpu = viz(None, lambda x: 0 if abs(x-loc) > 0.1 else 1,
-                  None, c, u_L, None, L, dt, C, T,
-                  umin=-0.25, umax=0.25, version=version, animate=animate)
+        viz(
+            None,
+            lambda x: 0 if abs(x - loc) > 0.1 else 1,
+            None,
+            c,
+            u_L,
+            None,
+            L,
+            dt,
+            C,
+            T,
+            umin=-0.25,
+            umax=0.25,
+            version=version,
+            animate=animate,
+        )
 
-def gaussian(C=1, Nx=50, animate=True, version='scalar', T=1, loc=5,
-             bc_left='u=0', ic='u'):
+
+def gaussian(
+    C=1, Nx=50, animate=True, version="scalar", T=1, loc=5, bc_left="u=0", ic="u"
+):
     """Gaussian function as initial condition."""
-    L = 10.
+    L = 10.0
     c = 10
     sigma = 0.5
 
     def G(x):
-        return 1/sqrt(2*pi*sigma)*exp(-0.5*((x-loc)/sigma)**2)
+        return 1 / sqrt(2 * pi * sigma) * exp(-0.5 * ((x - loc) / sigma) ** 2)
 
-    u_L = 0 if bc_left == 'u=0' else None
-    dt = (L/Nx)/c  # choose the stability limit with given Nx
-    umax = 1.1*G(loc)
-    if ic == 'u':
+    u_L = 0 if bc_left == "u=0" else None
+    dt = (L / Nx) / c  # choose the stability limit with given Nx
+    umax = 1.1 * G(loc)
+    if ic == "u":
         # u(x,0)=Gaussian, u_t(x,0)=0
-        cpu = viz(G, None, None, c, u_L, None, L, dt, C, T,
-                  umin=-umax, umax=umax, version=version, animate=animate)
+        viz(
+            G,
+            None,
+            None,
+            c,
+            u_L,
+            None,
+            L,
+            dt,
+            C,
+            T,
+            umin=-umax,
+            umax=umax,
+            version=version,
+            animate=animate,
+        )
     else:
         # u(x,0)=0, u_t(x,0)=Gaussian
-        cpu = viz(None, G, None, c, u_L, None, L, dt, C, T,
-                  umin=-umax/6, umax=umax/6, version=version, animate=animate)
+        viz(
+            None,
+            G,
+            None,
+            c,
+            u_L,
+            None,
+            L,
+            dt,
+            C,
+            T,
+            umin=-umax / 6,
+            umax=umax / 6,
+            version=version,
+            animate=animate,
+        )
+
 
 def test_plug():
     """Check that an initial plug is correct back after one period."""
     L = 1.0
     c = 0.5
-    dt = (L/10)/c  # Nx=10
-    I = lambda x: 0 if abs(x-L/2.0) > 0.1 else 1
+    dt = (L / 10) / c  # Nx=10
+    I = lambda x: 0 if abs(x - L / 2.0) > 0.1 else 1
 
     u_s, x, t, cpu = solver(
         I=I,
-        V=None, f=None, c=0.5, U_0=None, U_L=None, L=L,
-        dt=dt, C=1, T=4, user_action=None, version='scalar')
+        V=None,
+        f=None,
+        c=0.5,
+        U_0=None,
+        U_L=None,
+        L=L,
+        dt=dt,
+        C=1,
+        T=4,
+        user_action=None,
+        version="scalar",
+    )
     u_v, x, t, cpu = solver(
         I=I,
-        V=None, f=None, c=0.5, U_0=None, U_L=None, L=L,
-        dt=dt, C=1, T=4, user_action=None, version='vectorized')
-    tol = 1E-13
+        V=None,
+        f=None,
+        c=0.5,
+        U_0=None,
+        U_L=None,
+        L=L,
+        dt=dt,
+        C=1,
+        T=4,
+        user_action=None,
+        version="vectorized",
+    )
+    tol = 1e-13
     diff = abs(u_s - u_v).max()
     assert diff < tol
     u_0 = np.array([I(x_) for x_ in x])
     diff = np.abs(u_s - u_0).max()
     assert diff < tol
 
-def guitar(C=1, Nx=50, animate=True, version='scalar', T=2):
+
+def guitar(C=1, Nx=50, animate=True, version="scalar", T=2):
     """Triangular initial condition for simulating a guitar string."""
-    L = 1.
+    L = 1.0
     c = 1
-    x0 = 0.8*L
-    dt = L/Nx/c  # choose the stability limit (if C<1, dx gets larger)
-    I = lambda x: x/x0 if x < x0 else 1./(1-x0)*(1-x)
+    x0 = 0.8 * L
+    dt = L / Nx / c  # choose the stability limit (if C<1, dx gets larger)
+    I = lambda x: x / x0 if x < x0 else 1.0 / (1 - x0) * (1 - x)
 
-    cpu = viz(I, None, None, c, U_0, U_L, L, dt, C, T,
-              umin=-1.1, umax=1.1, version=version, animate=True)
-    print 'CPU time: %s version =' % version, cpu
+    cpu = viz(
+        I,
+        None,
+        None,
+        c,
+        U_0,
+        U_L,
+        L,
+        dt,
+        C,
+        T,
+        umin=-1.1,
+        umax=1.1,
+        version=version,
+        animate=True,
+    )
+    print(f"CPU time: {version} version =", cpu)
 
 
-def moving_end(C=1, Nx=50, reflecting_right_boundary=True, T=2,
-               version='vectorized'):
+def moving_end(C=1, Nx=50, reflecting_right_boundary=True, T=2, version="vectorized"):
     """
     Sinusoidal variation of u at the left end.
     Right boundary can be reflecting or have u=0, according to
     reflecting_right_boundary.
     """
-    L = 1.
+    L = 1.0
     c = 1
-    dt = L/Nx/c  # choose the stability limit (if C<1, dx gets larger)
+    dt = L / Nx / c  # choose the stability limit (if C<1, dx gets larger)
     I = lambda x: 0
 
     def U_0(t):
-        return (0.25*sin(6*pi*t) \
-                if ((t < 1./6) or \
-                    (0.5 + 3./12 <= t <= 0.5 + 4./12 + 0.0001) or \
-                    (1.5 <= t <= 1.5 + 1./3 + 0.0001)) \
-                else 0)
+        return (
+            0.25 * sin(6 * pi * t)
+            if (
+                (t < 1.0 / 6)
+                or (0.5 + 3.0 / 12 <= t <= 0.5 + 4.0 / 12 + 0.0001)
+                or (1.5 <= t <= 1.5 + 1.0 / 3 + 0.0001)
+            )
+            else 0
+        )
 
-    if reflecting_right_boundary:
-        U_L = None
-    else:
-        U_L = 0
-    umax = 1.1*0.5
-    cpu = viz(I, None, None, c, U_0, U_L, L, dt, C, T,
-              umin=-umax, umax=umax, version=version, animate=True)
-    print 'CPU time: %s version =' % version, cpu
+    U_L = None if reflecting_right_boundary else 0
+    umax = 1.1 * 0.5
+    cpu = viz(
+        I,
+        None,
+        None,
+        c,
+        U_0,
+        U_L,
+        L,
+        dt,
+        C,
+        T,
+        umin=-umax,
+        umax=umax,
+        version=version,
+        animate=True,
+    )
+    print(f"CPU time: {version} version =", cpu)
 
 
 def sincos(C=1):
@@ -421,18 +584,32 @@ def sincos(C=1):
     c = 1
     T = 5
     Nx = 80
-    dt = (L/Nx)/c  # choose the stability limit with given Nx
+    dt = (L / Nx) / c  # choose the stability limit with given Nx
 
     def u_exact(x, t):
         m = 3.0
-        return cos(m*pi/L*t)*sin(m*pi/(2*L)*x)
+        return cos(m * pi / L * t) * sin(m * pi / (2 * L) * x)
 
     I = lambda x: u_exact(x, 0)
     U_0 = lambda t: u_exact(0, t)
-    U_L = None # Neumann condition
+    U_L = None  # Neumann condition
 
-    cpu = viz(I, None, None, c, U_0, U_L, L, dt, C, T,
-              umin=-1.1, umax=1.1, version='scalar', animate=True)
+    viz(
+        I,
+        None,
+        None,
+        c,
+        U_0,
+        U_L,
+        L,
+        dt,
+        C,
+        T,
+        umin=-1.1,
+        umax=1.1,
+        version="scalar",
+        animate=True,
+    )
 
     # Convergence study
     def action(u, x, t, n):
@@ -444,17 +621,19 @@ def sincos(C=1):
     Nx_values = [10, 20, 40, 80, 160]
     for Nx in Nx_values:
         errors_in_time = []
-        dt = (L/Nx)/c
-        solver(I, None, None, c, U_0, U_L, L, dt, C, T,
-               user_action=action, version='scalar')
+        dt = (L / Nx) / c
+        solver(
+            I, None, None, c, U_0, U_L, L, dt, C, T, user_action=action, version="scalar"
+        )
         E.append(max(errors_in_time))
-        _dx = L/Nx
-        _dt = C*_dx/c
+        _dx = L / Nx
+        _dt = C * _dx / c
         dt.append(_dt)
-        print dt[-1], E[-1]
+        print(dt[-1], E[-1])
     return dt, E
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test_constant()
     test_quadratic()
     test_plug()

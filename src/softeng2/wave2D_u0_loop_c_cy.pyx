@@ -1,6 +1,8 @@
 import numpy as np
-cimport numpy as np
+
 cimport cython
+cimport numpy as np
+
 
 cdef extern from "wave2D_u0_loop_c.h":
     void advance(double* u, double* u_1, double* u_2, double* f,

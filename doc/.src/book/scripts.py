@@ -1,9 +1,13 @@
-import sys, re, os, shutil, glob
+import glob
+import os
+import re
+import shutil
+import sys
 
-chapters = "vib wave diffu trunc nonlin advec softeng2 formulas".split()
+chapters = ["vib", "wave", "diffu", "trunc", "nonlin", "advec", "softeng2", "formulas"]
 chaptersdir = 'chapters'
 
-ignored_files = '*.o *.so *.a *.pyc *.bak *.swp *~ .*~ *.old tmp* temp* .#* \\#* *.log *.dvi *.aux *.blg *.idx *.nav *.out *.toc *.snm *.vrb *.cproject *.project .DS_Store Trash'.split()
+ignored_files = ['*.o', '*.so', '*.a', '*.pyc', '*.bak', '*.swp', '*~', '.*~', '*.old', 'tmp*', 'temp*', '.#*', '\\#*', '*.log', '*.dvi', '*.aux', '*.blg', '*.idx', '*.nav', '*.out', '*.toc', '*.snm', '*.vrb', '*.cproject', '*.project', '.DS_Store', 'Trash']
 
 def chapter_visitor(action=None, chapters=chapters):
     """Visit dirs in chapters and call/perform action."""
@@ -13,10 +17,11 @@ def chapter_visitor(action=None, chapters=chapters):
         # Wrap Unix commands and run
         def action_function():
             for command in action:
-                print command
+                print(command)
                 failure = os.system(command)
                 if failure:
-                    print 'failure in execution...'; sys.exit(1)
+                    print('failure in execution...')
+                    sys.exit(1)
     elif callable(action):
         action_function = action
 
@@ -25,12 +30,12 @@ def chapter_visitor(action=None, chapters=chapters):
     for chapter in chapters:
         destination = os.path.join(prefix, chapter)
         if os.path.isdir(destination):
-            print 'visiting directory', destination
+            print('visiting directory', destination)
             os.chdir(destination)
             action_function()
             os.chdir(thisdir)
         else:
-            print '\n*** error: directory %s does not exist!' % destination
+            print('\n*** error: directory %s does not exist!' % destination)
             sys.exit(1)
 
 
@@ -60,13 +65,13 @@ def make_links(chapters=chapters):
     prefix = os.path.join(os.pardir, chaptersdir)
     for chapter in chapters:
         destination = os.path.join(prefix, chapter)
-        subdirs = [tp + '-' + chapter for tp in 'fig', 'src', 'mov', 'exer']
+        subdirs = [tp + '-' + chapter for tp in ('fig', 'src', 'mov', 'exer')]
         for subdir in subdirs:
             if not os.path.islink(subdir):
                 dest_subdir = os.path.join(destination, subdir)
                 if os.path.isdir(dest_subdir):
                     os.symlink(dest_subdir, subdir)
-                    print 'created local link %s to %s' % (subdir, destination)
+                    print('created local link %s to %s' % (subdir, destination))
 
     # Sometimes manual additions are needed here, e.g.,
     #os.symlink(os.path.join(prefix, 'tech', 'fig2'), 'fig2')
@@ -97,14 +102,14 @@ def pack_src(root='src', tarfile='book-examples.tar.gz', chapters=chapters):
             for file_spec in ignored_files:
                 for filename in glob.glob(file_spec):
                     os.remove(filename)
-                    print 'removed', 'src-%s/%s' % (chapter, filename)
+                    print('removed', 'src-%s/%s' % (chapter, filename))
             os.chdir(thisdir)
         # Copy files
         shutil.copytree(destination, chapter)
-    print '\ndirectory tree with source code files for the book:', root
+    print('\ndirectory tree with source code files for the book:', root)
     os.chdir(os.pardir)
     os.system('tar czf %s %s' % (tarfile, root))
-    print 'tarfile:', tarfile
+    print('tarfile:', tarfile)
 
 def externaldocuments():
     # Find all candidate documents in ../chapters/*
@@ -124,13 +129,13 @@ def externaldocuments():
         other_mainfiles.remove(mainfile)
         # Strip off ../chapters to ../
         other_mainfiles = ['../' + mainfile[12:] for mainfile in mainfiles]
-        f = open(mainfile + '.do.txt', 'r')
+        f = open(mainfile + '.do.txt')
         text = f.read()
         f.close()
         text = re.sub('^# Externaldocuments:.*', '# Externaldocuments: ' +
                       ', '.join(other_mainfiles), text, flags=re.MULTILINE)
-        print 'subst in', mainfile
+        print('subst in', mainfile)
         f = open(mainfile + '.do.txt', 'w')
         f.write(text)
         f.close()
-        print 'updated # Externaldocuments in', mainfile, 'with\n   ', ', '.join(other_mainfiles)
+        print('updated # Externaldocuments in', mainfile, 'with\n   ', ', '.join(other_mainfiles))

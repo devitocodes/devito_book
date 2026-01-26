@@ -29,8 +29,13 @@ user_action is a function of (u, x, t, n) where the calling code
 can add visualization, error computations, data analysis,
 store solutions, etc.
 """
-import time, glob, shutil, os
+import glob
+import os
+import shutil
+import time
+
 import numpy as np
+
 
 def solver(
     I, V, f, c, U_0, U_L, L, dt, C, T,
@@ -85,7 +90,8 @@ def solver(
             U_L = lambda t: 0
 
     # --- Make hash of all input data ---
-    import hashlib, inspect
+    import hashlib
+    import inspect
     data = inspect.getsource(I) + '_' + inspect.getsource(V) + \
            '_' + inspect.getsource(f) + '_' + str(c) + '_' + \
            ('None' if U_0 is None else inspect.getsource(U_0)) + \
@@ -97,13 +103,12 @@ def solver(
         # Simulation is already run
         return -1, hashed_input
 
-    # --- Allocate memomry for solutions ---
+    # --- Allocate memory for solutions ---
     u     = np.zeros(Nx+1)   # Solution array at new time level
     u_n   = np.zeros(Nx+1)   # Solution at 1 time level back
     u_nm1 = np.zeros(Nx+1)   # Solution at 2 time levels back
 
     import time;  t0 = time.clock()  # CPU time measurement
-
     # --- Valid indices for space and time mesh ---
     Ix = range(0, Nx+1)
     It = range(0, Nt+1)
@@ -456,7 +461,7 @@ class PlotAndStoreSolution:
             archive_name = '.' + hashed_input + '_archive.npz'
             filenames = glob.glob('.' + self.filename + '*.dat.npz')
             merge_zip_archives(filenames, archive_name)
-	    print 'Archive name:', archive_name
+            print('Archive name:', archive_name)
             # data = numpy.load(archive); data.files holds names
             # data[name] extract the array
 
@@ -477,7 +482,7 @@ def demo_BC_plug(C=1, Nx=40, T=4):
     action.make_movie_file()
     if cpu > 0:  # did we generate new data?
         action.close_file(hashed_input)
-    print 'cpu:', cpu
+    print('cpu:', cpu)
 
 def demo_BC_gaussian(C=1, Nx=80, T=4):
     """Demonstrate u=0 and u_x=0 boundary conditions with a bell function."""
@@ -687,7 +692,7 @@ def pulse(
     if cpu > 0:  # did we generate new data?
         action.close_file(hashed_input)
         action.make_movie_file()
-    print 'cpu (-1 means no new data generated):', cpu
+    print('cpu (-1 means no new data generated):', cpu)
 
 def convergence_rates(
     u_exact,
@@ -720,8 +725,8 @@ def convergence_rates(
         E.append(error_calculator.error)
         h.append(dt)
         dt /= 2  # halve the time step for next simulation
-    print 'E:', E
-    print 'h:', h
+    print('E:', E)
+    print('h:', h)
     r = [np.log(E[i]/E[i-1])/np.log(h[i]/h[i-1])
          for i in range(1,num_meshes)]
     return r
@@ -746,8 +751,8 @@ def test_convrate_sincos():
         T=1,
         version='scalar',
         stability_safety_factor=1.0)
-    print 'rates sin(x)*cos(t) solution:', \
-          [round(r_,2) for r_ in r]
+    print('rates sin(x)*cos(t) solution:',
+          [round(r_,2) for r_ in r])
     assert abs(r[-1] - 2) < 0.002
 
 if __name__ == '__main__':

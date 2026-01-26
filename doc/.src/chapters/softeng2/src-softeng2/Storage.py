@@ -1,4 +1,4 @@
-class Storage(object):
+class Storage:
     """
     Store large data structures (e.g. numpy arrays) efficiently
     using joblib.
@@ -16,7 +16,8 @@ class Storage(object):
     >>> a = storage.retrieve('a')
     >>> b = storage.retrieve('b')
     """
-    def __init__(self, cachedir='tmp', verbose=1):
+
+    def __init__(self, cachedir="tmp", verbose=1):
         """
         Parameters
         ----------
@@ -27,14 +28,13 @@ class Storage(object):
              to disk.
         """
         import joblib
-        self.memory = joblib.Memory(cachedir=cachedir,
-                                    verbose=verbose)
+
+        self.memory = joblib.Memory(cachedir=cachedir, verbose=verbose)
         self.verbose = verbose
-        self.retrieve = self.memory.cache(
-            self.retrieve, ignore=['data'])
+        self.retrieve = self.memory.cache(self.retrieve, ignore=["data"])
         self.save = self.retrieve
 
     def retrieve(self, name, data=None):
         if self.verbose > 0:
-            print 'joblib save of', name
+            print("joblib save of", name)
         return data
