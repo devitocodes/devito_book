@@ -1227,7 +1227,7 @@ Assume $u\in [-1,1]$.
 !bsol
 Here is a function that does the plotting:
 
-@@@CODE exer-vib/sliding_box.py fromto: import scitools@def simulate
+@@@CODE exer-vib/sliding_box.py fromto: import matplotlib@def simulate
 
 FIGURE: [fig-vib/tanh_spring, width=600 frac=0.8]
 !esol
@@ -1582,7 +1582,7 @@ like $\dot \bar x, \bar x, \dot\bar y,\bar y$ such that
 !bsol
 Here is a suggested `simulate` function:
 
-@@@CODE exer-vib/elastic_pendulum.py fromto: import odespy@def test_equil
+@@@CODE exer-vib/elastic_pendulum.py fromto: import odespy@def test_equal
 !esol
 !esubex
 
