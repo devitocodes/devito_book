@@ -1,0 +1,5 @@
+---
+title: "Truncation Error Analysis"
+---
+
+{{< include trunc.qmd >}}

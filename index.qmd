@@ -1,0 +1,34 @@
+---
+title: "Finite Difference Computing with PDEs"
+subtitle: "A Modern Software Approach"
+---
+
+# Preface {.unnumbered}
+
+This book teaches finite difference methods for solving partial differential equations through Python implementations. It covers vibration ODEs, wave equations, diffusion equations, advection-dominated equations, and nonlinear problems.
+
+The book emphasizes modern symplectic (geometric) integration schemes alongside classical methods, with applications throughout mechanics and physics.
+
+## About this Edition
+
+This is the Quarto edition of the book, originally authored by Hans Petter Langtangen and Svein Linge using DocOnce. The content has been converted to Quarto format to enable modern web-based publishing with improved interactivity and accessibility.
+
+## Structure
+
+The book consists of five main chapters:
+
+1. **Vibration ODEs** - Finite difference discretization for oscillatory systems
+2. **Wave Equations** - Methods for wave propagation in multiple dimensions
+3. **Diffusion Equations** - Heat transfer and related diffusion processes
+4. **Advection-Dominated Equations** - Convection and transport phenomena
+5. **Nonlinear Problems** - Techniques for nonlinear differential equations
+
+Plus three appendices covering:
+
+- **Formulas** - Reference for finite difference operators
+- **Truncation Error Analysis** - Error analysis techniques
+- **Software Engineering** - Best practices for scientific computing
+
+## Code Repository
+
+All source code for the examples is available in the `src/` directory, organized by chapter.

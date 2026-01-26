@@ -1,0 +1,13 @@
+---
+title: "Nonlinear Problems"
+---
+
+{{< include nonlin_ode.qmd >}}
+
+{{< include nonlin_pde1D.qmd >}}
+
+{{< include nonlin_pde_gen.qmd >}}
+
+{{< include nonlin_split.qmd >}}
+
+{{< include nonlin_exer.qmd >}}

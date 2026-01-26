@@ -1,0 +1,165 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Finite Difference Computing with PDEs"
+  subtitle: "A Modern Software Approach"
+  author:
+    - name: Hans Petter Langtangen
+    - name: Svein Linge
+  date: today
+  chapters:
+    - index.qmd
+    - chapters/preface/index.qmd
+    - part: "Main Chapters"
+      chapters:
+        - chapters/vib/index.qmd
+        - chapters/wave/index.qmd
+        - chapters/diffu/index.qmd
+        - chapters/advec/index.qmd
+        - chapters/nonlin/index.qmd
+    - part: "Appendices"
+      chapters:
+        - chapters/appendices/formulas/index.qmd
+        - chapters/appendices/trunc/index.qmd
+        - chapters/appendices/softeng2/index.qmd
+  repo-url: https://github.com/devitocodes/devito_book
+  site-url: https://devitocodes.github.io/devito_book
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+    code-fold: false
+    toc: true
+    number-sections: true
+    crossref:
+      chapters: true
+  pdf:
+    documentclass: book
+    papersize: letter
+    toc: true
+    number-sections: true
+    colorlinks: true
+    default-image-extension: png
+    pdf-engine: pdflatex
+    include-in-header:
+      text: |
+        % Required packages
+        \usepackage{bm}  % For bold math symbols
+
+        % Custom LaTeX macros from the book
+        \newcommand{\half}{\frac{1}{2}}
+        \newcommand{\halfi}{{1/2}}
+        \newcommand{\tp}{\thinspace .}
+
+        \newcommand{\uex}{u_{\mbox{\footnotesize e}}}
+        \newcommand{\uexd}[1]{u_{\mbox{\footnotesize e}, #1}}
+        \newcommand{\vex}{v_{\mbox{\footnotesize e}}}
+        \newcommand{\Vex}{V_{\mbox{\footnotesize e}}}
+        \newcommand{\vexd}[1]{v_{\mbox{\footnotesize e}, #1}}
+        \newcommand{\Aex}{A_{\mbox{\footnotesize e}}}
+        \newcommand{\wex}{w_{\mbox{\footnotesize e}}}
+
+        % Operators
+        \newcommand{\Ddt}[1]{\frac{D #1}{dt}}
+        \newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
+        \newcommand{\Var}[1]{\hbox{Var}\lbrack #1 \rbrack}
+        \newcommand{\Std}[1]{\hbox{Std}\lbrack #1 \rbrack}
+
+        \newcommand{\xpoint}{\bm{x}}
+        \newcommand{\normalvec}{\bm{n}}
+        \newcommand{\Oof}[1]{\mathcal{O}(#1)}
+
+        % Boldface vectors/tensors
+        \newcommand{\x}{\bm{x}}
+        \newcommand{\X}{\bm{X}}
+        \newcommand{\uu}{\bm{u}}
+        \newcommand{\vv}{\bm{v}}
+        \newcommand{\w}{\bm{w}}
+        \newcommand{\acc}{\bm{a}}
+        \newcommand{\rpos}{\bm{r}}
+        \newcommand{\V}{\bm{V}}
+        \newcommand{\e}{\bm{e}}
+        \newcommand{\f}{\bm{f}}
+        \newcommand{\F}{\bm{F}}
+        \newcommand{\stress}{\bm{\sigma}}
+        \newcommand{\strain}{\bm{\varepsilon}}
+        \newcommand{\stressc}{{\sigma}}
+        \newcommand{\strainc}{{\varepsilon}}
+        \newcommand{\I}{\bm{I}}
+        \newcommand{\T}{\bm{T}}
+        \newcommand{\U}{\bm{U}}
+        \newcommand{\q}{\bm{q}}
+        \newcommand{\g}{\bm{g}}
+
+        \newcommand{\dfc}{\alpha}
+        % Unit vectors
+        \newcommand{\ii}{\bm{i}}
+        \newcommand{\jj}{\bm{j}}
+        \newcommand{\kk}{\bm{k}}
+        \newcommand{\ir}{\bm{i}_r}
+        \newcommand{\ith}{\bm{i}_{\theta}}
+        \newcommand{\iz}{\bm{i}_z}
+
+        % Index sets
+        \newcommand{\Ix}{\mathcal{I}_x}
+        \newcommand{\Iy}{\mathcal{I}_y}
+        \newcommand{\Iz}{\mathcal{I}_z}
+        \newcommand{\It}{\mathcal{I}_t}
+        \newcommand{\If}{\mathcal{I}_s}
+        \newcommand{\Ifd}{{I_d}}
+        \newcommand{\Ifb}{{I_b}}
+        \newcommand{\setb}[1]{#1^0}
+        \newcommand{\sete}[1]{#1^{-1}}
+        \newcommand{\setl}[1]{#1^-}
+        \newcommand{\setr}[1]{#1^+}
+        \newcommand{\seti}[1]{#1^i}
+        \newcommand{\sequencei}[1]{\left\{ {#1}_i \right\}_{i\in\If}}
+        \newcommand{\sequencej}[1]{\left\{ {#1}_j \right\}_{j\in\If}}
+
+        % Superscripts for intermediate solutions
+        \newcommand{\stepzero}{*}
+        \newcommand{\stephalf}{***}
+        \newcommand{\stepone}{**}
+
+        % Finite elements
+        \newcommand{\basphi}{\varphi}
+        \newcommand{\baspsi}{\psi}
+        \newcommand{\refphi}{\tilde\basphi}
+        \newcommand{\psib}{\bm{\psi}}
+        \newcommand{\sinL}[1]{\sin\left((#1+1)\pi\frac{x}{L}\right)}
+        \newcommand{\xno}[1]{x_{#1}}
+        \newcommand{\Xno}[1]{X_{(#1)}}
+        \newcommand{\yno}[1]{y_{#1}}
+        \newcommand{\Yno}[1]{Y_{(#1)}}
+        \newcommand{\xdno}[1]{\bm{x}_{#1}}
+
+        % FEniCS commands
+        \newcommand{\dX}{\, \mathrm{d}X}
+        \newcommand{\dx}{\, \mathrm{d}x}
+        \newcommand{\ds}{\, \mathrm{d}s}
+        \newcommand{\Real}{\mathbb{R}}
+        \newcommand{\Integerp}{\mathbb{N}}
+        \newcommand{\Integer}{\mathbb{Z}}
+
+# Quarto variables (replacement for Mako variables)
+# These can be referenced as {{< var name >}} in documents
+src: "https://github.com/hplgit/fdm-book/tree/master/src"
+src_vib: "https://github.com/hplgit/fdm-book/tree/master/src/vib"
+src_wave: "https://github.com/hplgit/fdm-book/tree/master/src/wave"
+src_diffu: "https://github.com/hplgit/fdm-book/tree/master/src/diffu"
+src_nonlin: "https://github.com/hplgit/fdm-book/tree/master/src/nonlin"
+src_trunc: "https://github.com/hplgit/fdm-book/tree/master/src/trunc"
+src_advec: "https://github.com/hplgit/fdm-book/tree/master/src/advec"
+src_formulas: "https://github.com/hplgit/fdm-book/tree/master/src/formulas"
+src_softeng2: "https://github.com/hplgit/fdm-book/tree/master/src/softeng2"
+
+crossref:
+  eq-prefix: ""
+  fig-prefix: "Figure"
+  tbl-prefix: "Table"
+  sec-prefix: "Section"
+  chapters: true

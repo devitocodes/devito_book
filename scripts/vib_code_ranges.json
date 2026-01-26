@@ -1,0 +1,484 @@
+{
+  "code_base": ".",
+  "total_directives": 55,
+  "resolved": 14,
+  "errors": 41,
+  "ranges": [
+    {
+      "filepath": "src-vib/vib_undamped.py",
+      "resolved_path": "./src/vib/vib_undamped.py",
+      "from_pattern": "import numpy",
+      "to_pattern": "def solver_adjust_w",
+      "total_lines": 358,
+      "start_line": 2,
+      "end_line": 22,
+      "code": "import numpy as np\n\n\ndef solver(I, w, dt, T):\n    \"\"\"\n    Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,\n    by a central finite difference method with time step dt.\n    \"\"\"\n    dt = float(dt)\n    Nt = int(round(T / dt))\n    u = np.zeros(Nt + 1)\n    t = np.linspace(0, Nt * dt, Nt + 1)\n\n    u[0] = I\n    u[1] = u[0] - 0.5 * dt**2 * w**2 * u[0]\n    for n in range(1, Nt):\n        u[n + 1] = 2 * u[n] - u[n - 1] - dt**2 * w**2 * u[n]\n    return u, t\n\n\ndef solver_adjust_w(I, w, dt, T, adjust_w=True):\n",
+      "line_count": 21,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped.py",
+      "resolved_path": "./src/vib/vib_undamped.py",
+      "from_pattern": "def u_exact",
+      "to_pattern": "def test_three_steps",
+      "total_lines": 358,
+      "start_line": 40,
+      "end_line": 61,
+      "code": "def u_exact(t, I, w):\n    return I * np.cos(w * t)\n\n\ndef visualize(u, t, I, w):\n    plt.plot(t, u, \"r--o\")\n    t_fine = np.linspace(0, t[-1], 1001)  # very fine mesh for u_e\n    u_e = u_exact(t_fine, I, w)\n    plt.plot(t_fine, u_e, \"b-\")\n    plt.legend([\"numerical\", \"exact\"], loc=\"upper left\")\n    plt.xlabel(\"t\")\n    plt.ylabel(\"u\")\n    dt = t[1] - t[0]\n    plt.title(\"dt=%g\" % dt)\n    umin = 1.2 * u.min()\n    umax = -umin\n    plt.axis([t[0], t[-1], umin, umax])\n    plt.savefig(\"tmp1.png\")\n    plt.savefig(\"tmp1.pdf\")\n\n\ndef test_three_steps():\n",
+      "line_count": 22,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped.py",
+      "resolved_path": "./src/vib/vib_undamped.py",
+      "from_pattern": "def test_three_steps",
+      "to_pattern": "def convergence_rates",
+      "total_lines": 358,
+      "start_line": 61,
+      "end_line": 75,
+      "code": "def test_three_steps():\n    from math import pi\n\n    I = 1\n    w = 2 * pi\n    dt = 0.1\n    T = 1\n    u_by_hand = np.array([1.000000000000000, 0.802607911978213, 0.288358920740053])\n    u, t = solver(I, w, dt, T)\n    diff = np.abs(u_by_hand - u[:3]).max()\n    tol = 1e-14\n    assert diff < tol\n\n\ndef convergence_rates(m, solver_function, num_periods=8):\n",
+      "line_count": 15,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped.py",
+      "resolved_path": "./src/vib/vib_undamped.py",
+      "from_pattern": "def convergence_rates",
+      "to_pattern": "def test_convergence",
+      "total_lines": 358,
+      "start_line": 75,
+      "end_line": 108,
+      "code": "def convergence_rates(m, solver_function, num_periods=8):\n    \"\"\"\n    Return m-1 empirical estimates of the convergence rate\n    based on m simulations, where the time step is halved\n    for each simulation.\n    solver_function(I, w, dt, T) solves each problem, where T\n    is based on simulation for num_periods periods.\n    \"\"\"\n    from math import pi\n\n    w = 0.35\n    I = 0.3  # just chosen values\n    P = 2 * pi / w  # period\n    dt = P / 30  # 30 time step per period 2*pi/w\n    T = P * num_periods\n\n    dt_values = []\n    E_values = []\n    for i in range(m):\n        u, t = solver_function(I, w, dt, T)\n        u_e = u_exact(t, I, w)\n        E = np.sqrt(dt * np.sum((u_e - u) ** 2))\n        dt_values.append(dt)\n        E_values.append(E)\n        dt = dt / 2\n\n    r = [\n        np.log(E_values[i - 1] / E_values[i]) / np.log(dt_values[i - 1] / dt_values[i])\n        for i in range(1, m, 1)\n    ]\n    return r, E_values, dt_values\n\n\ndef test_convergence_rates():\n",
+      "line_count": 34,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped.py",
+      "resolved_path": "./src/vib/vib_undamped.py",
+      "from_pattern": "def test_convergence",
+      "to_pattern": "def plot_convergence_rates",
+      "total_lines": 358,
+      "start_line": 108,
+      "end_line": 119,
+      "code": "def test_convergence_rates():\n    r, E, dt = convergence_rates(m=5, solver_function=solver, num_periods=8)\n    # Accept rate to 1 decimal place\n    tol = 0.1\n    assert abs(r[-1] - 2.0) < tol\n    # Test that adjusted w obtains 4th order convergence\n    r, E, dt = convergence_rates(m=5, solver_function=solver_adjust_w, num_periods=8)\n    print(\"adjust w rates:\", r)\n    assert abs(r[-1] - 4.0) < tol\n\n\ndef plot_convergence_rates():\n",
+      "line_count": 12,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped.py",
+      "resolved_path": "./src/vib/vib_undamped.py",
+      "from_pattern": "def bokeh_plot",
+      "to_pattern": "def demo_bokeh",
+      "total_lines": 358,
+      "start_line": 262,
+      "end_line": 335,
+      "code": "def bokeh_plot(u, t, legends, I, w, t_range, filename):\n    \"\"\"\n    Make plots for u vs t using the Bokeh library.\n    u and t are lists (several experiments can be compared).\n    legens contain legend strings for the various u,t pairs.\n    \"\"\"\n    if not isinstance(u, (list, tuple)):\n        u = [u]  # wrap in list\n    if not isinstance(t, (list, tuple)):\n        t = [t]  # wrap in list\n    if not isinstance(legends, (list, tuple)):\n        legends = [legends]  # wrap in list\n\n    import bokeh.plotting as plt\n\n    plt.output_file(filename, mode=\"cdn\", title=\"Comparison\")\n    # Assume that all t arrays have the same range\n    t_fine = np.linspace(0, t[0][-1], 1001)  # fine mesh for u_e\n    tools = \"pan,wheel_zoom,box_zoom,reset,save,box_select,lasso_select\"\n    u_range = [-1.2 * I, 1.2 * I]\n    font_size = \"8pt\"\n    p = []  # list of plot objects\n    # Make the first figure\n    p_ = plt.figure(\n        width=300,\n        plot_height=250,\n        title=legends[0],\n        x_axis_label=\"t\",\n        y_axis_label=\"u\",\n        x_range=t_range,\n        y_range=u_range,\n        tools=tools,\n        title_text_font_size=font_size,\n    )\n    p_.xaxis.axis_label_text_font_size = font_size\n    p_.yaxis.axis_label_text_font_size = font_size\n    p_.line(t[0], u[0], line_color=\"blue\")\n    # Add exact solution\n    u_e = u_exact(t_fine, I, w)\n    p_.line(t_fine, u_e, line_color=\"red\", line_dash=\"4 4\")\n    p.append(p_)\n    # Make the rest of the figures and attach their axes to\n    # the first figure's axes\n    for i in range(1, len(t)):\n        p_ = plt.figure(\n            width=300,\n            plot_height=250,\n            title=legends[i],\n            x_axis_label=\"t\",\n            y_axis_label=\"u\",\n            x_range=p[0].x_range,\n            y_range=p[0].y_range,\n            tools=tools,\n            title_text_font_size=font_size,\n        )\n        p_.xaxis.axis_label_text_font_size = font_size\n        p_.yaxis.axis_label_text_font_size = font_size\n        p_.line(t[i], u[i], line_color=\"blue\")\n        p_.line(t_fine, u_e, line_color=\"red\", line_dash=\"4 4\")\n        p.append(p_)\n\n    # Arrange all plots in a grid with 3 plots per row\n    grid = [[]]\n    for i, p_ in enumerate(p):\n        grid[-1].append(p_)\n        if (i + 1) % 3 == 0:\n            # New row\n            grid.append([])\n    plot = plt.gridplot(grid, toolbar_location=\"left\")\n    plt.save(plot)\n    plt.show(plot)\n\n\ndef demo_bokeh():\n",
+      "line_count": 74,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped.py",
+      "resolved_path": "./src/vib/vib_undamped.py",
+      "from_pattern": "def demo_bokeh",
+      "to_pattern": "if __name",
+      "total_lines": 358,
+      "start_line": 335,
+      "end_line": 354,
+      "code": "def demo_bokeh():\n    \"\"\"Solve a scaled ODE u'' + u = 0.\"\"\"\n\n    w = 1.0  # Scaled problem (frequency)\n    P = 2 * np.pi / w  # Period\n    num_steps_per_period = [5, 10, 20, 40, 80]\n    T = 40 * P  # Simulation time: 40 periods\n    u = []  # List of numerical solutions\n    t = []  # List of corresponding meshes\n    legends = []\n    for n in num_steps_per_period:\n        dt = P / n\n        u_, t_ = solver(I=1, w=w, dt=dt, T=T)\n        u.append(u_)\n        t.append(t_)\n        legends.append(\"# time steps per period: %d\" % n)\n    bokeh_plot(u, t, legends, I=1, w=w, t_range=[0, 4 * P], filename=\"tmp.html\")\n\n\nif __name__ == \"__main__\":\n",
+      "line_count": 20,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped_odespy.py",
+      "resolved_path": "./src/vib/vib_undamped_odespy.py",
+      "from_pattern": "import odespy",
+      "to_pattern": "# Compute energy",
+      "total_lines": 144,
+      "start_line": 5,
+      "end_line": 30,
+      "code": "import odespy\nfrom vib_empirical_analysis import amplitudes, minmax, periods\n\n\ndef f(u, t, w=1):\n    # v, u numbering for EulerCromer to work well\n    v, u = u  # u is array of length 2 holding our [v, u]\n    return [-(w**2) * u, v]\n\n\ndef run_solvers_and_plot(\n    solvers, timesteps_per_period=20, num_periods=1, I=1, w=2 * np.pi\n):\n    P = 2 * np.pi / w  # duration of one period\n    dt = P / timesteps_per_period\n    Nt = num_periods * timesteps_per_period\n    T = Nt * dt\n    t_mesh = np.linspace(0, T, Nt + 1)\n\n    legends = []\n    for solver in solvers:\n        solver.set(f_kwargs={\"w\": w})\n        solver.set_initial_condition([0, I])\n        u, t = solver.solve(t_mesh)\n\n        # Compute energy\n",
+      "line_count": 26,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped_EulerCromer.py",
+      "resolved_path": "./src/vib/vib_undamped_EulerCromer.py",
+      "from_pattern": "import numpy",
+      "to_pattern": "def solver_ic",
+      "total_lines": 146,
+      "start_line": 1,
+      "end_line": 23,
+      "code": "import numpy as np\n\n\ndef solver(I, w, dt, T):\n    \"\"\"\n    Solve v' = - w**2*u, u'=v for t in (0,T], u(0)=I and v(0)=0,\n    by an Euler-Cromer method.\n    \"\"\"\n    dt = float(dt)\n    Nt = int(round(T / dt))\n    u = np.zeros(Nt + 1)\n    v = np.zeros(Nt + 1)\n    t = np.linspace(0, Nt * dt, Nt + 1)\n\n    v[0] = 0\n    u[0] = I\n    for n in range(0, Nt):\n        v[n + 1] = v[n] - dt * w**2 * u[n]\n        u[n + 1] = u[n] + dt * v[n + 1]\n    return u, v, t\n\n\ndef solver_ic_fix(I, w, dt, T):\n",
+      "line_count": 23,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped_EulerCromer.py",
+      "resolved_path": "./src/vib/vib_undamped_EulerCromer.py",
+      "from_pattern": "def test_solver",
+      "to_pattern": "def demo",
+      "total_lines": 146,
+      "start_line": 64,
+      "end_line": 82,
+      "code": "def test_solver():\n    \"\"\"\n    Test solver with fixed initial condition against\n    equivalent scheme for the 2nd-order ODE u'' + u = 0.\n    \"\"\"\n    I = 1.2\n    w = 2.0\n    T = 5\n    dt = 2 / w  # longest possible time step\n    u, v, t = solver_ic_fix(I, w, dt, T)\n    from vib_undamped import solver as solver2  # 2nd-order ODE\n\n    u2, t2 = solver2(I, w, dt, T)\n    error = np.abs(u - u2).max()\n    tol = 1e-14\n    assert error < tol\n\n\ndef demo():\n",
+      "line_count": 19,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/pendulum_body_diagram.py",
+      "resolved_path": "./src/vib/pendulum_body_diagram.py",
+      "from_pattern": "def simulate",
+      "to_pattern": "def animate",
+      "total_lines": 165,
+      "start_line": 98,
+      "end_line": 119,
+      "code": "def simulate(alpha, Theta, dt, T):\n    import odespy\n\n    def f(u, t, alpha):\n        omega, theta = u\n        return [-alpha * omega * abs(omega) - sin(theta), omega]\n\n    import numpy as np\n\n    Nt = int(round(T / float(dt)))\n    t = np.linspace(0, Nt * dt, Nt + 1)\n    solver = odespy.RK4(f, f_args=[alpha])\n    solver.set_initial_condition([0, Theta])\n    u, t = solver.solve(t, terminate=lambda u, t, n: abs(u[n, 1]) < 1e-3)\n    omega = u[:, 0]\n    theta = u[:, 1]\n    S = omega**2 + np.cos(theta)\n    drag = -alpha * np.abs(omega) * omega\n    return t, theta, omega, S, drag\n\n\ndef animate():\n",
+      "line_count": 22,
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "src-vib/pendulum_body_diagram.py",
+      "resolved_path": "./src/vib/pendulum_body_diagram.py",
+      "from_pattern": "import sys",
+      "to_pattern": "def simulate",
+      "total_lines": 165,
+      "start_line": 6,
+      "end_line": 98,
+      "code": "import sys\n\ntry:\n    from pysketcher import *\nexcept ImportError:\n    print(\"Pysketcher must be installed from\")\n    print(\"https://github.com/hplgit/pysketcher\")\n    sys.exit(1)\n\n# Overall dimensions of sketch\nH = 15.0\nW = 17.0\n\ndrawing_tool.set_coordinate_system(xmin=0, xmax=W, ymin=0, ymax=H, axis=False)\n\n\ndef sketch(theta, S, mg, drag, t, time_level):\n    \"\"\"\n    Draw pendulum sketch with body forces at a time level\n    corresponding to time t. The drag force is in\n    drag[time_level], the force in the wire is S[time_level],\n    the angle is theta[time_level].\n    \"\"\"\n    import math\n\n    a = math.degrees(theta[time_level])  # angle in degrees\n    L = 0.4 * H  # Length of pendulum\n    P = (W / 2, 0.8 * H)  # Fixed rotation point\n\n    mass_pt = path.geometric_features()[\"end\"]\n    rod = Line(P, mass_pt)\n\n    mass = Circle(center=mass_pt, radius=L / 20.0)\n    mass.set_filled_curves(color=\"blue\")\n    rod_vec = rod.geometric_features()[\"end\"] - rod.geometric_features()[\"start\"]\n    unit_rod_vec = unit_vec(rod_vec)\n    mass_symbol = Text(\"$m$\", mass_pt + L / 10 * unit_rod_vec)\n\n    rod_start = rod.geometric_features()[\"start\"]  # Point P\n    vertical = Line(rod_start, rod_start + point(0, -L / 3))\n\n    def set_dashed_thin_blackline(*objects):\n        \"\"\"Set linestyle of objects to dashed, black, width=1.\"\"\"\n        for obj in objects:\n            obj.set_linestyle(\"dashed\")\n            obj.set_linecolor(\"black\")\n            obj.set_linewidth(1)\n\n    set_dashed_thin_blackline(vertical)\n    set_dashed_thin_blackline(rod)\n    angle = Arc_wText(r\"$\\theta$\", rod_start, L / 6, -90, a, text_spacing=1 / 30.0)\n\n    magnitude = 1.2 * L / 2  # length of a unit force in figure\n    force = mg[time_level]  # constant (scaled eq: about 1)\n    force *= magnitude\n    mg_force = Force(mass_pt, mass_pt + force * point(0, -1), \"\", text_pos=\"end\")\n    force = S[time_level]\n    force *= magnitude\n    rod_force = Force(\n        mass_pt,\n        mass_pt - force * unit_vec(rod_vec),\n        \"\",\n        text_pos=\"end\",\n        text_spacing=(0.03, 0.01),\n    )\n    force = drag[time_level]\n    force *= magnitude\n    air_force = Force(\n        mass_pt,\n        mass_pt - force * unit_vec((rod_vec[1], -rod_vec[0])),\n        \"\",\n        text_pos=\"end\",\n        text_spacing=(0.04, 0.005),\n    )\n\n    body_diagram = Composition(\n        {\n            \"mg\": mg_force,\n            \"S\": rod_force,\n            \"air\": air_force,\n            \"rod\": rod,\n            \"body\": mass,\n            \"vertical\": vertical,\n            \"theta\": angle,\n        }\n    )\n\n    body_diagram.draw(verbose=0)\n    drawing_tool.savefig(\"tmp_%04d.png\" % time_level, crop=False)\n    # (No cropping: otherwise movies will be very strange!)\n\n\ndef simulate(alpha, Theta, dt, T):\n",
+      "line_count": 93,
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "src-vib/pendulum_body_diagram.py",
+      "resolved_path": "./src/vib/pendulum_body_diagram.py",
+      "from_pattern": "def animate",
+      "to_pattern": "if __name",
+      "total_lines": 165,
+      "start_line": 119,
+      "end_line": 164,
+      "code": "def animate():\n    # Clean up old plot files\n    import glob\n    import os\n\n    for filename in glob.glob(\"tmp_*.png\") + glob.glob(\"movie.*\"):\n        os.remove(filename)\n    # Solve problem\n    from math import pi, radians\n\n    import numpy as np\n\n    alpha = 0.4\n    period = 2 * pi  # Use small theta approximation\n    T = 12 * period  # Simulate for 12 periods\n    dt = period / 40  # 40 time steps per period\n    a = 70  # Initial amplitude in degrees\n    Theta = radians(a)\n\n    t, theta, omega, S, drag = simulate(alpha, Theta, dt, T)\n\n    # Visualize drag force 5 times as large\n    drag *= 5\n    mg = np.ones(S.size)  # Gravity force (needed in sketch)\n\n    # Draw animation\n    import time\n\n    for time_level, t_ in enumerate(t):\n        sketch(theta, S, mg, drag, t_, time_level)\n        time.sleep(0.2)  # Pause between each frame on the screen\n\n    # Make videos\n    prog = \"ffmpeg\"\n    filename = \"tmp_%04d.png\"\n    fps = 6\n    codecs = {\"flv\": \"flv\", \"mp4\": \"libx264\", \"webm\": \"libvpx\", \"ogg\": \"libtheora\"}\n    for ext in codecs:\n        lib = codecs[ext]\n        cmd = \"%(prog)s -i %(filename)s -r %(fps)s \" % vars()\n        cmd += \"-vcodec %(lib)s movie.%(ext)s\" % vars()\n        print(cmd)\n        os.system(cmd)\n\n\nif __name__ == \"__main__\":\n",
+      "line_count": 46,
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib.py",
+      "resolved_path": "./src/vib/vib.py",
+      "from_pattern": "def solver",
+      "to_pattern": "def visualize",
+      "total_lines": 337,
+      "start_line": 5,
+      "end_line": 42,
+      "code": "def solver(I, V, m, b, s, F, dt, T, damping=\"linear\"):\n    \"\"\"\n    Solve m*u'' + f(u') + s(u) = F(t) for t in (0,T],\n    u(0)=I and u'(0)=V,\n    by a central finite difference method with time step dt.\n    If damping is 'linear', f(u')=b*u, while if damping is\n    'quadratic', f(u')=b*u'*abs(u').\n    F(t) and s(u) are Python functions.\n    \"\"\"\n    dt = float(dt)\n    b = float(b)\n    m = float(m)  # avoid integer div.\n    Nt = int(round(T / dt))\n    u = np.zeros(Nt + 1)\n    t = np.linspace(0, Nt * dt, Nt + 1)\n\n    u[0] = I\n    if damping == \"linear\":\n        u[1] = u[0] + dt * V + dt**2 / (2 * m) * (-b * V - s(u[0]) + F(t[0]))\n    elif damping == \"quadratic\":\n        u[1] = u[0] + dt * V + dt**2 / (2 * m) * (-b * V * abs(V) - s(u[0]) + F(t[0]))\n\n    for n in range(1, Nt):\n        if damping == \"linear\":\n            u[n + 1] = (\n                2 * m * u[n] + (b * dt / 2 - m) * u[n - 1] + dt**2 * (F(t[n]) - s(u[n]))\n            ) / (m + b * dt / 2)\n        elif damping == \"quadratic\":\n            u[n + 1] = (\n                2 * m * u[n]\n                - m * u[n - 1]\n                + b * u[n] * abs(u[n] - u[n - 1])\n                + dt**2 * (F(t[n]) - s(u[n]))\n            ) / (m + b * abs(u[n] - u[n - 1]))\n    return u, t\n\n\ndef visualize(u, t, title=\"\", filename=\"tmp\"):\n",
+      "line_count": 38,
+      "source_file": "doc/.src/chapters/vib/vib_gen.do.txt"
+    }
+  ],
+  "error_details": [
+    {
+      "filepath": "src-vib/vib_undamped.py",
+      "resolved_path": "./src/vib/vib_undamped.py",
+      "from_pattern": "plot_convergence_rates",
+      "to_pattern": "plt\\.savefig",
+      "total_lines": 358,
+      "start_line": 119,
+      "end_line_error": "Pattern not found: plt\\.savefig",
+      "end_line": 358,
+      "code": "def plot_convergence_rates():\n    r2, E2, dt2 = convergence_rates(m=5, solver_function=solver, num_periods=8)\n    plt.loglog(dt2, E2)\n    r4, E4, dt4 = convergence_rates(m=5, solver_function=solver_adjust_w, num_periods=8)\n    plt.loglog(dt4, E4)\n    plt.legend([\"original scheme\", r\"adjusted $\\omega$\"], loc=\"upper left\")\n    plt.title(\"Convergence of finite difference methods\")\n    from plotslopes import slope_marker\n\n    slope_marker((dt2[1], E2[1]), (2, 1))\n    slope_marker((dt4[1], E4[1]), (4, 1))\n    plt.savefig(\"tmp_convrate.png\")\n    plt.savefig(\"tmp_convrate.pdf\")\n    plt.show()\n\n\ndef main(solver_function=solver):\n    import argparse\n    from math import pi\n\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"--I\", type=float, default=1.0)\n    parser.add_argument(\"--w\", type=float, default=2 * pi)\n    parser.add_argument(\"--dt\", type=float, default=0.05)\n    parser.add_argument(\"--num_periods\", type=int, default=5)\n    parser.add_argument(\"--savefig\", action=\"store_true\")\n    a = parser.parse_args()\n    I, w, dt, num_periods, savefig = a.I, a.w, a.dt, a.num_periods, a.savefig\n    P = 2 * pi / w  # one period\n    T = P * num_periods\n    u, t = solver_function(I, w, dt, T)\n    if num_periods <= 10:\n        visualize(u, t, I, w)\n    else:\n        visualize_front(u, t, I, w, savefig)\n        # visualize_front_ascii(u, t, I, w)\n    # plot_empirical_freq_and_amplitude(u, t, I, w)\n    plt.show()\n\n\ndef plot_empirical_freq_and_amplitude(u, t, I, w):\n    \"\"\"\n    Find the empirical angular frequency and amplitude of\n    simulations in u and t. u and t can be arrays or (in\n    the case of multiple simulations) multiple arrays.\n    One plot is made for the amplitude and one for the angular\n    frequency (just called frequency in the legends).\n    \"\"\"\n    from math import pi\n\n    from vib_empirical_analysis import amplitudes, minmax, periods\n\n    if not isinstance(u, (list, tuple)):\n        u = [u]\n        t = [t]\n    legends1 = []\n    legends2 = []\n    for i in range(len(u)):\n        minima, maxima = minmax(t[i], u[i])\n        p = periods(maxima)\n        a = amplitudes(minima, maxima)\n        plt.figure(1)\n        plt.plot(range(len(p)), 2 * pi / p)\n        legends1.append(\"frequency, case%d\" % (i + 1))\n        plt.figure(2)\n        plt.plot(range(len(a)), a)\n        legends2.append(\"amplitude, case%d\" % (i + 1))\n    plt.figure(1)\n    plt.plot(range(len(p)), [w] * len(p), \"k--\")\n    legends1.append(\"exact frequency\")\n    plt.legend(legends1, loc=\"lower left\")\n    plt.axis([0, len(a) - 1, 0.8 * w, 1.2 * w])\n    plt.savefig(\"tmp1.png\")\n    plt.savefig(\"tmp1.pdf\")\n    plt.figure(2)\n    plt.plot(range(len(a)), [I] * len(a), \"k--\")\n    legends2.append(\"exact amplitude\")\n    plt.legend(legends2, loc=\"lower left\")\n    plt.axis([0, len(a) - 1, 0.8 * I, 1.2 * I])\n    plt.savefig(\"tmp2.png\")\n    plt.savefig(\"tmp2.pdf\")\n    plt.show()\n\n\ndef visualize_front(u, t, I, w, savefig=False, skip_frames=1):\n    \"\"\"\n    Visualize u and the exact solution vs t, using a\n    moving plot window and continuous drawing of the\n    curves as they evolve in time.\n    Makes it easy to plot very long time series.\n    Plots are saved to files if savefig is True.\n    Only each skip_frames-th plot is saved (e.g., if\n    skip_frame=10, only each 10th plot is saved to file;\n    this is convenient if plot files corresponding to\n    different time steps are to be compared).\n    \"\"\"\n    import glob\n    import os\n    from math import pi\n\n    import matplotlib.pyplot as plt\n\n    # Remove all old plot files tmp_*.png\n    for filename in glob.glob(\"tmp_*.png\"):\n        os.remove(filename)\n\n    P = 2 * pi / w  # one period\n    window_width = 8 * P\n    umin = 1.2 * u.min()\n    umax = -umin\n    dt = t[1] - t[0]\n\n    # Calculate window size in number of points\n    window_points = int(window_width / dt)\n\n    plt.ion()\n    frame_counter = 0\n    for n in range(1, len(u)):\n        # Determine start index for sliding window\n        s = max(0, n - window_points)\n\n        # Only update plot periodically for performance\n        if n % max(1, len(u) // 500) == 0 or n == len(u) - 1:\n            plt.clf()\n            plt.plot(t[s : n + 1], u[s : n + 1], \"r-\", label=\"numerical\")\n            plt.plot(t[s : n + 1], I * np.cos(w * t[s : n + 1]), \"b-\", label=\"exact\")\n            plt.title(\"t=%6.3f\" % t[n])\n            plt.xlabel(\"t\")\n            plt.ylabel(\"u\")\n            plt.axis([t[s], t[s] + window_width, umin, umax])\n            plt.legend(loc=\"upper right\")\n\n            if not savefig:\n                plt.draw()\n                plt.pause(0.001)\n\n            if savefig and n % skip_frames == 0:\n                filename = \"tmp_%04d.png\" % frame_counter\n                plt.savefig(filename)\n                print(\"making plot file\", filename, \"at t=%g\" % t[n])\n                frame_counter += 1\n\n\ndef bokeh_plot(u, t, legends, I, w, t_range, filename):\n    \"\"\"\n    Make plots for u vs t using the Bokeh library.\n    u and t are lists (several experiments can be compared).\n    legens contain legend strings for the various u,t pairs.\n    \"\"\"\n    if not isinstance(u, (list, tuple)):\n        u = [u]  # wrap in list\n    if not isinstance(t, (list, tuple)):\n        t = [t]  # wrap in list\n    if not isinstance(legends, (list, tuple)):\n        legends = [legends]  # wrap in list\n\n    import bokeh.plotting as plt\n\n    plt.output_file(filename, mode=\"cdn\", title=\"Comparison\")\n    # Assume that all t arrays have the same range\n    t_fine = np.linspace(0, t[0][-1], 1001)  # fine mesh for u_e\n    tools = \"pan,wheel_zoom,box_zoom,reset,save,box_select,lasso_select\"\n    u_range = [-1.2 * I, 1.2 * I]\n    font_size = \"8pt\"\n    p = []  # list of plot objects\n    # Make the first figure\n    p_ = plt.figure(\n        width=300,\n        plot_height=250,\n        title=legends[0],\n        x_axis_label=\"t\",\n        y_axis_label=\"u\",\n        x_range=t_range,\n        y_range=u_range,\n        tools=tools,\n        title_text_font_size=font_size,\n    )\n    p_.xaxis.axis_label_text_font_size = font_size\n    p_.yaxis.axis_label_text_font_size = font_size\n    p_.line(t[0], u[0], line_color=\"blue\")\n    # Add exact solution\n    u_e = u_exact(t_fine, I, w)\n    p_.line(t_fine, u_e, line_color=\"red\", line_dash=\"4 4\")\n    p.append(p_)\n    # Make the rest of the figures and attach their axes to\n    # the first figure's axes\n    for i in range(1, len(t)):\n        p_ = plt.figure(\n            width=300,\n            plot_height=250,\n            title=legends[i],\n            x_axis_label=\"t\",\n            y_axis_label=\"u\",\n            x_range=p[0].x_range,\n            y_range=p[0].y_range,\n            tools=tools,\n            title_text_font_size=font_size,\n        )\n        p_.xaxis.axis_label_text_font_size = font_size\n        p_.yaxis.axis_label_text_font_size = font_size\n        p_.line(t[i], u[i], line_color=\"blue\")\n        p_.line(t_fine, u_e, line_color=\"red\", line_dash=\"4 4\")\n        p.append(p_)\n\n    # Arrange all plots in a grid with 3 plots per row\n    grid = [[]]\n    for i, p_ in enumerate(p):\n        grid[-1].append(p_)\n        if (i + 1) % 3 == 0:\n            # New row\n            grid.append([])\n    plot = plt.gridplot(grid, toolbar_location=\"left\")\n    plt.save(plot)\n    plt.show(plot)\n\n\ndef demo_bokeh():\n    \"\"\"Solve a scaled ODE u'' + u = 0.\"\"\"\n\n    w = 1.0  # Scaled problem (frequency)\n    P = 2 * np.pi / w  # Period\n    num_steps_per_period = [5, 10, 20, 40, 80]\n    T = 40 * P  # Simulation time: 40 periods\n    u = []  # List of numerical solutions\n    t = []  # List of corresponding meshes\n    legends = []\n    for n in num_steps_per_period:\n        dt = P / n\n        u_, t_ = solver(I=1, w=w, dt=dt, T=T)\n        u.append(u_)\n        t.append(t_)\n        legends.append(\"# time steps per period: %d\" % n)\n    bokeh_plot(u, t, legends, I=1, w=w, t_range=[0, 4 * P], filename=\"tmp.html\")\n\n\nif __name__ == \"__main__\":\n    # main()\n    # demo_bokeh()\n    plot_convergence_rates()\n    input()\n",
+      "line_count": 240,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped.py",
+      "resolved_path": "./src/vib/vib_undamped.py",
+      "from_pattern": "def visualize_front\\(",
+      "to_pattern": "def visualize_front_ascii",
+      "total_lines": 358,
+      "start_line_error": "Pattern not found: def visualize_front\\(",
+      "start_line": 1,
+      "end_line_error": "Pattern not found: def visualize_front_ascii",
+      "end_line": 358,
+      "code": "import matplotlib.pyplot as plt\nimport numpy as np\n\n\ndef solver(I, w, dt, T):\n    \"\"\"\n    Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,\n    by a central finite difference method with time step dt.\n    \"\"\"\n    dt = float(dt)\n    Nt = int(round(T / dt))\n    u = np.zeros(Nt + 1)\n    t = np.linspace(0, Nt * dt, Nt + 1)\n\n    u[0] = I\n    u[1] = u[0] - 0.5 * dt**2 * w**2 * u[0]\n    for n in range(1, Nt):\n        u[n + 1] = 2 * u[n] - u[n - 1] - dt**2 * w**2 * u[n]\n    return u, t\n\n\ndef solver_adjust_w(I, w, dt, T, adjust_w=True):\n    \"\"\"\n    Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,\n    by a central finite difference method with time step dt.\n    \"\"\"\n    dt = float(dt)\n    Nt = int(round(T / dt))\n    u = np.zeros(Nt + 1)\n    t = np.linspace(0, Nt * dt, Nt + 1)\n    w_adj = w * (1 - w**2 * dt**2 / 24.0) if adjust_w else w\n\n    u[0] = I\n    u[1] = u[0] - 0.5 * dt**2 * w_adj**2 * u[0]\n    for n in range(1, Nt):\n        u[n + 1] = 2 * u[n] - u[n - 1] - dt**2 * w_adj**2 * u[n]\n    return u, t\n\n\ndef u_exact(t, I, w):\n    return I * np.cos(w * t)\n\n\ndef visualize(u, t, I, w):\n    plt.plot(t, u, \"r--o\")\n    t_fine = np.linspace(0, t[-1], 1001)  # very fine mesh for u_e\n    u_e = u_exact(t_fine, I, w)\n    plt.plot(t_fine, u_e, \"b-\")\n    plt.legend([\"numerical\", \"exact\"], loc=\"upper left\")\n    plt.xlabel(\"t\")\n    plt.ylabel(\"u\")\n    dt = t[1] - t[0]\n    plt.title(\"dt=%g\" % dt)\n    umin = 1.2 * u.min()\n    umax = -umin\n    plt.axis([t[0], t[-1], umin, umax])\n    plt.savefig(\"tmp1.png\")\n    plt.savefig(\"tmp1.pdf\")\n\n\ndef test_three_steps():\n    from math import pi\n\n    I = 1\n    w = 2 * pi\n    dt = 0.1\n    T = 1\n    u_by_hand = np.array([1.000000000000000, 0.802607911978213, 0.288358920740053])\n    u, t = solver(I, w, dt, T)\n    diff = np.abs(u_by_hand - u[:3]).max()\n    tol = 1e-14\n    assert diff < tol\n\n\ndef convergence_rates(m, solver_function, num_periods=8):\n    \"\"\"\n    Return m-1 empirical estimates of the convergence rate\n    based on m simulations, where the time step is halved\n    for each simulation.\n    solver_function(I, w, dt, T) solves each problem, where T\n    is based on simulation for num_periods periods.\n    \"\"\"\n    from math import pi\n\n    w = 0.35\n    I = 0.3  # just chosen values\n    P = 2 * pi / w  # period\n    dt = P / 30  # 30 time step per period 2*pi/w\n    T = P * num_periods\n\n    dt_values = []\n    E_values = []\n    for i in range(m):\n        u, t = solver_function(I, w, dt, T)\n        u_e = u_exact(t, I, w)\n        E = np.sqrt(dt * np.sum((u_e - u) ** 2))\n        dt_values.append(dt)\n        E_values.append(E)\n        dt = dt / 2\n\n    r = [\n        np.log(E_values[i - 1] / E_values[i]) / np.log(dt_values[i - 1] / dt_values[i])\n        for i in range(1, m, 1)\n    ]\n    return r, E_values, dt_values\n\n\ndef test_convergence_rates():\n    r, E, dt = convergence_rates(m=5, solver_function=solver, num_periods=8)\n    # Accept rate to 1 decimal place\n    tol = 0.1\n    assert abs(r[-1] - 2.0) < tol\n    # Test that adjusted w obtains 4th order convergence\n    r, E, dt = convergence_rates(m=5, solver_function=solver_adjust_w, num_periods=8)\n    print(\"adjust w rates:\", r)\n    assert abs(r[-1] - 4.0) < tol\n\n\ndef plot_convergence_rates():\n    r2, E2, dt2 = convergence_rates(m=5, solver_function=solver, num_periods=8)\n    plt.loglog(dt2, E2)\n    r4, E4, dt4 = convergence_rates(m=5, solver_function=solver_adjust_w, num_periods=8)\n    plt.loglog(dt4, E4)\n    plt.legend([\"original scheme\", r\"adjusted $\\omega$\"], loc=\"upper left\")\n    plt.title(\"Convergence of finite difference methods\")\n    from plotslopes import slope_marker\n\n    slope_marker((dt2[1], E2[1]), (2, 1))\n    slope_marker((dt4[1], E4[1]), (4, 1))\n    plt.savefig(\"tmp_convrate.png\")\n    plt.savefig(\"tmp_convrate.pdf\")\n    plt.show()\n\n\ndef main(solver_function=solver):\n    import argparse\n    from math import pi\n\n    parser = argparse.ArgumentParser()\n    parser.add_argument(\"--I\", type=float, default=1.0)\n    parser.add_argument(\"--w\", type=float, default=2 * pi)\n    parser.add_argument(\"--dt\", type=float, default=0.05)\n    parser.add_argument(\"--num_periods\", type=int, default=5)\n    parser.add_argument(\"--savefig\", action=\"store_true\")\n    a = parser.parse_args()\n    I, w, dt, num_periods, savefig = a.I, a.w, a.dt, a.num_periods, a.savefig\n    P = 2 * pi / w  # one period\n    T = P * num_periods\n    u, t = solver_function(I, w, dt, T)\n    if num_periods <= 10:\n        visualize(u, t, I, w)\n    else:\n        visualize_front(u, t, I, w, savefig)\n        # visualize_front_ascii(u, t, I, w)\n    # plot_empirical_freq_and_amplitude(u, t, I, w)\n    plt.show()\n\n\ndef plot_empirical_freq_and_amplitude(u, t, I, w):\n    \"\"\"\n    Find the empirical angular frequency and amplitude of\n    simulations in u and t. u and t can be arrays or (in\n    the case of multiple simulations) multiple arrays.\n    One plot is made for the amplitude and one for the angular\n    frequency (just called frequency in the legends).\n    \"\"\"\n    from math import pi\n\n    from vib_empirical_analysis import amplitudes, minmax, periods\n\n    if not isinstance(u, (list, tuple)):\n        u = [u]\n        t = [t]\n    legends1 = []\n    legends2 = []\n    for i in range(len(u)):\n        minima, maxima = minmax(t[i], u[i])\n        p = periods(maxima)\n        a = amplitudes(minima, maxima)\n        plt.figure(1)\n        plt.plot(range(len(p)), 2 * pi / p)\n        legends1.append(\"frequency, case%d\" % (i + 1))\n        plt.figure(2)\n        plt.plot(range(len(a)), a)\n        legends2.append(\"amplitude, case%d\" % (i + 1))\n    plt.figure(1)\n    plt.plot(range(len(p)), [w] * len(p), \"k--\")\n    legends1.append(\"exact frequency\")\n    plt.legend(legends1, loc=\"lower left\")\n    plt.axis([0, len(a) - 1, 0.8 * w, 1.2 * w])\n    plt.savefig(\"tmp1.png\")\n    plt.savefig(\"tmp1.pdf\")\n    plt.figure(2)\n    plt.plot(range(len(a)), [I] * len(a), \"k--\")\n    legends2.append(\"exact amplitude\")\n    plt.legend(legends2, loc=\"lower left\")\n    plt.axis([0, len(a) - 1, 0.8 * I, 1.2 * I])\n    plt.savefig(\"tmp2.png\")\n    plt.savefig(\"tmp2.pdf\")\n    plt.show()\n\n\ndef visualize_front(u, t, I, w, savefig=False, skip_frames=1):\n    \"\"\"\n    Visualize u and the exact solution vs t, using a\n    moving plot window and continuous drawing of the\n    curves as they evolve in time.\n    Makes it easy to plot very long time series.\n    Plots are saved to files if savefig is True.\n    Only each skip_frames-th plot is saved (e.g., if\n    skip_frame=10, only each 10th plot is saved to file;\n    this is convenient if plot files corresponding to\n    different time steps are to be compared).\n    \"\"\"\n    import glob\n    import os\n    from math import pi\n\n    import matplotlib.pyplot as plt\n\n    # Remove all old plot files tmp_*.png\n    for filename in glob.glob(\"tmp_*.png\"):\n        os.remove(filename)\n\n    P = 2 * pi / w  # one period\n    window_width = 8 * P\n    umin = 1.2 * u.min()\n    umax = -umin\n    dt = t[1] - t[0]\n\n    # Calculate window size in number of points\n    window_points = int(window_width / dt)\n\n    plt.ion()\n    frame_counter = 0\n    for n in range(1, len(u)):\n        # Determine start index for sliding window\n        s = max(0, n - window_points)\n\n        # Only update plot periodically for performance\n        if n % max(1, len(u) // 500) == 0 or n == len(u) - 1:\n            plt.clf()\n            plt.plot(t[s : n + 1], u[s : n + 1], \"r-\", label=\"numerical\")\n            plt.plot(t[s : n + 1], I * np.cos(w * t[s : n + 1]), \"b-\", label=\"exact\")\n            plt.title(\"t=%6.3f\" % t[n])\n            plt.xlabel(\"t\")\n            plt.ylabel(\"u\")\n            plt.axis([t[s], t[s] + window_width, umin, umax])\n            plt.legend(loc=\"upper right\")\n\n            if not savefig:\n                plt.draw()\n                plt.pause(0.001)\n\n            if savefig and n % skip_frames == 0:\n                filename = \"tmp_%04d.png\" % frame_counter\n                plt.savefig(filename)\n                print(\"making plot file\", filename, \"at t=%g\" % t[n])\n                frame_counter += 1\n\n\ndef bokeh_plot(u, t, legends, I, w, t_range, filename):\n    \"\"\"\n    Make plots for u vs t using the Bokeh library.\n    u and t are lists (several experiments can be compared).\n    legens contain legend strings for the various u,t pairs.\n    \"\"\"\n    if not isinstance(u, (list, tuple)):\n        u = [u]  # wrap in list\n    if not isinstance(t, (list, tuple)):\n        t = [t]  # wrap in list\n    if not isinstance(legends, (list, tuple)):\n        legends = [legends]  # wrap in list\n\n    import bokeh.plotting as plt\n\n    plt.output_file(filename, mode=\"cdn\", title=\"Comparison\")\n    # Assume that all t arrays have the same range\n    t_fine = np.linspace(0, t[0][-1], 1001)  # fine mesh for u_e\n    tools = \"pan,wheel_zoom,box_zoom,reset,save,box_select,lasso_select\"\n    u_range = [-1.2 * I, 1.2 * I]\n    font_size = \"8pt\"\n    p = []  # list of plot objects\n    # Make the first figure\n    p_ = plt.figure(\n        width=300,\n        plot_height=250,\n        title=legends[0],\n        x_axis_label=\"t\",\n        y_axis_label=\"u\",\n        x_range=t_range,\n        y_range=u_range,\n        tools=tools,\n        title_text_font_size=font_size,\n    )\n    p_.xaxis.axis_label_text_font_size = font_size\n    p_.yaxis.axis_label_text_font_size = font_size\n    p_.line(t[0], u[0], line_color=\"blue\")\n    # Add exact solution\n    u_e = u_exact(t_fine, I, w)\n    p_.line(t_fine, u_e, line_color=\"red\", line_dash=\"4 4\")\n    p.append(p_)\n    # Make the rest of the figures and attach their axes to\n    # the first figure's axes\n    for i in range(1, len(t)):\n        p_ = plt.figure(\n            width=300,\n            plot_height=250,\n            title=legends[i],\n            x_axis_label=\"t\",\n            y_axis_label=\"u\",\n            x_range=p[0].x_range,\n            y_range=p[0].y_range,\n            tools=tools,\n            title_text_font_size=font_size,\n        )\n        p_.xaxis.axis_label_text_font_size = font_size\n        p_.yaxis.axis_label_text_font_size = font_size\n        p_.line(t[i], u[i], line_color=\"blue\")\n        p_.line(t_fine, u_e, line_color=\"red\", line_dash=\"4 4\")\n        p.append(p_)\n\n    # Arrange all plots in a grid with 3 plots per row\n    grid = [[]]\n    for i, p_ in enumerate(p):\n        grid[-1].append(p_)\n        if (i + 1) % 3 == 0:\n            # New row\n            grid.append([])\n    plot = plt.gridplot(grid, toolbar_location=\"left\")\n    plt.save(plot)\n    plt.show(plot)\n\n\ndef demo_bokeh():\n    \"\"\"Solve a scaled ODE u'' + u = 0.\"\"\"\n\n    w = 1.0  # Scaled problem (frequency)\n    P = 2 * np.pi / w  # Period\n    num_steps_per_period = [5, 10, 20, 40, 80]\n    T = 40 * P  # Simulation time: 40 periods\n    u = []  # List of numerical solutions\n    t = []  # List of corresponding meshes\n    legends = []\n    for n in num_steps_per_period:\n        dt = P / n\n        u_, t_ = solver(I=1, w=w, dt=dt, T=T)\n        u.append(u_)\n        t.append(t_)\n        legends.append(\"# time steps per period: %d\" % n)\n    bokeh_plot(u, t, legends, I=1, w=w, t_range=[0, 4 * P], filename=\"tmp.html\")\n\n\nif __name__ == \"__main__\":\n    # main()\n    # demo_bokeh()\n    plot_convergence_rates()\n    input()\n",
+      "line_count": 358,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "src-vib/vib_undamped_staggered.py",
+      "resolved_path": "./src/vib/vib_undamped_staggered.py",
+      "from_pattern": "def solver\\(",
+      "to_pattern": "def test_staggered",
+      "total_lines": 95,
+      "start_line_error": "Pattern not found: def solver\\(",
+      "start_line": 1,
+      "end_line": 66,
+      "code": "import os\nimport sys\n\nsys.path.insert(0, os.path.join(os.pardir, os.pardir, \"vib\", \"src-vib\"))\nfrom numpy import linspace, zeros\n\n\ndef solver_v1(I, w, dt, T):\n    \"\"\"\n    Solve u'=v, v' = - w**2*u for t in (0,T], u(0)=I and v(0)=0,\n    by a central finite difference method with time step dt.\n    \"\"\"\n    dt = float(dt)\n    Nt = int(round(T / dt))\n    u = zeros(Nt + 1)\n    v = zeros(Nt + 1)\n    t = linspace(0, Nt * dt, Nt + 1)  # mesh for u\n    t_v = (t + dt / 2)[:-1]  # mesh for v\n\n    u[0] = I\n    v[0] = 0 - 0.5 * dt * w**2 * u[0]\n    for n in range(1, Nt + 1):\n        u[n] = u[n - 1] + dt * v[n - 1]\n        v[n] = v[n - 1] - dt * w**2 * u[n]\n    return u, t, v, t_v\n\n\nclass HalfInt:\n    \"\"\"\n    Class for allowing to write n+half and mean n,\n    while n-half is n-1. Used for nice notation in staggered\n    meshes.\n    \"\"\"\n\n    def __radd__(self, other):\n        return other\n\n    def __rsub__(self, other):\n        return other - 1\n\n\nhalf = HalfInt()  # singleton object\n\n\ndef solver(I, w, dt, T):\n    \"\"\"\n    Solve u'=v, v' = - w**2*u for t in (0,T], u(0)=I and v(0)=0,\n    by a central finite difference method with time step dt on\n    a staggered mesh with v as unknown at (i+1/2)*dt time points.\n    \"\"\"\n    dt = float(dt)\n    Nt = int(round(T / dt))\n    u = zeros(Nt + 1)\n    v = zeros(Nt + 1)\n    t = linspace(0, Nt * dt, Nt + 1)  # mesh for u\n    t_v = t + dt / 2  # mesh for v\n\n    u[0] = I\n    v[0 + half] = 0 - 0.5 * dt * w**2 * u[0]\n    for n in range(1, Nt + 1):\n        u[n] = u[n - 1] + dt * v[n - half]\n        v[n + half] = v[n - half] - dt * w**2 * u[n]\n    return u, t, v[:-1], t_v[:-1]\n\n\ndef test_staggered():\n",
+      "line_count": 66,
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_undamped_verify_mms.py",
+      "error": "File not found: ./exer-vib/vib_undamped_verify_mms.py",
+      "from_pattern": "import sympy",
+      "to_pattern": "def linear",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_undamped_verify_mms.py",
+      "error": "File not found: ./exer-vib/vib_undamped_verify_mms.py",
+      "from_pattern": "def quadratic",
+      "to_pattern": "def cubic",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_undamped_verify_mms.py",
+      "error": "File not found: ./exer-vib/vib_undamped_verify_mms.py",
+      "from_pattern": "def cubic",
+      "to_pattern": "def solver",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_undamped_verify_mms.py",
+      "error": "File not found: ./exer-vib/vib_undamped_verify_mms.py",
+      "from_pattern": "def solver",
+      "to_pattern": "def test_quadratic",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_undamped_verify_mms.py",
+      "error": "File not found: ./exer-vib/vib_undamped_verify_mms.py",
+      "from_pattern": "def test_quadratic",
+      "to_pattern": "if __name",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_undamped_verify_mms.py",
+      "error": "File not found: ./exer-vib/vib_undamped_verify_mms.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_adjust_w.py",
+      "error": "File not found: ./exer-vib/vib_adjust_w.py",
+      "from_pattern": "from numpy",
+      "to_pattern": "def exact_solution",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_undamped_adaptive.py",
+      "error": "File not found: ./exer-vib/vib_undamped_adaptive.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_undamped_velocity_Verlet.py",
+      "error": "File not found: ./exer-vib/vib_undamped_velocity_Verlet.py",
+      "from_pattern": "from vib_undamped",
+      "to_pattern": "if __name",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_plot_fd_exp_error.py",
+      "error": "File not found: ./exer-vib/vib_plot_fd_exp_error.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/test_error_conv.py",
+      "error": "File not found: ./exer-vib/test_error_conv.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_verify_mms.py",
+      "error": "File not found: ./exer-vib/vib_verify_mms.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/test_vib_undamped_exact_discrete_sol.py",
+      "error": "File not found: ./exer-vib/test_vib_undamped_exact_discrete_sol.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_conv_rate.py",
+      "error": "File not found: ./exer-vib/vib_conv_rate.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_amplitude_errors.py",
+      "error": "File not found: ./exer-vib/vib_amplitude_errors.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_memsave0.py",
+      "error": "File not found: ./exer-vib/vib_memsave0.py",
+      "from_pattern": "import numpy",
+      "to_pattern": "def test_solver",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_memsave0.py",
+      "error": "File not found: ./exer-vib/vib_memsave0.py",
+      "from_pattern": "def test_solver",
+      "to_pattern": "if __name",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_memsave.py",
+      "error": "File not found: ./exer-vib/vib_memsave.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_EulerCromer.py",
+      "error": "File not found: ./exer-vib/vib_EulerCromer.py",
+      "from_pattern": "import numpy",
+      "to_pattern": "def test_",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_EulerCromer.py",
+      "error": "File not found: ./exer-vib/vib_EulerCromer.py",
+      "from_pattern": "def test_",
+      "to_pattern": "def demo",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_EulerCromer.py",
+      "error": "File not found: ./exer-vib/vib_EulerCromer.py",
+      "from_pattern": "def demo",
+      "to_pattern": "if __name",
+      "source_file": "doc/.src/chapters/vib/vib_undamped.do.txt"
+    },
+    {
+      "filepath": "exer-vib/resonance.py",
+      "error": "File not found: ./exer-vib/resonance.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/sliding_box.py",
+      "error": "File not found: ./exer-vib/sliding_box.py",
+      "from_pattern": "import matplotlib",
+      "to_pattern": "def simulate",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/sliding_box.py",
+      "error": "File not found: ./exer-vib/sliding_box.py",
+      "from_pattern": "def simulate",
+      "to_pattern": "if __name",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/bouncing_ball.py",
+      "error": "File not found: ./exer-vib/bouncing_ball.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/simple_pendulum.py",
+      "error": "File not found: ./exer-vib/simple_pendulum.py",
+      "from_pattern": "def simulate",
+      "to_pattern": "def visualize",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/simple_pendulum.py",
+      "error": "File not found: ./exer-vib/simple_pendulum.py",
+      "from_pattern": "def visualize",
+      "to_pattern": "import math",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/simple_pendulum.py",
+      "error": "File not found: ./exer-vib/simple_pendulum.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/elastic_pendulum.py",
+      "error": "File not found: ./exer-vib/elastic_pendulum.py",
+      "from_pattern": "import odespy",
+      "to_pattern": "def test_equal",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/elastic_pendulum.py",
+      "error": "File not found: ./exer-vib/elastic_pendulum.py",
+      "from_pattern": "def test_equal",
+      "to_pattern": "def test_vert",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/elastic_pendulum.py",
+      "error": "File not found: ./exer-vib/elastic_pendulum.py",
+      "from_pattern": "def test_vert",
+      "to_pattern": "def demo",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/elastic_pendulum.py",
+      "error": "File not found: ./exer-vib/elastic_pendulum.py",
+      "from_pattern": "def demo",
+      "to_pattern": "if __name",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/elastic_pendulum_drag.py",
+      "error": "File not found: ./exer-vib/elastic_pendulum_drag.py",
+      "from_pattern": "def simulate_drag",
+      "to_pattern": "def test_eq",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_PEFRL.py",
+      "error": "File not found: ./exer-vib/vib_PEFRL.py",
+      "from_pattern": "import numpy",
+      "to_pattern": "def test_solver_PEFRL",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_PEFRL.py",
+      "error": "File not found: ./exer-vib/vib_PEFRL.py",
+      "from_pattern": "def test_solver_PEFRL",
+      "to_pattern": "class PEFRL",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_PEFRL.py",
+      "error": "File not found: ./exer-vib/vib_PEFRL.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_app.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_class.py",
+      "error": "File not found: ./exer-vib/vib_class.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_gen.do.txt"
+    },
+    {
+      "filepath": "exer-vib/vib_gen_bwdamping.py",
+      "error": "File not found: ./exer-vib/vib_gen_bwdamping.py",
+      "from_pattern": "",
+      "to_pattern": "",
+      "source_file": "doc/.src/chapters/vib/vib_gen.do.txt"
+    }
+  ]
+}

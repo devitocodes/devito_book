@@ -18,6 +18,7 @@ build/
 *~
 .*~
 *.old
+*.old~~
 tmp*
 temp*
 .#*
@@ -66,3 +67,6 @@ tmp_mako__*.do.txt
 tmp_preprocess__*.do.txt
 # Test files:
 title_test.*
+
+/.quarto/
+**/*.quarto_ipynb

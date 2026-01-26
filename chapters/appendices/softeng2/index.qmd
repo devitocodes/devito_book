@@ -1,0 +1,5 @@
+---
+title: "Software Engineering"
+---
+
+{{< include softeng2.qmd >}}

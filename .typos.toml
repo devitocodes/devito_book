@@ -1,0 +1,5 @@
+[default.extend-words]
+# Vietnamese name (Thanh-Ha Le Thi)
+Thi = "Thi"
+# Equation label suffix (exact solution "u_e")
+ue = "ue"
