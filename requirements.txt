@@ -21,9 +21,6 @@ nbformat>=5.9.0
 jupyter-client>=8.0.0
 lxml>=5.0.0
 
-# Documentation
-sphinx>=7.0.0
-
 # Scientific Python stack (used in examples)
 matplotlib>=3.7.0
 numpy>=1.24.0

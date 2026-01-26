@@ -1,2 +1,2 @@
 #!/bin/sh
-bash ../make.sh trunc sphinx publish src
+bash ../make.sh $(basename $(pwd))

@@ -1,3 +1,2 @@
 #!/bin/sh
-bash ../make.sh vib sphinx publish src
-#bash ../make.sh vib
+bash ../make.sh $(basename $(pwd))
