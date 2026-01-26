@@ -628,54 +628,6 @@ that also the 2D program can propagate this pulse exactly
 in $x$ direction ($c\Delta t/\Delta x=1$, $\Delta y$ arbitrary)
 and $y$ direction ($c\Delta t/\Delta y=1$, $\Delta x$ arbitrary).
 
-# #ifdef OLD
-===== Exercise: Implement a convergence test for a 2D code =====
-file=wave2D_n2
-
-Use the following manufactured solution to verify a 2D code
-for $u_{tt}=c^2(u_{xx}+u_{yy})$ in the spatial domain
-$[0,L_x]\times [0,L_y]$, with $\partial u/\partial n$ on the boundary
-(cf. Exercise ref{wave:app:exer:wave2D:Neumann}):
-
-!bt
-\begin{equation}
-\uex(x,y,t)=\cos(m_xx\pi/L_x)\cos(m_yy\pi/L_y)\cos (\omega t),
-label{wave:app:exer:standing:waves}
-\end{equation}
-!et
-Here, $m_x$ and $m_y$ are freely chosen integers such that
-the wave lengths in the $x$ and $y$ directions become $2L_x/m_x$ and
-$2L_y/m_y$, respectively. The parameter $\omega$ is calculated
-by inserting (ref{wave:app:exer:standing:waves}) in the wave equation.
-The solution
-(ref{wave:app:exer:standing:waves}) is a *standing wave*
-with $\partial u/\partial n=0$.
-This $\uex$ is not an exact solution of the discrete equations so the
-test must be based on empirical analysis of the convergence.
-The error $E$ is assumed to behave like
-
-!bt
-\[
-E = C_t\Delta t^2 + C_x\Delta x^2 + C_y\Delta y^2,
-\]
-!et
-for some constants $C_t$, $C_x$, and $C_y$.
-Choose $\Delta t=F_th$, $\Delta x =F_xh$, and $\Delta y=F_yh$, where
-$h$ is a common discretization parameter to be varied ($h\rightarrow 0$)
-and $F_t$, $F_x$, and $F_y$ are freely chosen constant factors
-compatible with the stability criterion in 2D. The error can then
-be expressed as
-
-!bt
-\[
-E = Ch^2,
-\]
-!et
-where $C=C_xF_t^2 + C_yF_x^2 + C_tF_t^2$.
-Perform experiments with decreasing $h$, compute $E$, and verify that
-$E/h^2$ is approximately constant.
-
-# #endif
 
 ===== Exercise: Test the efficiency of compiled loops in 3D =====
 label{wave:exer:3D:f77:cy:efficiency}

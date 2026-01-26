@@ -13,6 +13,3 @@ TOC: on
 
 # #include "trunc.do.txt"
 
-# #ifdef OLD
-# #include "oldtrunc.do.txt"
-# #endif

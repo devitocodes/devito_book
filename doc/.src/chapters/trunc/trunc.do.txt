@@ -1576,7 +1576,6 @@ Why? The staggered scheme has only 2nd-order approximations so that is
 easy. I have not found any literature on the Euler-Cromer scheme
 and its truncation error, except for the result (1st order).]
 
-# #ifdef EXTRA
 [hpl: The next section is wrong. Use Euler-Cromer so we get away with
 explicit update of $v$ first, then $u$. If we cannot really explain
 who terms cancel to get second-order accuracy, should we not just
@@ -1649,7 +1648,7 @@ This does not work out...
 
 Each ODE will have a truncation error when inserting the exact
 solutions $\uex$ and $\vex$ in
-(ref{trunc:vib:gen:2x2model:ode:u:fw})-(ref{trunc:vib:gen:2x2model:ode:v:bw}):
+(ref{trunc:vib:gen:2x2model:ode:v:fw})-(ref{trunc:vib:gen:2x2model:ode:u:bw}):
 
 !bt
 \begin{align}
@@ -1712,7 +1711,6 @@ accurate. However, this analysis is misleading: the building blocks
 play together in a way that makes the scheme second-order accurate.
 This is shown by considering an alternative, yet equivalent, formulation
 of the above scheme.
-# #endif
 
 === A centered scheme on a staggered mesh ===
 
@@ -1782,17 +1780,6 @@ in both equations:
 \[ R_u^{n-\half}= \Oof{\Delta t^2}, \quad R_v^n = \Oof{\Delta t^2}\tp\]
 !et
 
-# #ifdef NOTCORRECT
-Comparing
-(ref{trunc:vib:gen:2x2model:ode:u:staggered2})-(ref{trunc:vib:gen:2x2model:ode:v:staggered2})
-with
-(ref{trunc:vib:gen:2x2model:ode:u:fw2})-(ref{trunc:vib:gen:2x2model:ode:v:bw2}),
-we can hopefully realize that these schemes are equivalent (which
-becomes clear when we implement both).  The obvious advantage with the
-staggered mesh approach is that we can all the way use second-order
-accurate building blocks and in this way convince ourselves that the
-resulting scheme has an error of $\Oof{\Delta t^2}$.
-# #endif
 
 !split
 ======= Wave equations =======

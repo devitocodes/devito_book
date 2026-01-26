@@ -39,8 +39,6 @@ TOC: on
 
 BIBFILE: ../papers.pub
 
-# #ifdef NOTREADY
-# #endif
 
 # Idea: one thing at a time: no f2py intro for du/dn, just u=0 to make it
 # simple

@@ -11,11 +11,7 @@ the water surface (long water waves, however, can be approximated
 by a standard wave equation, see Section ref{wave:app:sw:2D}).
 Quantum mechanical waves constitute another example where the waves
 are governed by the
-# #if FORMAT in ("latex", "pdflatex")
 Schr\"{o}dinger
-# #else
-Schrodinger
-# #endif
 equation, i.e., not by a standard wave equation.
 Many wave phenomena also need to take nonlinear effects into account
 when the wave amplitude is significant. Shock waves in the air is
@@ -778,21 +774,6 @@ equation for $\eta$. The Coriolis parameter is $f=2\Omega\sin\phi$,
 where $\Omega$ is the angular velocity of the earth and $\phi$ is
 the latitude.
 
-# #ifdef FUTURE
-===== Multi-layer shallow water equations in 1D =====
-
-Waves that are long compared to the fluid depth are common in the
-ocean and the atmosphere. Models like the ones in Section ref{wave:app:sw:2D}
-can be extended to $M$ layers of fluid (water or air), with different
-densities, stacked on top of each other. We shall present one such
-model for 1D wave motion. Let $H_j(x,t)$ be the thickness of layer number $j$,
-and let $\varrho_j$ be the corresponding constant density. With
-$B(x)$ as the bottom topography
-
-See  multilayer_SW.pdf
-
-===== 1D transmission and reflection =====
-# #endif
 
 
 ===== Waves in blood vessels =====

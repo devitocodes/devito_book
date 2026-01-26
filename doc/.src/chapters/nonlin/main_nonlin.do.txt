@@ -26,5 +26,3 @@ TOC: on
 BIBFILE: ../papers.pub
 
 
-# #ifdef NOTREAD
-# #endif

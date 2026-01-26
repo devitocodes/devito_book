@@ -80,9 +80,6 @@ the string is fixed at the ends, i.e., that the displacement $u$ is zero.
 The solution $u(x,t)$ varies in space and time and describes waves that
 move with velocity $c$ to the left and right.
 
-# #if FORMAT in ("html", "sphinx")
-MOVIE: [mov-wave/guitar_C0.8/movie.ogg] Example of waves on a string.
-# #endif
 
 Sometimes we will use a more compact notation for the partial derivatives
 to save space:

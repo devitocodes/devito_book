@@ -8,27 +8,6 @@
 # Think of extensions: Neumann with modified stencil or ghost cells,
 #   variable coefficients, damping, ...
 
-# #ifdef PLAN
-* Define some wave project, e.g., earthquake induced waves where
-   a quite flat bottom has a discontinuity point/line and some part
-   to the right lifts up suddenly and falls back?
- * Start with `wave1D_dn_vc.py` and `wave2D_u0.py`
- * Storing solutions with joblib, XDMF
-   http://www.xdmf.org/index.php/Write_Xdmf
-   http://www.xdmf.org/index.php/Xdmf3_Python_API
-   OBS: both a post on the fenics list and here,
-   URL: "http://fenicsproject.org/qa/6513/time-series-of-many-function-instances-in-a-single-file", suggests that paraview cannot view xdmf files will more
-   than one field/function - should store in separate files...
-   See the dolfin function that writes xdmf files before trying too much...
-   FiPy applies "xdmf": "https://matforge.org/fipy/browser/fipy/fipy/io/xdmf/time.py?rev=517630187125d4aee390fd251ba42324b9aacce0"
-   joblib vs "klepto": "http://stackoverflow.com/questions/28311141/decorators-for-selective-caching-memoization"
- * Problem and Solver classes
- * Profiling
- * Fortran, Cython, C, C++
- * Viz here? Movie making?
- * DrawFunction for drawing bottom and surface, build app for this :-)
- * Parampool with full pool ("menu")
-# #endif
 
 ======= A 1D wave equation simulator =======
 
@@ -1052,21 +1031,6 @@ array calculations. These can be migrated to Cython or Fortran as
 explained, while the rest of the programming can be more conveniently
 done in Python.
 
-# #ifdef NOTES
- * `f_a` in-place assignment important for Fortran,
-   copy of data with f2py
- * pyximport if plain compilation and no linking with external C libraries
-   (we build instead)
- * explain pyximport for mc cython and cyode
- * negative_indices wraparound
- * make Grid2D cython (callback - cpdef?) and hello world
- * split HTML files (find all internal # links, make dict where
-   links are while reading file and splitting into chunks, replace
-   links with filenames), use same split syntax as for sphinx, but
-   different bin/doconce routine (read the whole HTML file, grab header,
-   search for delimiter lines)
-
-# #endif
 
 ======= Migrating loops to C via Cython =======
 

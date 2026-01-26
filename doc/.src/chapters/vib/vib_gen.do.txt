@@ -493,11 +493,7 @@ u^0 &= I\tp
 # Discussion of which method is best:
 # http://gamedev.stackexchange.com/questions/33694/pros-and-cons-of-different-integrators
 
-# #if FORMAT in ("pdflatex", "latex")
 ===== The St\"{o}rmer-Verlet algorithm for the generalized model =====
-# #else
-===== The Stoermer-Verlet algorithm for the generalized model =====
-# #endif
 label{vib:model2x2:gen:StormerVerlet}
 
 We can easily apply the ideas from Section ref{vib:model2x2:StormerVerlet} to

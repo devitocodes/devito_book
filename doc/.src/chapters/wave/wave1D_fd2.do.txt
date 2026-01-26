@@ -9,7 +9,6 @@ the wave as a mirror and preserves the sign, see a "web page":
 "${docraw}/mov-wave/demo_BC_gaussian/movie.flv" for
 demonstration.
 
-# #ifdef EXTRA
 ## This was not so successful. Could not argue well for Neumann cond.
 ## and reflection.
 
@@ -33,7 +32,6 @@ $u(0,t)$, $u(\Delta x, t)$, $u(0, t+\Delta t)$ and $u(\Delta x,t+\Delta t)$.
 Now the boundary condition demands $u(0,t) \approx u(\Delta x, t)$
 and $u(0, t+\Delta t) \approx u(\Delta x,t+\Delta t)$ to always get a
 flat spatial derivative.
-# #endif
 
 Our next task is to explain how to implement the boundary
 condition $u_x=0$, which is

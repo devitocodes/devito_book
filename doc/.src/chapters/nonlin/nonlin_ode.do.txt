@@ -794,18 +794,6 @@ FIGURE: [fig-nonlin/logistic_u, width=800 frac=1] Impact of solution strategy an
 FIGURE: [fig-nonlin/logistic_iter, width=800 frac=1] Comparison of the number of iterations at various time levels for Picard and Newton iteration. label{nonlin:timediscrete:logistic:impl:fig:iter}
 
 
-# #ifdef OLD
-|----------------------------------------------|
-|  $\Delta t$ | $\epsilon_r$ | Picard | Newton |
-|----l-----------l--------------r---------r----|
-|  $0.2$      | $10^{-7}$    |   5    |   2    |
-|  $0.2$      | $10^{-3}$    |   2    |   1    |
-|  $0.4$      | $10^{-7}$    |   12   |   3    |
-|  $0.4$      | $10^{-3}$    |   4    |   2    |
-|  $0.8$      | $10^{-7}$    |   58   |   3    |
-|  $0.8$      | $10^{-3}$    |   4    |   2    |
-|----------------------------------------------|
-# #endif
 
 [hpl: Is this remark really relevant now? Compare with text.]
 

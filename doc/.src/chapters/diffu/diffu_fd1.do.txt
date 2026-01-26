@@ -94,7 +94,6 @@ We shall start with the simplest boundary condition: $u=0$. The
 complete initial-boundary value diffusion problem in one space
 dimension can then be specified as
 
-# #if FORMAT in ("latex", "pdflatex")
 !bt
 \begin{alignat}{3}
 \frac{\partial u}{\partial t} &=
@@ -109,21 +108,6 @@ u(L,t) & = 0, \quad & t>0
 label{diffu:pde1:bc:L}
 \end{alignat}
 !et
-# #else
-!bt
-\begin{align}
-\frac{\partial u}{\partial t} &=
-\dfc \frac{\partial^2 u}{\partial x^2} + f, \quad x\in (0,L),\ t\in (0,T]
-label{diffu:pde1}\\
-u(x,0) &= I(x), \quad  x\in [0,L]
-label{diffu:pde1:ic:u}\\
-u(0,t) & = 0, \quad  t>0,
-label{diffu:pde1:bc:0}\\
-u(L,t) & = 0, \quad  t>0\tp
-label{diffu:pde1:bc:L}
-\end{align}
-!et
-# #endif
 With only a first-order derivative in time,
 only one *initial condition* is needed, while the second-order
 derivative in space leads to a demand for two *boundary conditions*.
@@ -1137,13 +1121,11 @@ be first order convergence, whereas with $\theta=0.5$ (i.e., Crank-Nicolson), on
 second order convergence (as outlined in previous sections).
 
 
-# #ifdef EXTRA
 !bt
 \begin{equation}
 [D_t u = \dfc D_xD_x \overline{u}^{t,\theta}]^n_i
 \end{equation}
 !et
-# #endif
 
 ===== Experiments =====
 label{diffu:pde1:theta:experiments}
@@ -1217,121 +1199,3 @@ pseudo time variable.
 
 [hpl: Better to say the last sentence when we treat iterative methods.]
 
-# #ifdef 2DO
-
-===== Extensions =====
-
-These extensions are performed exactly as for a wave equation as they
-only affect the spatial derivatives (which are the same as in the
-wave equation).
-
- * Variable coefficients
- * Neumann and Robin conditions
- * 2D and 3D
-
-Future versions of this document will for completeness and
-independence of the wave equation document feature info on the three
-points. The Robin condition is new, but straightforward to handle:
-
-!bt
-\[ -\dfc\frac{\partial u}{\partial n} = h_T(u-U_s),\quad
-[-\dfc D_x u = h_T(u-U_s)]^n_i
-\]
-!et
-
-===== Implementation =====
-label{diffu:pde1:impl}
-
-
-===== Adaptive Time Stepping =====
-
-Intuitive approach based on strategies from ODE decay equation and
-a very discrete Fourier composition of analytical components.
-What about $||u_t|| < \epsilon_L \Rightarrow \Delta t$ doubled,
-$||u_t|| > \epsilon_U \Rightarrow \Delta t$ halved? Google...
-
-
-
-===== Variable Diffusion Coefficient =====
-
-
-!bt
-\begin{equation}
-\frac{\partial u}{\partial t} =
-\frac{\partial}{\partial x}\left(
-\dfc(x) \frac{\partial u}{\partial x}\right)
-\end{equation}
-!et
-
-It is always very useful to have analytical solutions to PDEs.
-For the variable coefficient diffusion equation this is difficult
-to find unless we add a source term and apply the method of
-manufactured solutions. In the  limit $t\rightarrow\infty$, however,
-we can derive an analytical solution.
-The limit problem for the stationary solution
-$v(x) = \lim_{t\rightarrow \infty} u(x,t)$,
-assuming $\partial u/\partial t\rightarrow 0$ in this limit, becomes
-
-!bt
-\begin{equation}
-\frac{\partial}{\partial x}\left(
-\dfc(x) \frac{\partial u}{\partial x}\right)
-= 0,\quad v(0)=u_L,\ v(L)=u_R \tp  \end{equation}
-!et
-Integrating twice results in
-
-!bt
-\begin{equation*} v = C_2 + C_1\int_0^x \frac{1}{\dfc(\xi)} d\xi \tp  \end{equation*}
-!et
-The two integration constants $C_1$ and $C_2$ are determined from
-the boundary conditions, and $v(x)$ becomes
-
-!bt
-\begin{equation}
-v(x) = u_L + (u_R - u_L)
-\frac{\int_0^x\frac{d\xi}{a(\xi)}}{\int_0^L\frac{d\xi}{a(\xi)}}
-\end{equation}
-!et
-
-Evaluation of $v$ on a mesh with points $x_i$, $i=0,\ldots,N_x$,
-can be performed using the Trapezoidal rule.
-Defining $g(x) = \int_0^x (\dfc(\xi))^{-1}d\xi$, $g_j$ can be
-computed as
-
-!bt
-\begin{equation}
-g_i = \left\lbrace\begin{array}{ll}
-\half \Delta x /\dfc_i, & i = 0,\\
-g_{i-1} + \Delta x /\dfc_i, & 0 < i < N_x,\\
-g_{i-1} + \half\Delta x /\dfc_i, & i = N_x \tp  \end{array}\right.
-\end{equation}
-!et
-Then
-
-!bt
-\begin{equation}
-v_i = u_L + (u_R - u_L)g_i/g_{N_x} \tp  \end{equation}
-!et
-The corresponding implementation can be written
-
-!bc pycod
-def u_exact_stationary(x, a, u_L, u_R):
-    Nx = x.size - 1
-    g = zeros(Nx+1)    # integral of 1/a from 0 to x
-    dx = x[1] - x[0]   # assumed constant
-    i = 0
-    g[i] = 0.5*dx/a[i]
-    for i in range(1, Nx):
-        g[i] = g[i-1] + dx/a[i]
-    i = Nx
-    g[i] = g[i-1] + 0.5*dx/a[i]
-    v = u_L + (u_R - u_L)*g/g[-1]
-    return v
-!ec
-
-
-
-======= Two-Dimensional Diffusion =======
-label{diffu:2D}
-
-# #endif

@@ -36,15 +36,12 @@ all other symbols are known quantities.
  o $\nabla^2 u$ is linear; $\lambda e^u$ is nonlinear.
 !esol
 
-# #ifdef EXTRA
 ===== Exercise: Derive a relaxation formula =====
 label{nonlin:exer:relax:formula}
 file=relaxed_Newton
 
 Derive (ref{nonlin:timediscrete:logistic:relaxation:Newton:formula})
 in Section ref{nonlin:timediscrete:logistic:relaxation}.
-
-# #endif
 
 ===== Problem: Derive and investigate a generalized logistic model  =====
 label{nonlin:exer:logistic:gen}
@@ -664,11 +661,6 @@ from a). Calculate the associated Jacobian.
 !esubex
 % endif
 
-# #ifdef NOTREADY
-===== Problem: Trapezoidal integration of a nonlinear term with P2 elements =====
-label{nonlin:exer:1D:fu:discretize:fe}
-file=nonlin_1D_Bratu_fe
-# #endif
 
 ===== Problem: Discretize a nonlinear 1D heat conduction PDE by finite differences =====
 label{nonlin:exer:1D:heat:nonlinear:fdm}

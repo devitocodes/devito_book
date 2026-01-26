@@ -100,21 +100,6 @@ We see that $\Var{\bar X_k}$ is proportional with the number of steps $k$.
 For the very important case $p=q=\half$, $\E{\bar X_k}=0$ and
 $\Var{\bar X_k}=k$.
 
-# #ifdef WRONG
-We can also easily find the probability distribution of $X_K$ because
-the random walk is a binomial process ($K$ Bernoulli experiments).
-$\hbox{P}(X_K=x)$ means that we have taken $K$ steps and that we are located
-at position $x$. There must have been $x$ steps to the right (say ``tail'')
-and $K-x$ steps to the left (say ``head''). The
-"binomial distribution": "https://en.wikipedia.org/wiki/Binomial_distribution"
-gives
-
-!bt
-\[ \hbox{P}(X_K=x) = \frac{K!}{x!(K-x)!}p^x(1-p)^{K-x}\tp\]
-!et
-No! Cannot do expectation now and get the right formula...
-Central limit theorem gives Gaussian with the above parameters...
-# #endif
 
 How can we estimate $\E{\bar X_k}=0$ and $\Var{\bar X_k}=N$?
 We must have many random walks of the type in
@@ -646,10 +631,8 @@ FIGURE: [fig-diffu/rw1D_VarX_100_10000_100000_1000000, width=800 frac=1] Estimat
 
 FIGURE: [fig-diffu/rw1D_HistX_100_10000_100000_1000000, width=800 frac=1] Estimated probability distribution at step 800, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right). label{diffu:randomwalk:1D:fig:demo1:HistX}
 
-# #if FORMAT == "pdflatex"
 ## Empty figure cache
 \clearpage
-# #endif
 
 ===== Ascii visualization of 1D random walk =====
 label{diffu:randomwalk:1D:avplotter}

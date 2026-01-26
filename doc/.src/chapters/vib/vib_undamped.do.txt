@@ -15,11 +15,7 @@ presents a range of different methods, from classical ones
 (Runge-Kutta and midpoint/Crank-Nicolson methods), to more
 modern and popular symplectic (geometric) integration schemes (Leapfrog,
 Euler-Cromer, and
-# #if FORMAT in ("latex", "pdflatex")
 St\"{o}rmer-Verlet
-# #else
-Stoermer-Verlet
-# #endif
 methods), but with a clear emphasis on the latter. Vibration problems
 occur throughout mechanics and physics, but the methods discussed
 in this text are also fundamental for constructing successful algorithms
@@ -173,11 +169,7 @@ label{vib:ode1:step4}
 The computational algorithm is simply to apply (ref{vib:ode1:step4})
 successively for $n=1,2,\ldots,N_t-1$. This numerical scheme sometimes
 goes under the name
-# #if FORMAT in ("latex", "pdflatex")
 St\"{o}rmer's
-# #else
-Stoermer's
-# #endif
 method, "Verlet integration":
 "http://en.wikipedia.org/wiki/Verlet_integration", or the Leapfrog method
 (one should note
@@ -832,12 +824,6 @@ displaced $t$ axes!):
 
 FIGURE: [fig-vib/bokeh_gridplot2, width=800 frac=1]
 
-# #if FORMAT == 'html'
-Here in HTML format we can include the interactive Bokeh plot. Use
-the mouse inside one of the plots to scroll into the future!
-
-FIGURE: [fig-vib/bokeh_gridplot_interactive, width=800 frac=1] Interactive Bokeh plot.
-# #endif
 
 A function for creating a Bokeh plot, given a list of `u` arrays
 and corresponding `t` arrays, is implemented below.
@@ -1765,19 +1751,6 @@ FIGURE: [fig-vib/vib_RK_1_pp, width=800 frac=1.0] Comparison of Runge-Kutta sche
 FIGURE: [fig-vib/vib_RK_1_u, width=800 frac=1.0] Comparison of Runge-Kutta schemes. label{vib:ode1:1st:odespy:RK}
 
 
-# #ifdef notready
-How the
-amplitude develops in longer time integrations is illustrated in
-Figures ref{vib:ode1:1st:odespy:RK:long:phaseplane} and
-ref{vib:ode1:1st:odespy:RK:long}. The markers are dropped in these
-plots because there are so many mesh points with markers when $T$
-corresponds to 10 periods.
-
-FIGURE: [fig-vib/vib_RK_10_pp, width=800 frac=1.0] Long-time behavior of Runge-Kutta schemes in the phase plane. label{vib:ode1:1st:odespy:RK:long:phaseplane}
-
-FIGURE: [fig-vib/vib_RK_10_u, width=800 frac=1.0] Long-time behavior of Runge-Kutta schemes. label{vib:ode1:1st:odespy:RK:long}
-
-# #endif
 
 The visual impression is that the 4th-order Runge-Kutta method is very
 accurate, under all circumstances in these tests, while the 2nd-order
@@ -2055,7 +2028,6 @@ E^{n+1} &= \half(v^{n+1})^2 + \half\omega^2 (u^{n+1})^2\\
 \end{align*}
 !et
 
-# #ifdef EXTRA
 ===== Discrete total energy =====
 
 The total energy $E(t)$ can be computed as soon as
@@ -2133,8 +2105,6 @@ E^{n+1} &= \frac{1}{2}((v^{n+1})^2 + \omega^2 (u^{n+1})^2)\\
 !et
 Maybe look at modified energy functional where $-\frac{1}{2}\omega^2\Delta t vu$
 is subtracted.
-
-# #endif
 
 ===== An error measure based on energy =====
 label{vib:model1:energy:measure}
@@ -2252,7 +2222,6 @@ confirmed by running smaller time steps, so for $\Delta t = 3.9\cdot
 10^{-4}$ the relative error of RK2 is a factor 10 smaller than that of
 RK4!).
 
-# #ifdef EXTRA
 # This is not correct - E(t) goes like dt**2, unlikely...
 
 What is the corresponding relative error in energy of the centered
@@ -2281,14 +2250,12 @@ e_E^n &= \frac{1}{2}(-\Delta t^{-2}\sin^2(\tilde\omega\Delta t)
 !bc
 Series for sin^2(x): x**2 - x**4/3 + 2*x**6/45 + O(x**8)
 !ec
-# #endif
 
 # Should build a verification test on the energy error.
 
 # Link phase plane plot to energy
 #A phase plane plot shows the curve $(u(t), u^{\prime}(t))$.
 
-# #ifdef EXTRA
 ===== A discrete expression for the energy =====
 
 [hpl: I don't think this will lead to any good.]
@@ -2304,7 +2271,6 @@ expressions!) by $1-\cos^2x$ and $\cos x = 1-2\sin^2x/2$. Uncertain
 if this is a very valuable expression since it only tells the error
 if we compute the energy in a code based on numerical approximation to
 $u^{\prime}$.
-# #endif
 
 ======= The Euler-Cromer method =======
 label{vib:model2x2:EulerCromer}
@@ -2409,11 +2375,7 @@ goes under several names: forward-backward scheme, "semi-implicit
 Euler method":
 "http://en.wikipedia.org/wiki/Semi-implicit_Euler_method",
 semi-explicit Euler, symplectic Euler,
-# #if FORMAT in ("latex", "pdflatex")
 Newton-St\"{o}rmer-Verlet,
-# #else
-Newton-Stoermer-Verlet,
-# #endif
 and Euler-Cromer.  We shall stick to the latter name.
 
 How does the Euler-Cromer method preserve the total energy?
@@ -2617,11 +2579,7 @@ $u$.
 # with differentiating u in the 2nd order ODE? most likely,
 # v is 2nd order, v from 2nd-order ODE is 1st order
 
-# #if FORMAT in ("pdflatex", "latex")
 ===== The St\"{o}rmer-Verlet algorithm =====
-# #else
-===== The Stoermer-Verlet algorithm =====
-# #endif
 label{vib:model2x2:StormerVerlet}
 
 # See velverlet_EulerCromer_....pdf for discussion and relation to EC
@@ -2630,11 +2588,7 @@ idx{Stoermer-Verlet algorithm}
 
 Another very popular algorithm for vibration problems, especially
 for long time simulations, is the
-# #if FORMAT in ("pdflatex", "latex")
 St\"{o}rmer-Verlet
-# #else
-Stoermer-Verlet
-# #endif
 algorithm. It has become *the* method among physicists
 for molecular simulations as well as particle and rigid body dynamics.
 
@@ -2688,11 +2642,7 @@ $2\times 2$ ODE system on a *staggered mesh*, see
 Section ref{vib:model2x2:staggered}. We have thus seen that
 four different reasonings (discretizing $u^{\prime\prime}+\omega^2 u$
 directly, using Euler-Cromer, using
-# #if FORMAT in ("pdflatex", "latex")
 St\"{o}mer-Verlet,
-# #else
-Stoermer-Verlet,
-# #endif
 and using centered differences for the $2\times 2$ system on a staggered
 mesh) all end up with the same equations! The main difference is that
 the traditional Euler-Cromer displays first-order convergence in $\Delta t$
@@ -2716,8 +2666,6 @@ It has, according to cite{Hairer_Wanner_Norsett_bookI}, better
 properties in this regard than the direct scheme for the second-order
 ODE.
 
-
-# #ifdef EXTRA
 
 Inserting $u^n=Ae^{i\tilde\omega n\Delta t}$ and $v^n=BAe^{i\tilde\omega n\Delta t}$,
 
@@ -2743,7 +2691,6 @@ part of this equation gives
 \frac{\half p^2}{\sin (\half\tilde\omega\Delta t)} = 1  \]
 !et
 Can plot as function of $\half\tilde\omega\Delta t$ in $[0,\pi/2]$.
-# #endif
 
 ======= Staggered mesh =======
 

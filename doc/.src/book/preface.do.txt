@@ -197,22 +197,6 @@ the exact solution fulfilling the differential equation to the
 symbol `u` that is naturally used for the associated data structure
 in the code.
 
-# #ifdef FEM
-The mathematical notation in this book is somewhat
-different from the vast literature.
-My aim is to introduce a mathematical notation that is as
-close as possible to what we will implement in computer code.  That
-is, the way we program dictates the way we write mathematical
-formulas. The overall goal is to have as small distance as possible
-between the mathematics and the code. This is principal goal of the
-FEniCS project, and this book implements a similar goal also for
-mathematically very simple problems. Essentially, we apply a
-more classical notation when deriving methods, but then we
-get rid of unnecessary indices and other types of
-``cluttered notation'' that one would never use in code.
-The minimization of indices in the resulting formulas also help
-make the mathematical problem cleaner and clearer for students.
-# #endif
 
 === Limited scope ===
 
@@ -284,9 +268,7 @@ laboratory's financial contribution as well as to the financial
 contribution from the Department of Process, Energy and Environmental
 Technology at the University College of Southeast Norway.
 
-# #if FORMAT in ("latex", "pdflatex")
 \vspace{1cm}
 
 \noindent
 {\it Oslo, July 2016}  \hfill  {\it Hans Petter Langtangen, Svein Linge}
-# #endif

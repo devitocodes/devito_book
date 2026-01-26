@@ -266,9 +266,6 @@ files, as specified by the `%04d` format, is essential so that the wildcard
 notation `frame_*.png` expands to the correct set of files.
 % endif
 
-# #ifdef MENCODER
-## No longer in Ubuntu
-# #endif
 
 The `viz` function creates an `ffmpeg` or `avconv` command
 with the proper arguments for each of the formats Flash, MP4, WebM,
@@ -914,7 +911,6 @@ reduces the need to return the solution from the solver.)
 !ewarning
 
 
-# #ifdef EXTRA
 ===== Making Movies =====
 
 # GIF is fine for small movies! HTML is superior for large ones
@@ -942,8 +938,6 @@ Alternatively, the `display` program can be used to walk through each
 frame, i.e., solution curve, by pressing the space bar.
 
 # move function, scitools movie
-
-# #endif
 
 ======= Exercises =======
 
