@@ -3,13 +3,12 @@ Solve the general vibration ODE by various method from the Odespy
 package.
 """
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import odespy
-import scitools.std as plt
-from scitools.std import StringFunction
 
 import vib
+from compat.string_function import StringFunction
 
 
 class RHS:
@@ -77,7 +76,6 @@ def run_solvers_and_plot(solvers, rhs, T, dt, title="", filename="tmp"):
             plt.plot(t, u[:, 0])  # markers by default
         else:
             plt.plot(t, u[:, 0], "-2")  # no markers
-        plt.hold("on")
         legends.append(solver_name)
 
     # Compare with RK4 on a much finer mesh

@@ -38,7 +38,7 @@ def solver(I, V, f, c, U_0, U_L, x0, xL, Nx, C, T, user_action=None, version="sc
 
     import time
 
-    t0 = time.clock()  # CPU time measurement
+    t0 = time.perf_counter()  # CPU time measurement
     # Load initial condition into u_1
     for i in Ix:
         u_1[i] = I(x[i])
@@ -148,7 +148,7 @@ def solver(I, V, f, c, U_0, U_L, x0, xL, Nx, C, T, user_action=None, version="sc
         # Update data structures for next step
         u_2[:], u_1[:] = u_1, u
 
-    cpu_time = t0 - time.clock()
+    cpu_time = t0 - time.perf_counter()
     return u, x, t, cpu_time
 
 
@@ -175,7 +175,7 @@ def viz(
     import os
     import time
 
-    import scitools.std as plt
+    import matplotlib.pyplot as plt
 
     def plot_u(u, x, t, n):
         """user_action function for solver."""

@@ -1,7 +1,7 @@
 import sys
 import time
 
-from scitools.std import *
+from numpy import isfortran, linspace, newaxis, sqrt, zeros
 
 # Skeleton code for exercise - to be completed by the reader:
 """
@@ -92,7 +92,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     Iy = range(0, u.shape[1])
     It = range(0, t.shape[0])
 
-    import time; t0 = time.clock()          # for measuring CPU time
+    import time; t0 = time.perf_counter()          # for measuring CPU time
     # Load initial condition into u_1
     if version == 'scalar':
         for i in Ix:
@@ -150,7 +150,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
         u_2, u_1, u = u_1, u, u_2
 
     # Important to set u = u_1 if u is to be returned!
-    t1 = time.clock()
+    t1 = time.perf_counter()
     # dt might be computed in this function so return the value
     return dt, t1 - t0
 

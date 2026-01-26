@@ -27,25 +27,21 @@ def run(gamma, beta=10, delta=40, scaling=1, animate=False):
 
     import time
 
-    import scitools.std as plt
+    import matplotlib.pyplot as plt
 
     plot_arrays = []
 
     def process_u(u, x, t, n):
         global ymax
         if animate:
-            plt.plot(
-                x,
-                u,
-                "r-",
-                x,
-                f(x, t[n]) / delta,
-                "b-",
-                axis=[0, L, ymin, ymax],
-                title=f"t={t[n]:f}",
-                xlabel="x",
-                ylabel=f"u and f/{delta:g}",
-            )
+            plt.clf()
+            plt.plot(x, u, "r-", x, f(x, t[n]) / delta, "b-")
+            plt.axis([0, L, ymin, ymax])
+            plt.title(f"t={t[n]:f}")
+            plt.xlabel("x")
+            plt.ylabel(f"u and f/{delta:g}")
+            plt.draw()
+            plt.pause(0.001)
         if t[n] == 0:
             time.sleep(1)
             plot_arrays.append(x)
@@ -65,18 +61,10 @@ def run(gamma, beta=10, delta=40, scaling=1, animate=False):
     x = plot_arrays[0]
     plt.figure()
     for u, f in plot_arrays[1:]:
-        plt.plot(
-            x,
-            u,
-            "r-",
-            x,
-            f,
-            "b--",
-            axis=[x[0], x[-1], 0, ymax],
-            xlabel="$x$",
-            ylabel=rf"$u, \ f/{delta:g}$",
-        )
-        plt.hold("on")
+        plt.plot(x, u, "r-", x, f, "b--")
+    plt.axis([x[0], x[-1], 0, ymax])
+    plt.xlabel("$x$")
+    plt.ylabel(rf"$u, \ f/{delta:g}$")
     plt.legend(
         [
             "$u,\\ t=0.2$",

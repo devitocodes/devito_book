@@ -1,8 +1,8 @@
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 import odespy
-import scitools.std as plt
 
 
 def solver_PEFRL(I, V, g, dt, T):
@@ -118,7 +118,7 @@ def compute_orbit_and_error(
     else:
         A = [1, 0, 0, 1]
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     for i in range(N_orbit_groups):
         time_points = np.linspace(i * T_interval, (i + 1) * T_interval, N + 1)
         u_e = u_exact(time_points).transpose()
@@ -162,7 +162,7 @@ def compute_orbit_and_error(
         else:  # RK4, adaptive rules, etc.
             A = [ui[-1, 0], ui[-1, 1], ui[-1, 2], ui[-1, 3]]
 
-    t2 = time.clock()
+    t2 = time.perf_counter()
     CPU_time = (t2 - t1) / (60.0 * 60.0)  # in hours
     return dt, E_orbit, CPU_time
 

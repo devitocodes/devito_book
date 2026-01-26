@@ -93,7 +93,7 @@ def solver_sparse_CG(
     """
     import time
 
-    t0 = time.clock()  # for measuring CPU time
+    t0 = time.perf_counter()  # for measuring CPU time
 
     x = np.linspace(0, Lx, Nx + 1)  # mesh points in x dir
     y = np.linspace(0, Ly, Ny + 1)  # mesh points in y dir
@@ -331,7 +331,7 @@ def solver_sparse_CG(
         # Update u_n before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
 
     return t, t1 - t0
 

@@ -262,7 +262,7 @@ class Solver(Parameters):
         u = self.f.u[1, :]
 
 
-        t0 = time.clock()  # CPU time measurement
+        t0 = time.perf_counter()  # CPU time measurement
 
         Ix = range(0, Nx + 1)
         It = range(0, Nt + 1)
@@ -405,7 +405,7 @@ class Solver(Parameters):
                 if user_action(u, x, t, n + 1):
                     break
 
-        cpu_time = time.clock() - t0
+        cpu_time = time.perf_counter() - t0
         return cpu_time, hashed_input
 
     def assert_no_error(self):

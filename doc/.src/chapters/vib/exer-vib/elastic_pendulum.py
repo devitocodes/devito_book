@@ -1,6 +1,6 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import odespy
-import scitools.std as plt
 
 
 def simulate(

@@ -12,7 +12,7 @@ def plot_frequency_approximations():
     series_approx = w + (1.0 / 24) * dt**2 * w**3
     P = 2 * np.pi / w  # one period
     num_timesteps_per_period = P / dt  # more instructive
-    import scitools.std as plt
+    import matplotlib.pyplot as plt
 
     plt.plot(
         num_timesteps_per_period,

@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import scitools.std as plt
 
 
 def minmax(t, u):
@@ -48,7 +47,6 @@ def test_empirical_analysis():
         np.pi * (t + 0.6 * np.sin(0.25 * np.pi * t))
     )
     plt.plot(t, u, label="signal")
-    plt.hold("on")
     minima, maxima = minmax(t, u)
     t_min = [ti for ti, ui in minima]
     t_max = [ti for ti, ui in maxima]
@@ -62,7 +60,6 @@ def test_empirical_analysis():
     p = periods(maxima)
     a = amplitudes(minima, maxima)
     plt.plot(range(len(p)), p, "g--", label="periods")
-    plt.hold("on")
     plt.plot(range(len(a)), a, "y-", label="amplitudes")
     plt.legend()
 

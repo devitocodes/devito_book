@@ -26,7 +26,7 @@ def viz(
     import glob
     import os
 
-    import scitools.std as plt
+    import matplotlib.pyplot as plt
 
     class Plot:
         def __init__(self, ymax, frame_name="frame"):

@@ -90,15 +90,15 @@ def demo_random_walk1D_timing():
     N = 10000000
     p = 0.5
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
     np.random.seed(10)
     pos = random_walk1D(x0, N, p, random=np.random)
-    t1 = time.clock()
+    t1 = time.perf_counter()
     cpu_scalar = t1 - t0
     print("CPU scalar: %.1f" % cpu_scalar)
     np.random.seed(10)
     pos = random_walk1D_vec(x0, N, p)
-    t2 = time.clock()
+    t2 = time.perf_counter()
     cpu_vec = t2 - t1
     print("CPU vectorized: %.1f" % cpu_vec)
     print("CPU scalar/vectorized: %.1f" % (cpu_scalar / cpu_vec))
@@ -224,7 +224,7 @@ def test_random_walks1D():
 def demo_random_walks1D(N=1000, num_walks=10000, EX_minmax=None):
     import time
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
     pos, pos2, hist, hist_times = random_walks1D_vec1(
         x0=0,
         N=N,
@@ -232,7 +232,7 @@ def demo_random_walks1D(N=1000, num_walks=10000, EX_minmax=None):
         num_walks=num_walks,
         num_times=10,
     )
-    t1 = time.clock()
+    t1 = time.perf_counter()
     print("histogram times:", hist_times)
     print("random walk: %.1fs" % (t1 - t0))
     E_X = pos / float(num_walks)
@@ -317,19 +317,19 @@ def demo_random_walks1D_timing():
     num_walks = 50000
     p = 0.5
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
     np.random.seed(10)
     pos, pos2, pos_hist, pos_hist_times = random_walks1D(
         x0, N, p, num_walks, num_times=4, random=np.random
     )
-    t1 = time.clock()
+    t1 = time.perf_counter()
     cpu_scalar = t1 - t0
     print("CPU scalar: %.1f" % cpu_scalar)
     np.random.seed(10)
     pos, pos2, pos_hist, pos_hist_times = random_walks1D_vec1(
         x0, N, p, num_walks, num_times=4
     )
-    t2 = time.clock()
+    t2 = time.perf_counter()
     cpu_vec1 = t2 - t1
     print("CPU vectorized1: %.1f" % cpu_vec1)
     print("CPU scalar/vectorized1: %.1f" % (cpu_scalar / cpu_vec1))
@@ -337,7 +337,7 @@ def demo_random_walks1D_timing():
     pos, pos2, pos_hist, pos_hist_times = random_walks1D_vec2(
         x0, N, p, num_walks, num_times=4
     )
-    t3 = time.clock()
+    t3 = time.perf_counter()
     cpu_vec2 = t3 - t2
     print("CPU vectorized2: %.1f" % cpu_vec2)
     print("CPU scalar/vectorized2: %.1f" % (cpu_scalar / cpu_vec2))
@@ -427,15 +427,15 @@ def demo_random_walkdD_timing():
     N = 4000000
     p = 0.5
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
     np.random.seed(10)
     pos = random_walkdD(x0, N, p, random=np.random)
-    t1 = time.clock()
+    t1 = time.perf_counter()
     cpu_scalar = t1 - t0
     print("CPU scalar: %.1f" % cpu_scalar)
     np.random.seed(10)
     pos = random_walkdD_vec(x0, N, p)
-    t2 = time.clock()
+    t2 = time.perf_counter()
     cpu_vec = t2 - t1
     print("CPU vectorized: %.1f" % cpu_vec)
     print("CPU scalar/vectorized: %.1f" % (cpu_scalar / cpu_vec))
@@ -589,19 +589,19 @@ def demo_random_walksdD_timing():
     num_walks = 10000
     p = 0.5
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
     np.random.seed(10)
     pos, pos2, pos_hist, pos_hist_times = random_walksdD(
         x0, N, p, num_walks, num_times=4, random=np.random
     )
-    t1 = time.clock()
+    t1 = time.perf_counter()
     cpu_scalar = t1 - t0
     print("CPU scalar: %.1f" % cpu_scalar)
     np.random.seed(10)
     pos, pos2, pos_hist, pos_hist_times = random_walksdD_vec(
         x0, N, p, num_walks, num_times=4
     )
-    t2 = time.clock()
+    t2 = time.perf_counter()
     cpu_vec = t2 - t1
     print("CPU vectorized: %.1f" % cpu_vec)
     print("CPU scalar/vectorized: %.1f" % (cpu_scalar / cpu_vec))
@@ -700,19 +700,19 @@ def demo_random_walks1D2_timing():
     num_walks = 50000
     p = 0.5
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
     np.random.seed(10)
     pos, pos2, pos_hist, pos_hist_times = random_walks1D2(
         x0, N, p, num_walks, num_times=4, random=np.random
     )
-    t1 = time.clock()
+    t1 = time.perf_counter()
     cpu_scalar = t1 - t0
     print("CPU scalar: %.1f" % cpu_scalar)
     np.random.seed(10)
     pos, pos2, pos_hist, pos_hist_times = random_walks1D2_vec1(
         x0, N, p, num_walks, num_times=4
     )
-    t2 = time.clock()
+    t2 = time.perf_counter()
     cpu_vec1 = t2 - t1
     print("CPU vectorized1: %.1f" % cpu_vec1)
     print("CPU scalar/vectorized1: %.1f" % (cpu_scalar / cpu_vec1))
@@ -721,7 +721,7 @@ def demo_random_walks1D2_timing():
     pos, pos2, pos_hist, pos_hist_times = random_walks1D_vec2(
         x0, N, p, num_walks, num_times=4
     )
-    t3 = time.clock()
+    t3 = time.perf_counter()
     cpu_vec2 = t3 - t2
     print("CPU vectorized2: %.1f" % cpu_vec2)
     print("CPU scalar/vectorized2: %.1f" % (cpu_scalar / cpu_vec2))

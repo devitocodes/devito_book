@@ -36,8 +36,8 @@ calls solver with a user_action function that can plot the
 solution on the screen (as an animation).
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
-import scitools.std as plt
 
 
 def solver(I, V, f, c, U_0, U_L, L, dt, C, T, user_action=None, version="scalar"):
@@ -81,7 +81,7 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T, user_action=None, version="scalar"
 
     import time
 
-    t0 = time.clock()  # CPU time measurement
+    t0 = time.perf_counter()  # CPU time measurement
 
     # Load initial condition into u_n
     for i in Ix:
@@ -197,7 +197,7 @@ def solver(I, V, f, c, U_0, U_L, L, dt, C, T, user_action=None, version="scalar"
     # Important to correct the mathematically wrong u=u_nm1 above
     # before returning u
     u = u_n
-    cpu_time = time.clock() - t0
+    cpu_time = time.perf_counter() - t0
     return u, x, t, cpu_time
 
 
@@ -222,16 +222,14 @@ def viz(I, V, f, c, U_0, U_L, L, dt, C, T, umin, umax, version="scalar", animate
 
     def plot_u(u, x, t, n):
         """user_action function for solver."""
-        # Works only with scitools, see wave1D_u0.py for matplotlib versions
-        plt.plot(
-            x,
-            u,
-            "r-",
-            xlabel="x",
-            ylabel="u",
-            axis=[0, L, umin, umax],
-            title="t=%.3f, %s, %s" % (t[n], bc_left, bc_right),
-        )
+        plt.clf()
+        plt.plot(x, u, "r-")
+        plt.xlabel("x")
+        plt.ylabel("u")
+        plt.axis([0, L, umin, umax])
+        plt.title("t=%.3f, %s, %s" % (t[n], bc_left, bc_right))
+        plt.draw()
+        plt.pause(0.001)
         # Let the initial condition stay on the screen for 2
         # seconds, else insert a pause of 0.2 s between each plot
         time.sleep(2) if t[n] == 0 else time.sleep(0.2)
@@ -244,7 +242,9 @@ def viz(I, V, f, c, U_0, U_L, L, dt, C, T, umin, umax, version="scalar", animate
     user_action = plot_u if animate else None
     u, x, t, cpu = solver(I, V, f, c, U_0, U_L, L, dt, C, T, user_action, version)
     if animate:
-        plt.movie("frame_*.png", encoder="html", fps=4, output_file="movie.html")
+        from compat.movie import movie
+
+        movie("frame_*.png", encoder="html", fps=4, output_file="movie.html")
         # Make other movie formats: Flash, Webm, Ogg, MP4
         codec2ext = dict(flv="flv", libx264="mp4", libvpx="webm", libtheora="ogg")
         fps = 6

@@ -1,7 +1,7 @@
 # Reimplementation of vib.py using classes
 
+import matplotlib.pyplot as plt
 import numpy as np
-import scitools.std as plt
 
 from vib import plot_empirical_freq_and_amplitude as vib_plot_empirical_freq_and_amplitude
 from vib import solver as vib_solver
@@ -120,7 +120,7 @@ def main():
     parser.add_argument("--SCITOOLS_easyviz_backend", default="matplotlib")
     a = parser.parse_args()
 
-    from scitools.std import StringFunction
+    from compat.string_function import StringFunction
 
     s = StringFunction(a.s, independent_variable="u") if a.s is not None else None
     StringFunction(a.F, independent_variable="t")

@@ -110,8 +110,9 @@ def visualize_front(u, t, I, w, savefig=False):
     curves as they evolve in time.
     Makes it easy to plot very long time series.
     """
-    import scitools.std as st
-    from scitools.MovingPlotWindow import MovingPlotWindow
+    import matplotlib.pyplot as st
+
+    from compat.moving_plot_window import MovingPlotWindow
 
     P = 2 * pi / w  # one period
     umin = -1.2 * I

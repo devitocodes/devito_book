@@ -49,7 +49,7 @@ def solver(
 
     import time
 
-    t0 = time.clock()  # for measuring CPU time
+    t0 = time.perf_counter()  # for measuring CPU time
     # Load initial condition into u_1
     for i in range(0, Nx + 1):
         u_1[i] = I(x[i])
@@ -113,7 +113,7 @@ def solver(
         # Switch variables before next step
         u_2[:], u_1[:] = u_1, u
 
-    cpu_time = t0 - time.clock()
+    cpu_time = t0 - time.perf_counter()
     return u, x, t, cpu_time
 
 
@@ -138,7 +138,7 @@ def viz(
     import os
     import time
 
-    import scitools.std as plt
+    import matplotlib.pyplot as plt
 
     # num_frames = 100 # max no of frames in movie
 

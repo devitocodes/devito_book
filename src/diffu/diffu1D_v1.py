@@ -78,7 +78,7 @@ def solver_FE(I, a, L, Nx, F, T, user_action=None, version="scalar"):
     """
     import time
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
 
     x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
@@ -118,7 +118,7 @@ def solver_FE(I, a, L, Nx, F, T, user_action=None, version="scalar"):
         # u_n[:] = u  # slow
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return u, x, t, t1 - t0
 
 
@@ -169,7 +169,7 @@ def solver_BE(I, a, L, Nx, F, T, user_action=None):
     """
     import time
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
 
     x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
@@ -220,7 +220,7 @@ def solver_BE(I, a, L, Nx, F, T, user_action=None):
         # Switch variables before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return u, x, t, t1 - t0
 
 
@@ -234,7 +234,7 @@ def solver_theta(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0, user_action=None):
     """
     import time
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
 
     x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
@@ -287,7 +287,7 @@ def solver_theta(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0, user_action=None):
         # Switch variables before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return u, x, t, t1 - t0
 
 
@@ -359,8 +359,6 @@ def expsin(scheme="FE", F=0.5, m=3):
 if __name__ == "__main__":
     import sys
     import time
-
-    from scitools.std import *
 
     if len(sys.argv) < 2:
         print("""Usage %s function arg1 arg2 arg3 ...""" % sys.argv[0])

@@ -30,19 +30,13 @@ def test_solver_exact_discrete_solution():
     u_e = u_numerical_exact(t)
     error = abs(u_e - u).max()
     # Make a plot in a file, but not on the screen
-    from scitools.std import plot
+    import matplotlib.pyplot as plt
 
-    plot(
-        t,
-        u,
-        "bo",
-        t,
-        u_e,
-        "r-",
-        legend=("numerical", "exact"),
-        show=False,
-        savefig="tmp.png",
-    )
+    plt.plot(t, u, "bo", label="numerical")
+    plt.plot(t, u_e, "r-", label="exact")
+    plt.legend()
+    plt.savefig("tmp.png")
+    plt.close()
 
     assert error < 1e-14
 

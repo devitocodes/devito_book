@@ -1,7 +1,5 @@
+import matplotlib.pyplot as plt
 from numpy import *
-
-# from matplotlib.pyplot import *
-from scitools.easyviz.matplotlib_ import *
 
 
 def A_exact(F, p):
@@ -21,29 +19,23 @@ def A_CN(F, p):
 
 
 def compare_plot(F, p):
-    figure()
-    plot(
-        p,
-        A_BE(F, p),
-        p,
-        A_exact(F, p),
-        p,
-        A_CN(F, p),
-        p,
-        A_FE(F, p),
-    )
-    legend(["BE", "exact", "CN", "FE"])
-    title("F=%g" % F)
+    plt.figure()
+    plt.plot(p, A_BE(F, p), label="BE")
+    plt.plot(p, A_exact(F, p), label="exact")
+    plt.plot(p, A_CN(F, p), label="CN")
+    plt.plot(p, A_FE(F, p), label="FE")
+    plt.legend()
+    plt.title("F=%g" % F)
     print("F:", F)
     if 0.2 >= F > 0.02:
-        axis([p[0], p[-1], 0.3, 1])
+        plt.axis([p[0], p[-1], 0.3, 1])
     elif F <= 0.02:
-        axis([p[0], p[-1], 0.75, 1])
+        plt.axis([p[0], p[-1], 0.75, 1])
     else:
-        axis([p[0], p[-1], -1.2, 1])
-    xlabel("$p=k\Delta x$")
-    savefig("A_F%s.pdf" % (str(F).replace(".", "")))
-    savefig("A_F%s.png" % (str(F).replace(".", "")))
+        plt.axis([p[0], p[-1], -1.2, 1])
+    plt.xlabel("$p=k\Delta x$")
+    plt.savefig("A_F%s.pdf" % (str(F).replace(".", "")))
+    plt.savefig("A_F%s.png" % (str(F).replace(".", "")))
 
 
 p = linspace(0, pi / 2, 101)
@@ -69,9 +61,9 @@ A_err_CN = A_CN(F, p) / A_exact(F, p)
 print("Error in A, CN:", A_err_CN.series(F, 0, 6))
 print(latex(A_err_CN.series(F, 0, 6)))
 
-raw_input()
+input()
 
-show()
+plt.show()
 
 f = open("tmp.sh", "w")
 f.write("""#!/bin/sh

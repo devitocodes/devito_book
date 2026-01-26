@@ -99,7 +99,7 @@ ignore = [
     "B023",   # function uses loop variable - common pattern in closures
     "B905",   # zip without strict - Python 3.9 compatibility
     "F841",   # local variable assigned but never used - often for documentation
-    "F821",   # undefined name - mostly from star imports (scitools.std)
+    "F821",   # undefined name - from star imports (numpy)
     "F811",   # redefinition of unused name - common in examples
     "B018",   # useless expression - often for demonstration
     "B006",   # mutable default argument - common in simple examples

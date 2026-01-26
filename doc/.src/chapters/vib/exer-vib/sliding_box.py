@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import scitools.std as plt
 
 
 def plot_spring():
@@ -10,7 +9,6 @@ def plot_spring():
     for alpha in alpha_values:
         print(alpha, s(u))
         plt.plot(u, s(u))
-        plt.hold("on")
     plt.legend([rf"$\alpha={alpha:g}$" for alpha in alpha_values])
     plt.xlabel("u")
     plt.ylabel("Spring response $s(u)$")
@@ -51,7 +49,6 @@ if __name__ == "__main__":
         for beta in beta_values:
             u, t = simulate(beta, gamma, 0, 6, 60)
             plt.plot(t, u)
-            plt.hold("on")
         plt.legend([rf"$\beta={beta:g}$" for beta in beta_values])
         plt.title(rf"$\gamma={gamma:g}$")
         plt.xlabel("$t$")
@@ -60,4 +57,4 @@ if __name__ == "__main__":
         plt.savefig(filestem + ".png")
         plt.savefig(filestem + ".pdf")
     plt.show()
-    raw_input()
+    input()

@@ -60,7 +60,6 @@ def demo(eps=0.01, method="centered"):
         u, x = solver(eps, Nx, method=method)
         plt.figure()
         plt.plot(x, u, "o-")
-        plt.hold("on")
         plt.plot(x_fine, u_exact(x_fine, eps), "k--")
         plt.legend(["$N_x=%d$" % Nx, "exact"], loc="upper left")
         plt.title(method + " difference scheme, " + r"$\epsilon=%g$" % eps)

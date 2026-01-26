@@ -175,8 +175,6 @@ def run_FECS(case):
             return
         plt.plot(x, u)
         legends.append("t=%g" % t[n])
-        if n > 0:
-            plt.hold("on")
 
     plt.ion()
     U0 = 0
@@ -238,7 +236,6 @@ def run(scheme="UP", case="gaussian", C=1, dt=0.01):
         if np.abs(u).max() > 3:  # Instability?
             return
         plt.plot(x, u)
-        plt.hold("on")
         plt.draw()
         if n > 0:
             y = [I(x_ - v * t[n]) for x_ in x]
@@ -298,7 +295,7 @@ def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
     """
     import time
 
-    t0 = time.clock()  # for measuring the CPU time
+    t0 = time.perf_counter()  # for measuring the CPU time
     Nt = int(round(T / float(dt)))
     t = np.linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
     dx = v * dt / C
@@ -375,7 +372,7 @@ def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
         # Update u_n before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return integral
 
 

@@ -2349,7 +2349,6 @@ def test_plot_IntegratedHeaviside(plot=False):
         import matplotlib.pyplot as plt
 
         plt.plot(IH_x, IH_y)
-        plt.hold("on")  # Matlab style
         plt.plot(IHs_x, IHs_y)
         plt.axis([xmin, xmax, -0.1, 3])
         # plt.legend(['integrated $H(x)$',
@@ -2365,7 +2364,6 @@ def test_plot_IndicatorFunction(plot=False):
         import matplotlib.pyplot as plt
 
         plt.plot(I_x, I_y)
-        plt.hold("on")  # Matlab style
         plt.plot(Is_x, Is_y)
         plt.axis([xmin, xmax, -0.1, 1.1])
         plt.legend(
@@ -2386,7 +2384,6 @@ def test_plot_IntegratedIndicatorFunction(plot=False):
 
         plt.figure()
         plt.plot(II_x, II_y)
-        plt.hold("on")  # Matlab style
         plt.plot(IIs_x, IIs_y)
         plt.axis([xmin, xmax, -1, 3])
         plt.legend(

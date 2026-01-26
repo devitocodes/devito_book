@@ -26,7 +26,7 @@ compute errors, etc.
 """
 import time
 
-from scitools.std import *
+from numpy import linspace, newaxis, sqrt, zeros
 
 
 def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
@@ -78,7 +78,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     Iy = range(0, u.shape[1])
     It = range(0, t.shape[0])
 
-    import time; t0 = time.clock()  # For measuring CPU time
+    import time; t0 = time.perf_counter()  # For measuring CPU time
     # Load initial condition into u_n
     if version == 'scalar':
         for i in Ix:
@@ -131,7 +131,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
         u_nm1, u_n, u = u_n, u, u_nm1
 
     # Important to set u = u_n if u is to be returned!
-    t1 = time.clock()
+    t1 = time.perf_counter()
     # dt might be computed in this function so return the value
     return dt, t1 - t0
 

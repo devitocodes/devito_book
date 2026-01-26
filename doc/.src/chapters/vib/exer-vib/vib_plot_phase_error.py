@@ -1,6 +1,6 @@
+import matplotlib.pyplot as plt
 from numpy import arcsin as asin
 from numpy import linspace, pi
-from scitools.std import hold, plot, savefig
 
 
 def tilde_w(w, dt):
@@ -16,16 +16,11 @@ def plot_phase_error():
     ]
     for dt in dt_values:
         e = m * 2 * pi * (1.0 / w - 1 / tilde_w(w, dt))
-        plot(
-            m,
-            e,
-            "-",
-            title="peak location error (phase error)",
-            xlabel="no of periods",
-            ylabel="phase error",
-        )
-        hold("on")
-    savefig("phase_error.png")
+        plt.plot(m, e, "-")
+    plt.title("peak location error (phase error)")
+    plt.xlabel("no of periods")
+    plt.ylabel("phase error")
+    plt.savefig("phase_error.png")
 
 
 plot_phase_error()

@@ -5,7 +5,7 @@ into a straight line (and further on into u=1/2).
 
 import time
 
-import scitools.std as plt
+import matplotlib.pyplot as plt
 from numpy import linspace, sqrt
 from scipy.special import erfc
 

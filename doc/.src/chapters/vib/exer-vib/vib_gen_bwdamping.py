@@ -1,7 +1,5 @@
+import matplotlib.pyplot as plt
 import numpy as np
-
-# import matplotlib.pyplot as plt
-import scitools.std as plt
 
 
 def solver_bwdamping(I, V, m, b, s, F, dt, T, damping="linear"):
@@ -206,7 +204,6 @@ def visualize(list_of_curves, legends, title="", filename="tmp"):
     """Plot list of curves: (u, t)."""
     for u, t in list_of_curves:
         plt.plot(t, u)
-        plt.hold("on")
     plt.legend(legends)
     plt.xlabel("t")
     plt.ylabel("u")
@@ -233,11 +230,8 @@ def main():
     )
     parser.add_argument("--damping", type=str, default="linear")
     parser.add_argument("--savefig", action="store_true")
-    # Hack to allow --SCITOOLS options
-    # (scitools.std reads this argument at import)
-    parser.add_argument("--SCITOOLS_easyviz_backend", default="matplotlib")
     a = parser.parse_args()
-    from scitools.std import StringFunction
+    from compat.string_function import StringFunction
 
     s = StringFunction(a.s, independent_variable="u")
     F = StringFunction(a.F, independent_variable="t")
@@ -275,4 +269,4 @@ if __name__ == "__main__":
     # test_sinusoidal()
     # test_mms()
     # test_quadratic()
-    raw_input()
+    input()

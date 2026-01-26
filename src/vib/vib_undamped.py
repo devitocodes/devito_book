@@ -45,7 +45,6 @@ def visualize(u, t, I, w):
     plt.plot(t, u, "r--o")
     t_fine = np.linspace(0, t[-1], 1001)  # very fine mesh for u_e
     u_e = u_exact(t_fine, I, w)
-    plt.hold("on")
     plt.plot(t_fine, u_e, "b-")
     plt.legend(["numerical", "exact"], loc="upper left")
     plt.xlabel("t")
@@ -183,10 +182,8 @@ def plot_empirical_freq_and_amplitude(u, t, I, w):
         plt.figure(1)
         plt.plot(range(len(p)), 2 * pi / p)
         legends1.append("frequency, case%d" % (i + 1))
-        plt.hold("on")
         plt.figure(2)
         plt.plot(range(len(a)), a)
-        plt.hold("on")
         legends2.append("amplitude, case%d" % (i + 1))
     plt.figure(1)
     plt.plot(range(len(p)), [w] * len(p), "k--")
@@ -222,8 +219,9 @@ def visualize_front(u, t, I, w, savefig=False, skip_frames=1):
     import os
     from math import pi
 
-    import scitools.std as st
-    from scitools.MovingPlotWindow import MovingPlotWindow
+    import matplotlib.pyplot as st
+
+    from compat.moving_plot_window import MovingPlotWindow
 
     for filename in glob.glob("tmp_*.png"):
         os.remove(filename)
@@ -239,17 +237,14 @@ def visualize_front(u, t, I, w, savefig=False, skip_frames=1):
     for n in range(1, len(u)):
         if plot_manager.plot(n):
             s = plot_manager.first_index_in_plot
-            st.plot(
-                t[s : n + 1],
-                u[s : n + 1],
-                "r-1",
-                t[s : n + 1],
-                I * cos(w * t)[s : n + 1],
-                "b-1",
-                title="t=%6.3f" % t[n],
-                axis=plot_manager.axis(),
-                show=not savefig,
-            )  # drop window if savefig
+            st.clf()
+            st.plot(t[s : n + 1], u[s : n + 1], "r-")
+            st.plot(t[s : n + 1], I * cos(w * t)[s : n + 1], "b-")
+            st.title("t=%6.3f" % t[n])
+            st.axis(plot_manager.axis())
+            if not savefig:
+                st.draw()
+                st.pause(0.001)
             if savefig and n % skip_frames == 0:
                 filename = "tmp_%04d.png" % frame_counter
                 st.savefig(filename)
@@ -267,7 +262,7 @@ def visualize_front_ascii(u, t, I, w, fps=10):
     import time
     from math import pi
 
-    from scitools.avplotter import Plotter
+    from compat.ascii_plotter import Plotter
 
     P = 2 * pi / w
     umin = 1.2 * u.min()
@@ -375,4 +370,4 @@ if __name__ == "__main__":
     # main()
     # demo_bokeh()
     plot_convergence_rates()
-    raw_input()
+    input()

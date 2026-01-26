@@ -1,10 +1,8 @@
 import sys
 
+import matplotlib.pyplot as plt
 import numpy as np
 import odespy
-import scitools.std as plt
-
-# import matplotlib.pyplot as plt
 from vib_empirical_analysis import amplitudes, minmax, periods
 
 
@@ -54,7 +52,6 @@ def run_solvers_and_plot(
                 plt.plot(t, u[:, 1])  # markers by default
             else:
                 plt.plot(t, u[:, 1], "-2")  # no markers
-            plt.hold("on")
             legends.append(solver_name)
             plt.figure(2)
             # Phase space plot
@@ -62,7 +59,6 @@ def run_solvers_and_plot(
                 plt.plot(u[:, 1], u[:, 0])  # markers by default
             else:
                 plt.plot(u[:, 1], u[:, 0], "-2")  # no markers
-            plt.hold("on")
 
         if num_periods > 20:
             minima, maxima = minmax(t, u[:, 0])
@@ -70,10 +66,8 @@ def run_solvers_and_plot(
             a = amplitudes(minima, maxima)
             plt.figure(3)
             plt.plot(range(len(p)), 2 * np.pi / p, "-")
-            plt.hold("on")
             plt.figure(4)
             plt.plot(range(len(a)), a, "-")
-            plt.hold("on")
 
     # Compare with exact solution plotted on a very fine mesh
     t_fine = np.linspace(0, T, 10001)
@@ -147,4 +141,4 @@ if __name__ == "__main__":
     solvers = eval("solvers_" + solver_collection)  # list of solvers
     run_solvers_and_plot(solvers, timesteps_per_period, num_periods)
     # plt.show()
-    # raw_input()
+    # input()

@@ -1,8 +1,8 @@
 import sys
 
+import matplotlib.pyplot as plt
 import numpy as np
 import odespy
-import scitools.std as plt
 
 # import matplotlib.pyplot as plt
 from vib_empirical_analysis import amplitudes, minmax

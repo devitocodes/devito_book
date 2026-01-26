@@ -30,7 +30,7 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0, user_action=None):
     """
     import time
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
 
     x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
@@ -85,7 +85,7 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0, user_action=None):
         # Switch variables before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return u, x, t, t1 - t0
 
 
@@ -93,11 +93,16 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0, user_action=None):
 
 
 def plot_u(u, x, t, n):
-    from scitools.std import plot
+    import matplotlib.pyplot as plt
 
     umin = -0.1
     umax = 1.1  # axis limits for plotting
-    plot(x, u, "r-", axis=[0, L, umin, umax], title="t=%f" % t[n])
+    plt.clf()
+    plt.plot(x, u, "r-")
+    plt.axis([0, L, umin, umax])
+    plt.title("t=%f" % t[n])
+    plt.draw()
+    plt.pause(0.001)
 
     # Pause the animation initially, otherwise 0.2 s between frames
     if t[n] == 0:
@@ -134,4 +139,4 @@ for Nx, F, theta, T in cases:
     u, x, t, cpu = solver(
         I, a, L, Nx, F, T, theta=theta, u_L=1, u_R=0, user_action=plot_u
     )
-    raw_input("CR: ")
+    input("CR: ")

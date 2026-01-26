@@ -35,21 +35,16 @@ for Nx, L in [[20, 4], [40, 8]]:
 
 print(sol[0].shape)
 print(sol[1].shape)
-import scitools.std as plt
+import matplotlib.pyplot as plt
 
 counter = 0
 for u0, u1 in zip(sol[0][2:], sol[1][2:], strict=False):
     x0 = sol[0][0]
     x1 = sol[1][0]
-    plt.plot(
-        x0,
-        u0,
-        "r-",
-        x1,
-        u1,
-        "b-",
-        legend=["short", "long"],
-        savefig="tmp_%04d.png" % counter,
-        axis=[x1[0], x1[-1], -1.1, 1.1],
-    )
+    plt.clf()
+    plt.plot(x0, u0, "r-", label="short")
+    plt.plot(x1, u1, "b-", label="long")
+    plt.legend()
+    plt.axis([x1[0], x1[-1], -1.1, 1.1])
+    plt.savefig("tmp_%04d.png" % counter)
     counter += 1

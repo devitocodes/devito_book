@@ -12,12 +12,15 @@ numerically; x0 is the initial guess of the root; and the
 x axis in the plot has extent [xmin, xmax].
 """
 
+import sys
+
 import matplotlib.pyplot as plt
 from Newton import Newton
-from scitools.std import *
+from numpy import linspace
+
+from compat.string_function import StringFunction
 
 plt.xkcd()  # cartoon style
-import sys
 
 
 def line(x0, y0, dydx):
@@ -49,7 +52,7 @@ def illustrate_Newton(info, f, df, xmin, xmax):
     for root, value in info:
         a, b = line(root, value, df(root))
         y = a * xvalues + b
-        raw_input("Type CR to continue: ")
+        input("Type CR to continue: ")
         plt.figure()
         plt.plot(
             xvalues,

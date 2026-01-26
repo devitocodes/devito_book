@@ -34,7 +34,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None, version="vectorized"):
 
     import time
 
-    t0 = time.clock()  # CPU time measurement
+    t0 = time.perf_counter()  # CPU time measurement
 
     # Load initial condition into u_n
     for i in range(0, Nx + 1):
@@ -101,7 +101,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None, version="vectorized"):
         u_nm1[:] = u_n
         u_n[:] = u
 
-    cpu_time = time.clock() - t0
+    cpu_time = time.perf_counter() - t0
     return u, x, t, cpu_time
 
 

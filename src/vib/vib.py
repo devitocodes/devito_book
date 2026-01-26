@@ -1,7 +1,5 @@
+import matplotlib.pyplot as plt
 import numpy as np
-
-# import matplotlib.pyplot as plt
-import scitools.std as plt
 
 
 def solver(I, V, m, b, s, F, dt, T, damping="linear"):
@@ -208,7 +206,7 @@ def main():
     # at import)
     parser.add_argument("--SCITOOLS_easyviz_backend", default="matplotlib")
     a = parser.parse_args()
-    from scitools.std import StringFunction
+    from compat.string_function import StringFunction
 
     s = StringFunction(a.s, independent_variable="u")
     F = StringFunction(a.F, independent_variable="t")
@@ -245,7 +243,6 @@ def plot_empirical_freq_and_amplitude(u, t):
 
     w = 2 * pi / p
     plt.plot(range(len(p)), w, "r-")
-    plt.hold("on")
     plt.plot(range(len(a)), a, "b-")
     ymax = 1.1 * max(w.max(), a.max())
     ymin = 0.9 * min(w.min(), a.min())
@@ -262,8 +259,9 @@ def visualize_front(u, t, window_width, savefig=False):
     Makes it easy to plot very long time series.
     P is the approximate duration of one period.
     """
-    import scitools.std as st
-    from scitools.MovingPlotWindow import MovingPlotWindow
+    import matplotlib.pyplot as st
+
+    from compat.moving_plot_window import MovingPlotWindow
 
     umin = 1.2 * u.min()
     umax = -umin
@@ -276,14 +274,13 @@ def visualize_front(u, t, window_width, savefig=False):
     for n in range(1, len(u)):
         if plot_manager.plot(n):
             s = plot_manager.first_index_in_plot
-            st.plot(
-                t[s : n + 1],
-                u[s : n + 1],
-                "r-1",
-                title="t=%6.3f" % t[n],
-                axis=plot_manager.axis(),
-                show=not savefig,
-            )  # drop window if savefig
+            st.clf()
+            st.plot(t[s : n + 1], u[s : n + 1], "r-")
+            st.title("t=%6.3f" % t[n])
+            st.axis(plot_manager.axis())
+            if not savefig:
+                st.draw()
+                st.pause(0.001)
             if savefig:
                 print("t=%g" % t[n])
                 st.savefig("tmp_vib%04d.png" % n)
@@ -298,7 +295,7 @@ def visualize_front_ascii(u, t, fps=10):
     """
     import time
 
-    from scitools.avplotter import Plotter
+    from compat.ascii_plotter import Plotter
 
     umin = 1.2 * u.min()
     umax = -umin

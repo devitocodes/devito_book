@@ -40,10 +40,10 @@ store solutions, etc.
 import sys
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse
 import scipy.sparse.linalg
-import scitools.std as plt
 
 
 def solver_FE_simple(I, a, f, L, dt, F, T):
@@ -54,7 +54,7 @@ def solver_FE_simple(I, a, f, L, dt, F, T):
     """
     import time
 
-    t0 = time.clock()  # For measuring the CPU time
+    t0 = time.perf_counter()  # For measuring the CPU time
 
     Nt = int(round(T / float(dt)))
     t = np.linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
@@ -87,7 +87,7 @@ def solver_FE_simple(I, a, f, L, dt, F, T):
         # u_n[:] = u  # safe, but slow
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return u_n, x, t, t1 - t0  # u_n holds latest u
 
 
@@ -97,7 +97,7 @@ def solver_FE(I, a, f, L, dt, F, T, user_action=None, version="scalar"):
     """
     import time
 
-    t0 = time.clock()  # for measuring the CPU time
+    t0 = time.perf_counter()  # for measuring the CPU time
 
     Nt = int(round(T / float(dt)))
     t = np.linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
@@ -146,7 +146,7 @@ def solver_FE(I, a, f, L, dt, F, T, user_action=None, version="scalar"):
         # Switch variables before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return t1 - t0
 
 
@@ -158,7 +158,7 @@ def solver_BE_simple(I, a, f, L, dt, F, T, user_action=None):
     """
     import time
 
-    t0 = time.clock()  # for measuring the CPU time
+    t0 = time.perf_counter()  # for measuring the CPU time
 
     Nt = int(round(T / float(dt)))
     t = np.linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
@@ -201,7 +201,7 @@ def solver_BE_simple(I, a, f, L, dt, F, T, user_action=None):
         # Update u_n before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return t1 - t0
 
 
@@ -212,7 +212,7 @@ def solver_BE(I, a, f, L, dt, F, T, user_action=None):
     """
     import time
 
-    t0 = time.clock()  # for measuring the CPU time
+    t0 = time.perf_counter()  # for measuring the CPU time
 
     Nt = int(round(T / float(dt)))
     t = np.linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
@@ -269,7 +269,7 @@ def solver_BE(I, a, f, L, dt, F, T, user_action=None):
         # u_n[:] = u
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return t1 - t0
 
 
@@ -283,7 +283,7 @@ def solver_theta(I, a, f, L, dt, F, T, theta=0.5, u_L=0, u_R=0, user_action=None
     """
     import time
 
-    t0 = time.clock()  # for measuring the CPU time
+    t0 = time.perf_counter()  # for measuring the CPU time
 
     Nt = int(round(T / float(dt)))
     t = np.linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
@@ -349,7 +349,7 @@ def solver_theta(I, a, f, L, dt, F, T, theta=0.5, u_L=0, u_R=0, user_action=None
         # Update u_n before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return t1 - t0
 
 

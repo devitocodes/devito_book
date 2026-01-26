@@ -11,4 +11,4 @@ for dt in dt_values:
     u_cases.append(u)
     t_cases.append(t)
 plot_empirical_freq_and_amplitude(u_cases, t_cases, I=1, w=2 * pi)
-raw_input()
+input()

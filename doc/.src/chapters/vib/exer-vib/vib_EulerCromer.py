@@ -85,7 +85,7 @@ def demo():
     w = 0.5
     P = 2 * pi / w
     T = 4 * P
-    import scitools.std as plt
+    import matplotlib.pyplot as plt
 
     from vib import solver as solver2
 
@@ -96,7 +96,7 @@ def demo():
         plt.plot(t, u, "r-", t2, u2, "b-")
         plt.legend(["Euler-Cromer", "centered scheme"])
         plt.title(f"dt={dt:.3g}")
-        raw_input()
+        input()
         plt.savefig("tmp_%d" % k + ".png")
         plt.savefig("tmp_%d" % k + ".pdf")
         dt /= 2

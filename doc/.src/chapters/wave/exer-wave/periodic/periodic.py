@@ -33,7 +33,7 @@ def solver(
 
     import time
 
-    t0 = time.clock()  # for measuring CPU time
+    t0 = time.perf_counter()  # for measuring CPU time
 
     global periodic
     periodic = False  # True: periodic condition at x=0, False: du/dn=0
@@ -120,7 +120,7 @@ def solver(
         # Switch variables before next step
         u_2[:], u_1[:] = u_1, u
 
-    cpu_time = t0 - time.clock()
+    cpu_time = t0 - time.perf_counter()
     return u, x, t, cpu_time
 
 
@@ -144,7 +144,7 @@ def viz(
     import os
     import time
 
-    import scitools.std as plt
+    import matplotlib.pyplot as plt
 
     # num_frames = 100 # max no of frames in movie
 
@@ -238,7 +238,7 @@ def gaussian(C=1, Nx=50, animate=True, T=2, loc=0):
 if __name__ == "__main__":
     import sys
 
-    from scitools.misc import function_UI
+
 
     cmd = function_UI([plug, gaussian], sys.argv)
     eval(cmd)

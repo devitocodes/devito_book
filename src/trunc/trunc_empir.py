@@ -3,8 +3,8 @@ Empirical estimation of the truncation error in a scheme
 for a problem with one independent variable.
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
-import scitools.std as plt
 
 
 def estimate(truncation_error, T, N_0, m, makeplot=True):
@@ -53,13 +53,13 @@ def estimate(truncation_error, T, N_0, m, makeplot=True):
 
         if makeplot:
             plt.figure(1)
-            plt.plot(t_coarse, R[i], log="y")
+            plt.plot(t_coarse, R[i])
+            plt.yscale("log")
             legends_R.append("N=%d" % N[i])
-            plt.hold("on")
 
             plt.figure(2)
-            plt.plot(t_coarse, R_a[i] - R[i], log="y")
-            plt.hold("on")
+            plt.plot(t_coarse, R_a[i] - R[i])
+            plt.yscale("log")
             legends_R_a.append("N=%d" % N[i])
 
     if makeplot:

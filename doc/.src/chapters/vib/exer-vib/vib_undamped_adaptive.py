@@ -1,10 +1,8 @@
 import sys
 
+import matplotlib.pyplot as plt
 import numpy as np
 import odespy
-
-# import matplotlib.pyplot as plt
-import scitools.std as plt
 
 
 def f(s, t):
@@ -51,11 +49,10 @@ u_simple, t_simple = simple_solver(I, w, dt, T)
 
 # Compare in plot: adaptive, constant dt, exact
 plt.plot(solver.t_all, u_adaptive[:, 0], "k-")
-plt.hold("on")
 plt.plot(t_simple, u_simple, "r--")
 plt.plot(t_fine, u_exact(t_fine), "b-")
 plt.legend([f"tol={tol:.0E}", "u simple", "exact"])
 plt.savefig("tmp_odespy_adaptive.png")
 plt.savefig("tmp_odespy_adaptive.pdf")
 plt.show()
-raw_input()
+input()

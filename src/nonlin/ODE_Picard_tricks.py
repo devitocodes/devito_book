@@ -32,10 +32,12 @@ u2, t = solver2.solve(tp)
 print("Picard it:", solver1.num_iterations_total)
 print("Picard2 it:", solver2.num_iterations_total)
 
-from scitools.std import plot
+import matplotlib.pyplot as plt
 
-plot(t, u1, t, u2, legend=("Picard", "Picard2"))
-raw_input()
+plt.plot(t, u1, label="Picard")
+plt.plot(t, u2, label="Picard2")
+plt.legend()
+input()
 
 """
 f(u,t) = -u**3:

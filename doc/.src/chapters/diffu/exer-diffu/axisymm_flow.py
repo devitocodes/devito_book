@@ -63,7 +63,7 @@ def solver_theta(I, a, R, Nr, D, T, theta=0.5, u_L=None, u_R=0, user_action=None
     r*alpha is needed midway between spatial mesh points, - use
     arithmetic mean of successive mesh values (i.e. of r_i*alpha_i)
     """
-    t0 = time.clock()
+    t0 = time.perf_counter()
 
     r = linspace(0, R, Nr + 1)  # mesh points in space
     dr = r[1] - r[0]
@@ -163,7 +163,7 @@ def solver_theta(I, a, R, Nr, D, T, theta=0.5, u_L=None, u_R=0, user_action=None
         # Switch variables before next step
         u_1, u = u, u_1
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     # return u_1, since u and u_1 are switched
     return u_1, t, t1 - t0
 

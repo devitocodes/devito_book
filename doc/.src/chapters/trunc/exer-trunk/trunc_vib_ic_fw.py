@@ -29,7 +29,6 @@ def visualize(u, t, I, w):
     plot(t, u, "r--o")
     t_fine = linspace(0, t[-1], 1001)  # very fine mesh for u_e
     u_e = exact_solution(t_fine, I, w)
-    hold("on")
     plot(t_fine, u_e, "b-")
     legend(["numerical", "exact"], loc="upper left")
     xlabel("t")
@@ -100,8 +99,6 @@ def main():
     parser.add_argument("--dt", type=float, default=0.05)
     parser.add_argument("--num_periods", type=int, default=5)
     parser.add_argument("--savefig", action="store_true")
-    # Hack to allow --SCITOOLS options (read when importing scitools.std)
-    parser.add_argument("--SCITOOLS_easyviz_backend", default="matplotlib")
     a = parser.parse_args()
     I, w, dt, num_periods, savefig = a.I, a.w, a.dt, a.num_periods, a.savefig
     P = 2 * pi / w  # one period
@@ -122,7 +119,6 @@ def plot_empirical_freq_and_amplitude(u, t, I, w):
     a = amplitudes(minima, maxima)
     figure()
     plot(range(len(p)), 2 * pi / p, "r-")
-    hold("on")
     plot(range(len(a)), a, "b-")
     plot(range(len(p)), [w] * len(p), "r--")
     plot(range(len(a)), [I] * len(a), "b--")
@@ -144,8 +140,9 @@ def visualize_front(u, t, I, w, savefig=False):
     curves as they evolve in time.
     Makes it easy to plot very long time series.
     """
-    import scitools.std as st
-    from scitools.MovingPlotWindow import MovingPlotWindow
+    import matplotlib.pyplot as plt
+
+    from compat.moving_plot_window import MovingPlotWindow
 
     P = 2 * pi / w  # one period
     umin = 1.2 * u.min()
@@ -156,21 +153,18 @@ def visualize_front(u, t, I, w, savefig=False):
     for n in range(1, len(u)):
         if plot_manager.plot(n):
             s = plot_manager.first_index_in_plot
-            st.plot(
-                t[s : n + 1],
-                u[s : n + 1],
-                "r-1",
-                t[s : n + 1],
-                I * cos(w * t)[s : n + 1],
-                "b-1",
-                title=f"t={t[n]:6.3f}",
-                axis=plot_manager.axis(),
-                show=not savefig,
-            )  # drop window if savefig
+            plt.clf()
+            plt.plot(t[s : n + 1], u[s : n + 1], "r-")
+            plt.plot(t[s : n + 1], I * cos(w * t)[s : n + 1], "b-")
+            plt.title(f"t={t[n]:6.3f}")
+            plt.axis(plot_manager.axis())
             if savefig:
                 filename = "tmp_vib%04d.png" % n
-                st.savefig(filename)
+                plt.savefig(filename)
                 print("making plot file", filename, f"at t={t[n]:g}")
+            else:
+                plt.draw()
+                plt.pause(0.001)
         plot_manager.update(n)
 
 
@@ -182,7 +176,7 @@ def visualize_front_ascii(u, t, I, w, fps=10):
     """
     import time
 
-    from scitools.avplotter import Plotter
+    from compat.ascii_plotter import Plotter
 
     P = 2 * pi / w
     umin = 1.2 * u.min()

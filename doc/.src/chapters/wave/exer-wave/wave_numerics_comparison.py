@@ -46,7 +46,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
 
     import time
 
-    t0 = time.clock()  # for measuring CPU time
+    t0 = time.perf_counter()  # for measuring CPU time
     # Load initial condition into u_1
     for i in range(0, Nx + 1):
         u_1[i] = I(x[i])
@@ -93,7 +93,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
         u_2[:] = u_1
         u_1[:] = u
 
-    cpu_time = time.clock() - t0
+    cpu_time = time.perf_counter() - t0
     return u, x, t, cpu_time
 
 
@@ -205,7 +205,7 @@ def viz(
 
         plot_u = PlotMatplotlib()
     elif tool == "scitools":
-        import scitools.std as plt  # scitools.easyviz interface
+        import matplotlib.pyplot as plt  # scitools.easyviz interface
 
         plot_u = PlotUst()
     import glob

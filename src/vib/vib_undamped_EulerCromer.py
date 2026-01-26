@@ -88,7 +88,7 @@ def demo():
     w = 2.0
     T = 5
     dt = 2 / w  # longest possible time step
-    import scitools.std as plt
+    import matplotlib.pyplot as plt
     from vib_undamped import solver as solver2  # 2nd-order ODE
 
     for k in range(4):
@@ -104,7 +104,7 @@ def demo():
             legend=("Euler-Cromer", "centered scheme for $u+u=0$"),
             title="dt=%.3g" % dt,
         )
-        raw_input()
+        input()
         plt.savefig("ECvs2nd_%d" % k + ".png")
         plt.savefig("ECvs2nd_%d" % k + ".pdf")
 

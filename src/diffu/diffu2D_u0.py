@@ -58,7 +58,7 @@ def solver_dense(
     Full solver for the model problem using the theta-rule
     difference approximation in time. Dense matrix. Gaussian solve.
     """
-    import time; t0 = time.clock()  # for measuring CPU time
+    import time; t0 = time.perf_counter()  # for measuring CPU time
 
     x = np.linspace(0, Lx, Nx+1)       # mesh points in x dir
     y = np.linspace(0, Ly, Ny+1)       # mesh points in y dir
@@ -185,7 +185,7 @@ def solver_dense(
         # Update u_n before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
 
     return t, t1-t0
 
@@ -204,7 +204,7 @@ def solver_sparse(
     or ILU preconditioned Conjugate Gradients (method='CG' with
     tolerance CG_tol and preconditioner CG_prec ('ILU' or None)).
     """
-    import time; t0 = time.clock()  # for measuring CPU time
+    import time; t0 = time.perf_counter()  # for measuring CPU time
 
     x = np.linspace(0, Lx, Nx+1)       # mesh points in x dir
     y = np.linspace(0, Ly, Ny+1)       # mesh points in y dir
@@ -382,7 +382,7 @@ def solver_sparse(
         # Update u_n before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
 
     return t, t1-t0
 
@@ -407,7 +407,7 @@ def solver_classic_iterative(
     difference approximation in time. Jacobi or SOR iteration.
     (omega='optimal' applies an omega according a formula.)
     """
-    import time; t0 = time.clock()     # for measuring CPU time
+    import time; t0 = time.perf_counter()     # for measuring CPU time
 
     x = np.linspace(0, Lx, Nx+1)       # mesh points in x dir
     y = np.linspace(0, Ly, Ny+1)       # mesh points in y dir
@@ -599,7 +599,7 @@ def solver_classic_iterative(
         # Update u_n before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
 
     return t, t1-t0
 

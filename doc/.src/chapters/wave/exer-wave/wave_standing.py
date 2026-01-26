@@ -26,7 +26,7 @@ def viz(
     import glob
     import os
 
-    import scitools.std as plt
+    import matplotlib.pyplot as plt
 
     class Plot:
         def __init__(self, ymax, frame_name="frame"):
@@ -38,19 +38,14 @@ def viz(
         def __call__(self, u, x, t, n):
             """user_action function for solver."""
             if animate == "u and u_exact":
-                plt.plot(
-                    x,
-                    u,
-                    "r-",
-                    x,
-                    u_exact(x, t[n]),
-                    "b--",
-                    xlabel="x",
-                    ylabel="u",
-                    axis=[0, L, -self.ymax, self.ymax],
-                    title=f"t={t[n]:f}",
-                    show=True,
-                )
+                plt.clf()
+                plt.plot(x, u, "r-", x, u_exact(x, t[n]), "b--")
+                plt.xlabel("x")
+                plt.ylabel("u")
+                plt.axis([0, L, -self.ymax, self.ymax])
+                plt.title(f"t={t[n]:f}")
+                plt.draw()
+                plt.pause(0.001)
             else:
                 error = u_exact(x, t[n]) - u
                 local_max_error = np.abs(error).max()
@@ -62,16 +57,14 @@ def viz(
                 # This gives a growing max value of the yaxis (but
                 # never shrinking)
                 self.ymax = max(self.ymax, max(self.max_error))
-                plt.plot(
-                    x,
-                    error,
-                    "r-",
-                    xlabel="x",
-                    ylabel="error",
-                    axis=[0, L, -self.ymax, self.ymax],
-                    title=f"t={t[n]:f}",
-                    show=True,
-                )
+                plt.clf()
+                plt.plot(x, error, "r-")
+                plt.xlabel("x")
+                plt.ylabel("error")
+                plt.axis([0, L, -self.ymax, self.ymax])
+                plt.title(f"t={t[n]:f}")
+                plt.draw()
+                plt.pause(0.001)
             plt.savefig("%s_%04d.png" % (self.frame_name, n))
 
     # Clean up old movie frames

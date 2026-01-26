@@ -1,9 +1,8 @@
-# import matplotlib.pyplot as plt
 import sys
 
+import matplotlib.pyplot as plt
 import numpy as np
 import odespy
-import scitools.std as plt
 
 
 class RHS:
@@ -99,7 +98,6 @@ def run_solvers_and_plot(solvers, timesteps_per_period=20, num_periods=1, b=0):
                 plt.plot(t, u[:, 0])  # markers by default
             else:
                 plt.plot(t, u[:, 0], "-2")  # no markers
-            plt.hold("on")
             legends.append(solver_name)
 
     # Compare with exact solution plotted on a very fine mesh
@@ -158,4 +156,4 @@ if __name__ == "__main__":
     solvers = eval("solvers_" + solver_collection)  # list of solvers
     run_solvers_and_plot(solvers, timesteps_per_period, num_periods)
     plt.show()
-    raw_input()
+    input()

@@ -1,8 +1,8 @@
 """Solve u'' + w*2**u = 0 by the Euler-Cromer method in Odespy."""
 
+import matplotlib.pyplot as plt
 import numpy as np
 import odespy
-import scitools.std as plt
 
 
 def f(u, t, w=1):
@@ -34,4 +34,4 @@ def run_solver_and_plot(solver, timesteps_per_period=20, num_periods=1, I=1, w=2
 
 
 run_solver_and_plot(odespy.EulerCromer(f), timesteps_per_period=20, num_periods=9)
-raw_input()
+input()

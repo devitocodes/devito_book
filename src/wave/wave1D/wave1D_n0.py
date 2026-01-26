@@ -59,7 +59,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
 
     import time
 
-    t0 = time.clock()  # CPU time measurement
+    t0 = time.perf_counter()  # CPU time measurement
 
     # Load initial condition into u_n
     for i in range(0, Nx + 1):
@@ -107,7 +107,7 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
 
     # Wrong assignment u = u_nm1 must be corrected before return
     u = u_n
-    cpu_time = time.clock() - t0
+    cpu_time = time.perf_counter() - t0
     return u, x, t, cpu_time
 
 

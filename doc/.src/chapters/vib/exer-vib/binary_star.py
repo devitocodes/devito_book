@@ -1,7 +1,6 @@
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import odespy
-import scitools.std as plt
 
 
 def solver(alpha, ic, T, dt=0.05):
@@ -38,9 +37,10 @@ def demo_circular():
     # mass A is at (1, 0) with vel. (0, 1)
     ic = [1, 0, 0, 1, 0, 0, 0, 0]
     x_A, x_B, y_A, y_B, t = solver(alpha=0.001, ic=ic, T=2 * np.pi, dt=0.01)
-    plt.plot(
-        x_A, x_B, "r2-", y_A, y_B, "b2-", legend=["A", "B"], daspectmode="equal"
-    )  # x and y axis have same scaling
+    plt.plot(x_A, x_B, "r-", label="A")
+    plt.plot(y_A, y_B, "b-", label="B")
+    plt.gca().set_aspect("equal")
+    plt.legend()
     plt.savefig("tmp_circular.png")
     plt.savefig("tmp_circular.pdf")
     plt.show()
@@ -63,39 +63,24 @@ def demo_two_stars(animate=True):
     if animate:
         # Animate motion and draw the objects' paths in time
         for i in range(len(x_A)):
-            plt.plot(
-                x_A[: i + 1],
-                x_B[: i + 1],
-                "r-",
-                y_A[: i + 1],
-                y_B[: i + 1],
-                "b-",
-                [x_A[0], x_A[i]],
-                [x_B[0], x_B[i]],
-                "r2o",
-                [y_A[0], y_A[i]],
-                [y_B[0], y_B[i]],
-                "b4o",
-                daspectmode="equal",  # axes aspect
-                legend=["A", "B", "A", "B"],
-                axis=[-1, 1, -1, 1],
-                savefig="tmp_%04d.png" % i,
-                title=f"t={t[i]:.2f}",
-            )
+            plt.clf()
+            plt.plot(x_A[: i + 1], x_B[: i + 1], "r-", label="A")
+            plt.plot(y_A[: i + 1], y_B[: i + 1], "b-", label="B")
+            plt.plot([x_A[0], x_A[i]], [x_B[0], x_B[i]], "ro")
+            plt.plot([y_A[0], y_A[i]], [y_B[0], y_B[i]], "bo")
+            plt.gca().set_aspect("equal")
+            plt.legend()
+            plt.axis([-1, 1, -1, 1])
+            plt.title(f"t={t[i]:.2f}")
+            plt.savefig("tmp_%04d.png" % i)
     else:
         # Make a simple static plot of the solution
-        plt.plot(
-            x_A,
-            x_B,
-            "r-",
-            y_A,
-            y_B,
-            "b-",
-            daspectmode="equal",
-            legend=["A", "B"],
-            axis=[-1, 1, -1, 1],
-            savefig="tmp_two_stars.png",
-        )
+        plt.plot(x_A, x_B, "r-", label="A")
+        plt.plot(y_A, y_B, "b-", label="B")
+        plt.gca().set_aspect("equal")
+        plt.legend()
+        plt.axis([-1, 1, -1, 1])
+        plt.savefig("tmp_two_stars.png")
     # plt.axes().set_aspect('equal')  # mpl
     plt.show()
 
@@ -107,4 +92,4 @@ if __name__ == "__main__":
         demo_circular()
     else:
         demo_two_stars(True)
-    raw_input()
+    input()

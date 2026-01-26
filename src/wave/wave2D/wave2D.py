@@ -6,7 +6,7 @@ Very preliminary version.
 
 import time
 
-from scitools.std import *
+from numpy import linspace, newaxis, sqrt, zeros
 
 
 def scheme_ij(

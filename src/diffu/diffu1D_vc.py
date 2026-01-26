@@ -58,7 +58,7 @@ def solver(I, a, f, L, Nx, D, T, theta=0.5, u_L=1, u_R=0, user_action=None):
     """
     import time
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
 
     x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
@@ -148,18 +148,23 @@ def solver(I, a, f, L, Nx, D, T, theta=0.5, u_L=1, u_R=0, user_action=None):
         # Switch variables before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return t1 - t0
 
 
 def viz(I, a, f, L, Nx, D, T, umin, umax, theta, u_L, u_R, animate=True, store_u=False):
-    from scitools.std import plot
+    import matplotlib.pyplot as plt
 
     solutions = []
 
     def process_u(u, x, t, n):
         if animate:
-            plot(x, u, "r-", axis=[0, L, umin, umax], title="t=%f" % t[n])
+            plt.clf()
+            plt.plot(x, u, "r-")
+            plt.axis([0, L, umin, umax])
+            plt.title("t=%f" % t[n])
+            plt.draw()
+            plt.pause(0.001)
         if t[n] == 0:
             if store_u:
                 solutions.append(x)

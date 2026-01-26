@@ -52,4 +52,4 @@ for rhs, title in ODEs:
     run_solvers_and_plot(solvers, rhs, T, dt, title=title, filename=filename)
 
 plt.show()
-raw_input()
+input()

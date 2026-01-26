@@ -108,7 +108,7 @@ def solver(
     u_n   = np.zeros(Nx+1)   # Solution at 1 time level back
     u_nm1 = np.zeros(Nx+1)   # Solution at 2 time levels back
 
-    import time;  t0 = time.clock()  # CPU time measurement
+    import time;  t0 = time.perf_counter()  # CPU time measurement
     # --- Valid indices for space and time mesh ---
     Ix = range(0, Nx+1)
     It = range(0, Nt+1)
@@ -209,7 +209,7 @@ def solver(
         # Update data structures for next step
         u_nm1, u_n, u = u_n, u, u_nm1
 
-    cpu_time = time.clock() - t0
+    cpu_time = time.perf_counter() - t0
     return cpu_time, hashed_input
 
 
@@ -429,7 +429,7 @@ class PlotAndStoreSolution:
 
         fps = 24 # frames per second
         if self.backend is not None:
-            from scitools.std import movie
+            from compat.movie import movie
             movie('frame_*.png', encoder='html',
                   output_file='index.html', fps=fps)
 

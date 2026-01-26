@@ -33,7 +33,7 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0, user_action=None):
     """
     import time
 
-    t0 = time.clock()
+    t0 = time.perf_counter()
 
     x = linspace(0, L, Nx + 1)  # mesh points in space
     dx = x[1] - x[0]
@@ -88,7 +88,7 @@ def solver(I, a, L, Nx, F, T, theta=0.5, u_L=0, u_R=0, user_action=None):
         # Switch variables before next step
         u_n, u = u, u_n
 
-    t1 = time.clock()
+    t1 = time.perf_counter()
     return u, x, t, t1 - t0
 
 
@@ -103,13 +103,18 @@ class PlotU:
         self._make_plotdir()
 
     def __call__(self, u, x, t, n):
-        from scitools.std import plot, savefig
+        import matplotlib.pyplot as plt
 
         umin = -0.1
         umax = 1.1  # axis limits for plotting
         title = "Method: %s, F=%g, t=%f" % (theta2name[self.theta], self.F, t[n])
-        plot(x, u, "r-", axis=[0, self.L, umin, umax], title=title)
-        savefig(os.path.join(self.plotdir, "frame_%04d.png" % n))
+        plt.clf()
+        plt.plot(x, u, "r-")
+        plt.axis([0, self.L, umin, umax])
+        plt.title(title)
+        plt.draw()
+        plt.pause(0.001)
+        plt.savefig(os.path.join(self.plotdir, "frame_%04d.png" % n))
 
         # Pause the animation initially, otherwise 0.2 s between frames
         if n == 0:
@@ -131,8 +136,11 @@ class PlotU:
         cmd = "avconv -r 1 -i frame_%04d.png -vcodec flv movie.flv"
         cmd = "avconv -r 1 -i frame_%04d.png -vcodec libtheora movie.ogg"
         os.system(cmd)
-        cmd = "scitools movie output_file=index.html frame*.png"
-        os.system(cmd)
+        # Create HTML movie using compat module
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+        from compat.movie import movie
+        movie("frame*.png", encoder="html", fps=1, output_file="index.html")
         os.chdir(orig_dir)
 
 
@@ -166,7 +174,7 @@ def run_BE_CN_FE():
             I, a=1, L=1, Nx=Nx, F=F, T=T, theta=theta, u_L=1, u_R=0, user_action=plot_u
         )
         plot_u.make_movie()
-        raw_input("Type Return to proceed with next case: ")
+        input("Type Return to proceed with next case: ")
 
 
 if __name__ == "__main__":

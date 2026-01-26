@@ -74,11 +74,8 @@ def main():
     )
     parser.add_argument("--damping", type=str, default="linear")
     parser.add_argument("--savefig", action="store_true")
-    # Hack to allow --SCITOOLS options
-    # (scitools.std reads this argument at import)
-    parser.add_argument("--SCITOOLS_easyviz_backend", default="matplotlib")
     a = parser.parse_args()
-    from scitools.std import StringFunction
+    from compat.string_function import StringFunction
 
     s = StringFunction(a.s, independent_variable="u")
     F = StringFunction(a.F, independent_variable="t")
@@ -107,7 +104,7 @@ def read_and_plot(filename, u_min, u_max):
     """
     import time
 
-    from scitools.avplotter import Plotter
+    from compat.ascii_plotter import Plotter
 
     umin = 1.2 * u_min
     umax = 1.2 * u_max
