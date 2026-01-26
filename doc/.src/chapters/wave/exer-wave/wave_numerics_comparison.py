@@ -109,14 +109,18 @@ def viz(
     umin,
     umax,  # Interval for u in plots
     animate=True,  # Simulation with animation?
-    tool="matplotlib",  # 'matplotlib' or 'scitools'
     solver_function=solver,  # Function with numerical algorithm
 ):
     """
     Run solver, store and viz. u at each time level with all C values.
     """
+    import glob
+    import os
+    import time
 
-    class PlotUst:
+    import matplotlib.pyplot as plt
+
+    class PlotMatplotlib:
         def __init__(self):
             self.all_u = []
             self.all_u_for_all_C = []
@@ -126,50 +130,7 @@ def viz(
             """user_action function for solver."""
             self.all_u.append(u.copy())
             if t[n] == T:  # i.e., whole time interv. done for this C
-                self.x_mesh.append(x)
-                self.all_u_for_all_C.append(self.all_u)
-                self.all_u = []  # reset to empty list
-
-                if len(self.all_u_for_all_C) == len(C):  # all C done
-                    print("Finished all C. Proceed with plots...")
-                    # note: n will here be the last index in t[n]
-                    for n_ in range(0, n + 1):  # for each tn
-                        plt.plot(
-                            self.x_mesh[0],
-                            self.all_u_for_all_C[0][n_],
-                            axis=[0, L, umin, umax],
-                            title=f"Solutions for all \
-                                        C at t={t[n_]:f}",
-                        )
-                        plt.hold("on")
-
-                        for j in range(1, len(C)):
-                            # build plot at this tn with each
-                            # sol. from the different C values
-                            plt.plot(
-                                self.x_mesh[j],
-                                self.all_u_for_all_C[j][n_],
-                                axis=[0, L, umin, umax],
-                            )
-                        plt.xlabel("x")
-                        plt.ylabel("u")
-                        plt.hold("off")
-                        plt.show()
-                        # Let the init. cond. stay on the screen for
-                        # 2 sec, else insert a pause of 0.2 s
-                        # between each plot
-                        time.sleep(2) if t[n_] == 0 else time.sleep(0.2)
-                        plt.savefig("tmp_%04d.png" % n_)  # for movie
-
-    class PlotMatplotlib:
-        def __init__(self):
-            self.all_u = []
-            self.all_u_for_all_C = []
-
-        def __call__(self, u, x, t, n):
-            """user_action function for solver."""
-            self.all_u.append(u.copy())
-            if t[n] == T:  # i.e., whole time interv. done for this C
+                self.x_mesh.append(x.copy())
                 self.all_u_for_all_C.append(self.all_u)
                 self.all_u = []  # reset to empty list
 
@@ -178,21 +139,15 @@ def viz(
                     plt.ion()
                     # note: n will here be the last index in t[n]
                     for n_ in range(0, n + 1):  # for each tn
-                        plt.plot(x, self.all_u_for_all_C[0][n_])
-                        plt.axis([0, L, umin, umax])
-                        plt.hold(True)
-                        for j in range(1, len(C)):
+                        plt.clf()
+                        for j in range(len(C)):
                             # build plot at this tn with each
                             # sol. from the different C values
-                            plt.plot(x, self.all_u_for_all_C[j][n_])
+                            plt.plot(self.x_mesh[j], self.all_u_for_all_C[j][n_])
                         plt.axis([0, L, umin, umax])
                         plt.xlabel("x")
                         plt.ylabel("u")
-                        plt.title(
-                            f"Solutions for all \
-                                   C at t={t[n_]:f}"
-                        )
-                        plt.hold(False)
+                        plt.title(f"Solutions for all C at t={t[n_]:f}")
                         plt.draw()
                         # Let the init. cond. stay on the screen for
                         # 2 sec, else insert a pause of 0.2 s
@@ -200,17 +155,7 @@ def viz(
                         time.sleep(2) if t[n_] == 0 else time.sleep(0.2)
                         plt.savefig("tmp_%04d.png" % n_)  # for movie
 
-    if tool == "matplotlib":
-        import matplotlib.pyplot as plt
-
-        plot_u = PlotMatplotlib()
-    elif tool == "scitools":
-        import matplotlib.pyplot as plt  # scitools.easyviz interface
-
-        plot_u = PlotUst()
-    import glob
-    import os
-    import time
+    plot_u = PlotMatplotlib()
 
     # Clean up old movie frames
     for filename in glob.glob("tmp_*.png"):
@@ -222,22 +167,13 @@ def viz(
         print("C_value --------------------------------- ", C_value)
         u, x, t, cpu = solver_function(I, V, f, c, L, dt, C_value, T, user_action)
 
-    # Make video files
+    # Make video files using ffmpeg
     fps = 4  # frames per second
-    codec2ext = dict(
-        flv="flv", libx264="mp4", libvpx="webm", libtheora="ogg"
-    )  # video formats
-    for codec in codec2ext:
-        codec2ext[codec]
-        cmd = (
-            "%(movie_program)s -r %(fps)d -i %(filespec)s "
-            "-vcodec %(codec)s movie.%(ext)s" % vars()
-        )
+    codec2ext = dict(flv="flv", libx264="mp4", libvpx="webm", libtheora="ogg")
+    for codec, ext in codec2ext.items():
+        cmd = f"ffmpeg -r {fps} -i tmp_%04d.png -vcodec {codec} movie.{ext}"
         os.system(cmd)
 
-    if tool == "scitools":
-        # Make an HTML play for showing the animation in a browser
-        plt.movie("tmp_*.png", encoder="html", fps=fps, output_file="movie.html")
     return cpu
 
 
@@ -269,9 +205,7 @@ def guitar(C):
 
     umin = -1.2 * a
     umax = -umin
-    cpu = viz(I, 0, 0, c, L, dt, all_C, T, umin, umax, animate=True, tool="scitools")
-    # cpu = viz(I, 0, 0, c, L, dt, all_C, T, umin, umax,
-    #             animate=True, tool='matplotlib')
+    cpu = viz(I, 0, 0, c, L, dt, all_C, T, umin, umax, animate=True)
     print("cpu = ", cpu)
 
 

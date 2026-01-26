@@ -206,10 +206,14 @@ def main():
     parser.add_argument("--damping", type=str, default="linear")
     parser.add_argument("--savefig", action="store_true")
     a = parser.parse_args()
-    from compat.string_function import StringFunction
 
-    s = StringFunction(a.s, independent_variable="u")
-    F = StringFunction(a.F, independent_variable="t")
+    # Parse string expressions to callable functions using sympy
+    from sympy import lambdify, symbols, sympify
+
+    u_sym = symbols("u")
+    t_sym = symbols("t")
+    s = lambdify(u_sym, sympify(a.s), modules=["numpy"])
+    F = lambdify(t_sym, sympify(a.F), modules=["numpy"])
     I, V, m, b, dt, T, window_width, savefig, damping = (
         a.I,
         a.V,

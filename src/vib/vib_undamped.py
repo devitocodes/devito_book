@@ -142,8 +142,6 @@ def main(solver_function=solver):
     parser.add_argument("--dt", type=float, default=0.05)
     parser.add_argument("--num_periods", type=int, default=5)
     parser.add_argument("--savefig", action="store_true")
-    # Hack to allow --SCITOOLS options (read when importing scitools.std)
-    parser.add_argument("--SCITOOLS_easyviz_backend", default="matplotlib")
     a = parser.parse_args()
     I, w, dt, num_periods, savefig = a.I, a.w, a.dt, a.num_periods, a.savefig
     P = 2 * pi / w  # one period
@@ -214,64 +212,51 @@ def visualize_front(u, t, I, w, savefig=False, skip_frames=1):
     this is convenient if plot files corresponding to
     different time steps are to be compared).
     """
-    # Remove all old plot files tmp_*.png
     import glob
     import os
     from math import pi
 
-    import matplotlib.pyplot as st
+    import matplotlib.pyplot as plt
 
-    from compat.moving_plot_window import MovingPlotWindow
-
+    # Remove all old plot files tmp_*.png
     for filename in glob.glob("tmp_*.png"):
         os.remove(filename)
 
     P = 2 * pi / w  # one period
+    window_width = 8 * P
     umin = 1.2 * u.min()
     umax = -umin
     dt = t[1] - t[0]
-    plot_manager = MovingPlotWindow(
-        window_width=8 * P, dt=dt, yaxis=[umin, umax], mode="continuous drawing"
-    )
+
+    # Calculate window size in number of points
+    window_points = int(window_width / dt)
+
+    plt.ion()
     frame_counter = 0
     for n in range(1, len(u)):
-        if plot_manager.plot(n):
-            s = plot_manager.first_index_in_plot
-            st.clf()
-            st.plot(t[s : n + 1], u[s : n + 1], "r-")
-            st.plot(t[s : n + 1], I * cos(w * t)[s : n + 1], "b-")
-            st.title("t=%6.3f" % t[n])
-            st.axis(plot_manager.axis())
+        # Determine start index for sliding window
+        s = max(0, n - window_points)
+
+        # Only update plot periodically for performance
+        if n % max(1, len(u) // 500) == 0 or n == len(u) - 1:
+            plt.clf()
+            plt.plot(t[s : n + 1], u[s : n + 1], "r-", label="numerical")
+            plt.plot(t[s : n + 1], I * np.cos(w * t[s : n + 1]), "b-", label="exact")
+            plt.title("t=%6.3f" % t[n])
+            plt.xlabel("t")
+            plt.ylabel("u")
+            plt.axis([t[s], t[s] + window_width, umin, umax])
+            plt.legend(loc="upper right")
+
             if not savefig:
-                st.draw()
-                st.pause(0.001)
+                plt.draw()
+                plt.pause(0.001)
+
             if savefig and n % skip_frames == 0:
                 filename = "tmp_%04d.png" % frame_counter
-                st.savefig(filename)
+                plt.savefig(filename)
                 print("making plot file", filename, "at t=%g" % t[n])
                 frame_counter += 1
-        plot_manager.update(n)
-
-
-def visualize_front_ascii(u, t, I, w, fps=10):
-    """
-    Plot u and the exact solution vs t line by line in a
-    terminal window (only using ascii characters).
-    Makes it easy to plot very long time series.
-    """
-    import time
-    from math import pi
-
-    from compat.ascii_plotter import Plotter
-
-    P = 2 * pi / w
-    umin = 1.2 * u.min()
-    umax = -umin
-
-    p = Plotter(ymin=umin, ymax=umax, width=60, symbols="+o")
-    for n in range(len(u)):
-        print(p.plot(t[n], u[n], I * cos(w * t[n])), "%.1f" % (t[n] / P))
-        time.sleep(1 / float(fps))
 
 
 def bokeh_plot(u, t, legends, I, w, t_range, filename):

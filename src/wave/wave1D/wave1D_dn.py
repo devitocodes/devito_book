@@ -242,14 +242,11 @@ def viz(I, V, f, c, U_0, U_L, L, dt, C, T, umin, umax, version="scalar", animate
     user_action = plot_u if animate else None
     u, x, t, cpu = solver(I, V, f, c, U_0, U_L, L, dt, C, T, user_action, version)
     if animate:
-        from compat.movie import movie
-
-        movie("frame_*.png", encoder="html", fps=4, output_file="movie.html")
-        # Make other movie formats: Flash, Webm, Ogg, MP4
+        # Make movie formats using ffmpeg: Flash, Webm, Ogg, MP4
         codec2ext = dict(flv="flv", libx264="mp4", libvpx="webm", libtheora="ogg")
         fps = 6
         filespec = "frame_%04d.png"
-        movie_program = "ffmpeg"  # or 'avconv'
+        movie_program = "ffmpeg"
         for codec in codec2ext:
             ext = codec2ext[codec]
             cmd = (

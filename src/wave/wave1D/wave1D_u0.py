@@ -152,27 +152,14 @@ def viz(
     umin,
     umax,  # Interval for u in plots
     animate=True,  # Simulation with animation?
-    tool="matplotlib",  # 'matplotlib' or 'scitools'
     solver_function=solver,  # Function with numerical algorithm
 ):
     """Run solver and visualize u at each time level."""
+    import glob
+    import os
+    import time
 
-    def plot_u_st(u, x, t, n):
-        """user_action function for solver."""
-        plt.plot(
-            x,
-            u,
-            "r-",
-            xlabel="x",
-            ylabel="u",
-            axis=[0, L, umin, umax],
-            title="t=%f" % t[n],
-            show=True,
-        )
-        # Let the initial condition stay on the screen for 2
-        # seconds, else insert a pause of 0.2 s between each plot
-        time.sleep(2) if t[n] == 0 else time.sleep(0.2)
-        plt.savefig("frame_%04d.png" % n)  # for movie making
+    import matplotlib.pyplot as plt
 
     class PlotMatplotlib:
         def __call__(self, u, x, t, n):
@@ -191,34 +178,23 @@ def viz(
             time.sleep(2) if t[n] == 0 else time.sleep(0.2)
             plt.savefig("tmp_%04d.png" % n)  # for movie making
 
-    if tool == "matplotlib":
-        import matplotlib.pyplot as plt
-
-        plot_u = PlotMatplotlib()
-    elif tool == "scitools":
-        # scitools is deprecated, fall back to matplotlib
-        import matplotlib.pyplot as plt
-
-        plot_u = PlotMatplotlib()
-    import glob
-    import os
-    import time
+    plot_u = PlotMatplotlib()
 
     # Clean up old movie frames
     for filename in glob.glob("tmp_*.png"):
         os.remove(filename)
 
-    # Call solver and do the simulaton
+    # Call solver and do the simulation
     user_action = plot_u if animate else None
     u, x, t, cpu = solver_function(I, V, f, c, L, dt, C, T, user_action)
 
-    # Make video files
+    # Make video files using ffmpeg
     fps = 4  # frames per second
     codec2ext = dict(
         flv="flv", libx264="mp4", libvpx="webm", libtheora="ogg"
     )  # video formats
     filespec = "tmp_%04d.png"
-    movie_program = "ffmpeg"  # or 'avconv'
+    movie_program = "ffmpeg"
     for codec in codec2ext:
         ext = codec2ext[codec]
         cmd = (
@@ -227,10 +203,6 @@ def viz(
         )
         os.system(cmd)
 
-    # Make an HTML player for showing the animation in a browser
-    from compat.movie import movie
-
-    movie("tmp_*.png", encoder="html", fps=fps, output_file="movie.html")
     return cpu
 
 
@@ -253,7 +225,7 @@ def guitar(C):
 
     umin = -1.2 * a
     umax = -umin
-    cpu = viz(I, 0, 0, c, L, dt, C, T, umin, umax, animate=True, tool="scitools")
+    cpu = viz(I, 0, 0, c, L, dt, C, T, umin, umax, animate=True)
 
 
 def convergence_rates(

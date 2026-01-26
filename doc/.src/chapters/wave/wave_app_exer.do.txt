@@ -328,7 +328,7 @@ label{wave:app:exer:seismic2D}
 file=seismic2D
 
 The goal of this exercise is to simulate seismic waves using the
-PDE model (ref{wave:app:acoustic:seismic:accoustic1a}) in a
+PDE model (ref{wave:app:acoustic:seismic:acoustic1a}) in a
 2D $xz$ domain with geological layers.
 Introduce $m$ horizontal layers of thickness $h_i$, $i=0,\ldots,m-1$.
 Inside layer number $i$ we have a vertical wave velocity $c_{z,i}$
@@ -639,7 +639,7 @@ points to a continuous function is to assume a linear variation
 between the points (which actually means to draw straight lines between
 the points, exactly as done by a plotting program).
 
-The function `wrap2callable` in `scitools.std` can take a set of points
+The function `scipy.interpolate.interp1d` can take a set of points
 and return a continuous function that corresponds to linear
 variation between the points. The computation of the inverse of a
 function $g$ on $[0,L]$ can then be done by
@@ -648,8 +648,8 @@ function $g$ on $[0,L]$ can then be done by
 def inverse(g, domain, resolution=101):
     x = linspace(domain[0], domain[L], resolution)
     y = g(x)
-    from scitools.std import wrap2callable
-    g_inverse = wrap2callable((y, x))
+    from scipy.interpolate import interp1d
+    g_inverse = interp1d(y, x, kind='linear', fill_value='extrapolate')
     return g_inverse
 !ec
 

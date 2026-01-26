@@ -12,22 +12,27 @@ def r(C, p):
 
 
 def makeplot():
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    def r_numpy(C, p):
+        return 1 / (C * p) * np.arcsin(C * np.sin(p))
+
     n = 16
-    p = linspace(0.001, pi / 2, n)
+    p = np.linspace(0.001, np.pi / 2, n)
     legends = []
     for C in 1.0, 0.95, 0.8, 0.3:
-        plot(p, r(C, p))
-        hold("on")
+        plt.plot(p, r_numpy(C, p))
         legends.append("C=%g" % C)
-    title("Numerical divided by exact wave velocity")
-    legend(legends, fancybox=True, loc="lower left")
-    axis([p[0], p[-1], 0.6, 1.1])
-    xlabel("p")
-    ylabel("velocity ratio")
-    savefig("tmp.pdf")
-    savefig("tmp.eps")
-    savefig("tmp.png")
-    show()
+    plt.title("Numerical divided by exact wave velocity")
+    plt.legend(legends, fancybox=True, loc="lower left")
+    plt.axis([p[0], p[-1], 0.6, 1.1])
+    plt.xlabel("p")
+    plt.ylabel("velocity ratio")
+    plt.savefig("tmp.pdf")
+    plt.savefig("tmp.eps")
+    plt.savefig("tmp.png")
+    plt.show()
 
 
 def sympy_analysis():
@@ -65,8 +70,6 @@ def sympy_analysis():
 
 
 if __name__ == "__main__":
-    # from scitools.std import *
-    # makeplot()
     from sympy import *  # erases sin and other math functions from numpy
 
     sympy_analysis()

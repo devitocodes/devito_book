@@ -1139,9 +1139,7 @@ files, like the function `wave1D_u0.viz` did, can be coded as follows:
 
 Understanding this class requires quite some familiarity with Python
 in general and class programming in particular.
-The class supports plotting with Matplotlib (`backend=None`) or
-SciTools (`backend=matplotlib` or `backend=gnuplot`) for maximum
-flexibility.
+The class supports plotting with Matplotlib for visualization.
 
 #Since all the plot frames are to be collected in a separate subdirectory,
 #we demand a (logical) "casename" from the user that is used as
@@ -1150,9 +1148,6 @@ flexibility.
 #system, but the Python interface via `shutil.rmtree`, `os.mkdir`,
 #`os.chdir`, etc., works on all platforms where Python works.
 
-The constructor shows how we can flexibly import the plotting engine
-as (typically) `scitools.easyviz.gnuplot_` or
-`scitools.easyviz.matplotlib_` (note the trailing underscore - it is required).
 With the `screen_movie` parameter
 we can suppress displaying each movie frame on the screen.
 Alternatively, for slow movies associated with

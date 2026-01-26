@@ -121,7 +121,7 @@ That is, we take the statistics for a given $K$ across the ensemble
 of random walks (``vertically'' in
 Figure ref{diffu:randomwalk:1D:fig:ensemble}). The key quantities
 to record are $\sum_i \bar x_{i,k}$ and $\sum_i \bar x_{i,k}^2$.
-## Why not horizonally? one can also compute
+## Why not horizontally? one can also compute
 ##statistics ``horizontally'' if....but variance increases with N,
 ##for large periods the path is away from 0...
 
@@ -457,7 +457,7 @@ The next step is to sum up the steps in each walk. We need the
 indicating a sum across the columns:
 
 !bc pyshell
->>> a = np.arange(6).reshape(2,3)
+>>> a = np.arrange(6).reshape(2,3)
 >>> a
 array([[0, 1, 2],
        [3, 4, 5]])
@@ -634,77 +634,6 @@ FIGURE: [fig-diffu/rw1D_HistX_100_10000_100000_1000000, width=800 frac=1] Estima
 ## Empty figure cache
 \clearpage
 
-===== Ascii visualization of 1D random walk =====
-label{diffu:randomwalk:1D:avplotter}
-
-idx{`scitools.avplotter`}
-idx{`Plotter` class (SciTools)}
-idx{interrupt a program by Ctrl+c}
-
-If we want to study (very) long time series of random walks, it can be
-convenient to plot the position in a terminal window with the time axis
-pointing downwards. The module `avplotter` in SciTools has a class `Plotter`
-for plotting functions in the terminal window with the aid of ascii symbols
-only. Below is the code required to visualize a simple random walk,
-starting at the origin, and considered over
-when the point $x=-1$ is reached. We use a spacing $\Delta x = 0.05$ (so
-$x=-1$ corresponds to $i=-20$).
-
-!bc pycod
-def run_random_walk():
-    from scitools.avplotter import Plotter
-    import time, numpy as np
-    p = Plotter(-1, 1, width=75)   # Horizontal axis: 75 chars wide
-    dx = 0.05
-    np.random.seed(10)
-
-    x = 0
-    while True:
-        random_step = 1 if np.random.random() > 0.5 else -1
-        x = x + dx*random_step
-        if x < -1:
-            break                  # Destination reached!
-        print p.plot(0, x)
-
-        # Allow Ctrl+c to abort the simulation
-        try:
-            time.sleep(0.1)  # Wait for interrupt
-        except KeyboardInterrupt:
-            print 'Interrupted by Ctrl+c'
-            break
-!ec
-Observe that we implement an infinite loop, but allow a smooth interrupt
-of the program by `Ctrl+c` through Python's `KeyboardInterrupt`
-exception. This is a useful recipe that can be used in many occasions!
-
-The output looks typically like
-
-!bc
-                            *         |
-                              *       |
-                            *         |
-                              *       |
-                            *         |
-                              *       |
-                                *     |
-                              *       |
-                            *         |
-                          *           |
-                        *             |
-                      *               |
-                        *             |
-                      *               |
-                     *                |
-                   *                  |
-                 *                    |
-               *                      |
-!ec
-Positions beyond the limits of the $x$ axis appear with a value.
-"A long file": "http://bit.ly/1UbULeH"
-contains the complete ascii plot corresponding to the
-function `run_random_walk` above.
-#"https://github.com/hplgit/fdm-book/blob/master/doc/.src/chapters/diffu/fig-diffu/rw_ascii.txt"
-
 ===== Random walk as a stochastic equation =====
 label{diffu:randomwalk:1D:ode}
 
@@ -821,7 +750,7 @@ and then we can reshape this array to an $N\times d$ array of step
 the vectors, as this demo shows:
 
 !bc pyshell
->>> a = np.arange(6).reshape(3,2)
+>>> a = np.arrange(6).reshape(3,2)
 >>> a
 array([[0, 1],
        [2, 3],

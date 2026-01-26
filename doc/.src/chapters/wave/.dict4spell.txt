@@ -35,9 +35,6 @@ Pythonic
 SW
 Schr
 Schrodinger
-SciTool's
-SciTools
-SciTools's
 Shiboken
 Simula
 TOC
@@ -53,7 +50,7 @@ backend
 callback
 callbacks
 casename
-celles
+cells
 cf
 codec
 cohat

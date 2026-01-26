@@ -34,7 +34,6 @@ Qantity
 RK
 Runge
 SciPy
-SciTools
 Simula
 Stoermer
 Stoermer's

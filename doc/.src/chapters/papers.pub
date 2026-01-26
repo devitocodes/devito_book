@@ -17,7 +17,7 @@
    url:       https://arxiv.org/abs/cond-mat/0110585
    status:    published
    entrytype: article
-** Differential Equations in the New Millenium: the Parachute Problem
+** Differential Equations in the New Millennium: the Parachute Problem
    key:       parachute_1999
    author:    D. B Meade, A. A. Struthers
    year:      1999
@@ -300,8 +300,8 @@
    status:    published
    entrytype: book
 ** A First Course in Numerical Methods
-   key:       Greif_Ascher_2011
-   author:    C. Greif, U. M. Ascher
+   key:       Grief_Ascher_2011
+   author:    C. Grief, U. M. Ascher
    year:      2011
    publisher: SIAM
    series:    Computational Science and Engineering
@@ -498,20 +498,6 @@
    status:    published
    sortkey:   SWIG
    note:      \url{http://www.swig.org}
-   entrytype: misc
-** {SciTools}: Software Tools for Scientific Computing
-   key:       SciTools
-   author:    H. P. Langtangen, J. H. Ring
-   url:       https://github.com/hplgit/scitools
-   status:    published
-   note:      \url{https://github.com/hplgit/scitools}
-   entrytype: misc
-** {SciTools} documentation
-   key:       SciTools:doc
-   author:    H. P. Langtangen
-   url:       http://hplgit.github.io/scitools/doc/web/index.html
-   status:    published
-   note:      \url{http://hplgit.github.io/scitools/doc/web/index.html}
    entrytype: misc
 ** {Odespy} Software Package
    key:       odespy

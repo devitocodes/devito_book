@@ -6,9 +6,15 @@ package.
 import matplotlib.pyplot as plt
 import numpy as np
 import odespy
+from sympy import lambdify, symbols, sympify
 
 import vib
-from compat.string_function import StringFunction
+
+
+def _string_to_function(expr_str, var_name):
+    """Convert a string expression to a callable function using sympy."""
+    var = symbols(var_name)
+    return lambdify(var, sympify(expr_str), modules=["numpy"])
 
 
 class RHS:
@@ -28,12 +34,10 @@ class RHS:
         damping="linear",
     ):
         if isinstance(s, str):
-            # Turn string formula into Python function
-            # (send globals() such that pi, sin, cos, etc from
-            # numpy can be used in the string expression)
-            s = StringFunction(s, globals=globals())
+            # Turn string formula into Python function using sympy
+            s = _string_to_function(s, "u")
         if isinstance(F, str):
-            F = StringFunction(F, globals=globals())
+            F = _string_to_function(F, "t")
 
         self.m, self.b, self.s, self.F = float(m), b, s, F
         self.I, self.V = I, V

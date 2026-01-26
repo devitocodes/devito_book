@@ -323,7 +323,6 @@ class PlotAndStoreSolution:
         casename='tmp',    # Prefix in filenames
         umin=-1, umax=1,   # Fixed range of y axis
         pause_between_frames=None,  # Movie speed
-        backend='matplotlib',       # or 'gnuplot' or None
         screen_movie=True, # Show movie on screen?
         title='',          # Extra message in title
         skip_frame=1,      # Skip every skip_frame frame
@@ -331,13 +330,7 @@ class PlotAndStoreSolution:
         self.casename = casename
         self.yaxis = [umin, umax]
         self.pause = pause_between_frames
-        self.backend = backend
-        if backend is None:
-            # Use native matplotlib
-            import matplotlib.pyplot as plt
-        elif backend in ('matplotlib', 'gnuplot'):
-            module = 'scitools.easyviz.' + backend + '_'
-            exec('import %s as plt' % module)
+        import matplotlib.pyplot as plt
         self.plt = plt
         self.screen_movie = screen_movie
         self.title = title
@@ -375,30 +368,23 @@ class PlotAndStoreSolution:
         title = 't=%.3f' % t[n]
         if self.title:
             title = self.title + ' ' + title
-        if self.backend is None:
-            # native matplotlib animation
-            if n == 0:
-                self.plt.ion()
-                self.lines = self.plt.plot(x, u, 'r-')
-                self.plt.axis([x[0], x[-1],
-                               self.yaxis[0], self.yaxis[1]])
-                self.plt.xlabel('x')
-                self.plt.ylabel('u')
-                self.plt.title(title)
-                self.plt.legend(['t=%.3f' % t[n]])
-            else:
-                # Update new solution
-                self.lines[0].set_ydata(u)
-                self.plt.legend(['t=%.3f' % t[n]])
-                self.plt.draw()
+
+        # matplotlib animation
+        if n == 0:
+            self.plt.ion()
+            self.lines = self.plt.plot(x, u, 'r-')
+            self.plt.axis([x[0], x[-1],
+                           self.yaxis[0], self.yaxis[1]])
+            self.plt.xlabel('x')
+            self.plt.ylabel('u')
+            self.plt.title(title)
+            self.plt.legend(['t=%.3f' % t[n]])
         else:
-            # scitools.easyviz animation
-            self.plt.plot(x, u, 'r-',
-                          xlabel='x', ylabel='u',
-                          axis=[x[0], x[-1],
-                                self.yaxis[0], self.yaxis[1]],
-                          title=title,
-                          show=self.screen_movie)
+            # Update new solution
+            self.lines[0].set_ydata(u)
+            self.plt.legend(['t=%.3f' % t[n]])
+            self.plt.draw()
+
         # pause
         if t[n] == 0:
             time.sleep(2)  # let initial condition stay 2 s
@@ -428,12 +414,8 @@ class PlotAndStoreSolution:
         os.chdir(directory)        # cd directory
 
         fps = 24 # frames per second
-        if self.backend is not None:
-            from compat.movie import movie
-            movie('frame_*.png', encoder='html',
-                  output_file='index.html', fps=fps)
 
-        # Make other movie formats: Flash, Webm, Ogg, MP4
+        # Make movie formats using ffmpeg: Flash, Webm, Ogg, MP4
         codec2ext = dict(flv='flv', libx264='mp4', libvpx='webm',
                          libtheora='ogg')
         filespec = 'frame_%04d.png'
@@ -563,37 +545,28 @@ class PlotMediumAndSolution(PlotAndStoreSolution):
         title = 'Nx=%d' % (x.size-1)
         if self.title:
             title = self.title + ' ' + title
-        if self.backend is None:
-            # native matplotlib animation
-            if n == 0:
-                self.plt.ion()
-                self.lines = self.plt.plot(
-                    x, u, 'r-',
-                    [x_L, x_L], [umin, umax], 'k--',
-                    [x_R, x_R], [umin, umax], 'k--')
-                self.plt.axis([x[0], x[-1],
-                               self.yaxis[0], self.yaxis[1]])
-                self.plt.xlabel('x')
-                self.plt.ylabel('u')
-                self.plt.title(title)
-                self.plt.text(0.75, 1.0, 'c lower')
-                self.plt.text(0.32, 1.0, 'c=1')
-                self.plt.legend(['t=%.3f' % t[n]])
-            else:
-                # Update new solution
-                self.lines[0].set_ydata(u)
-                self.plt.legend(['t=%.3f' % t[n]])
-                self.plt.draw()
+
+        # matplotlib animation
+        if n == 0:
+            self.plt.ion()
+            self.lines = self.plt.plot(
+                x, u, 'r-',
+                [x_L, x_L], [umin, umax], 'k--',
+                [x_R, x_R], [umin, umax], 'k--')
+            self.plt.axis([x[0], x[-1],
+                           self.yaxis[0], self.yaxis[1]])
+            self.plt.xlabel('x')
+            self.plt.ylabel('u')
+            self.plt.title(title)
+            self.plt.text(0.75, 1.0, 'c lower')
+            self.plt.text(0.32, 1.0, 'c=1')
+            self.plt.legend(['t=%.3f' % t[n]])
         else:
-            # scitools.easyviz animation
-            self.plt.plot(x, u, 'r-',
-                          [x_L, x_L], [umin, umax], 'k--',
-                          [x_R, x_R], [umin, umax], 'k--',
-                          xlabel='x', ylabel='u',
-                          axis=[x[0], x[-1],
-                                self.yaxis[0], self.yaxis[1]],
-                          title=title,
-                          show=self.screen_movie)
+            # Update new solution
+            self.lines[0].set_ydata(u)
+            self.plt.legend(['t=%.3f' % t[n]])
+            self.plt.draw()
+
         # pause
         if t[n] == 0:
             time.sleep(2)  # let initial condition stay 2 s

@@ -403,9 +403,12 @@ def main():
     parser.add_argument('--window_width', type=float, default=30)
     parser.add_argument('--savefig', action='store_true')
     a = parser.parse_args()
-    from scitools.std import StringFunction
-    s = StringFunction(a.s, independent_variable='u')
-    F = StringFunction(a.F, independent_variable='t')
+
+    from sympy import lambdify, symbols, sympify
+    u_sym = symbols('u')
+    t_sym = symbols('t')
+    s = lambdify(u_sym, sympify(a.s), modules=['numpy'])
+    F = lambdify(t_sym, sympify(a.F), modules=['numpy'])
     I, V, m, c, dt, T, window_width, savefig, damping = \
        a.I, a.V, a.m, a.c, a.dt, a.T, a.window_width, a.savefig, \
        a.damping
@@ -653,7 +656,7 @@ numerical parameters and compute the solution, and a class
 `Visualizer` to display the solution.
 
 !bhint
-Use the ideas and examples from Sections 5.5.1 and 5.5.2 
+Use the ideas and examples from Sections 5.5.1 and 5.5.2
 in cite{Langtangen_decay}.  More specifically, make a superclass
 `Problem` for holding the scalar physical parameters of a problem and
 let subclasses implement the $s(u)$ and $F(t)$ functions as methods.

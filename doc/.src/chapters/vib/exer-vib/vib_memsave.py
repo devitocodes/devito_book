@@ -75,10 +75,13 @@ def main():
     parser.add_argument("--damping", type=str, default="linear")
     parser.add_argument("--savefig", action="store_true")
     a = parser.parse_args()
-    from compat.string_function import StringFunction
 
-    s = StringFunction(a.s, independent_variable="u")
-    F = StringFunction(a.F, independent_variable="t")
+    from sympy import lambdify, symbols, sympify
+
+    u_sym = symbols("u")
+    t_sym = symbols("t")
+    s = lambdify(u_sym, sympify(a.s), modules=["numpy"])
+    F = lambdify(t_sym, sympify(a.F), modules=["numpy"])
     I, V, m, b, dt, T, _window_width, _savefig, damping = (
         a.I,
         a.V,
@@ -99,28 +102,31 @@ def main():
 
 def read_and_plot(filename, u_min, u_max):
     """
-    Read file and plot u vs t line by line in a
-    terminal window (only using ascii characters).
+    Read file and plot u vs t using matplotlib.
     """
-    import time
-
-    from compat.ascii_plotter import Plotter
+    import matplotlib.pyplot as plt
 
     umin = 1.2 * u_min
     umax = 1.2 * u_max
-    p = Plotter(ymin=umin, ymax=umax, width=60, symbols="+o")
-    fps = 10
-    infile = open(filename)
+    t_values = []
+    u_values = []
 
-    # read and treat one line at a time
-    infile.readline()  # skip header line
-    for line in infile:
-        time_and_pos = line.split()  # gives list with 2 elements
-        t = float(time_and_pos[0])
-        u = float(time_and_pos[1])
-        # print 'time: %g   position: %g' % (time, pos)
-        print(p.plot(t, u), f"{t:.2f}")
-        time.sleep(1 / float(fps))
+    with open(filename) as infile:
+        infile.readline()  # skip header line
+        for line in infile:
+            time_and_pos = line.split()
+            t_values.append(float(time_and_pos[0]))
+            u_values.append(float(time_and_pos[1]))
+
+    plt.figure()
+    plt.plot(t_values, u_values, "b-")
+    plt.xlabel("t")
+    plt.ylabel("u")
+    plt.axis([t_values[0], t_values[-1], umin, umax])
+    plt.title("Solution from file")
+    plt.savefig("vib_memsave.png")
+    plt.savefig("vib_memsave.pdf")
+    plt.show()
 
 
 if __name__ == "__main__":

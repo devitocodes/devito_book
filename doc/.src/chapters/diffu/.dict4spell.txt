@@ -12,7 +12,7 @@ Hjorth
 ILU
 INF
 Informatics
-L'Hosptial's
+L'Hospital's
 LAPACK
 Langtangen
 Lapidus
@@ -33,7 +33,6 @@ SOR
 SSOR
 SW
 SciPy
-SciTools
 Seidel
 Simula
 Strikwerda
@@ -69,4 +68,4 @@ sympy
 uni
 vectorize
 vectorized
-whereever
+wherever

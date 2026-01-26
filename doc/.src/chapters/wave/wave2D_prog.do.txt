@@ -385,17 +385,10 @@ idx{Gnuplot} idx{`Gnuplot.py`}
 
 === Gnuplot ===
 
-Let us look at different ways for visualization. We import SciTools as
-`st` and can access `st.mesh` and `st.surf` in Matplotlib or Gnuplot,
-but this is not supported except for the Gnuplot package, where it
-works really well (Figure ref{wave2D3D:impl:viz:fig:gnuplot1}).  Then
-we choose `plot_method=2` (or less relevant `plot_method=1`) and force
-the backend for SciTools to be Gnuplot (if you have the C package
-Gnuplot and the `Gnuplot.py` Python interface module installed):
-
-!bc sys
-Terminal> python wave2D_u0.py --SCITOOLS_easyviz_backend gnuplot
-!ec
+Let us look at different ways for visualization using Gnuplot.
+If you have the C package Gnuplot and the `Gnuplot.py` Python interface
+module installed, you can get nice 3D surface plots with contours beneath
+(Figure ref{wave2D3D:impl:viz:fig:gnuplot1}).
 It gives a nice visualization with lifted surface and contours beneath.
 Figure ref{wave2D3D:impl:viz:fig:gnuplot1} shows four plots of $u$.
 

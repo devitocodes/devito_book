@@ -29,7 +29,6 @@ def visualize(u, t, I, w):
     plot(t, u, "r--o")
     t_fine = linspace(0, t[-1], 1001)  # very fine mesh for u_e
     u_e = exact_solution(t_fine, I, w)
-    hold("on")
     plot(t_fine, u_e, "b-")
     legend(["numerical", "exact"], loc="upper left")
     xlabel("t")
@@ -86,9 +85,6 @@ def main():
     parser.add_argument("--w", type=float, default=2 * pi)
     parser.add_argument("--dt", type=float, default=0.05)
     parser.add_argument("--num_periods", type=int, default=5)
-    # Hack to allow --SCITOOLS options
-    # (read when importing scitools.std)
-    parser.add_argument("--SCITOOLS_easyviz_backend", default="matplotlib")
     a = parser.parse_args()
     adjust_w, I, w, dt, num_periods = a.adjust_w, a.I, a.w, a.dt, a.num_periods
     adjust_w = adjust_w == "yes"
@@ -103,40 +99,40 @@ def main():
         # visualize_front_ascii(u, t, I, w)
 
 
-def visualize_front(u, t, I, w, savefig=False):
+def visualize_front(u, t, I, w, savefig=False, skip_frames=1):
     """
     Visualize u and the exact solution vs t, using a
     moving plot window and continuous drawing of the
     curves as they evolve in time.
     Makes it easy to plot very long time series.
     """
-    import matplotlib.pyplot as st
-
-    from compat.moving_plot_window import MovingPlotWindow
+    import matplotlib.pyplot as plt
 
     P = 2 * pi / w  # one period
+    window_width = 8 * P
+    dt = t[1] - t[0]
+    window_points = int(window_width / dt)
     umin = -1.2 * I
     umax = -umin
-    plot_manager = MovingPlotWindow(
-        window_width=8 * P, dt=t[1] - t[0], yaxis=[umin, umax], mode="continuous drawing"
-    )
+
+    plt.ion()
     for n in range(1, len(u)):
-        if plot_manager.plot(n):
-            s = plot_manager.first_index_in_plot
-            st.plot(
-                t[s : n + 1],
-                u[s : n + 1],
-                "r-1",
-                t[s : n + 1],
-                I * cos(w * t)[s : n + 1],
-                "b-1",
-                title=f"t={t[n]:6.3f}",
-                axis=plot_manager.axis(),
-                show=not savefig,
-            )  # drop window if savefig
-            if savefig:
-                st.savefig("tmp_vib%04d.png" % n)
-        plot_manager.update(n)
+        if n % skip_frames != 0:
+            continue
+        s = max(0, n - window_points)
+        plt.clf()
+        plt.plot(t[s : n + 1], u[s : n + 1], "r-", label="numerical")
+        plt.plot(t[s : n + 1], I * cos(w * t[s : n + 1]), "b-", label="exact")
+        plt.title(f"t={t[n]:6.3f}")
+        plt.axis([t[s], t[s] + window_width, umin, umax])
+        plt.xlabel("t")
+        plt.ylabel("u")
+        plt.legend()
+        if savefig:
+            plt.savefig("tmp_vib%04d.png" % n)
+        else:
+            plt.draw()
+            plt.pause(0.001)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
-from matplotlib.pyplot import *
-from numpy import *
+import matplotlib.pyplot as plt
+from numpy import array, cos, linspace, log, pi, sqrt, zeros
 from vib_empirical_analysis import amplitudes, minmax, periods
 
 
@@ -26,24 +26,21 @@ def exact_solution(t, I, w):
 
 
 def visualize(u, t, I, w):
-    plot(t, u, "r--o")
+    plt.plot(t, u, "r--o")
     t_fine = linspace(0, t[-1], 1001)  # very fine mesh for u_e
     u_e = exact_solution(t_fine, I, w)
-    plot(t_fine, u_e, "b-")
-    legend(["numerical", "exact"], loc="upper left")
-    xlabel("t")
-    ylabel("u")
+    plt.plot(t_fine, u_e, "b-")
+    plt.legend(["numerical", "exact"], loc="upper left")
+    plt.xlabel("t")
+    plt.ylabel("u")
     dt = t[1] - t[0]
-    title(f"dt={dt:g}")
+    plt.title(f"dt={dt:g}")
     umin = 1.2 * u.min()
     umax = -umin
-    axis([t[0], t[-1], umin, umax])
-    savefig("vib1.png")
-    savefig("vib1.pdf")
-    savefig("vib1.eps")
-
-
-import nose.tools as nt
+    plt.axis([t[0], t[-1], umin, umax])
+    plt.savefig("vib1.png")
+    plt.savefig("vib1.pdf")
+    plt.savefig("vib1.eps")
 
 
 def test_three_steps():
@@ -54,7 +51,7 @@ def test_three_steps():
     u_by_hand = array([1.000000000000000, 0.802607911978213, 0.288358920740053])
     u, t = solver(I, w, dt, T)
     difference = abs(u_by_hand - u[:3]).max()
-    nt.assert_almost_equal(difference, 0, places=14)
+    assert difference < 1e-14, f"Max difference: {difference}"
 
 
 def convergence_rates(m, num_periods=8):
@@ -87,7 +84,7 @@ def convergence_rates(m, num_periods=8):
 def test_convergence_rates():
     r = convergence_rates(m=5, num_periods=8)
     # Accept rate to 1 decimal place
-    nt.assert_almost_equal(r[-1], 2.0, places=1)
+    assert abs(r[-1] - 2.0) < 0.1, f"Convergence rate: {r[-1]}"
 
 
 def main():
@@ -108,21 +105,20 @@ def main():
         visualize(u, t, I, w)
     else:
         visualize_front(u, t, I, w, savefig)
-        # visualize_front_ascii(u, t, I, w)
     # plot_empirical_freq_and_amplitude(u, t, I, w)
-    show()
+    plt.show()
 
 
 def plot_empirical_freq_and_amplitude(u, t, I, w):
     minima, maxima = minmax(t, u)
     p = periods(maxima)
     a = amplitudes(minima, maxima)
-    figure()
-    plot(range(len(p)), 2 * pi / p, "r-")
-    plot(range(len(a)), a, "b-")
-    plot(range(len(p)), [w] * len(p), "r--")
-    plot(range(len(a)), [I] * len(a), "b--")
-    legend(
+    plt.figure()
+    plt.plot(range(len(p)), 2 * pi / p, "r-")
+    plt.plot(range(len(a)), a, "b-")
+    plt.plot(range(len(p)), [w] * len(p), "r--")
+    plt.plot(range(len(a)), [I] * len(a), "b--")
+    plt.legend(
         [
             "numerical frequency",
             "numerical amplitude",
@@ -133,59 +129,40 @@ def plot_empirical_freq_and_amplitude(u, t, I, w):
     )
 
 
-def visualize_front(u, t, I, w, savefig=False):
+def visualize_front(u, t, I, w, savefig=False, skip_frames=1):
     """
     Visualize u and the exact solution vs t, using a
     moving plot window and continuous drawing of the
     curves as they evolve in time.
     Makes it easy to plot very long time series.
     """
-    import matplotlib.pyplot as plt
-
-    from compat.moving_plot_window import MovingPlotWindow
-
     P = 2 * pi / w  # one period
+    window_width = 8 * P
+    dt = t[1] - t[0]
+    window_points = int(window_width / dt)
     umin = 1.2 * u.min()
     umax = -umin
-    plot_manager = MovingPlotWindow(
-        window_width=8 * P, dt=t[1] - t[0], yaxis=[umin, umax], mode="continuous drawing"
-    )
+
+    plt.ion()
     for n in range(1, len(u)):
-        if plot_manager.plot(n):
-            s = plot_manager.first_index_in_plot
-            plt.clf()
-            plt.plot(t[s : n + 1], u[s : n + 1], "r-")
-            plt.plot(t[s : n + 1], I * cos(w * t)[s : n + 1], "b-")
-            plt.title(f"t={t[n]:6.3f}")
-            plt.axis(plot_manager.axis())
-            if savefig:
-                filename = "tmp_vib%04d.png" % n
-                plt.savefig(filename)
-                print("making plot file", filename, f"at t={t[n]:g}")
-            else:
-                plt.draw()
-                plt.pause(0.001)
-        plot_manager.update(n)
-
-
-def visualize_front_ascii(u, t, I, w, fps=10):
-    """
-    Plot u and the exact solution vs t line by line in a
-    terminal window (only using ascii characters).
-    Makes it easy to plot very long time series.
-    """
-    import time
-
-    from compat.ascii_plotter import Plotter
-
-    P = 2 * pi / w
-    umin = 1.2 * u.min()
-    umax = -umin
-
-    p = Plotter(ymin=umin, ymax=umax, width=60, symbols="+o")
-    for n in range(len(u)):
-        print(p.plot(t[n], u[n], I * cos(w * t[n])), "%.1f" % (t[n] / P))
-        time.sleep(1 / float(fps))
+        if n % skip_frames != 0:
+            continue
+        s = max(0, n - window_points)
+        plt.clf()
+        plt.plot(t[s : n + 1], u[s : n + 1], "r-", label="numerical")
+        plt.plot(t[s : n + 1], I * cos(w * t[s : n + 1]), "b-", label="exact")
+        plt.title(f"t={t[n]:6.3f}")
+        plt.axis([t[s], t[s] + window_width, umin, umax])
+        plt.xlabel("t")
+        plt.ylabel("u")
+        plt.legend()
+        if savefig:
+            filename = "tmp_vib%04d.png" % n
+            plt.savefig(filename)
+            print("making plot file", filename, f"at t={t[n]:g}")
+        else:
+            plt.draw()
+            plt.pause(0.001)
 
 
 if __name__ == "__main__":

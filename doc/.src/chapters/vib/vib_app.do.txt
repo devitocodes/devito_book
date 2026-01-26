@@ -1567,10 +1567,7 @@ the code easier to read and compare with the mathematics.
 
 !bhint
 Equal aspect ratio is set by `plt.gca().set_aspect('equal')` in
-Matplotlib (`import matplotlib.pyplot as plt`)
-and in SciTools by the command
-`plt.plot(..., daspect=[1,1,1], daspectmode='equal')`
-(provided you have done `import scitools.std as plt`).
+Matplotlib (`import matplotlib.pyplot as plt`).
 !ehint
 
 !bhint

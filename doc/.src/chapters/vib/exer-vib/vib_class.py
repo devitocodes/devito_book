@@ -1,7 +1,6 @@
 # Reimplementation of vib.py using classes
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from vib import plot_empirical_freq_and_amplitude as vib_plot_empirical_freq_and_amplitude
 from vib import solver as vib_solver
@@ -115,21 +114,20 @@ def main():
     )
     parser.add_argument("--damping", type=str, default="linear")
     parser.add_argument("--savefig", action="store_true")
-    # Hack to allow --SCITOOLS options
-    # (scitools.std reads this argument at import)
-    parser.add_argument("--SCITOOLS_easyviz_backend", default="matplotlib")
     a = parser.parse_args()
 
-    from compat.string_function import StringFunction
+    from sympy import lambdify, symbols, sympify
 
-    s = StringFunction(a.s, independent_variable="u") if a.s is not None else None
-    StringFunction(a.F, independent_variable="t")
+    u_sym = symbols("u")
+    t_sym = symbols("t")
+    s = lambdify(u_sym, sympify(a.s), modules=["numpy"]) if a.s is not None else None
+    F = lambdify(t_sym, sympify(a.F), modules=["numpy"])
 
     if a.F == "0":  # free vibrations
         problem = Free_vibrations(s=s, I=a.I, V=a.V, m=a.m, b=a.b, damping=a.damping)
     else:  # forced vibrations
         problem = Forced_vibrations(
-            lambda t: np.sin(t), s=s, I=a.I, V=a.V, m=a.m, b=a.b, damping=a.damping
+            F, s=s, I=a.I, V=a.V, m=a.m, b=a.b, damping=a.damping
         )
 
     solver = Solver(dt=a.dt, T=a.T)

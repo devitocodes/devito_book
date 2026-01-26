@@ -117,7 +117,6 @@ def viz(
     umin,
     umax,  # Interval for u in plots
     animate=True,  # Simulation with animation?
-    tool="matplotlib",  # 'matplotlib' or 'scitools'
     solver_function=solver,  # Function with numerical algorithm
     version="vectorized",  # 'scalar' or 'vectorized'
 ):
@@ -129,7 +128,7 @@ def viz(
         # version='vectorized' as default argument;
         # wave1D_u0.viz does not feature this argument)
         cpu = wave1D_u0.viz(
-            I, V, f, c, L, dt, C, T, umin, umax, animate, tool, solver_function=solver
+            I, V, f, c, L, dt, C, T, umin, umax, animate, solver_function=solver
         )
     elif version == "scalar":
         # Call wave1D_u0.viz with a solver with
@@ -146,13 +145,8 @@ def viz(
             umin,
             umax,
             animate,
-            tool,
             solver_function=wave1D_u0.solver,
         )
-        # Method 2: wrap this module's solver with an extra
-        # argument version='scalar'
-        # import functools
-        # scalar_solver = functools.partial(scalar, version='scalar')
     return cpu
 
 

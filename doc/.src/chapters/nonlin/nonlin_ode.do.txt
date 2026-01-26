@@ -737,7 +737,7 @@ def BE_logistic(u0, dt, Nt, choice='Picard',
 The Crank-Nicolson method utilizing a linearization based on the
 geometric mean gives a simpler algorithm:
 
-@@@CODE src-nonlin/logistic.py fromto: def CN_logistic@from scitools
+@@@CODE src-nonlin/logistic.py fromto: def CN_logistic@import sys
 
 We may run experiments with the model problem
 (ref{nonlin:timediscrete:logistic:eq}) and the different strategies for

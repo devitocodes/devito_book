@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from scitools.std import *
+import numpy as np
 
 # Add an x0 coordinate for solving the wave equation on [x0, xL]
 
@@ -9,19 +9,19 @@ def solver(I, V, f, c, U_0, U_L, x0, xL, Nx, C, T, user_action=None, version="sc
     Solve u_tt=c^2*u_xx + f on (0,L)x(0,T].
     u(0,t)=U_0(t) or du/dn=0 (U_0=None), u(L,t)=U_L(t) or du/dn=0 (u_L=None).
     """
-    x = linspace(x0, xL, Nx + 1)  # Mesh points in space
+    x = np.linspace(x0, xL, Nx + 1)  # Mesh points in space
     dx = x[1] - x[0]
     dt = C * dx / c
     Nt = int(round(T / dt))
-    t = linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
+    t = np.linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
     C2 = C**2
     dt2 = dt * dt  # Help variables in the scheme
 
     # Wrap user-given f, V, U_0, U_L
     if f is None or f == 0:
-        f = (lambda x, t: 0) if version == "scalar" else lambda x, t: zeros(x.shape)
+        f = (lambda x, t: 0) if version == "scalar" else lambda x, t: np.zeros(x.shape)
     if V is None or V == 0:
-        V = (lambda x: 0) if version == "scalar" else lambda x: zeros(x.shape)
+        V = (lambda x: 0) if version == "scalar" else lambda x: np.zeros(x.shape)
     if U_0 is not None:
         if isinstance(U_0, (float, int)) and U_0 == 0:
             U_0 = lambda t: 0
@@ -29,9 +29,9 @@ def solver(I, V, f, c, U_0, U_L, x0, xL, Nx, C, T, user_action=None, version="sc
         if isinstance(U_L, (float, int)) and U_L == 0:
             U_L = lambda t: 0
 
-    u = zeros(Nx + 1)  # Solution array at new time level
-    u_1 = zeros(Nx + 1)  # Solution at 1 time level back
-    u_2 = zeros(Nx + 1)  # Solution at 2 time levels back
+    u = np.zeros(Nx + 1)  # Solution array at new time level
+    u_1 = np.zeros(Nx + 1)  # Solution at 1 time level back
+    u_2 = np.zeros(Nx + 1)  # Solution at 2 time levels back
 
     Ix = range(0, Nx + 1)
     It = range(0, Nt + 1)
@@ -173,48 +173,53 @@ def viz(
     """Run solver and visualize u at each time level."""
     import glob
     import os
+    import shutil
     import time
 
     import matplotlib.pyplot as plt
 
-    def plot_u(u, x, t, n):
-        """user_action function for solver."""
-        plt.plot(
-            x,
-            u,
-            "r-",
-            xlabel="x",
-            ylabel="u",
-            axis=[x0, xL, umin, umax],
-            title="t=%f" % t[n],
-        )
-        # Let the initial condition stay on the screen for 2
-        # seconds, else insert a pause of 0.2 s between each plot
-        time.sleep(2) if t[n] == 0 else time.sleep(0.2)
-        plt.savefig("frame_%04d.png" % n)  # for movie making
+    class PlotU:
+        def __init__(self):
+            self.lines = None
+
+        def __call__(self, u, x, t, n):
+            """user_action function for solver."""
+            if n == 0:
+                plt.ion()
+                self.lines = plt.plot(x, u, "r-")
+                plt.xlabel("x")
+                plt.ylabel("u")
+                plt.axis([x0, xL, umin, umax])
+                plt.title("t=%f" % t[n])
+            else:
+                self.lines[0].set_ydata(u)
+                plt.title("t=%f" % t[n])
+                plt.draw()
+            time.sleep(2) if t[n] == 0 else time.sleep(0.2)
+            plt.savefig("frame_%04d.png" % n)
 
     # Clean up old movie frames
     for filename in glob.glob("frame_*.png"):
         os.remove(filename)
 
+    plot_u = PlotU()
     user_action = plot_u if animate else None
-    u, x, t, cpu = solver(I, V, f, c, U_0, U_L, L, Nx, C, T, user_action, version)
+    u, x, t, cpu = solver(I, V, f, c, U_0, U_L, x0, xL, Nx, C, T, user_action, version)
     if animate:
         # Make a directory with the frames
         if os.path.isdir(movie_dir):
             shutil.rmtree(movie_dir)
         os.mkdir(movie_dir)
-        os.chdir(movie_dir)
         # Move all frame_*.png files to this subdirectory
-        for filename in glob.glob(os.path.join(os.pardir, "frame_*.png")):
-            os.renamve(os.path.join(os.pardir, filename), filename)
-        plt.movie("frame_*.png", encoder="html", fps=4, output_file="movie.html")
-        # Invoke movie.html in a browser to steer the movie
+        for filename in glob.glob("frame_*.png"):
+            os.rename(filename, os.path.join(movie_dir, filename))
+        # Create movie using ffmpeg
+        os.chdir(movie_dir)
+        fps = 4
+        os.system(f"ffmpeg -r {fps} -i frame_%04d.png -vcodec libx264 movie.mp4")
+        os.chdir(os.pardir)
 
     return cpu
-
-
-import nose.tools as nt
 
 
 def test_quadratic():
@@ -239,7 +244,7 @@ def test_quadratic():
     def assert_no_error(u, x, t, n):
         u_e = exact_solution(x, t[n])
         diff = abs(u - u_e).max()
-        nt.assert_almost_equal(diff, 0, places=13)
+        assert diff < 1e-13, f"Max error: {diff}"
 
     solver(
         I,

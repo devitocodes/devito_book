@@ -172,48 +172,12 @@ idx{`__call__`}
 idx{skipping frames}
 idx{animation speed}
 
-The `viz` function can either use SciTools or Matplotlib for
-visualizing the solution. The `user_action` function based on SciTools
-is called `plot_u_st`, while the `user_action` function based on
-Matplotlib is a bit more complicated as it is realized as a class and
+The `viz` function uses Matplotlib for visualizing the solution.
+The `user_action` function is realized as a class and
 needs statements that differ from those for making static plots.
-SciTools can utilize both Matplotlib and Gnuplot (and many other
-plotting programs) for doing the graphics, but Gnuplot is a relevant
-choice for large $N_x$ or in two-dimensional problems
-as Gnuplot is significantly faster than
-Matplotlib for screen animations.
 
 idx{closure}
 
-A function inside another function, like `plot_u_st` in the above code
-segment, has access to *and remembers* all the local variables in the
-surrounding code inside the `viz` function (!). This is known in
-computer science as a *closure* and is very convenient to program
-with. For example, the `plt` and `time` modules defined outside
-`plot_u` are accessible for `plot_u_st` when the function is called
-(as `user_action`) in the `solver` function.  Some may think, however,
-that a class instead of a closure is a cleaner and
-easier-to-understand implementation of the user action function, see
-Section ref{wave:pde2:software}.
-
-The `plot_u_st` function just makes a standard SciTools `plot` command
-for plotting `u` as a function of `x` at time `t[n]`.  To achieve a
-smooth animation, the `plot` command should take keyword arguments
-instead of being broken into separate calls to `xlabel`, `ylabel`,
-`axis`, `time`, and `show`.  Several `plot` calls will automatically
-cause an animation on the screen. In addition, we want to save each
-frame in the animation to file. We then need a filename where the
-frame number is padded with zeros, here `tmp_0000.png`,
-`tmp_0001.png`, and so on.  The proper printf construction is then
-`tmp_%04d.png`.
-Section ref{vib:ode1:anim} contains more basic
-information on making animations.
-
-The solver is called with an argument `plot_u` as `user_function`.
-If the user chooses to use SciTools, `plot_u` is the `plot_u_st`
-callback function, but for Matplotlib it is an instance of the
-class `PlotMatplotlib`. Also this class makes use of variables
-defined in the `viz` function: `plt` and `time`.
 With Matplotlib, one has to make the first plot the standard way, and
 then update the $y$ data in the plot at every time level. The update
 requires active use of the returned value from `plt.plot` in the first
@@ -224,6 +188,14 @@ variable as a class attribute `self.lines`. Since the class is essentially a
 function, we implement the function as the special method `__call__`
 such that the instance `plot_u(u, x, t, n)` can be called as a standard
 callback function from `solver`.
+
+To achieve a smooth animation, we want to save each
+frame in the animation to file. We then need a filename where the
+frame number is padded with zeros, here `tmp_0000.png`,
+`tmp_0001.png`, and so on.  The proper printf construction is then
+`tmp_%04d.png`.
+Section ref{vib:ode1:anim} contains more basic
+information on making animations.
 
 === Making movie files ===
 
@@ -246,15 +218,13 @@ successfully play the video: MP4 and WebM.
 
 Some animations having a large number of plot files may not
 be properly combined into a video using `ffmpeg` or `avconv`.
-A method that always works is to play the PNG files as an animation
-in a browser using JavaScript code in an HTML file.
-The SciTools package has a function `movie` (or a stand-alone command
-`scitools movie`) for creating such an HTML player. The `plt.movie`
-call in the `viz` function shows how the function is used.
-The file `movie.html` can be loaded into a browser and features
-a user interface where the speed of the animation can be controlled.
-Note that the movie in this case consists of the `movie.html` file
-and all the frame files `tmp_*.png`.
+One alternative is to play the PNG files directly in an image viewer
+or create an animated GIF using ImageMagick's `convert` command:
+
+!bc sys
+Terminal> convert -delay 25 tmp_*.png animation.gif
+!ec
+The `-delay` option specifies the delay between frames in hundredths of a second.
 
 
 === Skipping frames for animation speed ===
@@ -900,8 +870,6 @@ The delay is measured in units of 1/100 s.
 The `animate` program, also in the ImageMagick suite, can play the movie file.
 Alternatively, the `display` program can be used to walk through each
 frame, i.e., solution curve, by pressing the space bar.
-
-# move function, scitools movie
 
 ======= Exercises =======
 

@@ -1,9 +1,6 @@
 """
 Compare four simulations with different time step in the
 same movie.
-Problem: ffmpeg/avconv will only make a movie of the first
-8 periods. scitools movie can make html player that plays
-all 30 periods.
 """
 
 import glob

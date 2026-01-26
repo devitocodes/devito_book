@@ -121,4 +121,4 @@ x Implement Neumann via ghost boundaries
 - exer: gaussian sine source
 - exer: spherically symmetric waves
 - Newmark for vib and wave (implement and test first - no this is a project for wave since it requires tridiagonal matrix)
-- tridiagonal solver in scitools ported to cython, or is scipy user friendly enough? can rely on pure python tridiagonal if not scipy installed
+- tridiagonal solver: scipy.linalg.solve_banded or pure python implementation

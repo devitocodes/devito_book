@@ -150,34 +150,19 @@ def viz(
     umin,
     umax,  # Interval for u in plots
     animate=True,  # Simulation with animation?
-    tool="matplotlib",  # 'matplotlib' or 'scitools'
     solver_function=solver,  # Function with numerical algorithm
 ):
     """Run solver, store and visualize u at each time level."""
+    import glob
+    import os
+    import time
 
-    class PlotUst:
+    import matplotlib.pyplot as plt
+
+    class PlotMatplotlib:
         def __init__(self):
             self.all_u = []
 
-        def __call__(self, u, x, t, n):
-            """user_action function for solver."""
-            plt.plot(
-                x,
-                u,
-                "r-",
-                xlabel="x",
-                ylabel="u",
-                axis=[0, L, umin, umax],
-                title=f"t={t[n]:f}",
-                show=True,
-            )
-            # Let the initial condition stay on the screen for 2
-            # seconds, else insert a pause of 0.2 s between each plot
-            time.sleep(2) if t[n] == 0 else time.sleep(0.2)
-            plt.savefig("tmp_%04d.png" % n)  # for movie making
-            self.all_u.append(u.copy())
-
-    class PlotMatplotlib:
         def __call__(self, u, x, t, n):
             """user_action function for solver."""
             if n == 0:
@@ -193,18 +178,9 @@ def viz(
                 plt.draw()
             time.sleep(2) if t[n] == 0 else time.sleep(0.2)
             plt.savefig("tmp_%04d.png" % n)  # for movie making
+            self.all_u.append(u.copy())
 
-    if tool == "matplotlib":
-        import matplotlib.pyplot as plt
-
-        plot_u = PlotMatplotlib()
-    elif tool == "scitools":
-        import matplotlib.pyplot as plt  # scitools.easyviz interface
-
-        plot_u = PlotUst()
-    import glob
-    import os
-    import time
+    plot_u = PlotMatplotlib()
 
     # Clean up old movie frames
     for filename in glob.glob("tmp_*.png"):
@@ -214,22 +190,13 @@ def viz(
     user_action = plot_u if animate else None
     u, x, t, cpu = solver_function(I, V, f, c, L, dt, C, T, user_action)
 
-    # Make video files
+    # Make video files using ffmpeg
     fps = 4  # frames per second
-    codec2ext = dict(
-        flv="flv", libx264="mp4", libvpx="webm", libtheora="ogg"
-    )  # video formats
-    for codec in codec2ext:
-        codec2ext[codec]
-        cmd = (
-            "%(movie_program)s -r %(fps)d -i %(filespec)s "
-            "-vcodec %(codec)s movie.%(ext)s" % vars()
-        )
+    codec2ext = dict(flv="flv", libx264="mp4", libvpx="webm", libtheora="ogg")
+    for codec, ext in codec2ext.items():
+        cmd = f"ffmpeg -r {fps} -i tmp_%04d.png -vcodec {codec} movie.{ext}"
         os.system(cmd)
 
-    if tool == "scitools":
-        # Make an HTML play for showing the animation in a browser
-        plt.movie("tmp_*.png", encoder="html", fps=fps, output_file="movie.html")
     return cpu, np.array(plot_u.all_u)
 
 
@@ -254,7 +221,7 @@ def guitar(C):
 
     umin = -1.2 * a
     umax = -umin
-    cpu, all_u = viz(I, 0, 0, c, L, dt, C, T, umin, umax, animate=True, tool="scitools")
+    cpu, all_u = viz(I, 0, 0, c, L, dt, C, T, umin, umax, animate=True)
     # checking
     # for e in all_u:
     #    print e[int(len(all_u[1])/2)]

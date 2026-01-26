@@ -335,7 +335,7 @@ parser.add_argument('--num_periods', type=int, default=5)
 a = parser.parse_args()
 I, w, dt, num_periods = a.I, a.w, a.dt, a.num_periods
 !ec
-Such parsing of the command line is explained in more detail in Section 5.2.3 in 
+Such parsing of the command line is explained in more detail in Section 5.2.3 in
 cite{Langtangen_decay}.
 
 A typical execution goes like
@@ -440,7 +440,7 @@ vib_undamped.py::test_convergence_rates PASSED
 =========================== 2 passed in 0.19 seconds ===...
 !ec
 
-idx{verification!polynomial solutions} 
+idx{verification!polynomial solutions}
 idx{assert}
 
 === Testing very simple polynomial solutions ===
@@ -557,7 +557,7 @@ It is advantageous to use dimensionless variables in simulations,
 because fewer parameters need to be set. The present problem is made
 dimensionless by introducing dimensionless variables $\bar t = t/t_c$
 and $\bar u = u/u_c$, where $t_c$ and $u_c$ are characteristic scales
-for $t$ and $u$, respectively. We refer to Section 2.2.1 in 
+for $t$ and $u$, respectively. We refer to Section 2.2.1 in
 cite{Langtangen_scaling} for all details about this scaling.
 
 The scaled ODE problem reads
@@ -621,17 +621,13 @@ FIGURE: [fig-vib/vib_freq_err1, width=800 frac=1.0] Effect of halving the time s
 
 ===== Using a moving plot window =====
 
-idx{SciTools}
-
 In vibration problems it is often of interest to investigate the system's
 behavior over long time intervals. Errors in the angular frequency accumulate
 and become more visible as time grows. We can investigate long
 time series by introducing a moving plot window that can move along with
-the $p$ most recently computed periods of the solution. The
-"SciTools": "https://github.com/hplgit/scitools" package contains
-a convenient tool for this: `MovingPlotWindow`. Typing
-`pydoc scitools.MovingPlotWindow` shows a demo and a description of its use.
-The function below utilizes the moving plot window and is in fact
+the $p$ most recently computed periods of the solution. Using matplotlib's
+interactive mode, we can implement a sliding window visualization.
+The function below utilizes such a moving plot window and is in fact
 called by the `main` function in the `vib_undamped` module
 if the number of periods in the simulation exceeds 10.
 
@@ -743,35 +739,6 @@ filenames were not zero-padded, the frame `tmp_11.png` would appear
 before `tmp_2.png` in the movie.
 !ewarning
 
-=== Playing PNG files in a web browser ===
-
-idx{`scitools movie` command}
-
-The `scitools movie` command can create a movie player for a set
-of PNG files such that a web browser can be used to watch the movie.
-This interface has the advantage that the speed of the movie can
-easily be controlled, a feature that scientists often appreciate.
-The command for creating an HTML with a player for a set of
-PNG files `tmp_*.png` goes like
-
-!bc sys
-Terminal> scitools movie output_file=vib.html fps=4 tmp_*.png
-!ec
-The `fps` argument controls the speed of the movie (``frames per second'').
-
-To watch the movie, load the video file `vib.html` into some browser, e.g.,
-!bc sys
-Terminal> google-chrome vib.html  # invoke web page
-!ec
-Click on `Start movie` to see the result. Moving this movie to
-some other place requires moving `vib.html` *and all the PNG files*
-`tmp_*.png`:
-!bc sys
-Terminal> mkdir vib_dt0.1
-Terminal> mv tmp_*.png vib_dt0.1
-Terminal> mv vib.html vib_dt0.1/index.html
-!ec
-
 === Making animated GIF files ===
 
 idx{ImageMagic} idx{Bokeh}
@@ -830,49 +797,6 @@ compactly in a list of strings `legends`.
 A particular example using the `bokeh_plot` function appears below.
 
 @@@CODE src-vib/vib_undamped.py fromto: def demo_bokeh@if __name
-
-===== Using a line-by-line ascii plotter =====
-
-Plotting functions vertically, line by line, in the terminal window
-using ascii characters only is a simple, fast, and convenient
-visualization technique for long time series. Note that the time
-axis then is positive downwards on the screen, so we can let the
-solution be visualized ``forever''.
-The tool
-`scitools.avplotter.Plotter` makes it easy to create such plots:
-
-@@@CODE src-vib/vib_undamped.py fromto: def visualize_front_ascii@def bokeh_plot
-The call `p.plot` returns a line of text, with the $t$ axis marked and
-a symbol `+` for the first function (`u`) and `o` for the second
-function (the exact solution). Here we append to this text
-a time counter reflecting how many periods the current time point
-corresponds to. A typical output ($\omega =2\pi$, $\Delta t=0.05$)
-looks like this:
-
-!bc dat
-                              |                       o+      14.0
-                              |                      + o      14.0
-                              |                  +    o       14.1
-                              |             +     o           14.1
-                              |     +        o                14.2
-                             +|       o                       14.2
-                     +        |                               14.2
-              +       o       |                               14.3
-         +     o              |                               14.4
-      +   o                   |                               14.4
-     +o                       |                               14.5
-     o +                      |                               14.5
-      o    +                  |                               14.6
-          o      +            |                               14.6
-               o        +     |                               14.7
-                      o       | +                             14.7
-                              |        +                      14.8
-                              |       o       +               14.8
-                              |              o     +          14.9
-                              |                   o   +       14.9
-                              |                       o+      15.0
-!ec
-
 
 ===== Empirical analysis of the solution =====
 label{vib:ode1:empirical}
@@ -2507,7 +2431,7 @@ computed values with the formula (ref{vib:ode1:un:exact}):
 
 Another function, `demo`, visualizes the difference between the
 Euler-Cromer scheme and the scheme (ref{vib:ode1:step4}) for the
-second-oder ODE, arising from the mismatch in the first time level.
+second-order ODE, arising from the mismatch in the first time level.
 
 === Using Odespy ===
 
@@ -3212,7 +3136,7 @@ file=vib_undamped_adaptive
 Adaptive methods for solving ODEs aim at adjusting $\Delta t$ such
 that the error is within a user-prescribed tolerance. Implement the
 equation $u^{\prime\prime}+u=0$ in the "Odespy": "https://github.com/hplgit/odespy"
-software. Use the example from Section 3.2.11 in cite{Langtangen_decay}.  
+software. Use the example from Section 3.2.11 in cite{Langtangen_decay}.
 Run the scheme with a very low
 tolerance (say $10^{-14}$) and for a long time, check the number of
 time points in the solver's mesh (`len(solver.t_all)`), and compare

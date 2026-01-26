@@ -17,8 +17,7 @@ import sys
 import matplotlib.pyplot as plt
 from Newton import Newton
 from numpy import linspace
-
-from compat.string_function import StringFunction
+from sympy import lambdify, symbols, sympify
 
 plt.xkcd()  # cartoon style
 
@@ -96,8 +95,10 @@ import os
 for filename in glob.glob("tmp_*.pdf"):
     os.remove(filename)
 
-f = StringFunction(f_formula)
-f.vectorize(globals())
+# Parse string formula to callable function using sympy
+x_sym = symbols("x")
+f = lambdify(x_sym, sympify(f_formula), modules=["numpy"])
+
 if df_formula == "numeric":
     # Make a numerical differentiation formula
     h = 1.0e-7
@@ -105,8 +106,7 @@ if df_formula == "numeric":
     def df(x):
         return (f(x + h) - f(x - h)) / (2 * h)
 else:
-    df = StringFunction(df_formula)
-    df.vectorize(globals())
+    df = lambdify(x_sym, sympify(df_formula), modules=["numpy"])
 x, info = Newton(f, x0, df, store=True)
 illustrate_Newton(info, f, df, xmin, xmax)
 plt.show()

@@ -132,15 +132,12 @@ class PlotU:
         """Go to plot directory and make movie files."""
         orig_dir = os.getcwd()
         os.chdir(self.plotdir)
-        cmd = "avconv -r 1 -i frame_%04d.png -vcodec libvpx movie.webm"
-        cmd = "avconv -r 1 -i frame_%04d.png -vcodec flv movie.flv"
-        cmd = "avconv -r 1 -i frame_%04d.png -vcodec libtheora movie.ogg"
-        os.system(cmd)
-        # Create HTML movie using compat module
-        import sys
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-        from compat.movie import movie
-        movie("frame*.png", encoder="html", fps=1, output_file="index.html")
+        # Create movie using ffmpeg
+        fps = 1
+        codec2ext = dict(flv='flv', libx264='mp4', libvpx='webm', libtheora='ogg')
+        for codec, ext in codec2ext.items():
+            cmd = f"ffmpeg -r {fps} -i frame_%04d.png -vcodec {codec} movie.{ext}"
+            os.system(cmd)
         os.chdir(orig_dir)
 
 

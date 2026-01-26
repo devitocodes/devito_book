@@ -187,6 +187,8 @@ def test_mms():
 def main():
     import argparse
 
+    from sympy import lambdify, symbols, sympify
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--I", type=float, default=1.0)
     parser.add_argument("--V", type=float, default=0.0)
@@ -195,21 +197,20 @@ def main():
     parser.add_argument("--s", type=str, default="u")
     parser.add_argument("--F", type=str, default="0")
     parser.add_argument("--dt", type=float, default=0.05)
-    # parser.add_argument('--T', type=float, default=10)
     parser.add_argument("--T", type=float, default=20)
     parser.add_argument(
         "--window_width", type=float, default=30.0, help="Number of periods in a window"
     )
     parser.add_argument("--damping", type=str, default="linear")
     parser.add_argument("--savefig", action="store_true")
-    # Hack to allow --SCITOOLS options (scitools.std reads this argument
-    # at import)
-    parser.add_argument("--SCITOOLS_easyviz_backend", default="matplotlib")
     a = parser.parse_args()
-    from compat.string_function import StringFunction
 
-    s = StringFunction(a.s, independent_variable="u")
-    F = StringFunction(a.F, independent_variable="t")
+    # Parse string expressions to callable functions using sympy
+    u_sym = symbols("u")
+    t_sym = symbols("t")
+    s = lambdify(u_sym, sympify(a.s), modules=["numpy"])
+    F = lambdify(t_sym, sympify(a.F), modules=["numpy"])
+
     I, V, m, b, dt, T, window_width, savefig, damping = (
         a.I,
         a.V,
@@ -230,7 +231,6 @@ def main():
         visualize(u, t)
     else:
         visualize_front(u, t, window_width, savefig)
-        visualize_front_ascii(u, t)
     plt.show()
 
 
@@ -253,57 +253,42 @@ def plot_empirical_freq_and_amplitude(u, t):
 
 def visualize_front(u, t, window_width, savefig=False):
     """
-    Visualize u and the exact solution vs t, using a
-    moving plot window and continuous drawing of the
-    curves as they evolve in time.
+    Visualize u vs t using a moving plot window and continuous
+    drawing of the curves as they evolve in time.
     Makes it easy to plot very long time series.
-    P is the approximate duration of one period.
     """
-    import matplotlib.pyplot as st
-
-    from compat.moving_plot_window import MovingPlotWindow
+    import matplotlib.pyplot as plt
 
     umin = 1.2 * u.min()
     umax = -umin
-    plot_manager = MovingPlotWindow(
-        window_width=window_width,
-        dt=t[1] - t[0],
-        yaxis=[umin, umax],
-        mode="continuous drawing",
-    )
+    dt = t[1] - t[0]
+
+    # Calculate window size in number of points
+    window_points = int(window_width / dt)
+
+    plt.ion()
+    frame_counter = 0
     for n in range(1, len(u)):
-        if plot_manager.plot(n):
-            s = plot_manager.first_index_in_plot
-            st.clf()
-            st.plot(t[s : n + 1], u[s : n + 1], "r-")
-            st.title("t=%6.3f" % t[n])
-            st.axis(plot_manager.axis())
+        # Determine start index for sliding window
+        s = max(0, n - window_points)
+
+        # Only update plot periodically for performance
+        if n % max(1, len(u) // 500) == 0 or n == len(u) - 1:
+            plt.clf()
+            plt.plot(t[s : n + 1], u[s : n + 1], "r-")
+            plt.title("t=%6.3f" % t[n])
+            plt.xlabel("t")
+            plt.ylabel("u")
+            plt.axis([t[s], t[s] + window_width, umin, umax])
+
             if not savefig:
-                st.draw()
-                st.pause(0.001)
+                plt.draw()
+                plt.pause(0.001)
+
             if savefig:
                 print("t=%g" % t[n])
-                st.savefig("tmp_vib%04d.png" % n)
-        plot_manager.update(n)
-
-
-def visualize_front_ascii(u, t, fps=10):
-    """
-    Plot u and the exact solution vs t line by line in a
-    terminal window (only using ascii characters).
-    Makes it easy to plot very long time series.
-    """
-    import time
-
-    from compat.ascii_plotter import Plotter
-
-    umin = 1.2 * u.min()
-    umax = -umin
-
-    p = Plotter(ymin=umin, ymax=umax, width=60, symbols="+o")
-    for n in range(len(u)):
-        print(p.plot(t[n], u[n]), "%.2f" % (t[n]))
-        time.sleep(1 / float(fps))
+                plt.savefig("tmp_vib%04d.png" % frame_counter)
+                frame_counter += 1
 
 
 def minmax(t, u):
