@@ -39,7 +39,10 @@ format:
     crossref:
       chapters: true
   pdf:
-    documentclass: book
+    documentclass: scrbook
+    classoption:
+      - oneside
+      - open=any
     papersize: letter
     toc: true
     number-sections: true
@@ -47,6 +50,8 @@ format:
     colorlinks: true
     default-image-extension: png
     pdf-engine: pdflatex
+    geometry:
+      - margin=1in
     include-in-header:
       text: |
         % Required packages
