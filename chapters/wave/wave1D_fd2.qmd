@@ -582,7 +582,7 @@ where $c$ jumps from $c_1$ to $c_2$, a part of the wave is reflected back
 into the first medium (the *reflected* wave), while one part is
 transmitted through the second medium (the *transmitted* wave).
 
-![Left: wave entering another medium; right: transmitted and reflected wave.](fig/pulse1_in_two_media){#fig-wave-pde1-fig-pulse1-two-media width="800px"}
+![Left: wave entering another medium; right: transmitted and reflected wave.](fig/pulse1_in_two_media){#fig-wave-pde1-fig-pulse1-two-media width="100%"}
 
 ## The model PDE with a variable coefficient
 Instead of working with the squared quantity $c^2(x)$, we

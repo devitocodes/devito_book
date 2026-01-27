@@ -1124,18 +1124,18 @@ Increasing $F$ slightly beyond the limit 0.5, to $F=0.51$,
 gives growing, non-physical instabilities,
 as seen in Figure @fig-diffu-pde1-FE-fig-F-051.
 
-![Forward Euler scheme for $F=0.5$.](fig/plug_FE_F05){#fig-diffu-pde1-FE-fig-F-05 width="800px"}
+![Forward Euler scheme for $F=0.5$.](fig/plug_FE_F05){#fig-diffu-pde1-FE-fig-F-05 width="100%"}
 
-![Forward Euler scheme for $F=0.25$.](fig/plug_FE_F025){#fig-diffu-pde1-FE-fig-F-025 width="800px"}
+![Forward Euler scheme for $F=0.25$.](fig/plug_FE_F025){#fig-diffu-pde1-FE-fig-F-025 width="100%"}
 
-![Forward Euler scheme for $F=0.51$.](fig/plug_FE_F051){#fig-diffu-pde1-FE-fig-F-051 width="800px"}
+![Forward Euler scheme for $F=0.51$.](fig/plug_FE_F051){#fig-diffu-pde1-FE-fig-F-051 width="100%"}
 
 Instead of a discontinuous initial condition we now try the smooth
 Gaussian function for $I(x)$. A simulation for $F=0.5$
 is shown in Figure @fig-diffu-pde1-FE-fig-gauss-F-05. Now the numerical solution
 is smooth for all times, and this is true for any $F\leq 0.5$.
 
-![Forward Euler scheme for $F=0.5$.](fig/gaussian_FE_F05){#fig-diffu-pde1-FE-fig-gauss-F-05 width="800px"}
+![Forward Euler scheme for $F=0.5$.](fig/gaussian_FE_F05){#fig-diffu-pde1-FE-fig-gauss-F-05 width="100%"}
 
 Experiments with these two choices of $I(x)$ reveal some
 important observations:
@@ -1575,7 +1575,7 @@ with sawtooth-like noise when starting with a discontinuous initial
 condition. We can also verify that we can have $F>\half$,
 which allows larger time steps than in the Forward Euler method.
 
-![Backward Euler scheme for $F=0.5$.](fig/plug_BE_F05){#fig-diffu-pde1-BE-fig-F-05 width="800px"}
+![Backward Euler scheme for $F=0.5$.](fig/plug_BE_F05){#fig-diffu-pde1-BE-fig-F-05 width="100%"}
 
 The Backward Euler scheme always produces smooth solutions for any $F$.
 Figure @fig-diffu-pde1-BE-fig-F-05 shows one example.
@@ -1592,9 +1592,9 @@ increases. Figures @fig-diffu-pde1-CN-fig-F-3 and @fig-diffu-pde1-CN-fig-F-10
 demonstrate the effect for $F=3$ and $F=10$, respectively.
 Section @sec-diffu-pde1-analysis explains why such noise occur.
 
-![Crank-Nicolson scheme for $F=3$.](fig/plug_CN_F3){#fig-diffu-pde1-CN-fig-F-3 width="800px"}
+![Crank-Nicolson scheme for $F=3$.](fig/plug_CN_F3){#fig-diffu-pde1-CN-fig-F-3 width="100%"}
 
-![Crank-Nicolson scheme for $F=10$.](fig/plug_CN_F10){#fig-diffu-pde1-CN-fig-F-10 width="800px"}
+![Crank-Nicolson scheme for $F=10$.](fig/plug_CN_F10){#fig-diffu-pde1-CN-fig-F-10 width="100%"}
 
 ## The Laplace and Poisson equation
 

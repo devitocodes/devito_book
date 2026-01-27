@@ -715,9 +715,9 @@ value for $\omega$ in this case is 0.5, which results in an average of only
 $\Delta t = 1$: Picard iteration does not convergence in 1000 iterations,
 but $\omega=0.5$ again brings the average number of iterations down to 2.
 
-![Impact of solution strategy and time step length on the solution.](fig/logistic_u){#fig-nonlin-timediscrete-logistic-impl-fig-u width="800px"}
+![Impact of solution strategy and time step length on the solution.](fig/logistic_u){#fig-nonlin-timediscrete-logistic-impl-fig-u width="100%"}
 
-![Comparison of the number of iterations at various time levels for Picard and Newton iteration.](fig/logistic_iter){#fig-nonlin-timediscrete-logistic-impl-fig-iter width="800px"}
+![Comparison of the number of iterations at various time levels for Picard and Newton iteration.](fig/logistic_iter){#fig-nonlin-timediscrete-logistic-impl-fig-iter width="100%"}
 
 __Remark.__
 The simple Crank-Nicolson method with a geometric mean for the quadratic

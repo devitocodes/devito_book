@@ -228,7 +228,7 @@ But in very simple problems, like the logistic ODE, splitting is just an
 inferior technique. Still, the logistic ODE is ideal for introducing all
 the mathematical details and for investigating the behavior.
 
-![Effect of ordinary and Strange splitting for the logistic equation.](fig/split_logistic){#fig-nonlin-splitting-ODE-logistic-fig width="800px"}
+![Effect of ordinary and Strange splitting for the logistic equation.](fig/split_logistic){#fig-nonlin-splitting-ODE-logistic-fig width="100%"}
 
 ## Reaction-diffusion equation {#sec-nonlin-splitting-RD}
 

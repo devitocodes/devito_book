@@ -90,9 +90,9 @@ $$
 where $\eta$ is the elevation of the water surface,
 $g$ is the acceleration of gravity, and $H(x)$ is the still water depth.
 
-![Sketch of initial water surface due to a subsea earthquake.](fig/earthquake_tsunami_flat){#fig-wave-app-fig-1D-tsunami-flat width="800px"}
+![Sketch of initial water surface due to a subsea earthquake.](fig/earthquake_tsunami_flat){#fig-wave-app-fig-1D-tsunami-flat width="100%"}
 
-![An initial surface elevation is split into two waves.](fig/earthquake_tsunami_2waves){#fig-wave-app-fig-1D-tsunami-2waves width="800px"}
+![An initial surface elevation is split into two waves.](fig/earthquake_tsunami_2waves){#fig-wave-app-fig-1D-tsunami-2waves width="100%"}
 
 To simulate the right-going tsunami, we can impose a symmetry boundary
 at $x=0$: $\partial\eta/\partial x =0$.  We then simulate the wave
@@ -121,7 +121,7 @@ Now we extend the problem with a hill at the sea bottom, see Figure
 \sqrt{g(H_0-B(x))}$ will then be reduced in the shallow water above
 the hill.
 
-![Sketch of an earthquake-generated tsunami passing over a subsea hill.](fig/earthquake_tsunami_hill){#fig-wave-app-fig-1D-tsunami-hill width="800px"}
+![Sketch of an earthquake-generated tsunami passing over a subsea hill.](fig/earthquake_tsunami_hill){#fig-wave-app-fig-1D-tsunami-hill width="100%"}
 
 One possible form of the
 hill is a Gaussian function,

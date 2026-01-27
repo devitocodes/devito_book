@@ -1251,12 +1251,12 @@ Imagine we have performed experiments for a set of $\Delta t$ values.
 We want each curve, together with the exact solution, to appear in
 a plot, and then arrange all plots in a grid-like fashion:
 
-![Furthermore, we want the axes to couple such that if we move into
+![We want the axes to couple such that if we move into
 the future in one plot, all the other plots follows (note the
-displaced $t$ axes!):](fig/bokeh_gridplot1){width="800px"}
+displaced $t$ axes!):](fig/bokeh_gridplot1){width="100%"}
 
 ![A function for creating a Bokeh plot, given a list of `u` arrays
-and corresponding `t` arrays, is implemented below.](fig/bokeh_gridplot2){width="800px"}
+and corresponding `t` arrays, is implemented below.](fig/bokeh_gridplot2){width="100%"}
 The code combines data from different simulations, described
 compactly in a list of strings `legends`.
 
@@ -1452,7 +1452,7 @@ distinguished from the exact values. The next section shows how we
 can get mathematical insight into why amplitudes are good while frequencies
 are more inaccurate.
 
-![Empirical angular frequency (left) and amplitude (right) for three different time steps.](fig/empirical_ampl_freq){#fig-vib-ode1-fig-freq-ampl width="800px"}
+![Empirical angular frequency (left) and amplitude (right) for three different time steps.](fig/empirical_ampl_freq){#fig-vib-ode1-fig-freq-ampl width="100%"}
 
 []{#sec-vib-ode1-analysis-solderiv}
 
@@ -2074,9 +2074,9 @@ The Crank-Nicolson scheme looks much more accurate.  In fact, these
 plots tell that the Forward and Backward Euler schemes are not
 suitable for solving our ODEs with oscillating solutions.
 
-![Comparison of classical schemes in the phase plane for two time step values.](fig/vib_theta_1_pp){#fig-vib-ode1-1st-odespy-theta-phaseplane width="800px"}
+![Comparison of classical schemes in the phase plane for two time step values.](fig/vib_theta_1_pp){#fig-vib-ode1-1st-odespy-theta-phaseplane width="100%"}
 
-![Comparison of solution curves for classical schemes.](fig/vib_theta_1_u){#fig-vib-ode1-1st-odespy-theta width="800px"}
+![Comparison of solution curves for classical schemes.](fig/vib_theta_1_u){#fig-vib-ode1-1st-odespy-theta width="100%"}
 
 ## Runge-Kutta methods
 We may run two other popular standard methods for first-order ODEs,
@@ -2085,9 +2085,9 @@ perform. Figures @fig-vib-ode1-1st-odespy-RK-phaseplane and
 @fig-vib-ode1-1st-odespy-RK show the solutions with larger $\Delta t$
 values than what was used in the previous two plots.
 
-![Comparison of Runge-Kutta schemes in the phase plane.](fig/vib_RK_1_pp){#fig-vib-ode1-1st-odespy-RK-phaseplane width="800px"}
+![Comparison of Runge-Kutta schemes in the phase plane.](fig/vib_RK_1_pp){#fig-vib-ode1-1st-odespy-RK-phaseplane width="100%"}
 
-![Comparison of Runge-Kutta schemes.](fig/vib_RK_1_u){#fig-vib-ode1-1st-odespy-RK width="800px"}
+![Comparison of Runge-Kutta schemes.](fig/vib_RK_1_u){#fig-vib-ode1-1st-odespy-RK width="100%"}
 
 The visual impression is that the 4th-order Runge-Kutta method is very
 accurate, under all circumstances in these tests, while the 2nd-order
@@ -2104,7 +2104,7 @@ Exercise @sec-vib-exer-undamped-odespy invites you to investigate how
 the amplitude is computed by a series of famous methods for
 first-order ODEs.
 
-![Long-time behavior of the Crank-Nicolson scheme in the phase plane.](fig/vib_CN_10_pp){#fig-vib-ode1-1st-odespy-CN-long-phaseplane width="800px"}
+![Long-time behavior of the Crank-Nicolson scheme in the phase plane.](fig/vib_CN_10_pp){#fig-vib-ode1-1st-odespy-CN-long-phaseplane width="100%"}
 
 ## Analysis of the Forward Euler scheme
 We may try to find exact solutions of the discrete equations
@@ -3430,7 +3430,7 @@ the figure below,
 which shows how the adaptive solution clearly outperforms the simpler method,
 regardless of the accuracy level.
 
-![!esol](fig/vib_undamped_adaptive){width="800px"}
+![!esol](fig/vib_undamped_adaptive){width="100%"}
 
 ## Exercise: Use a Taylor polynomial to compute $u^1$ {#sec-vib-exer-step4b-alt}
 file=vib_first_step

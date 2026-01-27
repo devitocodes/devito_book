@@ -418,7 +418,7 @@ module installed, you can get nice 3D surface plots with contours beneath
 It gives a nice visualization with lifted surface and contours beneath.
 Figure @fig-wave2D3D-impl-viz-fig-gnuplot1 shows four plots of $u$.
 
-![Snapshots of the surface plotted by Gnuplot.](fig/wave2D_u0_gnuplot_gaussian.png){#fig-wave2D3D-impl-viz-fig-gnuplot1 width="800px"}
+![Snapshots of the surface plotted by Gnuplot.](fig/wave2D_u0_gnuplot_gaussian.png){#fig-wave2D3D-impl-viz-fig-gnuplot1 width="100%"}
 
 Video files can be made of the PNG frames:
 

@@ -130,7 +130,7 @@ oscillations do not have a visible amplitude, while we have to wait
 until $t\sim 0.5$ before the amplitude of the long wave $\sin (\pi x)$
 becomes very small.
 
-![Evolution of the solution of a diffusion problem: initial condition (upper left), 1/100 reduction of the small waves (upper right), 1/10 reduction of the long wave (lower left), and 1/100 reduction of the long wave (lower right).](fig/diffusion_damping){#fig-diffu-pde1-fig-damping width="800px"}
+![Evolution of the solution of a diffusion problem: initial condition (upper left), 1/100 reduction of the small waves (upper right), 1/10 reduction of the long wave (lower left), and 1/100 reduction of the long wave (lower right).](fig/diffusion_damping){#fig-diffu-pde1-fig-damping width="100%"}
 
 ## Analysis of discrete equations
 A counterpart to (@eq-diffu-pde1-sol1) is the complex representation
@@ -475,11 +475,11 @@ damped by the various schemes compared to the exact damping. As long
 as all schemes are stable, the amplification factor is positive,
 except for Crank-Nicolson when $F>0.5$.
 
-![Amplification factors for large time steps.](fig/diffusion_A_F20_F2){#fig-diffu-pde1-fig-A-err-C20 width="800px"}
+![Amplification factors for large time steps.](fig/diffusion_A_F20_F2){#fig-diffu-pde1-fig-A-err-C20 width="100%"}
 
-![Amplification factors for time steps around the Forward Euler stability limit.](fig/diffusion_A_F05_F025){#fig-diffu-pde1-fig-A-err-C05 width="800px"}
+![Amplification factors for time steps around the Forward Euler stability limit.](fig/diffusion_A_F05_F025){#fig-diffu-pde1-fig-A-err-C05 width="100%"}
 
-![Amplification factors for small time steps.](fig/diffusion_A_F01_F001){#fig-diffu-pde1-fig-A-err-C01 width="800px"}
+![Amplification factors for small time steps.](fig/diffusion_A_F01_F001){#fig-diffu-pde1-fig-A-err-C01 width="100%"}
 
 The effect of negative amplification factors is that $A^n$ changes
 sign from one time level to the next, thereby giving rise to

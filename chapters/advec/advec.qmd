@@ -822,9 +822,9 @@ one with a discontinuity in the first derivative (Figure
 the left plots in the figures, we get small ripples behind the main
 wave, and this main wave has the amplitude reduced.
 
-![Advection of a Gaussian function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).](fig/gaussian_LF_C08){#fig-advec-1D-LF-fig1-C08 width="800px"}
+![Advection of a Gaussian function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).](fig/gaussian_LF_C08){#fig-advec-1D-LF-fig1-C08 width="100%"}
 
-![Advection of half a cosine function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).](fig/cosinehat_LF_C08){#fig-advec-1D-LF-fig2-C08 width="800px"}
+![Advection of half a cosine function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).](fig/cosinehat_LF_C08){#fig-advec-1D-LF-fig2-C08 width="100%"}
 
 ### Analysis
 
@@ -901,9 +901,9 @@ Experiments show, however, that
 reducing $\Delta t$ or $\Delta x$, while keeping $C$ reduces the
 error.
 
-![Advection of a Gaussian function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.001$ (right).](fig/gaussian_UP_C08){#fig-advec-1D-UP-fig1-C08 width="800px"}
+![Advection of a Gaussian function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.001$ (right).](fig/gaussian_UP_C08){#fig-advec-1D-UP-fig1-C08 width="100%"}
 
-![Advection of half a cosine function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).](fig/cosinehat_UP_08){#fig-advec-1D-UP-fig2-C08 width="800px"}
+![Advection of half a cosine function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).](fig/cosinehat_UP_08){#fig-advec-1D-UP-fig2-C08 width="100%"}
 
 The amplification factor can be computed using the
 formula (@eq-form-exp-fd1-bw),
@@ -1219,9 +1219,9 @@ $$
 A = \frac{1 - (1-\theta) i C\sin p}{1 + \theta i C\sin p}\tp
 $$
 
-![Crank-Nicolson in time, centered in space, Gaussian profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right).](fig/gaussian_CN_C08){#fig-advec-1D-CN-fig-C08 width="800px"}
+![Crank-Nicolson in time, centered in space, Gaussian profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right).](fig/gaussian_CN_C08){#fig-advec-1D-CN-fig-C08 width="100%"}
 
-![Backward-Euler in time, centered in space, half a cosine profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right).](fig/cosinehat_BE_C08){#fig-advec-1D-BE-fig-C08 width="800px"}
+![Backward-Euler in time, centered in space, half a cosine profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right).](fig/cosinehat_BE_C08){#fig-advec-1D-BE-fig-C08 width="100%"}
 
 Figure @fig-advec-1D-CN-fig-C08 depicts a numerical solution for $C=0.8$
 and the Crank-Nicolson
@@ -1357,17 +1357,17 @@ The curves are labeled according to the table below.
 | LW | Lax-Wendroff's method                                |
 | BE | Backward Euler in time, centered difference in space |
 
-![Dispersion relations for $C=1$.](fig/disprel_C1_LW_UP_LF){#fig-advec-1D-disprel-C1-1 width="800px"}
+![Dispersion relations for $C=1$.](fig/disprel_C1_LW_UP_LF){#fig-advec-1D-disprel-C1-1 width="100%"}
 
-![Dispersion relations for $C=1$.](fig/disprel_C1_CN_BE_FE){#fig-advec-1D-disprel-C1-2 width="800px"}
+![Dispersion relations for $C=1$.](fig/disprel_C1_CN_BE_FE){#fig-advec-1D-disprel-C1-2 width="100%"}
 
-![Dispersion relations for $C=0.8$.](fig/disprel_C0_8_LW_UP_LF){#fig-advec-1D-disprel-C08-1 width="800px"}
+![Dispersion relations for $C=0.8$.](fig/disprel_C0_8_LW_UP_LF){#fig-advec-1D-disprel-C08-1 width="100%"}
 
-![Dispersion relations for $C=0.8$.](fig/disprel_C0_8_CN_BE_FE){#fig-advec-1D-disprel-C08-2 width="800px"}
+![Dispersion relations for $C=0.8$.](fig/disprel_C0_8_CN_BE_FE){#fig-advec-1D-disprel-C08-2 width="100%"}
 
-![Dispersion relations for $C=0.5$.](fig/disprel_C0_5_LW_UP_LF){#fig-advec-1D-disprel-C05-1 width="800px"}
+![Dispersion relations for $C=0.5$.](fig/disprel_C0_5_LW_UP_LF){#fig-advec-1D-disprel-C05-1 width="100%"}
 
-![Dispersion relations for $C=0.5$.](fig/disprel_C0_5_CN_BE_FE){#fig-advec-1D-disprel-C05-2 width="800px"}
+![Dispersion relations for $C=0.5$.](fig/disprel_C0_5_CN_BE_FE){#fig-advec-1D-disprel-C05-2 width="100%"}
 
 The total damping after some time $T=n\Delta t$ is reflected by
 $A_r(C,p)^n$. Since normally $A_r<1$, the damping goes like
@@ -1516,9 +1516,9 @@ and millions of cells are required to resolve the boundary layer.
 Fortunately, this is not strictly necessary as we have methods in
 the next section to overcome the problem!
 
-![Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with centered differences.](fig/twopt_BVP_cen_01){#fig-advec-1D-stationary-fdm-fig1 width="800px"}
+![Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with centered differences.](fig/twopt_BVP_cen_01){#fig-advec-1D-stationary-fdm-fig1 width="100%"}
 
-![Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with centered differences.](fig/twopt_BVP_cen_001){#fig-advec-1D-stationary-fdm-fig2 width="800px"}
+![Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with centered differences.](fig/twopt_BVP_cen_001){#fig-advec-1D-stationary-fdm-fig2 width="100%"}
 
 :::{.callout-note title="Solver"}
 A suitable solver for doing the experiments is presented below.
@@ -1598,9 +1598,9 @@ in Section @sec-advec-1D-stationary-fdm. The results appear in Figures
 @fig-advec-1D-stationary-upwind-fig1 and
 @fig-advec-1D-stationary-upwind-fig2: no more oscillations!
 
-![Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with upwind difference.](fig/twopt_BVP_upw_01){#fig-advec-1D-stationary-upwind-fig1 width="800px"}
+![Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with upwind difference.](fig/twopt_BVP_upw_01){#fig-advec-1D-stationary-upwind-fig1 width="100%"}
 
-![Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with upwind difference.](fig/twopt_BVP_upw_001){#fig-advec-1D-stationary-upwind-fig2 width="800px"}
+![Comparison of exact and numerical solution for $\epsilon =0.01$ and $N_x=20,40$ with upwind difference.](fig/twopt_BVP_upw_001){#fig-advec-1D-stationary-upwind-fig2 width="100%"}
 
 We see that the upwind scheme is always stable, but it gives a thicker
 boundary layer when the centered scheme is also stable.

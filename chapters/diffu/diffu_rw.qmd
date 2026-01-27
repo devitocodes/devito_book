@@ -49,7 +49,7 @@ We introduce the symbol $N$ for the number of steps in a random walk.
 Figure @fig-diffu-randomwalk-1D-fig-ensemble shows four different
 random walks with $N=200$.
 
-![Ensemble of 4 random walks, each with 200 steps.](fig/rw1D_ensemble4){#fig-diffu-randomwalk-1D-fig-ensemble width="800px"}
+![Ensemble of 4 random walks, each with 200 steps.](fig/rw1D_ensemble4){#fig-diffu-randomwalk-1D-fig-ensemble width="100%"}
 
 ## Statistical considerations {#sec-diffu-randomwalk-1D-EVar}
 
@@ -215,7 +215,7 @@ at the origin and moves with $p=\half$. Since the seed is the same,
 the plot to the left is just a magnification of the first 1,000 steps in
 the plot to the right.
 
-![1,000 (left) and 50,000 (right) steps of a random walk.](fig/rw1D_1sample){#fig-diffu-randomwalk-1D-code1-fig1 width="800px"}
+![1,000 (left) and 50,000 (right) steps of a random walk.](fig/rw1D_1sample){#fig-diffu-randomwalk-1D-code1-fig1 width="100%"}
 
 ### Verification
 
@@ -790,11 +790,11 @@ arising from solving the diffusion equation
 that one needs significantly more statistical samples to estimate a
 histogram accurately than the expectation or variance.
 
-![Estimated expected value for 1000 steps, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right).](fig/rw1D_EX_100_10000_100000_1000000){#fig-diffu-randomwalk-1D-fig-demo1-EX width="800px"}
+![Estimated expected value for 1000 steps, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right).](fig/rw1D_EX_100_10000_100000_1000000){#fig-diffu-randomwalk-1D-fig-demo1-EX width="100%"}
 
-![Estimated variance over 1000 steps, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right).](fig/rw1D_VarX_100_10000_100000_1000000){#fig-diffu-randomwalk-1D-fig-demo1-VarX width="800px"}
+![Estimated variance over 1000 steps, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right).](fig/rw1D_VarX_100_10000_100000_1000000){#fig-diffu-randomwalk-1D-fig-demo1-VarX width="100%"}
 
-![Estimated probability distribution at step 800, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right).](fig/rw1D_HistX_100_10000_100000_1000000){#fig-diffu-randomwalk-1D-fig-demo1-HistX width="800px"}
+![Estimated probability distribution at step 800, using 100 walks (upper left), 10,000 (upper right), 100,000 (lower left), and 1,000,000 (lower right).](fig/rw1D_HistX_100_10000_100000_1000000){#fig-diffu-randomwalk-1D-fig-demo1-HistX width="100%"}
 
 ## Empty figure cache
 \clearpage
@@ -882,7 +882,7 @@ as a walk on a *rectangular mesh* as we move from any spatial
 mesh point $(i,j)$ to one of its four neighbors in the rectangular directions:
 $(i+1,j)$, $(i-1,j)$, $(i,j+1)$, or $(i,j-1)$.
 
-![Random walks in 2D with 200 steps: rectangular mesh (left) and diagonal mesh (right).](fig/rw2D_sample200){#fig-diffu-randomwalk-2D-fig-rect-vs-diag width="800px"}
+![Random walks in 2D with 200 steps: rectangular mesh (left) and diagonal mesh (right).](fig/rw2D_sample200){#fig-diffu-randomwalk-2D-fig-rect-vs-diag width="100%"}
 
 ## Random walk in any number of space dimensions
 From a programming point of view, especially when implementing a random
@@ -1926,7 +1926,7 @@ def random_walkdD_vec(x0, N, p):
     return position
 ```
 
-![Four random walks with 5000 steps in 2D.](fig/rw2D_samples_5000){#fig-diffu-randomwalk-2D-fig-samples width="800px"}
+![Four random walks with 5000 steps in 2D.](fig/rw2D_samples_5000){#fig-diffu-randomwalk-2D-fig-samples width="100%"}
 
 ## Multiple random walks in any number of space dimensions
 As we did in 1D, we extend one single walk to a number of walks (`num_walks`

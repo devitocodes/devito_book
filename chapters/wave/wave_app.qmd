@@ -24,7 +24,7 @@ establishing wave equation models.
 
 ## Waves on a string {#sec-wave-app-string}
 
-![Discrete string model with point masses connected by elastic strings.](fig/wave_on_string){#fig-wave-app-string-fig width="800px"}
+![Discrete string model with point masses connected by elastic strings.](fig/wave_on_string){#fig-wave-app-string-fig width="100%"}
 
 Figure @fig-wave-app-string-fig shows a model we may use to derive
 the equation for waves on a string. The string is modeled as a

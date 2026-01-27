@@ -697,9 +697,9 @@ time steps.
 
 Running the `investigate` function, we get the following plots:
 
-![FIGURE: [fig-diffu/welding_gamma0_2, width=800 frac=1]](fig/welding_gamma0_025){width="800px"}
+![FIGURE: [fig-diffu/welding_gamma0_2, width=800 frac=1]](fig/welding_gamma0_025){width="100%"}
 
-![FIGURE: [fig-diffu/welding_gamma5, width=800 frac=1]](fig/welding_gamma1){width="800px"}
+![FIGURE: [fig-diffu/welding_gamma5, width=800 frac=1]](fig/welding_gamma1){width="100%"}
 
 ![For $\gamma\ll 1$ as in $\gamma = 0.025$, the heat source moves very
 slowly on the diffusion time scale and has hardly entered the medium,
@@ -709,7 +709,7 @@ each of the scalings work, but with the diffusion time scale, the heat
 source has not moved much into the domain. For $\gamma=1$, the
 mathematical problems are identical and hence the plots too. For
 $\gamma=5$, the time scale based on the source is clearly the best
-choice, and for $\gamma=40$, only this scale is appropriate.](fig/welding_gamma40){width="800px"}
+choice, and for $\gamma=40$, only this scale is appropriate.](fig/welding_gamma40){width="100%"}
 
 A conclusion is that the scaling in b) works well for a range of $\gamma$
 values, also in the case $\gamma\ll 1$.
