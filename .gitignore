@@ -71,3 +71,10 @@ title_test.*
 /.quarto/
 /_book/
 **/*.quarto_ipynb
+
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+devito_repo/

@@ -42,6 +42,7 @@ repos:
       - id: markdownlint-cli2
         name: "Check markdown files"
         stages: [pre-commit]
+        exclude: '^(devito_repo/|venv/|devito-plan\.md)'
   #
   # These stages modify the files applying fixes where possible
   # Since this may be undesirable they will not run automatically
@@ -79,3 +80,4 @@ repos:
         name: "Fix markdown files"
         args: [--fix]
         stages: [manual]
+        exclude: '^(devito_repo/|venv/|devito-plan\.md)'

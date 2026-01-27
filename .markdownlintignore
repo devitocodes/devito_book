@@ -8,3 +8,9 @@ _book/
 # Virtual environments
 venv/
 .venv/
+
+# External repositories
+devito_repo/
+
+# Planning documents (not code)
+devito-plan.md
