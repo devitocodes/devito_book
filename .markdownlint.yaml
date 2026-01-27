@@ -16,6 +16,49 @@ MD041: false
 # MD046 - Code block style (allow both fenced and indented)
 MD046: false
 
+# Rules disabled for LaTeX/math-heavy QMD files
+# MD010 - Hard tabs (often in raw LaTeX)
+MD010: false
+
+# MD037 - Spaces inside emphasis (false positives from *u* in math)
+MD037: false
+
+# MD040 - Fenced code language ({=latex} not recognized)
+MD040: false
+
+# MD049 - Emphasis style (underscores common in math)
+MD049: false
+
+# MD050 - Strong style (similar issue)
+MD050: false
+
+# MD011 - Reversed link syntax (false positives from math like [D^{2x}])
+MD011: false
+
+# MD032 - Blanks around lists (false positives from + in equations)
+MD032: false
+
+# MD003 - Heading style (false positives from = in LaTeX equations)
+MD003: false
+
+# MD025 - Multiple H1 headings (Quarto books have multiple titled sections)
+MD025: false
+
+# MD001 - Heading increment (Quarto YAML title acts as H1, sections may start at H3)
+MD001: false
+
+# MD022 - Blanks around headings (false positives from LaTeX arrays/matrices)
+MD022: false
+
+# MD012 - Multiple consecutive blank lines (false positives in Python code blocks with PEP8 style)
+MD012: false
+
+# MD004 - Unordered list style (allow both dash and plus - converted from DocOnce)
+MD004: false
+
+# MD031 - Blanks around fences (false positives in nested documentation examples)
+MD031: false
+
 # MD007 - Unordered list indentation
 MD007:
   indent: 2

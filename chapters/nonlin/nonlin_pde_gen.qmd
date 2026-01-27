@@ -1,7 +1,3 @@
----
-title: "Nonlin Pde Gen.Do"
----
-
 The fundamental ideas in the
 derivation of $F_i$ and $J_{i,j}$ in the 1D model problem
 are easily generalized to multi-dimensional problems.
@@ -9,17 +5,14 @@ Nevertheless, the expressions involved are slightly different, with
 derivatives in $x$ replaced by $\nabla$, so we present some
 examples below in detail.
 
-## Finite difference discretization
-{#sec-nonlin-alglevel-dD-fd}
+## Finite difference discretization {#sec-nonlin-alglevel-dD-fd}
 
 A typical diffusion equation
-
 $$
 u_t = \nabla\cdot(\dfc(u)\nabla u) + f(u),
 $$
 can be discretized by (e.g.) a Backward Euler scheme,
 which in 2D can be written
-
 $$
 [D_t^- u = D_x\overline{\dfc(u)}^xD_x u
 + D_y\overline{\dfc(u)}^yD_y u + f(u)]_{i,j}^n\tp
@@ -46,6 +39,7 @@ u^n_{i,j} &- \frac{\Delta t}{h^2}(
 This defines a nonlinear algebraic system on the form $A(u)u=b(u)$.
 
 ### Picard iteration
+
 The most recently computed values $u^{-}$ of $u^n$ can be
 used in $\dfc$ and $f$ for a Picard iteration,
 or equivalently, we solve $A(u^{-})u=b(u^{-})$.
@@ -53,13 +47,12 @@ The result is a linear system of the same type as arising
 from $u_t = \nabla\cdot (\dfc(\x)\nabla u) + f(\x,t)$.
 
 The Picard iteration scheme can also be expressed in operator notation:
-
 $$
 [D_t^- u = D_x\overline{\dfc(u^{-})}^xD_x u
 + D_y\overline{\dfc(u^{-})}^yD_y u + f(u^{-})]_{i,j}^n\tp
 $$
-
 ### Newton's method
+
 As always, Newton's method is technically more involved than
 Picard iteration. We first define
 the nonlinear algebraic equations to be solved, drop the
@@ -77,21 +70,18 @@ It is convenient to work with two indices $i$ and $j$ in 2D
 finite difference discretizations, but it complicates
 the derivation of the Jacobian, which then gets four indices.
 (Make sure you really understand the 1D version of this problem
-as treated in Section @eq-nonlin-alglevel-1D-fd.)
+as treated in Section @sec-nonlin-alglevel-1D-fd.)
 The left-hand expression of an equation $F_{i,j}=0$ is to be
 differentiated with respect to each of the unknowns $u_{r,s}$
 (recall that this is short notation for $u_{r,s}^n$), $r\in\Ix$, $s\in\Iy$:
-
 $$
 J_{i,j,r,s} = \frac{\partial F_{i,j}}{\partial u_{r,s}}\tp
 $$
 The Newton system to be solved in each iteration can be written as
-
 $$
 \sum_{r\in\Ix}\sum_{s\in\Iy}J_{i,j,r,s}\delta u_{r,s} = -F_{i,j},
 \quad i\in\Ix,\ j\in\Iy\tp
 $$
-
 Given $i$ and $j$, only a few $r$ and $s$ indices give nonzero
 contribution to the Jacobian since $F_{i,j}$ contains $u_{i\pm 1,j}$,
 $u_{i,j\pm 1}$, and $u_{i,j}$. This means that $J_{i,j,r,s}$ has
@@ -100,7 +90,6 @@ and $s=j$.  The corresponding terms in $J_{i,j,r,s}$ are
 $J_{i,j,i-1,j}$, $J_{i,j,i+1,j}$, $J_{i,j,i,j-1}$, $J_{i,j,i,j+1}$
 and $J_{i,j,i,j}$.  Therefore, the left-hand side of the Newton
 system, $\sum_r\sum_s J_{i,j,r,s}\delta u_{r,s}$ collapses to
-
 
 \begin{align*}
  J_{i,j,r,s}\delta u_{r,s} =
@@ -116,13 +105,13 @@ The specific derivatives become
 \begin{align*}
 J_{i,j,i-1,j} &= \frac{\partial F_{i,j}}{\partial u_{i-1,j}}\\
 &= \frac{\Delta t}{h^2}(\dfc^{\prime}(u_{i-1,j})(u_{i,j}-u_{i-1,j})
-+ \dfc(u_{i-1,j})(-1)),\\
+- \dfc(u_{i-1,j})(-1)),\\
 J_{i,j,i+1,j} &= \frac{\partial F_{i,j}}{\partial u_{i+1,j}}\\
 &= \frac{\Delta t}{h^2}(-\dfc^{\prime}(u_{i+1,j})(u_{i+1,j}-u_{i,j})
 - \dfc(u_{i-1,j})),\\
 J_{i,j,i,j-1} &= \frac{\partial F_{i,j}}{\partial u_{i,j-1}}\\
 &= \frac{\Delta t}{h^2}(\dfc^{\prime}(u_{i,j-1})(u_{i,j}-u_{i,j-1})
-+ \dfc(u_{i,j-1})(-1)),\\
+- \dfc(u_{i,j-1})(-1)),\\
 J_{i,j,i,j+1} &= \frac{\partial F_{i,j}}{\partial u_{i,j+1}}\\
 &= \frac{\Delta t}{h^2}(-\dfc^{\prime}(u_{i,j+1})(u_{i,j+1}-u_{i,j})
 - \dfc(u_{i,j-1}))\tp
@@ -135,7 +124,6 @@ forming $J\delta u=-F$ gives the linear system to be solved
 in each Newton iteration. Boundary conditions will affect the
 formulas when any of the indices coincide with a boundary value
 of an index.
-
 
 ## Continuation methods
 
@@ -153,7 +141,6 @@ to $\Lambda_i$.
 
 The continuation method is easiest to understand through an example.
 Suppose we intend to solve
-
 $$
 -\nabla\cdot\left( ||\nabla u||^q\nabla u\right) = f,
 $$
@@ -165,7 +152,6 @@ the continuation parameter $\Lambda\in [0,1]$ such that
 $q=q_n\Lambda$. Let $\{\Lambda_\ell\}_{\ell=0}^n$ be the sequence of
 $\Lambda$ values in $[0,1]$, with corresponding $q$ values
 $\{q_\ell\}_{\ell=0}^n$. We can then solve a sequence of problems
-
 $$
 -\nabla\cdot\left( ||\nabla u^\ell||^q_\ell\nabla u^\ell\right) = f,\quad
 \ell = 0,\ldots,n,

@@ -1,5 +1,3 @@
----
-title: "Preface"
----
+# Preface {.unnumbered}
 
 {{< include preface.qmd >}}

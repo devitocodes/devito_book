@@ -11,16 +11,9 @@ This is the source repository for *Finite Difference Computing with PDEs - A Mod
 ### Build Book PDF
 
 ```bash
-cd doc/.src/book
-bash make.sh nospell    # Skip spellcheck (faster)
-bash make.sh            # With spellcheck
-```
-
-### Build Individual Chapter
-
-```bash
-cd doc/.src/chapters/vib   # or wave, diffu, advec, nonlin, trunc, softeng2, formulas
-bash make.sh
+quarto render --to pdf     # Build PDF
+quarto render              # Build all formats (HTML + PDF)
+quarto preview             # Live preview with hot reload
 ```
 
 ### Run Tests
@@ -45,28 +38,30 @@ pre-commit run --hook-stage manual       # Run auto-fix hooks
 
 ### Directory Structure
 
-- `src/` - Python source code organized by chapter (vib, wave, diffu, nonlin, etc.)
-- `doc/.src/book/` - Main book build (book.do.txt includes all chapters)
-- `doc/.src/chapters/` - DocOnce source for each chapter:
-  - `*.do.txt` - DocOnce markup files (main content)
-  - `fig-*/` - Figures for the chapter
-  - `exer-*/` - Exercise solutions and supporting code
-  - `.dict4spell.txt` - Chapter-specific spelling dictionary
+- `chapters/` - Quarto source files organized by topic:
+  - `vib/` - Vibration ODEs
+  - `wave/` - Wave equations
+  - `diffu/` - Diffusion equations
+  - `advec/` - Advection equations
+  - `nonlin/` - Nonlinear problems
+  - `appendices/` - Truncation errors, formulas, software engineering
+- `src/` - Python source code organized by chapter
+- `_book/` - Generated output (PDF, HTML)
+- `_quarto.yml` - Book configuration
 
-### DocOnce Document Format
+### Quarto Document Format
 
-The book uses [DocOnce](https://github.com/doconce/doconce), a markup language that compiles to LaTeX/PDF. Key syntax:
+The book uses [Quarto](https://quarto.org/) for scientific publishing. Key syntax:
 
-- `@@@CODE path/to/file.py fromto: start_pattern@end_pattern` - Include code snippet between patterns
-- `!bc pycod` / `!ec` - Python code block
-- `!bt` / `!et` - LaTeX math block
-- `idx{term}` - Index entry
-- `ref{label}` - Cross-reference
-- `# #include "file.do.txt"` - Include another file
+- ` ```python ` / ` ``` ` - Python code block
+- `$$ ... $$` - Display math with optional `{#eq-label}`
+- `@sec-label`, `@eq-label`, `@fig-label` - Cross-references
+- `{{< include file.qmd >}}` - Include another file
+- `{=latex}` blocks for raw LaTeX when needed
 
 ### Code Organization Pattern
 
-Each chapter's Python code lives in `src/CHAPTER/` and is referenced by documentation in `doc/.src/chapters/CHAPTER/`. The `@@@CODE` directive pulls code snippets directly from source files into the documentation, keeping code and docs in sync.
+Each chapter's Python code lives in `src/CHAPTER/` and can be included in QMD files using fenced code blocks or Quarto includes.
 
 ## Pre-commit Hooks
 
@@ -80,11 +75,78 @@ Pre-commit hooks run automatically on commit:
 
 ## Key Dependencies
 
-- **doconce** - Document generation from .do.txt files
+- **quarto** - Document generation from .qmd files
 - **numpy, scipy, matplotlib, sympy** - Scientific Python stack for examples
 - **pdflatex** - LaTeX compilation (requires TeX Live installation)
 
 ## Build Output
 
-- `doc/.src/book/book.pdf` - Generated book PDF
-- `doc/pub/book/pdf/fdm-book.pdf` - Published copy of book PDF
+- `_book/Finite-Difference-Computing-with-PDEs.pdf` - Generated book PDF
+
+## Quarto Equation Labeling Guidelines
+
+**Known Bug (GitHub Issue #2275)**: Quarto's `{#eq-label}` syntax cannot label individual lines within `\begin{align}` environments. This causes "macro parameter character #" LaTeX errors.
+
+### What Fails
+
+```markdown
+$$
+\begin{align}
+a &= 0+1 {#eq-first}    <!-- causes LaTeX error -->
+b &= 2+3 {#eq-second}
+\end{align}
+$$
+```
+
+### Working Patterns
+
+**Single equation or whole block label** - place label AFTER closing `$$`:
+```markdown
+$$
+\begin{split}
+a &= 0+1 \\
+b &= 2+3
+\end{split}
+$$ {#eq-block}
+```
+
+**Multiple separate equations** - use separate `$$` blocks:
+```markdown
+$$
+a = 0+1
+$$ {#eq-first}
+$$
+b = 2+3
+$$ {#eq-second}
+```
+
+**Individual line labels in align** - use pure AMS LaTeX syntax:
+```latex
+\begin{align}
+a &= 0+1 \label{eq:first} \\
+b &= 2+3 \label{eq:second}
+\end{align}
+
+See Equation \eqref{eq:first} for details.
+```
+
+### Best Practices
+
+- **Never mix Quarto `{#eq-}` and AMS `\label{}` syntax** in the same equation
+- Use `\begin{equation}...\end{equation}` for single numbered equations
+- Use `\begin{align}...\end{align}` with `\label{}` for multiple aligned, individually-numbered equations
+- Use `\begin{aligned}...\end{aligned}` inside `\begin{equation}` for aligned equations sharing one number
+- Add `*` (e.g., `\begin{align*}`) to suppress all numbering
+- Reference with `\eqref{label}` for parenthesized numbers, `\ref{label}` for plain numbers
+- For Quarto cross-refs, use `@eq-label` syntax with label placed after `$$`
+
+### Cross-Reference Prefixes
+
+| Type | Prefix | Example |
+|------|--------|---------|
+| Section | `@sec-` | `@sec-vib-ode1` |
+| Equation | `@eq-` | `@eq-vib-ode1-step4` |
+| Figure | `@fig-` | `@fig-vib-phase` |
+| Table | `@tbl-` | `@tbl-trunc-fd1` |
+
+Reference: [NMFS-OpenSci Quarto-AMS Math Guide](https://nmfs-opensci.github.io/quarto-amsmath)

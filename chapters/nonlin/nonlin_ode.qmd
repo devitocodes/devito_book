@@ -1,14 +1,8 @@
----
-title: "Nonlin Ode.Do"
----
+## Linear versus nonlinear equations {#sec-nonlin-timediscrete-logistic}
 
-{#sec-nonlin-timediscrete-logistic}
-
-## Linear versus nonlinear equations
 ### Algebraic equations
 
 A linear, scalar, algebraic equation in $x$ has the form
-
 $$
 ax + b = 0,
 $$
@@ -31,6 +25,7 @@ Typical methods for nonlinear algebraic equation equations are
 Newton's method, the Bisection method, and the Secant method.
 
 ### Differential equations
+
 The unknown in a differential equation is a function and not a number.
 In a linear differential equation, all terms involving the unknown function
 are linear in the unknown function or its derivatives. Linear here means that
@@ -40,7 +35,6 @@ a known function. All other differential equations are non-linear.
 The easiest way to see if an equation is nonlinear, is to spot nonlinear terms
 where the unknown function or its derivatives are multiplied by
 each other. For example, in
-
 $$
 u^{\prime}(t) = -a(t)u(t) + b(t),
 $$
@@ -53,7 +47,6 @@ u^{\prime}(t) = u(t)(1 - u(t)),
 $$
 is nonlinear because of the term $-u^2$ where the unknown function is
 multiplied by itself. Also
-
 $$
 \frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x} = 0,
 $$
@@ -65,13 +58,11 @@ $\frac{\partial u}{\partial t}$ or $u_t$ for a function of more than one
 variable.)
 
 Another example of a nonlinear equation is
-
 $$
 u^{\prime\prime} + \sin(u) =0,
 $$
 because $\sin(u)$ contains products of $u$, which becomes clear
 if we expand the function in a Taylor series:
-
 $$
 \sin(u) = u - \frac{1}{3} u^3 + \ldots
 $$
@@ -81,11 +72,9 @@ To really prove mathematically that some differential equation
 in an unknown $u$ is linear,
 show for each term $T(u)$ that with $u = au_1 + bu_2$ for
 constants $a$ and $b$,
-
 $$
 T(au_1 + bu_2) = aT(u_1) + bT(u_2)\tp
 $$
-
 For example, the term $T(u) = (\sin^2 t)u'(t)$ is linear because
 
 \begin{align*}
@@ -94,17 +83,16 @@ T(au_1 + bu_2) &= (\sin^2 t)(au_1(t) + b u_2(t))\\
 & =aT(u_1) + bT(u_2)\tp
 \end{align*}
 However, $T(u)=\sin u$ is nonlinear because
-
 $$
 T(au_1 + bu_2) = \sin (au_1 + bu_2) \neq a\sin u_1 + b\sin u_2\tp
 $$
 :::
 
 ## A simple model problem
+
 A series of forthcoming examples will explain how to tackle
 nonlinear differential equations with various techniques.
 We start with the (scaled) logistic equation as model problem:
-
 $$
 u^{\prime}(t) = u(t)(1 - u(t)) \tp
 $$ {#eq-nonlin-timediscrete-logistic-eq}
@@ -145,9 +133,7 @@ the simplicity of (@eq-nonlin-timediscrete-logistic-eq), the conclusions
 reveal typical features of the various methods in much more complicated
 nonlinear PDE problems.
 
-
-## Linearization by explicit time discretization
-{#sec-nonlin-timediscrete-logistic-FE}
+## Linearization by explicit time discretization {#sec-nonlin-timediscrete-logistic-FE}
 
 Time discretization methods are divided into explicit and implicit
 methods. Explicit methods lead to a closed-form formula for
@@ -160,13 +146,11 @@ differential equations.
 The Forward Euler
 method is an explicit method. When applied to
 (@eq-nonlin-timediscrete-logistic-eq), sampled at $t=t_n$, it results in
-
 $$
 \frac{u^{n+1} - u^n}{\Delta t} = u^n(1 - u^n),
 $$
 which is a *linear* algebraic
 equation for the unknown value $u^{n+1}$ that we can easily solve:
-
 $$
 u^{n+1} = u^n + \Delta t\,u^n(1 - u^n)\tp
 $$
@@ -187,19 +171,15 @@ u^n(1 - u^n) + u^*(1 - u^*))
 The first step is linear in the unknown $u^*$. Then $u^*$ is
 known in the next step, which is linear in the unknown $u^{n+1}$ .
 
-
-## Exact solution of nonlinear algebraic equations
-{#sec-nonlin-timediscrete-logistic-roots}
+## Exact solution of nonlinear algebraic equations {#sec-nonlin-timediscrete-logistic-roots}
 
 Switching to a Backward Euler scheme for
 (@eq-nonlin-timediscrete-logistic-eq),
-
 $$
 \frac{u^{n} - u^{n-1}}{\Delta t} = u^n(1 - u^n),
 $$ {#eq-nonlin-timediscrete-logistic-eq-BE}
 results in a nonlinear algebraic equation for the unknown value $u^n$.
 The equation is of quadratic type:
-
 $$
 \Delta t (u^n)^2 + (1-\Delta t)u^n - u^{n-1} = 0,
 $$
@@ -221,12 +201,10 @@ solution at a certain time level.
 The quadratic equation for the unknown $u^n$ in
 (@eq-nonlin-timediscrete-logistic-eq-BE) can, with the new
 notation, be written
-
 $$
 F(u) = \Delta t u^2 + (1-\Delta t)u - u^{(1)} = 0\tp
 $$ {#eq-nonlin-timediscrete-logistic-eq-F}
 The solution is readily found to be
-
 $$
 u = \frac{1}{2\Delta t}
 \left(-1+\Delta t \pm \sqrt{(1-\Delta t)^2 - 4\Delta t u^{(1)}}\right) \tp
@@ -277,7 +255,6 @@ and see if a limit appears unreasonable:
 u_1
 ```
 
-
 ## Linearization
 When the time integration of an ODE results in a nonlinear algebraic
 equation, we must normally find its solution by defining a sequence
@@ -293,13 +270,10 @@ Constructing a linear equation from a nonlinear one requires
 as in Picard iteration, or fully algorithmically as in Newton's method.
 Examples will best illustrate how to linearize nonlinear problems.
 
-
-## Picard iteration
-{#sec-nonlin-timediscrete-logistic-Picard}
+## Picard iteration {#sec-nonlin-timediscrete-logistic-Picard}
 
 Let us write (@eq-nonlin-timediscrete-logistic-eq-F) in a
 more compact form
-
 $$
 F(u) = au^2 + bu + c = 0,
 $$
@@ -308,7 +282,6 @@ Let $u^{-}$ be an available approximation of the unknown $u$.
 Then we can linearize the term $u^2$ simply by writing
 $u^{-}u$. The resulting equation, $\hat F(u)=0$, is now linear
 and hence easy to solve:
-
 $$
 F(u)\approx\hat F(u) = au^{-}u + bu + c = 0\tp
 $$
@@ -328,11 +301,9 @@ a widely used approach that goes under many names:
 *nonlinear Richardson iteration*, and *Picard iteration*.
 We will stick to the latter name.
 
-
 Picard iteration for solving the nonlinear equation
 arising from the Backward Euler discretization of the logistic
 equation can be written as
-
 $$
 u = -\frac{c}{au^{-} + b},\quad u^{-}\ \leftarrow\ u\tp
 $$
@@ -345,14 +316,12 @@ Some prefer an explicit iteration counter as superscript
 in the mathematical notation. Let $u^k$ be the computed approximation
 to the solution in iteration $k$. In iteration $k+1$ we want
 to solve
-
 $$
 au^k u^{k+1} + bu^{k+1} + c = 0\quad\Rightarrow\quad u^{k+1}
 = -\frac{c}{au^k + b},\quad k=0,1,\ldots
 $$
 Since we need to perform the iteration at every time level, the
 time level counter is often also included:
-
 $$
 au^{n,k} u^{n,k+1} + bu^{n,k+1} - u^{n-1} = 0\quad\Rightarrow\quad u^{n,k+1}
 = \frac{u^n}{au^{n,k} + b},\quad k=0,1,\ldots,
@@ -368,7 +337,6 @@ instead of $u^{k+1}$ and $u^k$ or $u^{n,k+1}$ and $u^{n,k}$.
 ### Stopping criteria
 The iteration method can typically be terminated when the change
 in the solution is smaller than a tolerance $\epsilon_u$:
-
 $$
 |u - u^{-}| \leq\epsilon_u,
 $$
@@ -376,7 +344,6 @@ or when the residual in the equation is sufficiently small ($< \epsilon_r$),
 $$
 |F(u)|= |au^2+bu + c| < \epsilon_r\tp
 $$
-
 ### A single Picard iteration
 Instead of iterating until a stopping criterion is fulfilled, one may
 iterate a specific number of times. Just one Picard iteration is
@@ -387,7 +354,6 @@ time level $t_n$. In other words, a single Picard iteration
 corresponds to using the solution at the previous time level to
 linearize nonlinear terms. The resulting discretization becomes (using
 proper values for $a$, $b$, and $c$)
-
 $$
 \frac{u^{n} - u^{n-1}}{\Delta t} = u^n(1 - u^{n-1}),
 $$ {#eq-nonlin-timediscrete-logistic-BE-Picard-1it}
@@ -412,33 +378,28 @@ iteration at each time level, with the value at the previous time
 level as start for the Picard iteration.
 :::
 
-## Linearization by a geometric mean
-{#sec-nonlin-timediscrete-logistic-geometric-mean}
+## Linearization by a geometric mean {#sec-nonlin-timediscrete-logistic-geometric-mean}
 
 We consider now a Crank-Nicolson discretization of
 (@eq-nonlin-timediscrete-logistic-eq). This means that the
 time derivative is approximated by a centered
 difference,
-
 $$
 [D_t u = u(1-u)]^{n+\half},
 $$
 written out as
-
 $$
 \frac{u^{n+1}-u^n}{\Delta t} = u^{n+\half} -
 (u^{n+\half})^2\tp
 $$ {#eq-nonlin-timediscrete-logistic-geometric-mean-scheme}
 The term $u^{n+\half}$ is normally approximated by an arithmetic
 mean,
-
 $$
 u^{n+\half}\approx \half(u^n + u^{n+1}),
 $$
 such that the scheme involves the unknown function only at the time levels
 where we actually intend to compute it.
 The same arithmetic mean applied to the nonlinear term gives
-
 $$
 (u^{n+\half})^2\approx \frac{1}{4}(u^n + u^{n+1})^2,
 $$
@@ -446,7 +407,6 @@ which is nonlinear in the unknown $u^{n+1}$.
 However, using a *geometric mean* for $(u^{n+\half})^2$
 is a way of linearizing the nonlinear term in
 (@eq-nonlin-timediscrete-logistic-geometric-mean-scheme):
-
 $$
 (u^{n+\half})^2\approx u^nu^{n+1}\tp
 $$
@@ -454,13 +414,11 @@ Using an arithmetic mean on the linear $u^{n+\frac{1}{2}}$ term in
 (@eq-nonlin-timediscrete-logistic-geometric-mean-scheme) and a geometric
 mean for the second term, results in a linearized equation for the
 unknown $u^{n+1}$:
-
 $$
 \frac{u^{n+1}-u^n}{\Delta t} =
 \half(u^n + u^{n+1}) + u^nu^{n+1},
 $$
 which can readily be solved:
-
 $$
 u^{n+1} = \frac{1 + \half\Delta t}{1+\Delta t u^n - \half\Delta t}
 u^n\tp
@@ -482,7 +440,6 @@ method.
 Applying the operator notation for the means and finite differences,
 the linearized Crank-Nicolson scheme for the logistic equation can be
 compactly expressed as
-
 $$
 [D_t u = \overline{u}^{t} + \overline{u^2}^{t,g}]^{n+\half}\tp
 $$
@@ -501,14 +458,12 @@ being $\frac{1}{4}\Delta t u^n(u^{n+1}-u^n)\approx \frac{1}{4}\Delta t^2
 u^\prime u$, i.e., a difference of size $\Delta t^2$).
 :::
 
-## Newton's method
-{#sec-nonlin-timediscrete-logistic-Newton}
+## Newton's method {#sec-nonlin-timediscrete-logistic-Newton}
 
 The Backward Euler scheme (@eq-nonlin-timediscrete-logistic-eq-BE)
 for the logistic equation leads to a nonlinear algebraic equation
 (@eq-nonlin-timediscrete-logistic-eq-F). Now we write any nonlinear
 algebraic equation in the general and compact form
-
 $$
 F(u) = 0\tp
 $$
@@ -522,17 +477,14 @@ F(u) &= F(u^{-}) + F^{\prime}(u^{-})(u - u^{-}) + {\half}F^{\prime\prime}(u^{-})
 & \approx F(u^{-}) + F^{\prime}(u^{-})(u - u^{-}) = \hat F(u)\tp
 \end{align*}
 The linear equation $\hat F(u)=0$ has the solution
-
 $$
 u = u^{-} - \frac{F(u^{-})}{F^{\prime}(u^{-})}\tp
 $$
 Expressed with an iteration index in the unknown, Newton's method takes
 on the more familiar mathematical form
-
 $$
 u^{k+1} = u^k - \frac{F(u^k)}{F^{\prime}(u^k)},\quad k=0,1,\ldots
 $$
-
 It can be shown that the error in iteration $k+1$ of Newton's method is
 proportional to
 the square of the error in iteration $k$, a result referred to as
@@ -549,17 +501,14 @@ for the behavior of the method.
 Application of Newton's method to the logistic equation discretized
 by the Backward Euler method is straightforward
 as we have
-
 $$
 F(u) = au^2 + bu + c,\quad a=\Delta t,\ b = 1-\Delta t,\ c=-u^{(1)},
 $$
 and then
-
 $$
 F^{\prime}(u) = 2au + b\tp
 $$
 The iteration method becomes
-
 $$
 u = u^{-} + \frac{a(u^{-})^2 + bu^{-} + c}{2au^{-} + b},\quad
 u^{-}\ \leftarrow u\tp
@@ -571,7 +520,6 @@ for Newton's method.
 An alternative mathematical form, where we write out $a$, $b$, and $c$,
 and use a time level counter $n$ and an iteration counter $k$, takes
 the form
-
 $$
 u^{n,k+1} = u^{n,k} +
 \frac{\Delta t (u^{n,k})^2 + (1-\Delta t)u^{n,k} - u^{n-1}}
@@ -582,8 +530,7 @@ A program implementation is much closer to (@eq-nonlin-timediscrete-logistic-New
 the latter is better aligned with the established mathematical
 notation used in the literature.
 
-## Relaxation
-{#sec-nonlin-timediscrete-logistic-relaxation}
+## Relaxation {#sec-nonlin-timediscrete-logistic-relaxation}
 
 One iteration in Newton's method or
 Picard iteration consists of solving a linear problem $\hat F(u)=0$.
@@ -593,7 +540,6 @@ solution $u^{-}$. A remedy is to introduce a relaxation, meaning that
 we first solve $\hat F(u^*)=0$ for a suggested value $u^*$ and
 then we take $u$ as a weighted mean of what we had, $u^{-}$, and
 what our linearized equation $\hat F=0$ suggests, $u^*$:
-
 $$
 u = \omega u^* + (1-\omega) u^{-}\tp
 $$
@@ -603,13 +549,11 @@ may prevent divergent iterations.
 
 Relaxation in Newton's method can be directly incorporated
 in the basic iteration formula:
-
 $$
 u = u^{-} - \omega \frac{F(u^{-})}{F^{\prime}(u^{-})}\tp
 $$ {#eq-nonlin-timediscrete-logistic-relaxation-Newton-formula}
 
-## Implementation and experiments
-{#sec-nonlin-timediscrete-logistic-impl}
+## Implementation and experiments {#sec-nonlin-timediscrete-logistic-impl}
 
 The program [`logistic.py`](https://github.com/hplgit/fdm-book/tree/master/src/nonlin/logistic.py) contains
 implementations of all the methods described above.
@@ -711,7 +655,6 @@ def BE_logistic(u0, dt, Nt, choice='Picard',
     return u, iterations
 ```
 
-
 The Crank-Nicolson method utilizing a linearization based on the
 geometric mean gives a simpler algorithm:
 
@@ -755,7 +698,6 @@ This curve appears more accurate, especially if we take the plot in
 the lower right with a small $\Delta t$ and an appropriately small
 $\epsilon_r$ value as the exact curve.
 
-
 When it comes to the need for iterations, Figure
 @fig-nonlin-timediscrete-logistic-impl-fig-iter displays the number of
 iterations required at each time level for Newton's method and
@@ -773,11 +715,9 @@ value for $\omega$ in this case is 0.5, which results in an average of only
 $\Delta t = 1$: Picard iteration does not convergence in 1000 iterations,
 but $\omega=0.5$ again brings the average number of iterations down to 2.
 
-
 ![Impact of solution strategy and time step length on the solution.](fig/logistic_u){#fig-nonlin-timediscrete-logistic-impl-fig-u width="800px"}
 
 ![Comparison of the number of iterations at various time levels for Picard and Newton iteration.](fig/logistic_iter){#fig-nonlin-timediscrete-logistic-impl-fig-iter width="800px"}
-
 
 __Remark.__
 The simple Crank-Nicolson method with a geometric mean for the quadratic
@@ -790,12 +730,10 @@ than $\epsilon_r$. Ideally, one should estimate the error in the
 time discretization, as the solution progresses, and set $\epsilon_r$
 accordingly.
 
-## Generalization to a general nonlinear ODE
-{#sec-nonlin-ode-generic}
+## Generalization to a general nonlinear ODE {#sec-nonlin-ode-generic}
 
 Let us see how the various methods in the previous sections
 can be applied to the more generic model
-
 $$
 u^{\prime} = f(u, t),
 $$ {#eq-nonlin-ode-generic-model}
@@ -811,23 +749,19 @@ pose any difficulties.
 
 Approximating $u^{\prime}$ by a backward difference leads to a Backward Euler
 scheme, which can be written as
-
 $$
 F(u^n) = u^{n} - \Delta t\, f(u^n, t_n) - u^{n-1}=0,
 $$
 or alternatively
-
 $$
 F(u) = u - \Delta t\, f(u, t_n) - u^{(1)} = 0\tp
 $$
 A simple Picard iteration, not knowing anything about the nonlinear
 structure of $f$, must approximate $f(u,t_n)$ by $f(u^{-},t_n)$:
-
 $$
 \hat F(u) = u - \Delta t\, f(u^{-},t_n) - u^{(1)}\tp
 $$
 The iteration starts with $u^{-}=u^{(1)}$ and proceeds with repeating
-
 $$
 u^* = \Delta t\, f(u^{-},t_n) + u^{(1)},\quad u = \omega u^* + (1-\omega)u^{-},
 \quad u^{-}\ \leftarrow\ u,
@@ -879,36 +813,30 @@ $f(u^{-},t)$ demands 17, 21, and 20 iterations.
 Newton's method applied to a Backward Euler discretization of
 $u^{\prime}=f(u,t)$
 requires computation of the derivative
-
 $$
 F^{\prime}(u) = 1 - \Delta t\frac{\partial f}{\partial u}(u,t_n)\tp
 $$
 Starting with the solution at the previous time level, $u^{-}=u^{(1)}$,
 we can just use the standard formula
-
 $$
 u = u^{-} - \omega \frac{F(u^{-})}{F^{\prime}(u^{-})}
 = u^{-} - \omega \frac{u^{-} - \Delta t\, f(u^{-}, t_n) - u^{(1)}}{1 - \Delta t
 \frac{\partial}{\partial u}f(u^{-},t_n)} \tp
 $$ {#eq-nonlin-ode-generic-Newton}
 
-
 ### Crank-Nicolson discretization
 The standard Crank-Nicolson scheme with arithmetic mean approximation of
 $f$ takes the form
-
 $$
 \frac{u^{n+1} - u^n}{\Delta t} = \half(f(u^{n+1}, t_{n+1})
 + f(u^n, t_n))\tp
 $$
 We can write the scheme as a nonlinear algebraic equation
-
 $$
 F(u) = u - u^{(1)} - \Delta t{\half}f(u,t_{n+1}) -
 \Delta t{\half}f(u^{(1)},t_{n}) = 0\tp
 $$ {#eq-nonlin-ode-generic-Newton2}
 A Picard iteration scheme must in general employ the linearization
-
 $$
 \hat F(u) = u - u^{(1)} - \Delta t{\half}f(u^{-},t_{n+1}) -
 \Delta t{\half}f(u^{(1)},t_{n}),
@@ -916,14 +844,11 @@ $$
 while Newton's method can apply the general formula
 (@eq-nonlin-ode-generic-Newton) with $F(u)$ given in
 (@eq-nonlin-ode-generic-Newton2) and
-
 $$
 F^{\prime}(u)= 1 - \half\Delta t\frac{\partial f}{\partial u}(u,t_{n+1})\tp
 $$
 
-
-## Systems of ODEs
-{#sec-nonlin-ode-generic-sys-pendulum}
+## Systems of ODEs {#sec-nonlin-ode-generic-sys-pendulum}
 
 We may write a system of ODEs
 
@@ -934,7 +859,6 @@ We may write a system of ODEs
 \frac{d}{dt}u_m(t) &= f_m(u_0(t),u_1(t),\ldots,u_N(t),t),
 \end{align*}
 as
-
 $$
 u^{\prime} = f(u,t),\quad u(0)=U_0,
 $$
@@ -958,12 +882,10 @@ component,
 \frac{u_N^n- u_N^{n-1}}{\Delta t} &= f_N(u^n,t_n),
 \end{align*}
 which can be written more compactly in vector form as
-
 $$
 \frac{u^n- u^{n-1}}{\Delta t} = f(u^n,t_n)\tp
 $$
 This is a *system of algebraic equations*,
-
 $$
 u^n - \Delta t\,f(u^n,t_n) - u^{n-1}=0,
 $$
@@ -1012,36 +934,33 @@ $u_1^{n+1}$ in this system, writing $u_0^{(1)}$ and
 $u_1^{(1)}$ for the previous values $u_0^n$ and $u_1^n$, multiplying
 by $\Delta t$ and moving the terms to the left-hand sides, gives
 
-\begin{align}
+$$
 u_0 - u_0^{(1)} + \Delta t\,\sin\left(\frac{1}{2}(u_1 + u_1^{(1)})\right)
-+ \frac{1}{4}\Delta t\beta (u_0 + u_0^{(1)})|u_0 + u_0^{(1)}| &=0,
-\\
-u_1 - u_1^{(1)} -\frac{1}{2}\Delta t(u_0 + u_0^{(1)}) &=0\tp
-\label{nonlin:ode:generic:sys:pendulum:u0}
-\end{align}
++ \frac{1}{4}\Delta t\beta (u_0 + u_0^{(1)})|u_0 + u_0^{(1)}| =0,
+$$ {#eq-nonlin-ode-generic-sys-pendulum-u0}
+$$
+u_1 - u_1^{(1)} -\frac{1}{2}\Delta t(u_0 + u_0^{(1)}) =0\tp
+$$ {#eq-nonlin-ode-generic-sys-pendulum-u1}
 Obviously, we have a need for solving systems of nonlinear algebraic
 equations, which is the topic of the next section.
 
-
-{#sec-nonlin-systems-alg}
+## Systems of nonlinear algebraic equations {#sec-nonlin-systems-alg}
 
 Implicit time discretization methods for a system of ODEs, or a PDE,
 lead to *systems* of nonlinear algebraic equations, written
 compactly as
-
 $$
 F(u) = 0,
 $$
 where $u$ is a vector of unknowns $u=(u_0,\ldots,u_N)$, and
 $F$ is a vector function: $F=(F_0,\ldots,F_N)$.
-The system at the end of Section @eq-nonlin-ode-generic-sys-pendulum fits
+The system at the end of Section @sec-nonlin-ode-generic-sys-pendulum fits
 this notation with $N=1$, $F_0(u)$ given by the left-hand side of
 (@eq-nonlin-ode-generic-sys-pendulum-u0), while $F_1(u)$ is
 the left-hand side of (@eq-nonlin-ode-generic-sys-pendulum-u1).
 
 Sometimes the equation system has a special structure because of the
 underlying problem, e.g.,
-
 $$
 A(u)u = b(u),
 $$
@@ -1056,8 +975,7 @@ More theoretical considerations, including quite general results
 on convergence properties
 of these methods, can be found in Kelley [@Kelley_1995].
 
-## Picard iteration
-{#sec-nonlin-systems-alg-Picard}
+## Picard iteration {#sec-nonlin-systems-alg-Picard}
 
 We cannot apply Picard iteration to nonlinear equations unless there is
 some special structure. For the commonly arising case
@@ -1066,12 +984,10 @@ product $A(u)u$ to $A(u^{-})u$ and $b(u)$ as $b(u^{-})$.
 That is, we use the most previously
 computed approximation in $A$ and $b$ to arrive at a *linear system* for
 $u$:
-
 $$
 A(u^{-})u = b(u^{-})\tp
 $$
 A relaxed iteration takes the form
-
 $$
 A(u^{-})u^* = b(u^{-}),\quad u = \omega u^* + (1-\omega)u^{-}\tp
 $$
@@ -1088,11 +1004,10 @@ Given $A(u)u=b(u)$ and an initial guess $u^{-}$, iterate until convergence:
 
 ``Until convergence'' means that the iteration is stopped when the
 change in the unknown, $||u - u^{-}||$, or the residual $||A(u)u-b||$,
-is sufficiently small, see Section @eq-nonlin-systems-alg-terminate for
+is sufficiently small, see Section @sec-nonlin-systems-alg-terminate for
 more details.
 
-## Newton's method
-{#sec-nonlin-systems-alg-Newton}
+## Newton's method {#sec-nonlin-systems-alg-Newton}
 
 The natural starting point for Newton's method is the general
 nonlinear vector equation $F(u)=0$.
@@ -1100,17 +1015,14 @@ As for a scalar equation, the idea is to approximate $F$
 around a known value $u^{-}$ by a linear function $\hat F$,
 calculated from the first two terms of a Taylor expansion of
 $F$. In the multi-variate case these two terms become
-
 $$
 F(u^{-}) + J(u^{-}) \cdot (u - u^{-}),
 $$
 where $J$ is the *Jacobian* of $F$, defined by
-
 $$
 J_{i,j} = \frac{\partial F_i}{\partial u_j}\tp
 $$
 So, the original nonlinear system is approximated by
-
 $$
 \hat F(u) = F(u^{-}) + J(u^{-}) \cdot (u - u^{-})=0,
 $$
@@ -1118,7 +1030,6 @@ which is linear in $u$ and can be solved in a two-step procedure:
 first solve $J\delta u = -F(u^{-})$ with respect to the vector $\delta u$
 and then update $u = u^{-} + \delta u$.
 A relaxation parameter can easily be incorporated:
-
 $$
 u = \omega(u^{-} +\delta u)
 + (1-\omega)u^{-} = u^{-}  + \omega\delta u\tp
@@ -1133,12 +1044,10 @@ Given $F(u)=0$ and an initial guess $u^{-}$, iterate until convergence:
 :::
 
 For the special system with structure $A(u)u=b(u)$,
-
 $$
 F_i = \sum_k A_{i,k}(u)u_k - b_i(u),
 $$
 one gets
-
 $$
 J_{i,j} = \sum_k \frac{\partial A_{i,k}}{\partial u_j}u_k
 + A_{i,j} -
@@ -1151,19 +1060,16 @@ $\partial A/\partial u$ (a quantity with three indices: $\partial
 A_{i,k}/\partial u_j$), and $b^{\prime}(u)$ for $\partial b/\partial u$ (a
 quantity with two indices: $\partial b_i/\partial u_j$), we can write
 the linear system to be solved as
-
 $$
 (A + A^{\prime}u + b^{\prime})\delta u = -Au + b,
 $$
 or
-
 $$
 (A(u^{-}) + A^{\prime}(u^{-})u^{-} + b^{\prime}(u^{-}))\delta u
 = -A(u^{-})u^{-} + b(u^{-})\tp
 $$
 Rearranging the terms demonstrates the difference from the system
 solved in each Picard iteration:
-
 $$
 \underbrace{A(u^{-})(u^{-}+\delta u) - b(u^{-})}_{\hbox{Picard system}}
 +\, \gamma (A^{\prime}(u^{-})u^{-} + b^{\prime}(u^{-}))\delta u
@@ -1187,8 +1093,7 @@ $\gamma =1$ gives a Newton method while $\gamma =0$ corresponds to
 Picard iteration.
 :::
 
-## Stopping criteria
-{#sec-nonlin-systems-alg-terminate}
+## Stopping criteria {#sec-nonlin-systems-alg-terminate}
 
 Let $||\cdot||$ be the standard Euclidean vector norm. Four termination
 criteria are much in use:
@@ -1211,7 +1116,6 @@ the error measure is enforced. In such cases the absolute criteria
 work better. It is common to combine the absolute and relative measures
 of the size of the residual,
 as in
-
 $$
 ||F(u)|| \leq \epsilon_{rr} ||F(u_0)|| + \epsilon_{ra},
 $$
@@ -1225,15 +1129,12 @@ $\epsilon_{rr} ||F(u_0)||$ and the relative criterion dominates.
 
 With the change in solution as criterion we can formulate a combined
 absolute and relative measure of the change in the solution:
-
 $$
 ||\delta u|| \leq \epsilon_{ur} ||u_0|| + \epsilon_{ua},
 $$
-
 The ultimate termination criterion, combining the residual and
 the change in solution with a test on the maximum number
 of iterations, can be expressed as
-
 $$
 ||F(u)|| \leq \epsilon_{rr} ||F(u_0)|| + \epsilon_{ra}
 \quad\hbox{or}\quad
@@ -1241,10 +1142,7 @@ $$
 \quad\hbox{or}\quad
 k>k_{\max}\tp
 $$
-
-
-## Example: A nonlinear ODE model from epidemiology
-{#sec-nonlin-systems-alg-SI}
+## Example: A nonlinear ODE model from epidemiology {#sec-nonlin-systems-alg-SI}
 
 A very simple model for the spreading of a disease, such as a flu, takes
 the form of a $2\times 2$ ODE system
@@ -1273,16 +1171,15 @@ algebraic equations in the unknowns $S^{n+1}$ and $I^{n+1}$:
 Introducing $S$ for $S^{n+1}$, $S^{(1)}$ for $S^n$, $I$ for $I^{n+1}$ and
 $I^{(1)}$ for $I^n$, we can rewrite the system as
 
-\begin{align}
-F_S(S,I) &= S - S^{(1)} +
+$$
+F_S(S,I) = S - S^{(1)} +
 \half\Delta t\beta(S^{(1)}I^{(1)} + SI) = 0,
-\\
-F_I(S,I) &= I - I^{(1)} -
+$$ {#eq-nonlin-systems-alg-SI-CN-FS}
+$$
+F_I(S,I) = I - I^{(1)} -
 \half\Delta t\beta(S^{(1)}I^{(1)} + SI) +
 \half\Delta t\nu(I^{(1)} + I) =0\tp
-\label{nonlin:systems:alg:SI:CN:FS}
-\end{align}
-
+$$ {#eq-nonlin-systems-alg-SI-CN-FI}
 
 ### A Picard iteration
 We assume that we have approximations $S^{-}$ and $I^{-}$ to $S$ and
@@ -1307,7 +1204,6 @@ The nonlinear system
 (@eq-nonlin-systems-alg-SI-CN-FS)-(@eq-nonlin-systems-alg-SI-CN-FI)
 can be written as $F(u)=0$ with $F=(F_S,F_I)$ and $u=(S,I)$.  The
 Jacobian becomes
-
 $$
 J = \left(\begin{array}{cc}
 \frac{\partial}{\partial S} F_S & \frac{\partial}{\partial I}F_S\\
@@ -1315,7 +1211,7 @@ J = \left(\begin{array}{cc}
 \end{array}\right)
 = \left(\begin{array}{cc}
 1 + \half\Delta t\beta I & \half\Delta t\beta S\\
-- \half\Delta t\beta I & 1 - \half\Delta t\beta S +
++ \half\Delta t\beta I & 1 - \half\Delta t\beta S +
 \half\Delta t\nu
 \end{array}\right) \tp
 $$

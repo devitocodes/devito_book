@@ -3,3 +3,8 @@
 
 # Build outputs
 doc/pub/
+_book/
+
+# Virtual environments
+venv/
+.venv/

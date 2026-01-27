@@ -1,7 +1,3 @@
----
-title: "Softeng2.Do"
----
-
 ## Mathematical model
 
 Let $u_t$, $u_{tt}$, $u_x$, $u_{xx}$ denote derivatives of $u$ with
@@ -10,47 +6,51 @@ derivative and $u_x$ is a first-order space derivative.  The
 initial-boundary value problem implemented in the `wave1D_dn_vc.py`
 code is
 
-\begin{align}
-u_{tt} &= (q(x)u_x)_x + f(x,t),\quad &x\in (0,L),\ t\in (0,T]
-\\
-u(x,0) &= I(x),\quad &x\in [0,L]\\
-u_t(x,0) &= V(t),\quad &x\in [0,L]\\
-u(0,t) &= U_0(t)\hbox{ or } u_x(0,t)=0,\quad &t\in (0,T]\\
-u(L,t) &= U_L(t)\hbox{ or } u_x(L,t)=0,\quad &t\in (0,T]
-\label{wave:pde2:software:ueq2}
-\end{align}
+$$
+u_{tt} = (q(x)u_x)_x + f(x,t),\quad x\in (0,L),\ t\in (0,T]
+$$
+$$
+u(x,0) = I(x),\quad x\in [0,L]
+$$
+$$
+u_t(x,0) = V(t),\quad x\in [0,L]
+$$
+$$
+u(0,t) = U_0(t)\hbox{ or } u_x(0,t)=0,\quad t\in (0,T]
+$$
+$$
+u(L,t) = U_L(t)\hbox{ or } u_x(L,t)=0,\quad t\in (0,T]
+$$ {#eq-wave-pde2-software-ueq2}
 We allow variable wave velocity $c^2(x)=q(x)$, and Dirichlet or homogeneous
 Neumann conditions at the boundaries.
 
-
 ## Numerical discretization
+
 The PDE is discretized by second-order finite differences in
 time and space, with arithmetic mean for the variable coefficient
-
 $$
 [D_tD_t u = D_x\overline{q}^xD_x u + f]^n_i \tp
 $$
 The Neumann boundary conditions are discretized by
-
 $$
 [D_{2x}u]^n_i=0,
 $$
 at a boundary point $i$. The details of how the numerical scheme
-is worked out are described in ref[Sections @eq-wave-pde2-Neumann
-and @eq-wave-pde2-var-c][ in [@Langtangen_deqbook_wave]][in
+is worked out are described in ref[Sections @sec-wave-pde2-Neumann
+and @sec-wave-pde2-var-c][ in [@Langtangen_deqbook_wave]][in
 the document [Finite difference methods for wave motion](http://tinyurl.com/k3sdbuv/pub/wave)
 [@Langtangen_deqbook_wave]].
 
 ## A solver function
+
 The general initial-boundary value problem
-(@eq-wave-pde2-software-ueq2)-(@eq-wave-pde2-software-bcL2)
 solved by finite difference methods can be implemented as shown in
 the following `solver` function (taken from the
 file [`wave1D_dn_vc.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn_vc.py)).
 This function builds on
 simpler versions described in
 ref[Sections @sec-wave-pde1-impl, @sec-wave-pde1-impl-vec
-@eq-wave-pde2-Neumann, and @eq-wave-pde2-var-c][ in
+@sec-wave-pde2-Neumann, and @sec-wave-pde2-var-c][ in
 [@Langtangen_deqbook_wave]][in
 the document [Finite difference methods for wave motion](http://tinyurl.com/k3sdbuv/pub/wave)
 [@Langtangen_deqbook_wave]].
@@ -61,10 +61,10 @@ flexibility with respect to input arguments,
 boundary conditions, and optimization
 (scalar versus vectorized loops).
 
-@@@CODE src-wave/wave1D/wave1D_dn_vc.py def solver@def test_quadratic
+```{.python include="../../../src/wave/wave1D/wave1D_dn_vc.py" start-after="def solver" end-before="def test_quadratic"}
+```
 
-
-{#sec-softeng2-wave1D-filestorage}
+## Storing simulation data in files {#sec-softeng2-wave1D-filestorage}
 
 Numerical simulations produce large arrays as results and the software
 needs to store these arrays on disk. Several methods are available
@@ -75,9 +75,8 @@ been optimized for array data and are hence much faster than the
 standard tools.
 
 ## Using `savez` to store arrays in files
-{#sec-softeng2-wave1D-filestorage-savez}
 
-### Storing individual arrays
+### Storing individual arrays {#sec-softeng2-wave1D-filestorage-savez}
 
 The `numpy.storez` function can store a set of arrays to a named
 file in a zip archive. An associated function
@@ -101,6 +100,7 @@ np.savez(fname, **kwargs)
 if n == 0:           # store x once
     np.savez('.mydata_x.dat', x=x)
 ```
+
 Since the name of the array must be given as a keyword argument
 to `savez`, and the name must be constructed as shown, it becomes
 a little tricky to do the call, but with a dictionary `kwargs` and
@@ -108,6 +108,7 @@ a little tricky to do the call, but with a dictionary `kwargs` and
 arguments, the task gets accomplished.
 
 ### Merging zip archives
+
 Each separate call to `np.savez` creates a new file (zip archive) with
 extension `.npz`. It is very convenient to collect all results in
 one archive instead. This can be done by merging all the individual
@@ -142,12 +143,14 @@ def merge_zip_archives(individual_archives, archive_name):
         os.remove(filename)
     archive.close()
 ```
+
 Here we remark that `savez` automatically
 adds the `.npz` extension to the names of
 the arrays we store. We do not want this extension in the final
 archive.
 
 ### Reading arrays from zip archives
+
 Archives created by `savez` or the merged archive we describe
 above with name of the form `myarchive.npz`,
 can be conveniently read by the `numpy.load` function:
@@ -158,9 +161,7 @@ array_names = np.load(`myarchive.npz`)
 for array_name in array_names:
 ```
 
-
-## Using `joblib` to store arrays in files
-{#sec-softeng2-wave1D-filestorage-joblib}
+## Using `joblib` to store arrays in files {#sec-softeng2-wave1D-filestorage-joblib}
 
 The Python package `joblib` has nice functionality for efficient storage
 of arrays on disk. The following class applies this functionality so that
@@ -211,6 +212,7 @@ class Storage:
             print("joblib save of", name)
         return data
 ```
+
 The `retrieve` and `save` functions, which do the work, seem quite
 magic. The idea is that `joblib` looks at the `name` parameter
 and saves the return value `data` to disk if the `name` parameter
@@ -219,12 +221,11 @@ already registered, `joblib` fetches the `data` object from
 file and returns it (this is an example of a memoize function,
 see Section 2.1.4 in [@Langtangen_scaling] for a brief explanation]).
 
-## Using a hash to create a file or directory name
-{#sec-softeng2-wave1D-filestorage-hash}
+## Using a hash to create a file or directory name {#sec-softeng2-wave1D-filestorage-hash}
 
 Array storage techniques like those outlined in Sections
-@eq-softeng2-wave1D-filestorage-joblib and
-@eq-softeng2-wave1D-filestorage-savez demand the user to assign a
+@sec-softeng2-wave1D-filestorage-joblib and
+@sec-softeng2-wave1D-filestorage-savez demand the user to assign a
 name for the file(s) or directory where the solution is to be
 stored. Ideally, this name should reflect parameters in the problem
 such that one can recognize an already run simulation. One technique
@@ -254,6 +255,7 @@ def myfunction(func1, func2, array1, array2, obj1, obj2):
 	    str(obj2))
     hash_input = hashlib.sha1(data).hexdigest()
 ```
+
 It is wise to use `joblib.hash` and not try to do a
 `str(array1)`, since that string can be *very* long, and
 `joblib.hash` is more efficient than `hashlib` when turning
@@ -268,6 +270,7 @@ Suppose we have some function
 x0 = 0.1
 f = lambda x: 0 if x <= x0 else 1
 ```
+
 The source code will be `f = lambda x: 0 if x <= x0 else 1`, so if the
 calling code changes the value of `x0` (which `f` remembers - it is
 a closure), the source remains unchanged, the hash is the same,
@@ -305,6 +308,7 @@ savez(fname, **kwargs)
 if n == 0:           # store x once
     savez('.' + self.filename + '_x.dat', x=x)
 ```
+
 For example, if `n` is 10 and `self.filename` is `tmp`,
 the above call to `savez` becomes
 `savez('.tmp_u0010.dat', u0010=u)`.
@@ -333,6 +337,7 @@ class PlotAndStoreSolution:
             filenames = glob.glob('.' + self.filename + '*.dat.npz')
             merge_zip_archives(filenames, archive_name)
 ```
+
 We use various `ZipFile` functionality to extract the content of the
 individual files (each with name `filename`) and write it to the
 merged archive (`archive`).  There is only one
@@ -346,9 +351,7 @@ Instead of merging the archives written by `savez` we could make
 an alternative implementation that writes all our arrays into
 one archive. This is the subject of Exercise @sec-softeng2-exer-savez.
 
-
-## Making hash strings from input data
-{#sec-softeng2-wave1D-filestorage-hashlib}
+## Making hash strings from input data {#sec-softeng2-wave1D-filestorage-hashlib}
 
 The `hashed_input` argument, used to name the
 resulting archive file with all solutions, is supposed to be a
@@ -382,8 +385,7 @@ the source code is still the same and `data` and hence the hash remains
 unaltered. The implementation must therefore be used with care!
 :::
 
-## Avoiding rerunning previously run cases
-{#sec-softeng2-wave1D-filestorage-norerun}
+## Avoiding rerunning previously run cases {#sec-softeng2-wave1D-filestorage-norerun}
 
 If the archive file whose name is based on `hashed_input` already
 exists, the simulation with the current set of parameters has been
@@ -408,7 +410,9 @@ if cpu > 0:  # did we generate new data?
 ```
 
 ## Verification
+
 ### Vanishing approximation error
+
 Exact solutions of the numerical equations are always attractive for
 verification purposes since the software should reproduce such
 solutions to machine precision. With Dirichlet boundary conditions
@@ -427,12 +431,11 @@ We must introduce one discretization parameter $h$ and assume an error
 model $E=Ch^r$, where $C$ and $r$ are constants to be determine (i.e.,
 $r$ is the rate that we are interested in). Given two experiments with
 different resolutions $h_i$ and $h_i{-1}$, we can estimate $r$ by
-
 $$
 r = \frac{\ln(E_{i}/E_{i-1})}{\ln(h_{i}/h_{i-1})},
 $$
 where $E_i$ is the error corresponding to $h_i$ and $E_{i-1}$ corresponds to
-$h_{i-1}$. ref[Section @eq-wave-pde2-fd-standing-waves][ in [@Langtangen_deqbook_wave]][The
+$h_{i-1}$. ref[Section @sec-wave-pde2-fd-standing-waves][ in [@Langtangen_deqbook_wave]][The
 section "Using an analytical solution of physical significance": ""
 in [@Langtangen_deqbook_wave]] explains the details of this type of verification and how
 we introduce the single discretization parameter $h=\Delta t = \hat c\Delta t$,
@@ -442,9 +445,11 @@ where we have a more elegant solution in terms of a class: the `error`
 variable is not a class attribute and there is no need for a global
 error (which is always considered an advantage).
 
-@@@CODE src-wave/wave1D/wave1D_dn_vc.py def convergence_rates@def test_convrate_sincos
+```{.python include="../../../src/wave/wave1D/wave1D_dn_vc.py" start-after="def convergence_rates" end-before="def test_convrate_sincos"}
+```
+
 The returned sequence `r` should converge to 2 since the error
-analysis in ref[Section @eq-wave-pde1-analysis][in
+analysis in ref[Section @sec-wave-pde1-analysis][in
 [@Langtangen_deqbook_wave]][the section "Analysis of the difference
 equations": "" in [@Langtangen_deqbook_wave]] predicts various error measures to behave
 like $\Oof{\Delta t^2} + \Oof{\Delta x^2}$. We can easily run
@@ -453,7 +458,6 @@ $u(x,t) = \cos(\frac{2\pi}{L}t)\sin(\frac{2\pi}{L}x)$. The call will
 be very similar to the one provided in the `test_convrate_sincos` function
 in ref[Section @sec-wave-pde1-impl-verify-rate][ in [@Langtangen_deqbook_wave]][the section "Verification: convergence rates": "" in
 [@Langtangen_deqbook_wave]], see the file [`wave1D_dn_vc.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn_vc.py) for details.
-
 
 Many who know about class programming prefer to organize their software
 in terms of classes. This gives a richer application programming interface
@@ -481,6 +485,7 @@ a class `Function` for a mesh function (mesh point values and its mesh).
 All the following code is found in [`wave1D_oo.py`](https://github.com/hplgit/fdm-book/tree/master/src/softeng2/wave1D_oo.py).
 
 ## Class Parameters
+
 The classes `Problem` and `Solver` both inherit class `Parameters`, which
 handles reading of parameters from the command line and has methods
 for setting and getting parameter values. Since processing dictionaries
@@ -577,8 +582,8 @@ class Parameters:
             self.prm[name] = getattr(args, name)
 ```
 
-
 ## Class Problem
+
 Inheriting the `Parameters` class, our class `Problem` is defined as:
 
 ```python
@@ -621,8 +626,8 @@ class Problem(Parameters):
     U_L = None
 ```
 
-
 ## Class Mesh
+
 The `Mesh` class can be made valid for a space-time mesh in any number
 of space dimensions. To make the class versatile, the constructor accepts
 either a tuple/list of number of cells in each spatial dimension or
@@ -805,6 +810,7 @@ assign new values to the attributes.
 :::
 
 ## Class Function
+
 A class `Function` is handy to hold a mesh and corresponding values for
 a scalar or vector function over the mesh. Since we may have a
 time or space mesh, or a combined time and space mesh, with one or
@@ -935,9 +941,9 @@ class Function:
 ```
 
 ## Class Solver
+
 With the `Mesh` and `Function` classes in place, we can rewrite
 the `solver` function, but we make it a method in class `Solver`:
-
 
 ```python
 class Solver(Parameters):
@@ -1214,8 +1220,7 @@ Running `wave1D_oo.py` gives a printout showing that the class-based
 implementation performs as expected, i.e. that the known exact solution
 is reproduced (within machine precision).
 
-
-{#sec-wave2D3D-impl-Cython}
+## Speeding up Cython code {#sec-wave2D3D-impl-Cython}
 
 We now consider the [`wave2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave2D_u0/wave2D_u0.py)
 code for solving the 2D linear wave equation with constant wave
@@ -1343,13 +1348,13 @@ code with loops into Cython.
    translation to C by Cython, while an `int` object is
    declared by `int`.
  1. Arrays need a comprehensive type declaration involving
-   * the type `np.ndarray`,
-   * the data type of the elements, here 64-bit floats,
+* the type `np.ndarray`,
+* the data type of the elements, here 64-bit floats,
      abbreviated as `DT` through `ctypedef np.float64_t DT`
      (instead of `DT` we could use the full name of the
      data type: `np.float64_t`, which is a Cython-defined type),
-   * the dimensions of the array, here `ndim=2` and `ndim=1`,
-   * specification of contiguous memory for the array (`mode='c'`).
+* the dimensions of the array, here `ndim=2` and `ndim=1`,
+* specification of contiguous memory for the array (`mode='c'`).
  1. Functions declared with `cpdef` are translated to C but are also
    accessible from Python.
  1. In addition to the standard `numpy` import we also need a special
@@ -1374,7 +1379,6 @@ code with loops into Cython.
    A loop `for i in Ix` is with these new variables written as
    `for i in range(Ix_start, Ix_end+1)`.
 
-
 :::{.callout-note title="Array declaration syntax in Cython"}
 We have used the syntax `np.ndarray[DT, ndim=2, mode='c']` to declare
 `numpy` arrays in Cython. There is a simpler, alternative syntax, employing
@@ -1392,6 +1396,7 @@ Python to C. The command
 ```bash
 Terminal> cython -a wave2D_u0_loop_cy.pyx
 ```
+
 produces an HTML file `wave2D_u0_loop_cy.html`, which can be loaded into
 a web browser to illustrate which lines of the code that have been
 translated to C. Figure @fig-wave-2D3D-impl-fig-cython-ma1 shows
@@ -1410,7 +1415,6 @@ compute-intensive statements have been translated into some complex C
 code that is quite different from what a human would write (at
 least if a direct correspondence to the mathematical notation was
 intended).
-
 
 ## Building the extension module
 
@@ -1433,11 +1437,13 @@ setup(
   cmdclass={'build_ext': build_ext},
 )
 ```
+
 We run the script by
 
 ```bash
 Terminal> python setup.py build_ext --inplace
 ```
+
 The `--inplace` option makes the extension module available in the
 current directory as the file `wave2D_u0_loop_cy.so`. This
 file acts as a normal Python module that can be imported and inspected:
@@ -1448,6 +1454,7 @@ file acts as a normal Python module that can be imported and inspected:
 ['__builtins__', '__doc__', '__file__', '__name__',
  '__package__', '__test__', 'advance', 'np']
 ```
+
 The important output from the `dir` function is our Cython function
 `advance` (the module also features the imported `numpy` module under
 the name `np` as well as many standard Python objects with double
@@ -1469,12 +1476,14 @@ module:
 ```python
 import pyximport; pyximport.install()
 ```
+
 This makes the `setup.py` script redundant. However, in the `wave2D_u0_adv.py`
 code we do not use `pyximport` and require an explicit build process
 of this and many other modules.
 :::
 
 ## Calling the Cython function from Python
+
 The `wave2D_u0_loop_cy`
 module contains our `advance` function, which we now may call from
 the Python program for the wave equation:
@@ -1489,13 +1498,13 @@ for n in It[1:-1]:                  # time loop
 ```
 
 ### Efficiency
+
 For a mesh consisting of $120\times 120$ cells, the scalar Python code
 requires 1370 CPU time units, the vectorized version requires 5.5,
 while the Cython version requires only 1! For a smaller mesh with
 $60\times 60$ cells Cython is about 1000 times faster than the scalar
 Python code, and the vectorized version is about 6 times slower than
 the Cython version.
-
 
 Instead of relying on Cython's (excellent) ability to translate Python to C,
 we can invoke a compiled language directly and write the loops ourselves.
@@ -1507,13 +1516,12 @@ arrays in the Python code, while in C these arrays are
 one-dimensional and require us to reduce multi-dimensional indices
 to a single index.
 
-
 ## The Fortran subroutine
 
 We write a Fortran subroutine `advance` in a file
 [`wave2D_u0_loop_f77.f`](https://github.com/hplgit/fdm-book/tree/master/src/softeng2/wave2D_u0_loop_f77.f)
 for implementing the updating formula
-(@sec-wave-2D3D-impl1-2Du0-ueq-discrete) and setting the solution to zero
+(@eq-wave-2D3D-impl1-2Du0-ueq-discrete) and setting the solution to zero
 at the boundaries:
 
 ```fortran
@@ -1555,6 +1563,7 @@ C     Boundary conditions
       return
       end
 ```
+
 This code is plain Fortran 77, except for the special `Cf2py` comment
 line, which here specifies that `u` is both an input argument *and*
 an object to be returned from the `advance` routine. Or more
@@ -1573,12 +1582,14 @@ Fortran subroutine from Python is
 ```python
 u = advance(u, u_n, u_nm1, f, Cx2, Cy2, dt2)
 ```
+
 The less encouraged style, which works and resembles the way the
 Fortran subroutine is called from Fortran, reads
 
 ```python
 advance(u, u_n, u_nm1, f, Cx2, Cy2, dt2)
 ```
+
 :::
 
 ## Building the Fortran module with f2py
@@ -1595,6 +1606,7 @@ Terminal> f2py -m wave2D_u0_loop_f77 -h wave2D_u0_loop_f77.pyf \
 Terminal> f2py -c wave2D_u0_loop_f77.pyf --build-dir build_f77 \
           -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_f77.f
 ```
+
 The first command asks `f2py` to interpret the Fortran code and make
 a Fortran 90
 specification of the extension module in the file
@@ -1623,7 +1635,6 @@ Functions:
   u = advance(u,u_n,u_nm1,f,cx2,cy2,dt2,
       nx=(shape(u,0)-1),ny=(shape(u,1)-1))
 ```
-
 
 :::{.callout-warning title="Examine the doc strings!"}
 Printing the doc strings of the module and its functions is
@@ -1672,6 +1683,7 @@ Optional arguments:
 Return objects:
   u : rank-2 array('d') with bounds (nx + 1,ny + 1)
 ```
+
 Here we see that the `nx` and `ny` parameters declared in
 Fortran are optional arguments that can be omitted when calling
 `advance` from Python.
@@ -1680,7 +1692,6 @@ We strongly recommend to print out the
 documentation of *every* Fortran function to be called from Python
 and make sure the call syntax is exactly as listed in the
 documentation.
-
 
 ## How to avoid array copying
 
@@ -1716,7 +1727,6 @@ u_n = zeros((Nx+1,Ny+1), order=order)   # solution at t-dt
 u_nm1 = zeros((Nx+1,Ny+1), order=order)   # solution at t-2*dt
 ```
 
-
 In the compile and build step of using `f2py`, it is recommended to add
 an extra option for making `f2py` report on array copying:
 
@@ -1743,24 +1753,30 @@ to set
 ```python
 f_a = f(xv, yv, t[n])
 ```
+
 before the call to the Fortran `advance` routine. This computation creates
 a new array with C storage. An undesired copy of `f_a` will be produced
 when sending `f_a` to a Fortran routine.
 There are two remedies, either direct insertion
 of data in an array with Fortran storage,
+
 ```python
 f_a = zeros((Nx+1, Ny+1), order='Fortran')
 ...
 f_a[:,:] = f(xv, yv, t[n])
 ```
+
 or remaking the `f(xv, yv, t[n])` array,
+
 ```python
 f_a = asarray(f(xv, yv, t[n]), order='Fortran')
 ```
+
 The former remedy is most efficient if the `asarray` operation is to
 be performed a large number of times.
 
 ### Efficiency
+
 The efficiency of this Fortran code is very similar to the Cython code.
 There is usually nothing more to gain, from a computational efficiency
 point of view, by implementing the *complete* Python program in Fortran
@@ -1771,7 +1787,6 @@ Then only a small portion will consist of loops with intensive
 array calculations. These can be migrated to Cython or Fortran as
 explained, while the rest of the programming can be more conveniently
 done in Python.
-
 
 The computationally intensive loops can alternatively be implemented
 in C code. Just as Fortran calls for care regarding the storage of
@@ -1786,6 +1801,7 @@ viewed as one-dimensional. This translation requires knowledge of
 how the numbers in `u` are stored in memory.
 
 ## Translating index pairs to single indices
+
 Two-dimensional `numpy` arrays with the default C storage are stored
 row by row. In general, multi-dimensional arrays with C storage are
 stored such that the last index has the fastest variation, then the
@@ -1806,6 +1822,7 @@ This is tedious to write, so it can be handy to define a C macro,
 
 ```c
 ```
+
 so that we can write `u[idx(i,j)]`, which reads much better and is
 easier to debug.
 
@@ -1820,6 +1837,7 @@ In C++, inline functions are safer and replace the need for macros.
 :::
 
 ## The complete C code
+
 The C version of our function `advance` can be coded as follows.
 
 ```c
@@ -1882,6 +1900,7 @@ def advance_cwrap(
             u.shape[0]-1, u.shape[1]-1)
     return u
 ```
+
 We first declare the C functions to be interfaced.
 These must also appear in a C header file,
 [`wave2D_u0_loop_c.h`](https://github.com/hplgit/fdm-book/tree/master/src/softeng2/wave2D_u0_loop_c.h),
@@ -1891,6 +1910,7 @@ extern void advance(double* u, double* u_n, double* u_nm1, double* f,
 		    double Cx2, double Cy2, double dt2,
 		    int Nx, int Ny);
 ```
+
 The next step is to write a Cython function with Python objects as arguments.
 The name `advance` is already used for the C function so the function
 to be called from Python is named `advance_cwrap`. The contents of
@@ -1904,6 +1924,7 @@ Finally, `u` must be returned such that we can set `u = advance(...)`
 in Python.
 
 ## Building the extension module
+
 It remains to build the extension module. An appropriate
 `setup.py` file is
 
@@ -1927,6 +1948,7 @@ setup(
     cmdclass={"build_ext": build_ext},
 )
 ```
+
 All we need to specify is the `.c` file(s) and the `.pyx` interface
 file. Cython is automatically run to generate the necessary wrapper
 code. Files are then compiled and linked to an extension module
@@ -1942,6 +1964,7 @@ Terminal> python
 ['__builtins__', '__doc__', '__file__', '__name__', '__package__',
  '__test__', 'advance_cwrap', 'np']
 ```
+
 The call to the C version of `advance` can go like this in Python:
 
 ```python
@@ -1953,12 +1976,12 @@ u = advance(u, u_n, u_nm1, f_a, Cx2, Cy2, dt2)
 ```
 
 ### Efficiency
+
 In this example, the C and Fortran code runs at the same speed, and there
 are no significant differences in the efficiency of the wrapper code.
 The overhead implied by the wrapper code is negligible as long as
 there is little numerical work in the `advance` function, or in other
 words, that we work with small meshes.
-
 
 An alternative to using Cython for interfacing C code is to apply
 `f2py`. The C code is the same, just the details of specifying how
@@ -1982,6 +2005,7 @@ Cf2py intent(c) u, u_1, u_2, f, Cx2, Cy2, dt2, Nx, Ny
       return
       end
 ```
+
 Note that we need a special `f2py` instruction, through a `Cf2py`
 comment line, to specify that all the function arguments are
 C variables. We also need to tell that the function is actually
@@ -1996,6 +2020,7 @@ Terminal> f2py -m wave2D_u0_loop_c_f2py \
           -h wave2D_u0_loop_c_f2py.pyf --overwrite-signature \
           wave2D_u0_loop_c_f2py_signature.f
 ```
+
 The compile and build step is as for the Fortran code, except that we
 list C files instead of Fortran files:
 
@@ -2004,13 +2029,14 @@ Terminal> f2py -c wave2D_u0_loop_c_f2py.pyf \
           --build-dir tmp_build_c \
           -DF2PY_REPORT_ON_ARRAY_COPY=1 wave2D_u0_loop_c.c
 ```
+
 As when interfacing Fortran code with `f2py`, we need to print out
 the doc string to see the exact call syntax from the Python side.
 This doc string is identical for the C and Fortran versions of
 `advance`.
 
-
 ## Migrating loops to C++ via f2py
+
 C++ is a much more versatile language than C or Fortran and has over
 the last two decades become very popular for numerical computing.
 Many will therefore prefer to migrate compute-intensive Python code
@@ -2039,9 +2065,7 @@ classes are used. The arrays coming from Python, and looking like
 plain C/C++ arrays, can be efficiently wrapped in more user-friendly
 C++ array classes in the C++ code, if desired.
 
-
-## Exercise: Explore computational efficiency of numpy.sum versus built-in sum
-{#sec-softeng2-exer-sum}
+## Exercise: Explore computational efficiency of numpy.sum versus built-in sum {#sec-softeng2-exer-sum}
 file=sumn
 
 Using the task of computing the sum of the first `n` integers, we want to
@@ -2074,6 +2098,7 @@ In [6]: %timeit np.sum(a)
 In [7]: %timeit sum(a)
 10 loops, best of 3: 95.5 ms per loop
 ```
+
 We observe that `numpy.sum` applied to a `numpy` array is by far the
 fastest method. We also see that the plain `sum` function is slow
 when applied to arrays, but faster than `numpy.sum` when applied to
@@ -2081,8 +2106,7 @@ the `range` list or the `xrange` sequence. There is almost a factor
 of 200 between the best and worst method!
 !esol
 
-## Exercise: Make an improved `numpy.savez` function
-{#sec-softeng2-exer-savez}
+## Exercise: Make an improved `numpy.savez` function {#sec-softeng2-exer-savez}
 file=Savez
 
 The `numpy.savez` function can save multiple arrays to a zip archive.
@@ -2090,7 +2114,7 @@ Unfortunately, if we want to use `savez` in time-dependent problems
 and call it multiple times (once per time level), each call leads
 to a separate zip archive. It is more convenient to have all
 arrays in one archive, which can be read by `numpy.load`.
-Section @eq-softeng2-wave1D-filestorage provides a recipe for
+Section @sec-softeng2-wave1D-filestorage provides a recipe for
 merging all the individual zip archives into one archive.
 An alternative is to write a new `savez` function that allows
 multiple calls and storage into the same archive prior to a final
@@ -2138,8 +2162,7 @@ Here is the code:
 
 !esol
 
-## Exercise: Visualize the impact of the Courant number
-{#sec-softeng2-exer-pulse1D-C}
+## Exercise: Visualize the impact of the Courant number {#sec-softeng2-exer-pulse1D-C}
 file=pulse1D_Courant
 
 Use the `pulse` function in the `wave1D_dn_vc.py` to simulate a pulse
@@ -2151,7 +2174,7 @@ Simulate for $C=1, 0.9, 0.75$ and make an animation comparing the
 three curves (use the `animate_archives.py` program to combine the
 curves and make animations on the screen and video files).  Perform
 the investigations for different types of initial profiles: a Gaussian
-pulse, a ``cosine hat'' pulse, half a ``cosine hat'' pulse, and a plug
+pulse, a ``cosine hat'' pulse, half a``cosine hat'' pulse, and a plug
 pulse.
 
 !bsol
@@ -2159,18 +2182,19 @@ We make a little Python script for running one ``pulse'' simulation:
 
 ```python
 ```
+
 Then we can make another (Bash) script running through the different types
 of simulations and also making video files:
 
 ```bash
 ```
+
 Note that we make separate directories for the different type initial
 profiles.
 
 !esol
 
-## Exercise: Visualize the impact of the resolution
-{#sec-softeng2-exer-pulse1D-Nx}
+## Exercise: Visualize the impact of the resolution {#sec-softeng2-exer-pulse1D-Nx}
 file=pulse1D_Nx
 
 We solve the same set of problems as in Exercise @sec-softeng2-exer-pulse1D-C,

@@ -1,12 +1,6 @@
----
-title: "Diffu App.Do"
----
+## Applications {#sec-diffu-app}
 
-{#sec-diffu-app}
-
-
-## Diffusion of a substance
-{#sec-diffu-app-substance}
+### Diffusion of a substance {#sec-diffu-app-substance}
 
 The first process to be considered is a substance that gets
 transported through a fluid at rest by pure diffusion. We consider an
@@ -27,18 +21,16 @@ boundary $\partial V$ of $V$, the volume of the substance flowing out
 through $dS$ in a small time interval $\Delta t$ is $\varrho
 \q\cdot\normalvec \Delta t \Delta S$, where $\normalvec$ is an outward
 unit normal to the boundary $\partial V$, see Figure
-@sec-diffu-app-substance-fig1.  We realize that only the normal
+@fig-diffu-app-substance-fig1.  We realize that only the normal
 component of $\q$ is able to transport mass in and out of $V$.  The
 total outflow of the mass of the substance in a small time interval
 $\Delta t$ becomes the surface integral
-
 $$
 \int\limits_{\partial V} \varrho\q\cdot\normalvec \Delta t\,  dS\tp
 $$
 Assuming conservation of mass, this outflow of mass must be balanced by
 a loss of mass inside the volume. The increase of mass inside the volume,
 during a small time interval $\Delta t$, is
-
 $$
 \int\limits_V \varrho (c(\x,t+\Delta t) - c(\x,t)) dV,
 $$
@@ -46,7 +38,6 @@ assuming $\varrho$ is constant, which is reasonable. The outflow of mass
 balances the loss of mass in $V$, which is the increase with a minus sign.
 Setting the two contributions equal to each other ensures balance of
 mass inside $V$. Dividing by $\Delta t$ gives
-
 $$
 \int\limits_V \varrho \frac{c(\x,t+\Delta t) - c(\x,t)}{\Delta t} dV =
 - \int\limits_{\partial V} \varrho\q\cdot\normalvec\, dS\tp
@@ -56,13 +47,11 @@ loss of mass, while the integral on the right-hand side is the gain of
 mass.
 
 Now, letting $\Delta t\rightarrow 0$, we have
-
 $$
 \frac{c(\x,t+\Delta t) - c(\x,t)}{\Delta t} \rightarrow
 \frac{\partial c}{\partial t},
 $$
 so
-
 $$
 \int\limits_V \varrho \frac{\partial c}{\partial t}dV +
 \int\limits_{\partial V} \varrho\q\cdot\normalvec\, dS = 0\tp
@@ -70,7 +59,6 @@ $$ {#eq-diffu-app-substance-integral}
 To arrive at a PDE,
 we express the surface integral as a volume integral using Gauss'
 divergence theorem:
-
 $$
 \int\limits_V (\varrho \frac{\partial c}{\partial t} +
 \nabla\cdot(\varrho \q))dV = 0\tp
@@ -78,7 +66,6 @@ $$
 Since $\varrho$ is constant, we can divide by this quantity.  If the
 integral is to vanish for an arbitrary volume $V$, the integrand must
 vanish too, and we get the mass conservation PDE for the substance:
-
 $$
 \frac{\partial c}{\partial t} +
 \nabla\cdot \q = 0\tp
@@ -93,22 +80,19 @@ $\q$ of the substance is related to the concentration $c$. Diffusion
 is recognized by mass flowing from regions with high concentration to
 regions of low concentration. This principle suggests that $\q$ is
 proportional to the negative gradient of $c$:
-
 $$
 \q = -\dfc\nabla c,
 $$ {#eq-diffu-app-substance-Fick}
 where $\dfc$ is an empirically determined constant.
-The relation (@sec-diffu-app-substance-Fick) is known as Fick's law.
-Inserting (@sec-diffu-app-substance-Fick) in
-(@sec-diffu-app-substance-massconv) gives a scalar PDE for the
+The relation (@eq-diffu-app-substance-Fick) is known as Fick's law.
+Inserting (@eq-diffu-app-substance-Fick) in
+(@eq-diffu-app-substance-massconv) gives a scalar PDE for the
 concentration $c$:
-
 $$
 \frac{\partial c}{\partial t} = \dfc\nabla^2 c\tp
 $$ {#eq-diffu-app-substance-PDE}
 
-## Heat conduction
-{#sec-diffu-app-heat}
+### Heat conduction {#sec-diffu-app-heat}
 
 Heat conduction is a well-known diffusion process. The governing PDE
 is in this case based on the first law of thermodynamics: the increase
@@ -120,15 +104,13 @@ increase in internal energy and supplied heat flow by conduction.
 Let $e(x,t)$ be the *internal energy* per unit mass. The increase of
 the internal energy in a small volume $\Delta V$ in a small time
 interval $\Delta t$ is then
-
 $$
 \varrho (e(\x,t+\Delta t) - e(\x,t))\Delta V,
 $$
 where $\varrho$ is the density of the material subject to heat conduction.
 In an arbitrary volume $V$, as depicted in
-Figure @sec-diffu-app-substance-fig1, the corresponding increase in internal
+Figure @fig-diffu-app-substance-fig1, the corresponding increase in internal
 energy becomes the volume integral
-
 $$
 \int\limits_V \varrho (e(\x,t+\Delta t) - e(\x,t))dV\tp
 $$
@@ -136,12 +118,10 @@ This increase in internal energy is balanced by heat supplied by
 conduction. Let $\q$ be the heat flow per time unit. Through the
 surface $\partial V$ of $V$ the following amount of heat flows out
 of $V$ during a time interval $\Delta t$:
-
 $$
 \int\limits_{\partial V} \q\cdot\normalvec\Delta t\, dS\tp
 $$
 The simplified version of the first law of thermodynamics then states that
-
 $$
 \int\limits_V \varrho (e(\x,t+\Delta t) - e(\x,t))dV = -
 \int\limits_{\partial V} \q\cdot\normalvec\Delta t\, dS\tp
@@ -150,14 +130,12 @@ The minus sign on the right-hand side ensures that the integral there
 models net *inflow* of heat (since $\normalvec$ is an outward unit normal,
 $\q\cdot\normalvec$ models *outflow*).
 Dividing by $\Delta t$ and notifying that
-
 $$
 \lim_{\Delta t\rightarrow 0}
 \frac{e(\x,t+\Delta t) - e(\x,t)}{\Delta t} =
 \frac{\partial e}{\partial t},
 $$
 we get (in the limit $\Delta t\rightarrow 0$)
-
 $$
 \int\limits_V \varrho \frac{\partial e}{\partial t} dV +
 \int\limits_{\partial V} \q\cdot\normalvec\Delta t\, dS = 0\tp
@@ -165,14 +143,12 @@ $$
 This is the integral equation for heat conduction, but we aim at a PDE.
 The next step is therefore to transform the surface integral to a
 volume integral via Gauss' divergence theorem. The result is
-
 $$
 \int\limits_V\left( \varrho \frac{\partial e}{\partial t}
 + \nabla\cdot\q\right) dV = 0\tp
 $$
 If this equality is to hold for all volumes $V$, the integrand must vanish,
 and we have the PDE
-
 $$
 \varrho \frac{\partial e}{\partial t} = -\nabla\cdot\q\tp
 $$ {#eq-diffu-app-heat-PDE1}
@@ -182,13 +158,11 @@ the case, for instance, when radioactive rock generates heat.  Let us
 add this effect. If $f(\x,t)$ is the supplied heat per unit volume per
 unit time, the heat supplied in a small volume is $f\Delta t\Delta V$,
 and inside an arbitrary volume $V$ the supplied generated heat becomes
-
 $$
 \int\limits_V f\Delta t dV\tp
 $$
 Adding this to the integral statement of the (simplified) first law of
 thermodynamics, and continuing the derivation, leads to the PDE
-
 $$
 \varrho \frac{\partial e}{\partial t} = -\nabla\cdot\q + f\tp
 $$ {#eq-diffu-app-heat-PDE2}
@@ -198,7 +172,6 @@ temperature $T$, which is our primary quantity to compute, does not
 enter the model yet. We need an additional equation, called the
 *equation of state*, relating $e$, $V=1/\varrho=$, and $T$:
 $e=e(V,T)$. By the chain rule we have
-
 $$
 \frac{\partial e}{\partial t} =
 \left.\frac{\partial e}{\partial T}\right\vert_{V}
@@ -208,7 +181,6 @@ $$
 $$
 The first coefficient $\partial e/\partial T$ is called *specific heat
 capacity at constant volume*, denoted by $c_v$:
-
 $$
 c_v = \left.\frac{\partial e}{\partial T}\right\vert_{V}\tp
 $$
@@ -219,14 +191,12 @@ The term $\partial e/\partial V$ models effects due to compressibility
 and volume expansion. These effects are often small and can be
 neglected.  We shall do so here. Using $\partial e/\partial t =
 c_v\partial T/\partial t$ in the PDE gives
-
 $$
 \varrho c_v\frac{\partial T}{\partial t} = -\nabla\cdot\q + f\tp
 $$
 We still have four unknown scalar fields ($T$ and $\q$). To close the
 system, we need a relation between the heat flux $\q$ and the temperature $T$
 called *Fourier's law*:
-
 $$
 \q = -k\nabla T,
 $$
@@ -239,18 +209,15 @@ conducted through the medium, and $k$ is named the *coefficient of
 heat conduction*.
 
 We now have one scalar PDE for the unknown temperature field $T(\x,t)$:
-
 $$
 \varrho  c_v\frac{\partial T}{\partial t} = \nabla\cdot(k\nabla T) + f\tp
 $$ {#eq-diffu-app-heat-PDE}
 
-## Porous media flow
-{#sec-diffu-app-porous}
+### Porous media flow {#sec-diffu-app-porous}
 
 The requirement of mass balance for
 flow of a single, incompressible fluid through a deformable (elastic) porous
 medium leads to the equation
-
 $$
 S\frac{\partial p}{\partial t} + \nabla\cdot(\q - \alpha\frac{\partial\uu}{\partial t}) = 0,
 $$
@@ -262,7 +229,6 @@ In many circumstances, the last term with $\uu$ can be neglected,
 an assumption that decouples the equation above from a model for
 the deformation of the medium. The famous *Darcy's law* relates
 $\q$ to $p$:
-
 $$
 \q = -\frac{K}{\mu}(\nabla p - \varrho\g),
 $$
@@ -270,14 +236,13 @@ where $K$ is the permeability of the medium, $\mu$ is the dynamic
 viscosity of the fluid, $\varrho$ is the density of the fluid, and $\g$
 is the acceleration of gravity, here taken as $\g = -g\kk$.
 Combining the two equations results in the diffusion model
-
 $$
 S\frac{\partial p}{\partial t} = \mu^{-1}\nabla(K\nabla p) + \frac{\varrho g}{\mu}\frac{\partial K}{\partial z}\tp
 $$ {#eq-diffu-app-porous-PDE}
 Boundary conditions consist of specifying $p$ or $\q\cdot\normalvec$ (i.e., normal velocity) at
  each point of the boundary.
 
-## Potential fluid flow
+### Potential fluid flow
 
 Let $\vv$ be the velocity of a fluid. The condition $\nabla\times\vv =0$
 is relevant for many flows, especially in geophysics when viscous effects
@@ -286,7 +251,6 @@ that $\nabla\times\vv =0$ implies that $v$ can be derived
 from a scalar potential field $\phi$: $\vv = \nabla\phi$. If the
 fluid is incompressible, $\nabla\cdot\vv = 0$, it follows that
 $\nabla\cdot\nabla\phi = 0$, or
-
 $$
 \nabla^2\phi = 0\tp
 $$
@@ -302,7 +266,7 @@ difficulties because $\phi$ and $\phi$ plus any constant are two
 solutions of the problem. The simplest remedy is to fix the value of
 $\phi$ at a point.
 
-## Streamlines for 2D fluid flow
+### Streamlines for 2D fluid flow
 
 The streamlines in a two-dimensional
 stationary fluid flow are lines tangential to the flow.
@@ -311,7 +275,6 @@ $\psi$ is often introduced in two-dimensional flow
 such that its contour
 lines, $\psi = \hbox{const}$, gives the streamlines. The relation
 between $\psi$ and the velocity field $\vv=(u,v)$ is
-
 $$
 u = \frac{\partial\psi}{\partial y},\quad v = -
 \frac{\partial\psi}{\partial x}\tp
@@ -319,19 +282,17 @@ $$
 It follows that $\nabla\vv = \psi_{yx} - \psi_{xy}=0$, so the stream function
 can only be used for incompressible flows.
 Since
-
 $$
 \nabla\times\vv = \left(\frac{\partial v}{\partial y} - \frac{\partial u}{\partial x}\right)\kk \equiv \omega\kk,
 $$
 we can derive the relation
-
 $$
 \nabla^2\psi = -\omega,
 $$
 which is a governing equation for the stream function $\psi(x,y)$
 if the vorticity $\omega$ is known.
 
-## The potential of an electric field
+### The potential of an electric field
 Under the assumption of time independence, Maxwell's equations
 for the electric field $\bm{E}$ become
 
@@ -344,11 +305,9 @@ the electric permittivity of free space (i.e., vacuum).
 Since $\nabla\times\bm{E}=0$, $\bm{E}$ can be derived from a potential
 $\varphi$, $\bm{E} = -\nabla\varphi$. The electric field potential is
 therefore governed by the Poisson equation
-
 $$
 \nabla^2\varphi = -\frac{\rho}{\epsilon_0}\tp
 $$
-
 If the medium is heterogeneous, $\rho$ will depend on the spatial location $\bm{r}$.
 Also, $\epsilon_0$ must be exchanged with an electric permittivity function
 $\epsilon(\bm{r})$.
@@ -357,12 +316,9 @@ Each point of the boundary must be accompanied by, either a Dirichlet condition
 $\varphi(\bm{r}) = \varphi_D(\bm{r})$, or a Neumann condition
 $\frac{\partial\varphi(\bm{r})}{\partial n} = \varphi_N(\bm{r})$.
 
-
 [sl: is this what you were thinking of?]
 
-
-## Development of flow between two flat plates
-{#sec-diffu-app-Couette}
+### Development of flow between two flat plates {#sec-diffu-app-Couette}
 
 Diffusion equations may also arise as simplified versions of other
 mathematical models, especially in fluid flow. Consider a fluid
@@ -382,7 +338,6 @@ is some external body force. The geometric restrictions of flow between
 two flat plates puts restrictions on the velocity, $\uu = u(x,t)\ii$,
 and the $z$ component of the Navier-Stokes equations collapses to
 a diffusion equation:
-
 $$
 \varrho\frac{\partial u}{\partial t} = - \frac{\partial p}{\partial z} +
 \mu\frac{\partial^2 u}{\partial z^2}
@@ -393,29 +348,24 @@ if $f_z$ is the component of $\f$ in the $z$ direction.
 The boundary conditions are derived from the fact that the fluid sticks to
 the plates, which means $\uu=0$ at the plates. Say the location of the
 plates are $z=0$ and $z=L$. We then have
-
 $$
 u(0,t)=u(L,t)=0\tp
 $$
-
 One can easily show that $\partial p/\partial z$ must be a constant or
 just a function of time $t$. We set $\partial p/\partial z = -\beta(t)$.
 The body force could be a component of gravity, if desired, set as
 $f_z = \gamma g$. Switching from $z$ to $x$ as independent variable gives
 a very standard one-dimensional diffusion equation:
-
 $$
 \varrho\frac{\partial u}{\partial t} =
 \mu\frac{\partial^2 u}{\partial x^2} + \beta(t) + \varrho\gamma g,\quad
 x\in [0,L],\ t\in (0,T]\tp
 $$
 The boundary conditions are
-
 $$
 u(0,t)=u(L,t)=0,
 $$
 while some initial condition
-
 $$
 u(x,0) = I(x)
 $$
@@ -425,14 +375,10 @@ The flow is driven by either the pressure gradient $\beta$ or gravity, or
 a combination of both. One may also consider one moving plate that
 drives the fluid. If the plate at $x=L$ moves with velocity $U_L(t)$, we have
 the adjusted boundary condition
-
 $$
 u(L,t) = U_L(t)\tp
 $$
-
-
-## Flow in a straight tube
-{#sec-diffu-app-pipeflow}
+### Flow in a straight tube {#sec-diffu-app-pipeflow}
 
 Now we consider viscous fluid flow in a straight tube with radius $R$
 and rigid walls.
@@ -444,7 +390,6 @@ $x$ axis is directed along the tube. From the equation of continuity,
 $\nabla\cdot\uu = 0$, we see that $u$ must be independent of $x$.
 Inserting $\uu = u(r,t)\ii$ in the Navier-Stokes equations, expressed
 in axi-symmetric cylindrical coordinates, results in
-
 $$
 \varrho\frac{\partial u}{\partial t} =
 \mu\frac{1}{r}\frac{\partial}{\partial r}\left(
@@ -454,7 +399,7 @@ $$ {#eq-diffu-app-pipeflow-pde}
 Here, $\beta(t) = -\partial p/\partial x$ is the pressure gradient along
 the tube. The associated boundary condition is $u(R,t)=0$.
 
-## Tribology: thin film fluid flow
+### Tribology: thin film fluid flow
 
 Thin fluid films are extremely important inside machinery to reduce friction
 between gliding surfaces. The mathematical model for the fluid motion takes
@@ -473,7 +418,6 @@ the local fluid velocity. For thin films the detailed variation between
 the surfaces is not of interest, so $\nabla\cdot\uu = 0$ is integrated
 (average) in the direction perpendicular to the surfaces. This gives
 rise to the alternative mass conservation equation
-
 $$
 \nabla\cdot\q = 0,\quad \q = \int\limits_0^{h(x,y)}\uu dz,
 $$
@@ -486,7 +430,6 @@ and the upper moves with velocity $U\ii + V\jj$.
 The corresponding mathematical problem is actually the limit problem
 in Section @sec-diffu-app-Couette as $t\rightarrow\infty$. The limit
 problem can be solved analytically, and the local volume flux becomes
-
 $$
 \q(x,y,z) = \int\limits_0^{h}\uu(x,y,z) dz
 = -\frac{h^3}{12\mu}\nabla p + \half Uh\ii + \half Vh\jj\tp
@@ -499,7 +442,6 @@ approximation, much used in mathematical modeling.
 
 Inserting the expression for $\q$ via $p$, $U$, and $V$ in the
 equation $\nabla\q = 0$ gives a diffusion PDE for $p$:
-
 $$
 \nabla\cdot\left(\frac{h^3}{12\mu}\nabla p\right) =
 \half\frac{\partial}{\partial x}(hU)
@@ -507,15 +449,12 @@ $$
 $$
 The boundary conditions must involve $p$ or $\q$ at the boundary.
 
-
-## Propagation of electrical signals in the brain
-
+### Propagation of electrical signals in the brain
 
 One can make a model of how electrical signals are propagated along the
 neuronal fibers that receive synaptic inputs in the brain. The signal
 propagation is one-dimensional and can, in the simplest cases, be
 governed by the [Cable equation](http://en.wikipedia.org/wiki/Cable_equation):
-
 $$
 c_m \frac{\partial V}{\partial t} =
 \frac{1}{r_l}\frac{\partial^2 V}{\partial x^2} - \frac{1}{r_m}V

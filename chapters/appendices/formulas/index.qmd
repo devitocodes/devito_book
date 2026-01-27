@@ -1,5 +1,3 @@
----
-title: "Formulas"
----
+# Formulas {#sec-ch-formulas}
 
 {{< include formulas.qmd >}}

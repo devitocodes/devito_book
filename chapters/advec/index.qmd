@@ -1,5 +1,3 @@
----
-title: "Advection-Dominated Equations"
----
+# Advection-Dominated Equations {#sec-ch-advec}
 
 {{< include advec.qmd >}}

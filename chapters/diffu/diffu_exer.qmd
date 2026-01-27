@@ -1,13 +1,8 @@
----
-title: "Diffu Exer.Do"
----
-
-## Exercise: Stabilizing the Crank-Nicolson method by Rannacher time stepping
-{#sec-diffu-exer-CN-Rannacher}
+## Exercise: Stabilizing the Crank-Nicolson method by Rannacher time stepping {#sec-diffu-exer-CN-Rannacher}
 
 It is well known that the Crank-Nicolson method may give rise to
 non-physical oscillations in the solution of diffusion equations
-if the initial data exhibit jumps (see Section @eq-diffu-pde1-analysis-CN).
+if the initial data exhibit jumps (see Section @sec-diffu-pde1-analysis-CN).
 Rannacher [@Rannacher_1984] suggested a stabilizing technique
 consisting of using the Backward Euler scheme for the first two
 time steps with step length $\half\Delta t$. One can generalize
@@ -30,9 +25,7 @@ a step to almost a straight line. The
 program `diffu_erf_sol.py` shows how to compute the analytical
 solution.
 
-
-## Project: Energy estimates for diffusion problems
-{#sec-diffu-exer-energy-estimates}
+## Project: Energy estimates for diffusion problems {#sec-diffu-exer-energy-estimates}
 file=diffu_energy
 
 This project concerns so-called *energy estimates* for diffusion problems
@@ -52,13 +45,12 @@ u(0,t) = u(L,t) &= 0, & t\in (0,T],
 u(x,0) &= I(x), & x\in [0,L]\tp
 \end{alignat}
 ```
-The energy estimate for this problem reads
 
+The energy estimate for this problem reads
 $$
 ||u||**{L^2} \leq ||I||**{L^2},
 $$ {#eq-diffu-exer-estimates-p1-result}
 where the $||\cdot ||_{L^2}$ norm is defined by
-
 $$
 ||g||_{L^2} = \sqrt{\int_0^L g^2dx}\tp
 $$ {#eq-diffu-exer-estimates-L2}
@@ -67,18 +59,18 @@ as the *energy* of the solution, although it is not the physical
 energy of the system. A mathematical tradition has introduced the
 notion *energy* in this context.
 
-The estimate (@sec-diffu-exer-estimates-p1-result) says that the
+The estimate (@eq-diffu-exer-estimates-p1-result) says that the
 ``size of $u$'' never exceeds that of the initial condition,
 or more precisely, it says that the area under the $u$ curve decreases
 with time.
 
-To show (@sec-diffu-exer-estimates-p1-result), multiply the PDE
+To show (@eq-diffu-exer-estimates-p1-result), multiply the PDE
 by $u$ and integrate from $0$ to $L$. Use that $uu_t$ can be
 expressed as the time derivative of $u^2$ and that $u_xxu$ can
 integrated by parts to form an integrand $u_x^2$. Show that
 the time derivative of $||u||_{L^2}^2$ must be less than or equal
 to zero. Integrate this expression and derive
-(@sec-diffu-exer-estimates-p1-result).
+(@eq-diffu-exer-estimates-p1-result).
 
 !esubex
 
@@ -95,7 +87,6 @@ u(x,0) &= 0, & x\in [0,L]\tp
 \end{alignat}
 ```
 The associated energy estimate is
-
 $$
 ||u||**{L^2} \leq ||f||**{L^2}\tp
 $$ {#eq-diffu-exer-estimates-p2-result}
@@ -114,46 +105,44 @@ u(x,0) &= I(x), & x\in [0,L]\tp
 \end{alignat}
 ```
 Show that if $w_1$ fulfills
-(@sec-diffu-exer-estimates-p1-pdf)-(@sec-diffu-exer-estimates-p1-ic)
+the first problem (with $I$ and $f=0$)
 and $w_2$ fulfills
-(@sec-diffu-exer-estimates-p2-pdf)-(@sec-diffu-exer-estimates-p2-ic),
+the second problem (with $f$ and $I=0$),
 then $u=w_1 + w_2$ is the solution of
-(@sec-diffu-exer-estimates-p3-pdf)-(@sec-diffu-exer-estimates-p3-ic).
+the compound problem above.
 Using the triangle inequality for norms,
-
 $$
 ||a + b|| \leq ||a|| + ||b||,
 $$
 show that the energy estimate for
-(@sec-diffu-exer-estimates-p3-pdf)-(@sec-diffu-exer-estimates-p3-ic)
+the compound problem
 becomes
-
 $$
 ||u||**{L^2} \leq ||I||**{L^2} + ||f||_{L^2}\tp
 $$ {#eq-diffu-exer-estimates-p3-result}
 !esubex
 
 !bsubex
-One application of (@sec-diffu-exer-estimates-p3-result) is to prove uniqueness
+One application of (@eq-diffu-exer-estimates-p3-result) is to prove uniqueness
 of the solution.
 Suppose $u_1$ and $u_2$ both fulfill
-(@sec-diffu-exer-estimates-p3-pdf)-(@sec-diffu-exer-estimates-p3-ic).
+the compound problem.
 Show that $u=u_1 - u_2$ then fulfills
-(@sec-diffu-exer-estimates-p3-pdf)-(@sec-diffu-exer-estimates-p3-ic)
-with $f=0$ and $I=0$. Use (@sec-diffu-exer-estimates-p3-result)
+the compound problem
+with $f=0$ and $I=0$. Use (@eq-diffu-exer-estimates-p3-result)
 to deduce that the energy must be zero for all times and therefore
 that $u_1=u_2$, which proves that the solution is unique.
 !esubex
 
 !bsubex
-Generalize (@sec-diffu-exer-estimates-p3-result) to a 2D/3D
+Generalize (@eq-diffu-exer-estimates-p3-result) to a 2D/3D
 diffusion equation $u_t = \nabla\cdot (\alpha \nabla u)$ for $x\in\Omega$.
 
 :::{.callout-tip title="Use integration by parts in multi dimensions:"}
 $$
 \int_\Omega u \nabla\cdot (\alpha\nabla u)\dx =
 - \int_\Omega \alpha \nabla u\cdot\nabla u\dx
-+ \int_{\partial\Omega} u \alpha\frac{\partial u}{\partial n},
+- \int_{\partial\Omega} u \alpha\frac{\partial u}{\partial n},
 $$
 where $\frac{\partial u}{\partial n} = \bm{n}\cdot\nabla u$,
 $\bm{n}$ being the outward unit normal to the boundary $\partial\Omega$
@@ -169,7 +158,6 @@ and use Gauss' divergence theorem, $\int_\Omega \nabla\cdot\bm{q}\dx
 $\bm{q}$. Show that if we have homogeneous Neumann conditions
 on the boundary, $\partial u/\partial n=0$, area under the
 $u$ surface remains constant in time and
-
 $$
 \int_{\Omega} u\dx = \int_{\Omega} I\dx \tp
 $$ {#eq-diffu-exer-estimates-p4-result}
@@ -180,13 +168,13 @@ Establish a code in 1D, 2D, or 3D that can solve a diffusion equation with a
 source term $f$, initial condition $I$, and zero Dirichlet or
 Neumann conditions on the whole boundary.
 
-We can use (@sec-diffu-exer-estimates-p3-result)
-and (@sec-diffu-exer-estimates-p4-result) as a partial verification
+We can use (@eq-diffu-exer-estimates-p3-result)
+and (@eq-diffu-exer-estimates-p4-result) as a partial verification
 of the code. Choose some functions $f$ and $I$ and
-check that (@sec-diffu-exer-estimates-p3-result) is obeyed at any
+check that (@eq-diffu-exer-estimates-p3-result) is obeyed at any
 time when zero Dirichlet conditions are used.
 Iterate over the same $I$ functions and check that
-(@sec-diffu-exer-estimates-p4-result) is fulfilled
+(@eq-diffu-exer-estimates-p4-result) is fulfilled
 when using zero Neumann conditions.
 !esubex
 
@@ -196,31 +184,28 @@ in arrays, failure to set the correct boundary conditions,
 evaluation of a term at a wrong time level, and similar.
 For each of the bugs, see if the verification tests from the previous
 subexercise pass or fail. This investigation shows how strong
-the energy estimates and the estimate (@sec-diffu-exer-estimates-p4-result)
+the energy estimates and the estimate (@eq-diffu-exer-estimates-p4-result)
 are for pointing out errors in the implementation.
 !esubex
 
-## Exercise: Splitting methods and preconditioning
-{#sec-diffu-exer-splitting-prec}
+## Exercise: Splitting methods and preconditioning {#sec-diffu-exer-splitting-prec}
 
-In Section @eq-diffu-2D-direct-vs-iter, we outlined a class of
+In Section @sec-diffu-2D-direct-vs-iter, we outlined a class of
 iterative methods for $Au=b$ based on splitting $A$ into $A=M-N$
 and introducing the iteration
-
 $$
 Mu^{k} = Nu^k + b\tp
 $$
 The very simplest splitting is $M=I$, where $I$ is the identity
 matrix. Show that this choice corresponds to the iteration
-
 $$
 u^k = u^{k-1} + r^{k-1},\quad r^{k-1} = b - Au^{k-1},
 $$ {#eq-diffu-exer-splitting-prec-simplest}
 where $r^{k-1}$ is the residual in the linear system in iteration
-$k-1$. The formula (@sec-diffu-exer-splitting-prec-simplest) is known
+$k-1$. The formula (@eq-diffu-exer-splitting-prec-simplest) is known
 as Richardson's iteration.
 Show that if we apply the simple iteration method
-(@sec-diffu-exer-splitting-prec-simplest) to the *preconditioned*
+(@eq-diffu-exer-splitting-prec-simplest) to the *preconditioned*
 system $M^{-1}Au=M^{-1}b$, we arrive at the Jacobi method by choosing
 $M=D$ (the diagonal of $A$) as preconditioner and the SOR method by
 choosing $M=\omega^{-1}D + L$ ($L$ being the lower triangular part of
@@ -229,20 +214,17 @@ Jacobi or SOR method as preconditioner.
 
 !bsol
 Inserting $M=I$ and $N=I-A$ in the iterative method leads to
-
 $$
 u^{k} = (I-A)u^{k-1} + b = u^{k-1} + (b  - Au^{k-1}),
 $$
-which is (@sec-diffu-exer-splitting-prec-simplest).
+which is (@eq-diffu-exer-splitting-prec-simplest).
 Replacing $A$ by $M^{-1}A$ and $b$ by $M^{-1}b$ in this equation
 gives
-
 $$
 u^k = u^{k-1} + M^{-1}r^{k-1},\quad r^{k-1}=b-Au^{k-1},
 $$
 which we after multiplication by $M$ and reordering can write
 as
-
 $$
 Mu^k = (M-A)u^{k-1} + b = Nu^{k-1} + b,
 $$
@@ -251,8 +233,7 @@ gives Jacobi and $M=\omega^{-1}D+L$ gives SOR. We have shown that we may
 view $M$ as a preconditioner of a simplest possible iteration method.
 !esol
 
-## Problem: Oscillating surface temperature of the earth
-{#sec-diffu-exer-earthosc}
+## Problem: Oscillating surface temperature of the earth {#sec-diffu-exer-earthosc}
 
 Consider a day-and-night or seasonal variation in temperature at
 the surface of the earth. How deep down in the ground will the
@@ -260,7 +241,6 @@ surface oscillations reach? For simplicity, we model only the
 vertical variation along a coordinate $x$, where $x=0$ at the
 surface, and $x$ increases as we go down in the ground.
 The temperature is governed by the heat equation
-
 $$
 \varrho c_v\frac{\partial T}{\partial t} = \nabla\cdot(k\nabla T),
 $$
@@ -277,7 +257,6 @@ temperature $T_m$. Let $T=T_m$ initially. At $x=L$, assume $T\approx T_m$.
 
 !bsol
 The surface temperature is set as
-
 $$
 T(0,t) = T_m + A\sin(\omega t)\tp
 $$
@@ -301,7 +280,6 @@ where $\dfc = k/(\varrho c_v)$. The primary unknown can be scaled
 as $\frac{T-T_m}{2A}$.
 
 Show that the scaled PDE is
-
 $$
 \frac{\partial u}{\partial \bar t} =
 \frac{1}{2}\frac{\partial^2 u}{\partial x^2},
@@ -325,7 +303,6 @@ Chapter 3.2.4 in the book [@Langtangen_scaling] describes the
 scaling of this problem in detail.
 Inserting dimensionless variables $\bar t = \omega t$, $\bar x =
 \sqrt{\omega/(2\dfc)} x$, and
-
 $$
 u = \frac{T-T_m}{2A},
 $$
@@ -376,9 +353,7 @@ MOVIE: [https://github.com/hplgit/fdm-book/raw/master/doc/pub/book/html/mov-diff
 !esol
 !esubex
 
-
-## Problem: Oscillating and pulsating flow in tubes
-{#sec-diffu-exer-bloodflow}
+## Problem: Oscillating and pulsating flow in tubes {#sec-diffu-exer-bloodflow}
 file=axisymm_flow
 
 We consider flow in a straight tube with radius $R$ and straight walls.
@@ -397,12 +372,10 @@ u(R,t) &= 0,\quad & t\in (0,T],\\
 \end{alignat}
 ```
 We consider two models for $\beta(t)$. One plain, sinusoidal oscillation:
-
 $$
 \beta = A\sin(\omega t),
 $$
 and one with periodic pulses,
-
 $$
 \beta = A\sin^{16}(\omega t),
 $$
@@ -414,12 +387,10 @@ Scale the mathematical model, using the viscous time scale $\varrho R^2/\mu$.
 
 !bsol
 We can introduce
-
 $$
 \bar r = \frac{r}{R}, \quad \bar t = \frac{t}{\varrho R^2/\mu},\quad u = \frac{u}{u_c}\tp
 $$
 Inserted in the PDE, we get
-
 $$
 \frac{\partial\bar u}{\partial\bar t} =
 \frac{1}{\bar r}\frac{\partial}{\partial\bar r}\left(
@@ -427,7 +398,6 @@ $$
 \frac{R^2 A}{u_c \mu}\sin^m (\alpha\bar t)
 $$
 where $\alpha$ is a dimensionless number
-
 $$
 \alpha = \frac{\omega\varrho R^2}{\mu} = \frac{\varrho R^2/\mu}{1/\omega},
 $$
@@ -435,12 +405,10 @@ reflecting the ratio of the viscous diffusion time scale and the
 time scale of the oscillating pressure gradient.
 We may choose $u_c$ such that the coefficient in the pressure gradient
 term equals unity:
-
 $$
 u_c = \frac{R^2 A}{\mu}\tp
 $$
 The governing PDE, dropping the bars, then reads
-
 $$
 \frac{\partial u}{\partial t} =
 \frac{1}{r}\frac{\partial}{\partial r}\left(
@@ -492,7 +460,6 @@ make an animation for $m=1,16$ and $\alpha = 10$.
 
 !bsol
 Now the governing PDE becomes
-
 $$
 \frac{\partial u}{\partial t} =
 \alpha^{-1}\frac{1}{r}\frac{\partial}{\partial r}\left(
@@ -500,25 +467,20 @@ r\frac{\partial u}{\partial r}\right) +
 \sin^m t,\quad r\in (0,1),\ t\in (0,T]\tp
 $$
 In this case,
-
 $$
 u_c = \frac{A}{\varrho\omega}\tp
 $$
 We see that for $\alpha\gg 1$, we can neglect the viscous term, and we
 basically have a balance between the acceleration and the driving pressure
 gradient:
-
 $$
 \frac{\partial u}{\partial t} = \sin^m t\tp
 $$
-
-
 !esol
 
 !esubex
 
-## Problem: Scaling a welding problem
-{#sec-diffu-exer-welding}
+## Problem: Scaling a welding problem {#sec-diffu-exer-welding}
 file=welding
 
 Welding equipment makes a very localized heat source that moves in
@@ -542,7 +504,6 @@ the heat source from the welding equipment, and $U_s$ is the
 initial constant (room) temperature in the material.
 
 A possible model for the heat source is a moving Gaussian function:
-
 $$
 f = A\exp{\left(-\frac{1}{2}\left(\frac{x-vt}{\sigma}\right)^2\right)},
 $$
@@ -559,7 +520,6 @@ are equally important, we can find $t_c$ and $u_c$ by demanding that
 the coefficients in the scaled PDE are all equal to unity.  Perform
 this scaling. Use scaled quantities in the arguments for the
 exponential function in $f$ too and show that
-
 $$
 \bar f= e^{-\frac{1}{2}\beta^2(\bar x -\gamma \bar t)^2},
 $$
@@ -568,7 +528,6 @@ interpretation of $\beta$ and $\gamma$.
 
 !bsol
 We introduce
-
 $$
 \bar x=\frac{x}{L},\quad \bar t = \frac{t}{t_c},\quad \bar u = \frac{u-U_s}{u_c},
 \quad \bar f=\frac{f}{A}\tp
@@ -576,35 +535,29 @@ $$
 Inserted in the PDE and dividing by $\varrho c u_c/t_c$ such that the
 coefficient in front of $\partial\bar u/\partial\bar t$ becomes unity,
 and thereby all terms become dimensionless, we get
-
 $$
 \frac{\partial\bar u}{\partial\bar t} =
 \frac{k t_c}{\varrho c L^2}\frac{\partial^2\bar u}{\partial\bar x^2}
-+ \frac{A t_c}{\varrho c u_c}\bar f\tp
+- \frac{A t_c}{\varrho c u_c}\bar f\tp
 $$
 Demanding that all three terms are equally important, it follows that
-
 $$
 \frac{k t_c}{\varrho c L^2} = 1,\quad \frac{A t_c}{\varrho c u_c}=1\tp
 $$
 These constraints imply the *diffusion time scale*
-
 $$
 t_c = \frac{\varrho cL^2}{k},
 $$
 and a scale for $u_c$,
-
 $$
 u_c = \frac{AL^2}{k}\tp
 $$
 The scaled PDE reads
-
 $$
 \frac{\partial\bar u}{\partial\bar t} =
 \frac{\partial^2\bar u}{\partial\bar x^2}
-+ \bar f\tp
+- \bar f\tp
 $$
-
 Scaling $f$ results in
 
 \begin{align*}
@@ -614,7 +567,6 @@ Scaling $f$ results in
 &= \exp{\left(-\frac{1}{2}\beta^2\left(\bar x-\gamma \bar t\right)^2\right)},
 \end{align*}
 where $\beta$ and $\gamma$ are dimensionless numbers:
-
 $$
 \beta = \frac{L}{\sigma},\quad
 \gamma = \frac{vt_c}{L} = \frac{v\varrho cL}{k}\tp
@@ -634,14 +586,12 @@ the diffusion velocity.
 Argue that for large $\gamma$ we should base the time scale on the
 movement of the heat source. Show that this gives rise to the scaled
 PDE
-
 $$
 \frac{\partial\bar u}{\partial\bar t} =
 \gamma^{-1}\frac{\partial^2\bar u}{\partial\bar x^2}
-+ \bar f,
+- \bar f,
 $$
 and
-
 $$
 \bar f = \exp{(-\frac{1}{2}\beta^2(\bar x - \bar t)^2)}\tp
 $$
@@ -650,36 +600,31 @@ Discuss when the scalings in a) and b) are appropriate.
 !bsol
 We perform the scaling as in a), but this time we determine $t_c$ such
 that the heat source moves with unit velocity. This means that
-
 $$
 \frac{vt_c}{L} = 1\quad\Rightarrow\quad t_c = \frac{L}{v}\tp
 $$
 Scaling of the PDE gives, as before,
-
 $$
 \frac{\partial\bar u}{\partial\bar t} =
 \frac{k t_c}{\varrho c L^2}\frac{\partial^2\bar u}{\partial\bar x^2}
-+ \frac{A t_c}{\varrho c u_c}\bar f\tp
+- \frac{A t_c}{\varrho c u_c}\bar f\tp
 $$
 Inserting the expression for $t_c$, we have
-
 $$
 \frac{\partial\bar u}{\partial\bar t} =
 \frac{k L}{\varrho c L^2v}\frac{\partial^2\bar u}{\partial\bar x^2}
-+ \frac{A L}{v\varrho c u_c}\bar f\tp
+- \frac{A L}{v\varrho c u_c}\bar f\tp
 $$
 We recognize the first coefficient as $\gamma^{-1}$, while $u_c$ can
 be determined from demanding the second coefficient to be unity:
-
 $$
 u_c = \frac{AL}{v\varrho c}\tp
 $$
 The scaled PDE is therefore
-
 $$
 \frac{\partial\bar u}{\partial\bar t} =
 \gamma^{-1}\frac{\partial^2\bar u}{\partial\bar x^2}
-+ \bar f\tp
+- \bar f\tp
 $$
 If the heat source moves very fast, there is little time for the
 diffusion to transport the heat away from the source, and the heat
@@ -771,12 +716,10 @@ values, also in the case $\gamma\ll 1$.
 !esol
 !esubex
 
-
-## Exercise: Implement a Forward Euler scheme for axi-symmetric diffusion
-{#sec-diffu-exer-axisymm}
+## Exercise: Implement a Forward Euler scheme for axi-symmetric diffusion {#sec-diffu-exer-axisymm}
 file=FE_axisym
 
-Based on the discussion in Section @eq-diffu-fd2-radial, derive in detail
+Based on the discussion in Section @sec-diffu-fd2-radial, derive in detail
 the discrete equations for a Forward Euler in time, centered in space,
 finite difference method for axi-symmetric diffusion. The
 diffusion coefficient may be a function of the radial coordinate.
@@ -785,12 +728,11 @@ condition.
 Implement this scheme. Construct appropriate test problems.
 
 !bsol
-We start with the equation at $r=0$. According to Section @eq-diffu-fd2-radial,
+We start with the equation at $r=0$. According to Section @sec-diffu-fd2-radial,
 we get
-
 $$
 \frac{u^{n+1}_0-u^n_0}{\Delta t} = 4\dfc(0)\frac{u_1^n - u^n_0}{\Delta r^2}
-+ f_0^n\tp
+- f_0^n\tp
 $$
 For $i>0$, we have
 
@@ -814,17 +756,14 @@ u^{n+1}_i &= u^n_i + D\frac{1}{r_i}(
 \end{align*}
 and $u^{n+1}_i$ at the end point $i=N_r$ is assumed known in case of
 a Dirichlet condition. A Robin condition
-
 $$
 -\dfc\frac{\partial u}{\partial n} = h_T(u-U_s),
 $$
 can be discretized at $i=N_r$ by
-
 $$
 -\alpha_i\frac{u_{i+1}^n-u_{i-1}^n}{2\Delta r} = h_T(u_i^n - U_s)\tp
 $$
 Solving with respect to the value at the fictitious point $i+1$ gives
-
 $$
 u_{i+1}^n = u_{i-1}^n - 2\Delta r \frac{h_T}{\alpha_i}(u_i^n - U_s)\tp
 $$

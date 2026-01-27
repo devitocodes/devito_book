@@ -1,5 +1,3 @@
----
-title: "Truncation Error Analysis"
----
+# Truncation Error Analysis {#sec-ch-trunc}
 
 {{< include trunc.qmd >}}

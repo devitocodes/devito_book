@@ -1,8 +1,4 @@
----
-title: "Diffu Fd3.Do"
----
-
-{#sec-diffu-2D}
+## Diffusion in 2D {#sec-diffu-2D}
 
 We now address diffusion in two space dimensions:
 
@@ -12,15 +8,12 @@ We now address diffusion in two space dimensions:
 \frac{\partial^2 u}{\partial x^2}\right) + f(x,y),
 \end{align}
 in a domain
-
 $$
 (x,y)\in (0,L_x)\times (0,L_y),\ t\in (0,T],
 $$
 with $u=0$ on the boundary and $u(x,y,0)=I(x,y)$ as initial condition.
 
-## Discretization
-{#sec-diffu-2D-discr}
-
+## Discretization {#sec-diffu-2D-discr}
 
 For generality, it is natural to use a $\theta$-rule for the time
 discretization. Standard, second-order accurate finite differences are
@@ -48,26 +41,26 @@ f^{n}_{i,j})
 \end{align}
 We collect the unknowns on the left-hand side
 
-\begin{align}
+$$
+\begin{split}
 & u^{n+1}_{i,j} -
 \theta\left(
 F_x
 (u^{n+1}**{i-1,j} - 2u^{n+1}**{i,j} + u^{n+1}_{i+1,j}) +
 F_y
 (u^{n+1}**{i,j-1} - 2u^{n+1}**{i,j} + u^{n+1}_{i,j+1})\right)
-= \nonumber\\
+= \\
 &\qquad
 (1-\theta)\left(
 F_x
 (u^{n}**{i-1,j} - 2u^{n}**{i,j} + u^{n}_{i+1,j}) +
 F_y
-(u^{n}**{i,j-1} - 2u^{n}**{i,j} + u^{n}_{i,j+1})\right) + \nonumber\\
+(u^{n}**{i,j-1} - 2u^{n}**{i,j} + u^{n}_{i,j+1})\right) + \\
 &\qquad \theta \Delta t f^{n+1}**{i,j} + (1-\theta) \Delta t f^{n}**{i,j}
 + u^n_{i,j},
-\label{diffu:2D:theta_scheme2}
-\end{align}
+\end{split}
+$$ {#eq-diffu-2D-theta-scheme2}
 where
-
 $$
 F_x = \frac{\dfc\Delta t}{\Delta x^2},\quad F_y = \frac{\dfc\Delta t}{\Delta y^2},
 $$
@@ -75,8 +68,7 @@ are the Fourier numbers in $x$ and $y$ direction, respectively.
 
 ![3x2 2D mesh.](fig/mesh3x2){#fig-diffu-2D-fig-mesh3x2 width="500px"}
 
-## Numbering of mesh points versus equations and unknowns
-{#sec-diffu-2D-numbering}
+## Numbering of mesh points versus equations and unknowns {#sec-diffu-2D-numbering}
 
 The equations (@eq-diffu-2D-theta-scheme2) are coupled at the new
 time level $n+1$. That is, we must solve a system of (linear) algebraic
@@ -128,7 +120,6 @@ we need a numbering of the unknowns with one
 index, not two as used in the mesh. We introduce a mapping $m(i,j)$
 from a mesh point with indices $(i,j)$ to the corresponding unknown
 $p$ in the equation system:
-
 $$
 p = m(i,j) = j(N_x+1) + i\tp
 $$
@@ -162,7 +153,6 @@ Let us form the coefficient matrix $A$, or more precisely, insert a
 matrix element (according Python's convention with zero as base
 index) for each of the nonzero elements in $A$ (the indices
 run through the values of $p$, i.e., $p=0,\ldots,11$):
-
 $$
 {\tiny
 \left(\begin{array}{cccccccccccc}
@@ -183,7 +173,6 @@ $$
 $$
 Here is a more compact visualization of the coefficient matrix where we
 insert dots for zeros and bullets for non-zero elements:
-
 $$
 \footnotesize
 \left(\begin{array}{cccccccccccc}
@@ -227,7 +216,6 @@ specific values $p=5,6$, corresponding to the
 values $(1,1)$ and $(1,2)$ of the pair $(i,j)$.
 
 The above values for $A_{p,q}$ can be inserted in the matrix:
-
 $$
 {\tiny
 \left(\begin{array}{cccccccccccc}
@@ -248,7 +236,6 @@ $$
 $$
 The corresponding right-hand side vector in the equation system has
 the entries $b_p$, where $p$ numbers the equations. We have
-
 $$
 b_0=b_1=b_2=b_3=b_4=b_7=b_8=b_9=b_{10}=b_{11}=0,
 $$
@@ -270,19 +257,16 @@ We can, as an alternative, leave the boundary mesh points out of the
 matrix system. For a mesh with $N_x=3$ and $N_y=2$ there are only two
 internal mesh points whose unknowns will enter the matrix system.
 We must now number the unknowns at the interior points:
-
 $$
 p = (j-1)(N_x-1) + i,
 $$
 for $i=1,\ldots,N_x-1$, $j=1,\ldots,N_y-1$.
-
 
 ![4x3 2D mesh.](fig/mesh4x3){#fig-diffu-2D-fig-mesh4x3 width="700px"}
 
 We can continue with illustrating a bit larger mesh, $N_x=4$ and $N_y=3$,
 see Figure @fig-diffu-2D-fig-mesh4x3. The corresponding coefficient matrix
 with dots for zeros and bullets for non-zeroes looks as follows (values at boundary points are included in the equation system):
-
 $$
 {\tiny
 \left(\begin{array}{cccccccccccccccccccc}
@@ -322,8 +306,7 @@ The more we can compute with the nonzeros only, the faster the solution
 methods will potentially be.
 :::
 
-## Algorithm for setting up the coefficient matrix
-{#sec-diffu-2D-alg}
+## Algorithm for setting up the coefficient matrix {#sec-diffu-2D-alg}
 
 We looked at a specific mesh in the previous section, formulated
 the equations, and saw what the corresponding coefficient matrix and
@@ -334,45 +317,44 @@ We start with a zero matrix and vector, run through each mesh point,
 and fill in the values depending on whether the mesh point is an interior
 point or on the boundary.
 
- * for $i=0,\ldots,N_x$
-  * for $j=0,\ldots, N_y$
-    * $p=j(N_x+1)+i$
-    * if point $(i,j)$ is on the boundary:
-      * $A_{p,p}=1$, $b_p=0$
-    * else:
-      * fill $A_{p,m(i-1,j)}$, $A_{p,m(i+1,j)}$, $A_{p,m(i,j)}$, $A_{p,m(i,j-1)}$, $A_{p,m(i,j+1)}$, and $b_p$
++ for $i=0,\ldots,N_x$
++ for $j=0,\ldots, N_y$
+  + $p=j(N_x+1)+i$
+  + if point $(i,j)$ is on the boundary:
+    + $A_{p,p}=1$, $b_p=0$
+  + else:
+    + fill $A_{p,m(i-1,j)}$, $A_{p,m(i+1,j)}$, $A_{p,m(i,j)}$, $A_{p,m(i,j-1)}$, $A_{p,m(i,j+1)}$, and $b_p$
 
 To ease the test on whether $(i,j)$ is on the boundary or not, we can
 split the loops a bit, starting with the boundary line $j=0$, then
 treat the interior lines $1\leq j<N_y$, and finally treat the boundary
 line $j=N_y$:
 
- * for $i=0,\ldots,N_x$
-  * boundary $j=0$: $p=j(N_x+1)+i$, $A_{p,p}=1$
- * for $j=0,\ldots,N_y$
-  * boundary $i=0$: $p=j(N_x+1)+i$, $A_{p,p}=1$
-  * for $i=1,\ldots, N_x-1$
-    * interior point $p=j(N_x+1)+i$
-    * fill $A_{p,m(i-1,j)}$, $A_{p,m(i+1,j)}$, $A_{p,m(i,j)}$, $A_{p,m(i,j-1)}$, $A_{p,m(i,j+1)}$, and $b_p$
-  * boundary $i=N_x$: $p=j(N_x+1)+i$, $A_{p,p}=1$
- * for $i=0,\ldots,N_x$
-  * boundary $j=N_y$: $p=j(N_x+1)+i$, $A_{p,p}=1$
++ for $i=0,\ldots,N_x$
++ boundary $j=0$: $p=j(N_x+1)+i$, $A_{p,p}=1$
++ for $j=0,\ldots,N_y$
++ boundary $i=0$: $p=j(N_x+1)+i$, $A_{p,p}=1$
++ for $i=1,\ldots, N_x-1$
+  + interior point $p=j(N_x+1)+i$
+  + fill $A_{p,m(i-1,j)}$, $A_{p,m(i+1,j)}$, $A_{p,m(i,j)}$, $A_{p,m(i,j-1)}$, $A_{p,m(i,j+1)}$, and $b_p$
++ boundary $i=N_x$: $p=j(N_x+1)+i$, $A_{p,p}=1$
++ for $i=0,\ldots,N_x$
++ boundary $j=N_y$: $p=j(N_x+1)+i$, $A_{p,p}=1$
 
 The right-hand side is set up as follows.
 
- * for $i=0,\ldots,N_x$
-  * boundary $j=0$: $p=j(N_x+1)+i$, $b_p=0$
- * for $j=0,\ldots,N_y$
-  * boundary $i=0$: $p=j(N_x+1)+i$, $b_p=0$
-  * for $i=1,\ldots, N_x-1$
-    * interior point $p=j(N_x+1)+i$
-    * fill $b_p$
-  * boundary $i=N_x$: $p=j(N_x+1)+i$, $b_p=0$
- * for $i=0,\ldots,N_x$
-  * boundary $j=N_y$: $p=j(N_x+1)+i$, $b_p=0$
++ for $i=0,\ldots,N_x$
++ boundary $j=0$: $p=j(N_x+1)+i$, $b_p=0$
++ for $j=0,\ldots,N_y$
++ boundary $i=0$: $p=j(N_x+1)+i$, $b_p=0$
++ for $i=1,\ldots, N_x-1$
+  + interior point $p=j(N_x+1)+i$
+  + fill $b_p$
++ boundary $i=N_x$: $p=j(N_x+1)+i$, $b_p=0$
++ for $i=0,\ldots,N_x$
++ boundary $j=N_y$: $p=j(N_x+1)+i$, $b_p=0$
 
-## Implementation with a dense coefficient matrix
-{#sec-diffu-2D-impl-dense}
+## Implementation with a dense coefficient matrix {#sec-diffu-2D-impl-dense}
 
 The goal now is to map the algorithms in the previous section to
 Python code. One should, for computational efficiency reasons, take
@@ -404,6 +386,7 @@ def solver_dense(
     Fx = a*dt/dx**2
     Fy = a*dt/dy**2
 ```
+
 The $u^{n+1}**{i,j}$ and $u^n**{i,j}$ mesh functions are represented
 by their spatial values at the mesh points:
 
@@ -411,6 +394,7 @@ by their spatial values at the mesh points:
 u   = np.zeros((Nx+1, Ny+1))      # unknown u at new time level
 u_n = np.zeros((Nx+1, Ny+1))      # u at the previous time level
 ```
+
 It is a good habit (for extensions) to
 introduce index sets for all mesh points:
 
@@ -419,6 +403,7 @@ Ix = range(0, Nx+1)
 It = range(0, Ny+1)
 It = range(0, Nt+1)
 ```
+
 The initial condition is easy to fill in:
 
 ```python
@@ -426,6 +411,7 @@ for i in Ix:
     for j in It:
         u_n[i,j] = I(x[i], y[j])
 ```
+
 The memory for the coefficient matrix and right-hand side vector
 is allocated by
 
@@ -434,6 +420,7 @@ N = (Nx+1)*(Ny+1)  # no of unknowns
 A = np.zeros((N, N))
 b = np.zeros(N)
 ```
+
 The filling of `A` goes like this:
 
 ```python
@@ -457,6 +444,7 @@ j = Ny
 for i in Ix:
     p = m(i,j);  A[p, p] = 1
 ```
+
 Since `A` is independent of time, it can be filled once and for all before
 the time loop. The right-hand side vector must be filled at each
 time level inside the time loop:
@@ -491,6 +479,7 @@ for n in It[0:-1]:
 
     u_n, u = u, u_n
 ```
+
 We use `solve` from `scipy.linalg` and not from `numpy.linalg`. The difference
 is stated below.
 
@@ -532,6 +521,7 @@ The function has the signature
 ```python
 user_action(u, x, xv, y, yv, t, n)
 ```
+
 where `u` is a two-dimensional array holding the solution at time level `n`
 and time `t[n]`. The $x$ and $y$ coordinates of the mesh points are given by
 the arrays `x` and `y`, respectively. The arrays `xv` and `yv` are
@@ -543,20 +533,20 @@ defined by
 xv = x[:,np.newaxis]
 yv = y[np.newaxis,:]
 ```
+
 One can then evaluate, e.g., $f(x,y,t)$ at all internal mesh points at time
 level `n` by first evaluating $f$ at all points,
 
 ```python
 f_a = f(xv, yv, t[n])
 ```
+
 and then use slices to extract a view of the values at the internal
 mesh points: `f_a[1:-1,1:-1]`.
 The next section features an example on writing a `user_action`
 callback function.
 
-
-## Verification: exact numerical solution
-{#sec-diffu-2D-verify}
+## Verification: exact numerical solution {#sec-diffu-2D-verify}
 
 A good test example to start with is one that preserves the solution
 $u=0$, i.e., $f=0$ and $I(x,y)=0$. This trivial solution can uncover
@@ -565,17 +555,14 @@ some bugs.
 The first real test example is based on having an exact solution of
 the discrete equations. This solution is linear in time and quadratic
 in space:
-
 $$
 u(x,y,t) = 5tx(L_x-x)y(y-L_y)\tp
 $$
 Inserting this manufactured solution in the PDE shows that the
 source term $f$ must be
-
 $$
 f(x,y,t) = 5x(L_x-x)y(y-L_y) + 10\dfc t (x(L_x-x)+ y(y-L_y))\tp
 $$
-
 We can use the `user_action` function to compare the numerical solution
 with the exact solution at each time level. A suitable helper function
 for checking the solution goes like this:
@@ -609,6 +596,7 @@ def quadratic(theta, Nx, Ny):
         I, a, f, Lx, Ly, Nx, Ny,
         dt, T, theta, user_action=assert_no_error)
 ```
+
 A true test function for checking the quadratic solution for several
 different meshes and $\theta$ values can take the form
 
@@ -621,14 +609,12 @@ def test_quadratic():
                 quadratic(theta, Nx, Ny)
 ```
 
-## Verification: convergence rates
-{#sec-diffu-2D-convrate}
+## Verification: convergence rates {#sec-diffu-2D-convrate}
 
 For 2D verification with convergence rate computations, the expressions
 and computations just build naturally on what we saw for 1D diffusion.
 Truncation error analysis and other forms of error analysis point to a
 numerical error formula like
-
 $$
 E = C_t\Delta t^p + C_x\Delta x^2 + C_y\Delta y^2,
 $$
@@ -642,12 +628,10 @@ a form $E=Ch^r$ with a single discretization parameter $h$ and some
 rate $r$ to be estimated. For the Backward Euler method,
 where $p=1$, we can introduce a single discretization parameter
 according to
-
 $$
 h = \Delta x^2 =  \Delta y^2,\quad h = K^{-1}\Delta t,
 $$
 where $K$ is a constant. The error formula then becomes
-
 $$
 E = C_t Kh + C_xh + C_yh = \tilde C h,\quad \tilde C = C_tK + C_x + C_y\tp
 $$
@@ -655,7 +639,6 @@ The simplest choice is obviously $K=1$. With the Forward Euler method, however,
 stability requires $\Delta t = hK \leq h/(4\dfc)$, so $K\leq 1/(4\dfc)$.
 
 For the Crank-Nicolson method, $p=2$, and we can simply choose
-
 $$
 h = \Delta x = \Delta y = \Delta t,
 $$
@@ -663,29 +646,24 @@ since there is no restriction on $\Delta t$ in terms of $\Delta x$ and
 $\Delta y$.
 
 A frequently used error measure is the $\ell^2$ norm of the error mesh
-point values. Section @eq-wave-pde2-fd-MMS and the formula
+point values. Section @sec-wave-pde2-fd-MMS and the formula
 (@eq-wave-pde2-fd-MMS-E-l2) shows the error measure for a 1D
 time-dependent problem. The extension to the current 2D problem
 reads
-
 $$
 E = \left(\Delta t\Delta x\Delta y \sum_{n=0}^{N_t}
 \sum_{i=0}^{N_x}\sum_{j=0}^{N_y}(\uex(x_i,y_j,t_n)
 - u^n_{i,j})^2\right)^{\half}\tp
 $$
-
 One attractive manufactured solution is
-
 $$
 \uex = e^{-pt}\sin(k_xx)\sin(k_yy),\quad k_x=\frac{\pi}{L_x},
 k_y=\frac{\pi}{L_y},
 $$
 where $p$ can be arbitrary. The required source term is
-
 $$
 f = (\dfc(k_x^2 + k_y^2) - p)\uex\tp
 $$
-
 The function `convergence_rates` in
 [`diffu2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu2D_u0.py) implements a convergence
 rate test. Two potential difficulties are important to be aware of:
@@ -699,8 +677,7 @@ rate test. Two potential difficulties are important to be aware of:
    asymptotic range where the error formula is valid (i.e., $r$
    fluctuates and needs finer meshes to stabilize).
 
-## Implementation with a sparse coefficient matrix
-{#sec-diffu-2D-impl-sparse}
+## Implementation with a sparse coefficient matrix {#sec-diffu-2D-impl-sparse}
 
 We used a sparse matrix implementation in Section @sec-diffu-pde1-impl-sparse
 for a 1D problem with a tridiagonal matrix. The present matrix, arising
@@ -708,11 +685,11 @@ from a 2D problem, has five diagonals, but we can use the same
 sparse matrix data structure `scipy.sparse.diags`.
 
 ### Understanding the diagonals
+
 Let us look closer at the diagonals in the example with a $4\times 3$ mesh
 as depicted in Figure @fig-diffu-2D-fig-mesh4x3 and its associated matrix
 visualized by dots for zeros and bullets for nonzeros. From the example
 mesh, we may generalize to an $N_x\times N_y$ mesh.
-
 $$
 {\tiny
 \begin{array}{lcccccccccccccccccccc}
@@ -739,8 +716,6 @@ N_y(N_x+1)+N_x=m(N_x,N_y)& \cdot & \cdot & \cdot & \cdot & \cdot & \cdot & \cdot
 \end{array}
 }
 $$
-
-
 The main diagonal has $N=(N_x+1)(N_y+1)$ elements, while the sub- and
 super-diagonals have $N-1$ elements. By looking at the matrix above,
 we realize that the lower diagonal starts in row $N_x+1$ and goes to
@@ -758,6 +733,7 @@ b      = np.zeros(N)            # right-hand side
 ```
 
 ### Filling the diagonals
+
 We run through all mesh points and fill in elements on the various
 diagonals. The line of mesh points corresponding to $j=0$ are all
 on the boundary, and only the main diagonal gets a contribution:
@@ -766,6 +742,7 @@ on the boundary, and only the main diagonal gets a contribution:
 m = lambda i, j: j*(Nx+1) + i
 j = 0; main[m(0,j):m(Nx+1,j)] = 1  # j=0 boundary line
 ```
+
 Then we run through all interior $j=\hbox{const}$ lines of mesh points.
 The first and the last point on each line, $i=0$ and $i=N_x$, correspond
 to boundary points:
@@ -775,6 +752,7 @@ for j in It[1:-1]:             # Interior mesh lines j=1,...,Ny-1
     i = 0;   main[m(i,j)] = 1
     i = Nx;  main[m(i,j)] = 1  # Boundary
 ```
+
 For the interior mesh points $i=1,\ldots,N_x-1$ on a mesh line $y=\hbox{const}$
 we can start with the main diagonal. The entries to be filled go from
 $i=1$ to $i=N_x-1$ so the relevant slice in the `main` vector is
@@ -783,6 +761,7 @@ $i=1$ to $i=N_x-1$ so the relevant slice in the `main` vector is
 ```python
 main[m(1,j):m(Nx,j)] = 1 + 2*theta*(Fx+Fy)
 ```
+
 The `upper` array for the superdiagonal has its index 0 corresponding to
 row 0 in the matrix, and the array entries
 to be set go from $m(1,j)$ to $m(N_x-1,j)$:
@@ -790,6 +769,7 @@ to be set go from $m(1,j)$ to $m(N_x-1,j)$:
 ```python
 upper[m(1,j):m(Nx,j)] = - theta*Fx
 ```
+
 The subdiagonal (`lower` array), however, has its index 0
 corresponding to row 1, so there is an offset of 1 in indices compared to
 the matrix. The first nonzero occurs (interior point) at a mesh line $j=\hbox{const}$ corresponding to matrix row $m(1,j)$, and the corresponding array index
@@ -807,6 +787,7 @@ is no offset and we can set the entries correspondingly to `upper`:
 ```python
 upper2[m(1,j):m(Nx,j)] = - theta*Fy
 ```
+
 The `lower2` diagonal, however, has its first index 0 corresponding to row
 $N_x+1$, so here we need to subtract the offset $N_x+1$:
 
@@ -848,6 +829,7 @@ A = scipy.sparse.diags(
 ```
 
 ### Filling the right-hand side; scalar version
+
 Setting the entries in the right-hand side is easier, since there are no
 offsets in the array to take into account. The right-hand side is in fact similar to
 the one previously shown, when we used a dense matrix representation
@@ -926,6 +908,7 @@ for n in It[0:-1]:
 
     u_n, u = u, u_n
 ```
+
 The most tricky part of this code snippet is the loading of values from
 the one-dimensional array `c`
 into the two-dimensional array `u`. With our numbering of unknowns
@@ -945,6 +928,7 @@ is found in the `solver_sparse` function in the file
 [`diffu2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu2D_u0.py).
 
 ### Verification
+
 We can easily extend the function `quadratic` from
 Section @sec-diffu-2D-verify to include a test of the
 `solver_sparse` function as well.
@@ -968,59 +952,64 @@ and the core algorithm is repeated many times until the solution is
 considered to be converged.
 
 ### Numerical scheme and linear system
+
 To illustrate the idea of the Jacobi method, we simplify the numerical scheme to the
 Backward Euler case, $\theta=1$, so there are fewer terms to write:
 
-\begin{align}
+$$
+\begin{split}
 & u^{n+1}_{i,j} -
 \left(
 F_x
-(u^{n+1}**{i-1,j} - 2u^{n+1}**{i,j} + u^{n+1}_{i+1,j}) +
+(u^{n+1}_{i-1,j} - 2u^{n+1}_{i,j} + u^{n+1}_{i+1,j}) +
 F_y
-(u^{n+1}**{i,j-1} - 2u^{n+1}**{i,j} + u^{n+1}_{i,j+1})\right)
-= \nonumber\\ &\qquad u^n_{i,j} + \Delta t f^{n+1}_{i,j}
-\label{diffu:2D:BE_scheme}
-\end{align}
+(u^{n+1}_{i,j-1} - 2u^{n+1}_{i,j} + u^{n+1}_{i,j+1})\right)
+= \\ &\qquad u^n_{i,j} + \Delta t f^{n+1}_{i,j}
+\end{split}
+$$ {#eq-diffu-2D-BE_scheme}
 The idea of the *Jacobi* iterative method is to introduce an iteration,
 here with index $r$, where we in each iteration treat $u^{n+1}_{i,j}$
 as unknown, but use values from the previous iteration for
 the other unknowns $u^{n+1}_{i\pm 1,j\pm 1}$.
 
 ### Iterations
+
 Let $u^{n+1,r}_{i,j}$
 be the approximation to $u^{n+1}_{i,j}$ in iteration $r$, for all
 relevant $i$ and $j$ indices. We first solve with respect to
 $u^{n+1}_{i,j}$ to get the equation to solve:
 
-\begin{align}
+$$
+\begin{split}
 & u^{n+1}_{i,j} = (1+2F_x +2F_y)^{-1}
 \left(
 F_x
-(u^{n+1}**{i-1,j} + u^{n+1}**{i+1,j}) +
+(u^{n+1}_{i-1,j} + u^{n+1}_{i+1,j}) +
 F_y
-(u^{n+1}**{i,j-1} + u^{n+1}**{i,j+1})\right) +
-\nonumber\\ &\qquad
+(u^{n+1}_{i,j-1} + u^{n+1}_{i,j+1})\right) +
+\\ &\qquad
 u^n_{i,j} + \Delta t f^{n+1}_{i,j}
-\label{diffu:2D:Jacobi0}
-\end{align}
+\end{split}
+$$ {#eq-diffu-2D-Jacobi0}
 The iteration is introduced by using iteration index $r$, for computed values,
 on the right-hand side and $r+1$ (unknown in this iteration) on the left-hand
 side:
 
-\begin{align}
+$$
+\begin{split}
 & u^{n+1,r+1}_{i,j} = (1+2F_x +2F_y)^{-1}\left(
 F_x
-(u^{n+1,r}**{i-1,j} + u^{n+1,r}**{i+1,j}) +
+(u^{n+1,r}_{i-1,j} + u^{n+1,r}_{i+1,j}) +
 F_y
-(u^{n+1,r}**{i,j-1} + u^{n+1,r}**{i,j+1})\right)
-\nonumber\\ &\qquad
+(u^{n+1,r}_{i,j-1} + u^{n+1,r}_{i,j+1})\right)
+\\ &\qquad
 + u^n_{i,j} + \Delta t f^{n+1}_{i,j}
-\label{diffu:2D:Jacobi}
-\end{align}
+\end{split}
+$$ {#eq-diffu-2D-Jacobi}
 
 ### Initial guess
-We start the iteration with the computed values at the previous time level:
 
+We start the iteration with the computed values at the previous time level:
 $$
 u^{n+1,0}**{i,j} = u^{n}**{i,j},\quad i=0,\ldots,N_x,\ j=0,\ldots,N_y\tp
 $$ {#eq-diffu-2D-iter-startvector}
@@ -1032,7 +1021,6 @@ which means that the new approximation is a weighted mean of the
 approximation as suggested by the algorithm and the previous approximation.
 Naming the quantity on the left-hand side of (@eq-diffu-2D-Jacobi)
 as $u^{n+1,*}_{i,j}$, a new approximation based on relaxation reads
-
 $$
 u^{n+1,r+1} = \omega u^{n+1,*}**{i,j} + (1-\omega) u^{n+1,r}**{i,j}\tp
 $$ {#eq-diffu-2D-iter-relaxation}
@@ -1042,39 +1030,35 @@ $\omega > 1$.
 ### Stopping criteria
 The iteration can be stopped when the change from one iteration to the
 next is sufficiently small ($\leq \epsilon$), using either an infinity norm,
-
 $$
 \max_{i,j}\left\vert u^{n+1,r+1}**{i,j}-u^{n+1,r}**{i,j}
 \right\vert \leq \epsilon,
 $$
 or an $L^2$ norm,
-
 $$
 \left(\Delta x\Delta y\sum_{i,j} (u^{n+1,r+1}**{i,j}-u^{n+1,r}**{i,j})^2
 \right)^{\half} \leq \epsilon\tp
 $$
-
 Another widely used criterion measures how well the equations are solved
 by looking at the residual (essentially $b-Ac^{r+1}$ if $c^{r+1}$ is
 the approximation to the solution in iteration $r+1$).
 The residual, defined in terms of the finite difference stencil, is
 
-\begin{align}
+$$
+\begin{split}
 R_{i,j} &= u^{n+1,r+1}_{i,j} -
-(F_x(u^{n+1,r+1}**{i-1,j} - 2u^{n+1,r+1}**{i,j} + u^{n+1,r+1}_{i+1,j}) +\nonumber\\
-&\quad\quad F_y(u^{n+1,r+1}**{i,j-1} - 2u^{n+1,r+1}**{i,j} + u^{n+1,r+1}_{i,j+1}))
-- \nonumber\\
+(F_x(u^{n+1,r+1}_{i-1,j} - 2u^{n+1,r+1}_{i,j} + u^{n+1,r+1}_{i+1,j}) +\\
+&\quad\quad F_y(u^{n+1,r+1}_{i,j-1} - 2u^{n+1,r+1}_{i,j} + u^{n+1,r+1}_{i,j+1}))
+- \\
 &\qquad u^n_{i,j} -  \Delta t f^{n+1}_{i,j}
-\label{diffu:2D:residual}
-\end{align}
+\end{split}
+$$ {#eq-diffu-2D-residual}
 One can then iterate until the norm of the mesh function $R_{i,j}$
 is less than some tolerance:
-
 $$
 \left(\Delta x\Delta y\sum_{i,j} R_{i,j}^2
 \right)^{\half} \leq \epsilon\tp
 $$
-
 ### Code-friendly notation
 To make the mathematics as close as possible to what we will write in
 a computer program, we may introduce some new notation: $u_{i,j}$ is a
@@ -1086,44 +1070,42 @@ levels backwards in time. The Jacobi method
 (@eq-diffu-2D-Jacobi)) takes the following form with the new
 notation:
 
-\begin{align}
+$$
+\begin{split}
 & u^{*}_{i,j} = (1+2F_x +2F_y)^{-1}((
 F_x
-(u^{-}**{i-1,j} + u^{-}**{i+1,j}) +
+(u^{-}_{i-1,j} + u^{-}_{i+1,j}) +
 F_y
-(u^{-}**{i,j-1} + u^{-}**{i,j+1})) +
-\nonumber\\ &\qquad
-u^{(1)}**{i,j} + \Delta t f^{n+1}**{i,j})
-\label{diffu:2D:Jacobi2}
-\end{align}
+(u^{-}_{i,j-1} + u^{-}_{i,j+1})) +
+\\ &\qquad
+u^{(1)}_{i,j} + \Delta t f^{n+1}_{i,j})
+\end{split}
+$$ {#eq-diffu-2D-Jacobi2}
 
 ### Generalization of the scheme
 We can also quite easily introduce the $\theta$ rule for discretization in
 time and write up the Jacobi iteration in that case as well:
 
-\begin{align}
+$$
+\begin{split}
 & u^{*}_{i,j} = (1+ 2\theta(F_x +F_y))^{-1}(\theta(
 F_x
-(u^{-}**{i-1,j} + u^{-}**{i+1,j}) +
+(u^{-}_{i-1,j} + u^{-}_{i+1,j}) +
 F_y
-(u^{-}**{i,j-1} + u^{-}**{i,j+1})) +
-\nonumber\\ &\qquad
-u^{(1)}**{i,j} + \theta \Delta t f^{n+1}**{i,j}
-+ (1-\theta)\Delta t f^n_{i,j} + \nonumber\\
+(u^{-}_{i,j-1} + u^{-}_{i,j+1})) +
+\\ &\qquad
+u^{(1)}_{i,j} + \theta \Delta t f^{n+1}_{i,j}
++ (1-\theta)\Delta t f^n_{i,j} + \\
 &\qquad (1-\theta)(
-F_x(u^{(1)}**{i-1,j}-2u^{(1)}**{i,j} + u^{(1)}_{i+1,j}) +
-F_y(u^{(1)}**{i,j-1}-2u^{(1)}**{i,j} + u^{(1)}_{i,j+1})))\tp
-\label{diffu:2D:Jacobi3}
-\end{align}
+F_x(u^{(1)}_{i-1,j}-2u^{(1)}_{i,j} + u^{(1)}_{i+1,j}) +
+F_y(u^{(1)}_{i,j-1}-2u^{(1)}_{i,j} + u^{(1)}_{i,j+1})))\tp
+\end{split}
+$$ {#eq-diffu-2D-Jacobi3}
 The final update of $u$ applies relaxation:
-
 $$
 u_{i,j} = \omega u^{*}**{i,j} + (1-\omega)u^{-}**{i,j}\tp
 $$
-
-
-## Implementation of the Jacobi method
-{#sec-diffu-2D-Jacobi-impl}
+## Implementation of the Jacobi method {#sec-diffu-2D-Jacobi-impl}
 
 The Jacobi method needs no coefficient matrix and right-hand side
 vector, but it needs an array for $u$ in the previous iteration.  We
@@ -1226,11 +1208,9 @@ Even for a very coarse $4\times 4$ mesh, the Jacobi method requires
 26 iterations to reach a tolerance of $10^{-5}$,
 which is quite many iterations, given that there are only 25 unknowns.
 
-## Test problem: diffusion of a sine hill
-{#sec-diffu-2D-Jacobi-impl-hill}
+## Test problem: diffusion of a sine hill {#sec-diffu-2D-Jacobi-impl-hill}
 
 It can be shown that
-
 $$
 \uex = Ae^{-\dfc\pi^2(L_x^{-2} + L_y^{-2})t}
 \sin\left(\frac{\pi}{L_x}x\right)\sin\left(\frac{\pi}{L_y}y\right),
@@ -1246,7 +1226,6 @@ It is difficult to know if our solver based on the Jacobi method works
 properly since we are faced with two sources of errors: one from the
 discretization, $E_\Delta$, and one from the iterative Jacobi method,
 $E_i$. The total error in the computed $u$ can be represented as
-
 $$
 E_u = E_\Delta + E_i\tp
 $$
@@ -1259,8 +1238,8 @@ solution $\uex$ of the problem.
 What about $E_\Delta$? If we use the maximum value as a measure of the
 error, we have in fact analytical insight into the approximation error
 in this particular problem. According to Section
-@eq-diffu-2D-analysis, the exact solution
-(@sec-diffu-2D-Jacobi-impl-hill-uex) of the PDE problem is also an
+@sec-diffu-2D-analysis, the exact solution
+(@eq-diffu-2D-Jacobi-impl-hill-uex) of the PDE problem is also an
 exact solution of the discrete equations, except that the damping
 factor in time is different. More precisely,
 (@eq-diffu-2D-analysis-BN-numexact) and
@@ -1285,7 +1264,7 @@ due to the iteration, but it is a kind of measure, and it should
 have about the same size as $E_i$.
 
 The function `demo_classic_iterative` in [`diffu2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu2D_u0.py) implements the idea above (also for the
-methods in Section @eq-diffu-2D-SOR). The value of $E_i$ is in
+methods in Section @sec-diffu-2D-SOR). The value of $E_i$ is in
 particular printed at each time level. By changing the tolerance in
 the convergence criterion of the Jacobi method, we can see that $E_i$
 is of the same order of magnitude as the prescribed tolerance in the
@@ -1309,10 +1288,9 @@ very simple Jacobi iteration method: the number of iterations
 increases with the number of unknowns, keeping the tolerance fixed,
 but the tolerance should also be lowered to avoid the iteration error
 to dominate the total error. A small adjustment of the Jacobi method,
-as described in Section @eq-diffu-2D-SOR, provides a better method.
+as described in Section @sec-diffu-2D-SOR, provides a better method.
 
-## The relaxed Jacobi method and its relation to the Forward Euler method
-{#sec-diffu-2D-Jacobi-vs-FE}
+## The relaxed Jacobi method and its relation to the Forward Euler method {#sec-diffu-2D-Jacobi-vs-FE}
 
 We shall now show that solving the Poisson equation $-\dfc\nabla^2 u =
 f$ by the Jacobi iterative method is in fact equivalent to using a
@@ -1320,12 +1298,10 @@ Forward Euler scheme on $u_t = \dfc\nabla^2 u + f$ and letting
 $t\rightarrow\infty$.
 
 A Forward Euler discretization of the 2D diffusion equation,
-
 $$
 \lbrack D_t^+ u = \dfc (D_xD_x u + D_yD_y u) + f\rbrack^n_{i,j},
 $$
 can be written out as
-
 $$
 u_{i,j}^{n+1} = u_{i,j}^n + \frac{\Delta t}{\dfc h^2}
 \left( u_{i-1,j}^n + u_{i+1,j}^n + u_{i,j-1}^n + u_{i,j+1}^n - 4u_{i,j}^n
@@ -1333,7 +1309,6 @@ u_{i,j}^{n+1} = u_{i,j}^n + \frac{\Delta t}{\dfc h^2}
 $$
 where $h=\Delta x = \Delta y$ has been introduced for simplicity. The
 scheme can be reordered as
-
 $$
 u_{i,j}^{n+1} = \left(1 - \omega\right) u_{i,j}^n
 + \frac{1}{4}\omega
@@ -1341,17 +1316,13 @@ u_{i,j}^{n+1} = \left(1 - \omega\right) u_{i,j}^n
 + h^2f_{i,j}\right),
 $$
 with
-
 $$
 \omega = 4\frac{\Delta t}{\dfc h^2},
 $$
 but this latter form is nothing but the relaxed Jacobi method applied to
-
-
 $$
 [D_xD_x u + D_yD_y u = -f]^n_{i,j}\tp
 $$
-
 From the equivalence above we know a couple of things about the Jacobi
 method for solving $-\nabla^2 u = f$:
 
@@ -1372,8 +1343,7 @@ used in the very efficient class of multigrid methods; and 2) the idea
 of the Jacobi method can be developed into more efficient methods,
 especially the SOR method, which is treated next.
 
-## The Gauss-Seidel and SOR methods
-{#sec-diffu-2D-SOR}
+## The Gauss-Seidel and SOR methods {#sec-diffu-2D-SOR}
 
 If we update the mesh points according to the Jacobi method
 (@eq-diffu-2D-Jacobi0) for a Backward Euler discretization with a
@@ -1385,15 +1355,16 @@ used rather than $u^{n+1,r}**{i-1,j}$ and $u^{n+1,r}**{i,j-1}$
 gives rise to the *Gauss-Seidel* iteration method, which
 mathematically is just a small adjustment of (@eq-diffu-2D-Jacobi0):
 
-\begin{align}
-& u^{n+1,r+1}_{i,j} = (1+2F_x +2F_y)^{-1}((\nonumber\\ &\qquad
+$$
+\begin{split}
+& u^{n+1,r+1}_{i,j} = (1+2F_x +2F_y)^{-1}((\\ &\qquad
 F_x
-(u^{n+1,r+1}**{i-1,j} + u^{n+1,r}**{i+1,j}) +
+(u^{n+1,r+1}_{i-1,j} + u^{n+1,r}_{i+1,j}) +
 F_y
-(u^{n+1,r+1}**{i,j-1} + u^{n+1,r}**{i,j+1})) +
+(u^{n+1,r+1}_{i,j-1} + u^{n+1,r}_{i,j+1})) +
 u^n_{i,j} + \Delta t f^{n+1}_{i,j})\tp
-\label{diffu:2D:SOR:eq}
-\end{align}
+\end{split}
+$$ {#eq-diffu-2D-SOR-eq}
 Observe that the way we access the mesh points in the formula
 (@eq-diffu-2D-SOR-eq) is important: points with $i-1$ must be
 computed before points with $i$, and points with $j-1$ must be
@@ -1410,29 +1381,29 @@ method with an arbitrary $0<\omega\leq 2$ has its own name: the
 The SOR method for a $\theta$ rule discretization, with the
 shortened $u$ and $u^{-}$ notation, can be written
 
-\begin{align}
+$$
+\begin{split}
 & u^{*}_{i,j} = (1+ 2\theta(F_x +F_y))^{-1}(\theta(
 F_x
 (u_{i-1,j} + u^{-}_{i+1,j}) +
 F_y
 (u_{i,j-1} + u^{-}_{i,j+1})) +
-\nonumber\\ &\qquad
-u^{(1)}**{i,j} + \theta \Delta t f^{n+1}**{i,j}
-+ (1-\theta)\Delta t f^n_{i,j} + \nonumber\\
+\\ &\qquad
+u^{(1)}_{i,j} + \theta \Delta t f^{n+1}_{i,j}
++ (1-\theta)\Delta t f^n_{i,j} + \\
 &\qquad (1-\theta)(
-F_x(u^{(1)}**{i-1,j}-2u^{(1)}**{i,j} + u^{(1)}_{i+1,j}) +
-F_y(u^{(1)}**{i,j-1}-2u^{(1)}**{i,j} + u^{(1)}_{i,j+1}))),
-\\
-u_{i,j} &= \omega u^{*}**{i,j} + (1-\omega)u^{-}**{i,j}
-\label{diffu:2D:SOR3}
-\end{align}
+F_x(u^{(1)}_{i-1,j}-2u^{(1)}_{i,j} + u^{(1)}_{i+1,j}) +
+F_y(u^{(1)}_{i,j-1}-2u^{(1)}_{i,j} + u^{(1)}_{i,j+1}))),
+\end{split}
+$$
+$$
+u_{i,j} = \omega u^{*}_{i,j} + (1-\omega)u^{-}_{i,j}
+$$ {#eq-diffu-2D-SOR3}
 The sequence of mesh points in (@eq-diffu-2D-SOR3) is
 $i=1,\ldots,N_x-1$, $j=1,\ldots,N_y-1$ (but whether $i$ runs faster
 or slower than $j$ does not matter).
 
-
-## Scalar implementation of the SOR method
-{#sec-diffu-2D-SOR-impl-scalar}
+## Scalar implementation of the SOR method {#sec-diffu-2D-SOR-impl-scalar}
 
 Since the Jacobi and Gauss-Seidel methods with relaxation
 are so similar, we can easily make a common code for the two:
@@ -1479,8 +1450,7 @@ The idea here is to introduce `u__` to be used for already computed
 values (`u`) in the Gauss-Seidel/SOR version of the implementation, or
 just values from the previous iteration (`u_`) in case of the Jacobi method.
 
-## Vectorized implementation of the SOR method
-{#sec-diffu-2D-SOR-impl-vectorized}
+## Vectorized implementation of the SOR method {#sec-diffu-2D-SOR-impl-vectorized}
 
 Vectorizing the Gauss-Seidel iteration step turns out to be non-trivial.
 The problem is that vectorized operations typically imply
@@ -1709,9 +1679,7 @@ methods in scalar and vectorized versions using the techniques
 explained above.
 
 ## Direct versus iterative methods
-{#sec-diffu-2D-direct-vs-iter}
-
-### Direct methods
+### Direct methods {#sec-diffu-2D-direct-vs-iter}
 There are two classes of methods for solving linear systems: direct methods
 and iterative methods. Direct methods are based on variants of the
 Gaussian elimination procedure and will produce an exact solution (in
@@ -1743,7 +1711,7 @@ LU and Cholesky factorization as well as forward and backward
 substitution (`scipy.linalg` is the relevant Python package).
 
 Finite difference discretizations lead to sparse coefficient matrices.
-An extreme case arose in Section @eq-diffu-pde1-BE where $A$ was
+An extreme case arose in Section @sec-diffu-pde1-BE where $A$ was
 tridiagonal. For a tridiagonal matrix, the amount of arithmetic
 operations in the LU and Cholesky factorization algorithms is just of
 the order $N$, not $N^3$. Tridiagonal matrices are special cases of
@@ -1769,19 +1737,16 @@ grows with the size of the linear system, so both for accuracy and
 efficiency, iterative methods are better suited than direct methods
 for solving really large linear systems.
 
-
 ### Iterative methods
 
 The Jacobi and SOR iterative methods belong to a class of iterative methods
 where the idea is to solve $Au=b$ by splitting A into two parts, $A=M-N$,
 such that solving systems $Mu=c$ is easy and efficient. With the splitting,
 we get a system
-
 $$
 Mu = Nu + b,
 $$
 which suggests an iterative method
-
 $$
 Mu^{r+1} = Nu^{r} + b,\quad r=0,1,2,\ldots,
 $$
@@ -1793,16 +1758,13 @@ tridiagonal part $L$, the diagonal $D$, and an upper tridiagonal part $U$,
 such that $A=L+D+U$. The Jacobi method corresponds to $M=D$ and $N=-L-U$.
 The Gauss-Seidel method employs $M=L+D$ and $N=-U$, while the SOR
 method corresponds to
-
 $$
 M= \frac{1}{\omega}D + L,\quad N = \frac{1-\omega}{\omega}D - U\tp
 $$
 The relaxed Jacobi method has similar expressions:
-
 $$
 M = \frac{1}{\omega}D,\quad N = \frac{1-\omega}{\omega}D - L - U\tp
 $$
-
 With the matrix forms of the Jacobi and SOR methods as written above,
 we could in an implementation alternatively fill the matrix $A$ with
 entries and call general implementations of the Jacobi or SOR methods
@@ -1837,7 +1799,6 @@ then SOR will converge for any $0<\omega <2$.
 
 The optimal $\omega$ parameter can be theoretically established for
 a Poisson problem as
-
 $$
 \omega_{o} = \frac{2}{1 + \sqrt{1-\varrho^2}},\quad \varrho = \frac{\cos(\pi/N_x) + (\Delta x/\Delta y)^2\cos(\pi/N_y)}{1 + (\Delta x/\Delta y)^2}\tp
 $$
@@ -1855,8 +1816,7 @@ Finally, we mention that there is a variant of the SOR method, called the
 one runs a standard SOR sweep through the mesh points and then a
 new sweep while visiting the points in reverse order.
 
-## The Conjugate gradient method
-{#sec-diffu-2D-CG}
+## The Conjugate gradient method {#sec-diffu-2D-CG}
 
 There is no simple intuitive derivation of the Conjugate gradient
 method, so we refer to the many excellent expositions in the

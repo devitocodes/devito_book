@@ -1,6 +1,4 @@
----
-title: "Diffusion Equations"
----
+# Diffusion Equations {#sec-ch-diffu}
 
 {{< include diffu_fd1.qmd >}}
 

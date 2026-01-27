@@ -1,21 +1,14 @@
----
-title: "Finite Difference Computing with PDEs"
-subtitle: "A Modern Software Approach"
----
+# Welcome {.unnumbered}
 
-# Preface {.unnumbered}
+This book teaches finite difference methods for solving partial differential equations through Python implementations.
 
-This book teaches finite difference methods for solving partial differential equations through Python implementations. It covers vibration ODEs, wave equations, diffusion equations, advection-dominated equations, and nonlinear problems.
+## About this Edition {.unnumbered}
 
-The book emphasizes modern symplectic (geometric) integration schemes alongside classical methods, with applications throughout mechanics and physics.
+This is the Quarto edition of *Finite Difference Computing with PDEs - A Modern Software Approach*, originally authored by Hans Petter Langtangen and Svein Linge. The content has been converted to Quarto format to enable modern web-based publishing.
 
-## About this Edition
+## Book Structure {.unnumbered}
 
-This is the Quarto edition of the book, originally authored by Hans Petter Langtangen and Svein Linge using DocOnce. The content has been converted to Quarto format to enable modern web-based publishing with improved interactivity and accessibility.
-
-## Structure
-
-The book consists of five main chapters:
+The book covers:
 
 1. **Vibration ODEs** - Finite difference discretization for oscillatory systems
 2. **Wave Equations** - Methods for wave propagation in multiple dimensions
@@ -23,12 +16,4 @@ The book consists of five main chapters:
 4. **Advection-Dominated Equations** - Convection and transport phenomena
 5. **Nonlinear Problems** - Techniques for nonlinear differential equations
 
-Plus three appendices covering:
-
-- **Formulas** - Reference for finite difference operators
-- **Truncation Error Analysis** - Error analysis techniques
-- **Software Engineering** - Best practices for scientific computing
-
-## Code Repository
-
-All source code for the examples is available in the `src/` directory, organized by chapter.
+Plus appendices on formulas, truncation error analysis, and software engineering.

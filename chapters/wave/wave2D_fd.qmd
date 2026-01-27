@@ -1,32 +1,24 @@
----
-title: "Wave2D Fd.Do"
----
-
-{#sec-wave-2D3D}
+## Multi-dimensional wave equations {#sec-wave-2D3D}
 
 A natural next step is to consider extensions of the methods for
 various
 variants of the one-dimensional wave equation to two-dimensional (2D) and
 three-dimensional (3D) versions of the wave equation.
 
-## Multi-dimensional wave equations
-{#sec-wave-2D3D-models}
+## Multi-dimensional wave equations {#sec-wave-2D3D-models}
 
 The general wave equation in $d$ space dimensions, with constant
 wave velocity $c$,
 can be written in the compact form
-
 $$
 \frac{\partial^2 u}{\partial t^2} = c^2\nabla^2 u\hbox{ for }\xpoint\in\Omega\subset\Real^d,\ t\in (0,T] ,
 $$ {#eq-wave-2D3D-model1}
 where
-
 $$
 \nabla^2 u = \frac{\partial^2 u}{\partial x^2} +
 \frac{\partial^2 u}{\partial y^2} ,
 $$
 in a 2D problem ($d=2$) and
-
 $$
 \nabla^2 u = \frac{\partial^2 u}{\partial x^2} +
 \frac{\partial^2 u}{\partial y^2} + \frac{\partial^2 u}{\partial z^2},
@@ -35,12 +27,10 @@ in three space dimensions ($d=3$).
 
 Many applications involve variable coefficients, and the general
 wave equation in $d$ dimensions is in this case written as
-
 $$
 \varrho\frac{\partial^2 u}{\partial t^2} = \nabla\cdot (q\nabla u) + f\hbox{ for }\xpoint\in\Omega\subset\Real^d,\ t\in (0,T],
 $$ {#eq-wave-2D3D-model2}
 which in, e.g.,  2D becomes
-
 $$
 \varrho(x,y)
 \frac{\partial^2 u}{\partial t^2} =
@@ -65,12 +55,12 @@ the 3D versions of the
 two wave PDEs, with and without variable coefficients,
 can be stated as
 
-\begin{align}
-u_{tt} &= c^2(u_{xx} + u_{yy} + u_{zz}) + f,
-\\
-\varrho u_{tt} &= (q u_x)_x + (q u_y)_y + (q u_z)_z + f\tp
-\label{wave:2D3D:model1:v2}
-\end{align}
+$$
+u_{tt} = c^2(u_{xx} + u_{yy} + u_{zz}) + f,
+$$ {#eq-wave-2D3D-model1-v2}
+$$
+\varrho u_{tt} = (q u_x)_x + (q u_y)_y + (q u_z)_z + f\tp
+$$ {#eq-wave-2D3D-model2-v2}
 
 At *each point* of the boundary $\partial\Omega$ (of $\Omega$) we need
 *one* boundary condition involving the unknown $u$.
@@ -91,12 +81,10 @@ time need *two* initial conditions:
   1. $u=I$,
   1. $u_t = V$.
 
-## Mesh
-{#sec-wave-2D3D-mesh}
+## Mesh {#sec-wave-2D3D-mesh}
 
 We introduce a mesh in time and in space. The mesh in time consists
 of time points
-
 $$
 t_0=0 < t_1 < \cdots < t_{N_t},
 $$
@@ -130,9 +118,7 @@ $u^{n}_{i,j,k}$. In 2D problems we just skip the $z$ coordinate
 (by assuming no variation in that direction: $\partial/\partial z=0$)
 and write $u^n_{i,j}$.
 
-
-## Discretization
-{#sec-wave-2D3D-discretization}
+## Discretization {#sec-wave-2D3D-discretization}
 
 Two- and three-dimensional wave equations are easily discretized by
 assembling building blocks for discretization of
@@ -140,18 +126,15 @@ assembling building blocks for discretization of
 terms of the same type as those in 1D.
 
 ### Discretizing the PDEs
-Equation (@sec-wave-2D3D-model1-v2) can be discretized as
-
+Equation (@eq-wave-2D3D-model1-v2) can be discretized as
 $$
 [D_tD_t u = c^2(D_xD_x u + D_yD_yu + D_zD_z u) + f]^n_{i,j,k} \tp
 $$
 A 2D version might be instructive to write out in detail:
-
 $$
 [D_tD_t u = c^2(D_xD_x u + D_yD_yu) + f]^n_{i,j},
 $$
 which becomes
-
 $$
 \frac{u^{n+1}**{i,j} - 2u^{n}**{i,j} + u^{n-1}_{i,j}}{\Delta t^2}
 = c^2
@@ -163,7 +146,6 @@ $$
 Assuming, as usual, that all values at time levels $n$ and $n-1$
 are known, we can solve for the only unknown $u^{n+1}_{i,j}$. The
 result can be compactly written as
-
 $$
 u^{n+1}**{i,j} = 2u^n**{i,j} + u^{n-1}_{i,j} + c^2\Delta t^2[D_xD_x u + D_yD_y u]^n_{i,j}\tp
 $$ {#eq-wave-2D3D-models-unp1}
@@ -171,21 +153,18 @@ $$ {#eq-wave-2D3D-models-unp1}
 As in the 1D case, we need to develop a special formula for $u^1_{i,j}$
 where we combine the general scheme for $u^{n+1}_{i,j}$, when $n=0$,
 with the discretization of the initial condition:
-
 $$
 [D_{2t}u = V]^0_{i,j}\quad\Rightarrow\quad u^{-1}**{i,j} = u^1**{i,j} - 2\Delta t V_{i,j} \tp
 $$
 The result becomes, in compact form,
-
 $$
 u^{1}**{i,j} = u^0**{i,j} -2\Delta V_{i,j} + {\half}
 c^2\Delta t^2[D_xD_x u + D_yD_y u]^0_{i,j}\tp
 $$ {#eq-wave-2D3D-models-u1}
 
-The PDE (@sec-wave-2D3D-model2-v2)
+The PDE (@eq-wave-2D3D-model2-v2)
 with variable coefficients is discretized term by term using
 the corresponding elements from the 1D case:
-
 $$
 [\varrho D_tD_t u = (D_x\overline{q}^x D_x u +
 D_y\overline{q}^y D_yu + D_z\overline{q}^z D_z u) + f]^n_{i,j,k} \tp
@@ -231,13 +210,11 @@ $$
 \frac{\partial u}{\partial n} = -\frac{\partial u}{\partial y},
 $$
 and we set
-
 $$
 [-D_{2y} u = 0]^n_{i,0}\quad\Rightarrow\quad \frac{u^n_{i,1}-u^n_{i,-1}}{2\Delta y} = 0 \tp
 $$
 From this it follows that $u^n_{i,-1}=u^n_{i,1}$.
 The discretized PDE at the boundary point $(i,0)$ reads
-
 $$
 \frac{u^{n+1}**{i,0} - 2u^{n}**{i,0} + u^{n-1}_{i,0}}{\Delta t^2}
 = c^2

@@ -1,6 +1,4 @@
----
-title: "Wave Equations"
----
+# Wave Equations {#sec-ch-wave}
 
 {{< include wave1D_fd1.qmd >}}
 

@@ -1,7 +1,3 @@
----
-title: "Preface.Do"
----
-
 There are so many excellent books on finite difference methods for
 ordinary and partial differential equations that writing yet another
 one requires a different view on the topic. The present book is not
@@ -28,6 +24,7 @@ for testing implementations, so an extensive appendix is devoted to
 the computation of truncation errors.
 
 ### Why finite differences?
+
 One may ask why we do finite differences when finite element and
 finite volume methods have been developed to greater generality and
 sophistication than finite differences and can cover more
@@ -54,6 +51,7 @@ Various pedagogical elements are utilized to reach the learning outcomes,
 and these are commented upon next.
 
 ### Simplify, understand, generalize
+
 The book's overall pedagogical philosophy is the three-step process of
 first *simplifying* the problem to something we can *understand* in
 detail, and when that understanding is in place, we can *generalize*
@@ -69,6 +67,7 @@ of a compound problem is in this way an assembly of elements that are
 well understood in simpler settings.
 
 ### Constructive mathematics
+
 This text favors a constructive approach to mathematics. Instead of
 a set of definitions followed by popping up a method, we emphasize how
 to think about the construction of a method. The aim is to obtain a
@@ -77,28 +76,28 @@ good intuitive understanding of the mathematical methods.
 The text is written in an easy-to-read style much inspired by the
 following quote.
 
-:::{.callout-note title="*Some people think that stiff challenges are the best device to"}
-induce learning, but I am not one of them. The natural way to learn
-something is by spending vast amounts of easy, enjoyable time at it.
-This goes whether you want to speak German, sight-read at the
-piano, type, or do mathematics. Give me the German storybook for
-fifth graders that I feel like reading in bed, not Goethe and a
-dictionary. The latter will bring rapid progress at first, then
-exhaustion and failure to resolve.*
-
-*The main thing to be said for stiff challenges is that inevitably
-we will encounter them, so we had better learn to face them boldly.
-Putting them in the curriculum can help teach us to do so. But for
-teaching the skill or subject matter itself, they are overrated.*
-cite[p. 86]{index_cards} Lloyd N. Trefethen, Applied Mathematician, 1955-.
-:::
+> *Some people think that stiff challenges are the best device to
+> induce learning, but I am not one of them. The natural way to learn
+> something is by spending vast amounts of easy, enjoyable time at it.
+> This goes whether you want to speak German, sight-read at the
+> piano, type, or do mathematics. Give me the German storybook for
+> fifth graders that I feel like reading in bed, not Goethe and a
+> dictionary. The latter will bring rapid progress at first, then
+> exhaustion and failure to resolve.*
+>
+> *The main thing to be said for stiff challenges is that inevitably
+> we will encounter them, so we had better learn to face them boldly.
+> Putting them in the curriculum can help teach us to do so. But for
+> teaching the skill or subject matter itself, they are overrated.*
+>
+> --- Lloyd N. Trefethen, Applied Mathematician, 1955-.
 
 This book assumes some basic knowledge of finite difference approximations,
 differential equations, and scientific Python or MATLAB programming,
 as often met in
 an introductory numerical methods course. Readers without this background
-may start with the light companion book ``Finite Difference Computing with
-Exponential Decay Models'' [@Langtangen_decay]. That book will in
+may start with the light companion book "Finite Difference Computing with
+Exponential Decay Models" [@Langtangen_decay]. That book will in
 particular be a useful resource for the programming parts of the present book.
 Since the present book deals with partial differential equations, the
 reader is assumed to master multi-variable calculus and linear algebra.
@@ -111,14 +110,14 @@ equations. With this approach, new concepts are introduced with a
 minimum of mathematical details. The text should therefore have
 a potential for use early in undergraduate student programs.
 
-
 ### All nuts and bolts
-Many have experienced that ``vast amounts of easy, enjoyable time'', as
+
+Many have experienced that "vast amounts of easy, enjoyable time", as
 stated in the quote above, arises when mathematics is implemented on a
 computer. The implementation process triggers understanding,
 creativity, and curiosity, but many students find
 the transition from a mathematical algorithm to a working code
-difficult and spend a lot of time on ``programming issues''.
+difficult and spend a lot of time on"programming issues".
 
 Most books on numerical methods concentrate on the mathematics of the
 subject while details on going from the mathematics to a computer
@@ -129,6 +128,7 @@ well-tested computer code. A significant portion of the text is
 consequently devoted to programming details.
 
 ### Python as programming language
+
 While MATLAB enjoys widespread popularity in books on numerical
 methods, we have chosen to use the Python programming language. Python
 is very similar to MATLAB, but contains a lot of modern software
@@ -140,6 +140,7 @@ book's goals is to present an up-to-date Python eco system for
 implementing finite difference methods.
 
 ### Program verification
+
 Program testing, called *verification*, is a key topic of the book.
 Good verification techniques are indispensable when debugging computer
 code, but also fundamental for achieving reliable simulations.
@@ -150,9 +151,10 @@ exact (analytical or manufactured) solutions of the
 differential equation(s).
 
 ### Vectorized code
+
 Finite difference methods lead to code with loops over large
 arrays. Such code in plain Python is known to run slowly.  We
-demonstrate, especially in Appendix @eq-ch-softeng2, how to port
+demonstrate, especially in Appendix @sec-ch-softeng2, how to port
 loops to fast, compiled code in C or Fortran. However, an alternative
 is to vectorize the code to get rid of explicit Python loops, and
 this technique is met throughout the book. Vectorization becomes closely
@@ -168,9 +170,10 @@ processors and GPUs. Also when creating tailored parallel code for
 today's supercomputers, vectorization is useful as it emphasizes
 splitting up an algorithm into plain and simple array operations,
 where each operation is trivial to parallelize efficiently, rather
-than trying to develop a ``smart'' overall parallelization strategy.
+than trying to develop a "smart" overall parallelization strategy.
 
 ### Analysis via exact solutions of discrete equations
+
 Traditional asymptotic analysis of errors is important for
 verification of code using convergence rates, but gives a limited
 understanding of how and why a correctly implemented numerical method
@@ -180,6 +183,7 @@ physical understanding of the behavior of a numerical method. This
 approach is favored for analysis of methods in this book.
 
 ### Code-inspired mathematical notation
+
 Our primary aim is to have a clean and easy-to-read computer code, and
 we want a close one-to-one relationship between the computer code and
 mathematical description of the algorithm.  This principle calls for a
@@ -190,8 +194,8 @@ the exact solution fulfilling the differential equation to the
 symbol `u` that is naturally used for the associated data structure
 in the code.
 
-
 ### Limited scope
+
 The aim of this book is not to give an overview of a lot of methods
 for a wide range of mathematical models.  Such information can be
 found in numerous existing, more advanced books.  The aim is rather to
@@ -202,10 +206,11 @@ we have a multi-disciplinary scope and address the interplay of
 mathematics, numerics, computer science, and physics.
 
 ### Focus on wave phenomena
+
 Most books on finite difference methods, or books on theory with
 computer examples, have their emphasis on diffusion phenomena.  Half
-of this book (Chapters @eq-ch-vib, @eq-ch-wave, and Appendix
-@eq-ch-softeng2) is devoted to wave phenomena. Extended material on
+of this book (Chapters @sec-ch-vib, @sec-ch-wave, and Appendix
+@sec-ch-softeng2) is devoted to wave phenomena. Extended material on
 this topic is not so easy find in the literature, so the book should
 be a valuable contribution in this respect.  Wave phenomena is also a
 good topic in general for choosing the finite difference method over
@@ -221,6 +226,7 @@ differences and for software aspects in a context with
 simple, explicit stencils for updating the solution.
 
 ### Independent chapters
+
 Most book authors are careful with avoiding repetitions of material.
 The chapters in this book, however, contain some overlap, because we
 want the chapters to appear meaningful on their own. Modern publishing
@@ -232,11 +238,13 @@ find it convenient that important information is explicitly
 stated, even if it was already met in another chapter.
 
 ### Supplementary materials
+
 All program and data files referred to in this book are available
 from the book's primary web site:
-URL: https://github.com/hplgit/fdm-book/.
+URL: <https://github.com/hplgit/fdm-book/>.
 
 ### Acknowledgments
+
 Professor Kent-Andre Mardal at the University of Oslo has kindly
 contributed to enlightening discussions on several issues.
 Many students have
@@ -256,7 +264,4 @@ laboratory's financial contribution as well as to the financial
 contribution from the Department of Process, Energy and Environmental
 Technology at the University College of Southeast Norway.
 
-\vspace{1cm}
-
-\noindent
-{\it Oslo, July 2016}  \hfill  {\it Hans Petter Langtangen, Svein Linge}
+*Oslo, July 2016* — *Hans Petter Langtangen, Svein Linge*

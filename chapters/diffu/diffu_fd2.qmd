@@ -1,8 +1,4 @@
----
-title: "Diffu Fd2.Do"
----
-
-{#sec-diffu-varcoeff}
+## Diffusion with variable coefficient {#sec-diffu-varcoeff}
 
 Diffusion in heterogeneous media normally implies a non-constant
 diffusion coefficient $\alpha = \alpha (x)$.
@@ -21,15 +17,14 @@ u(0,t) & = U_0, \quad  &t>0,
 u(L,t) & = U_L, \quad  &t>0.
 \end{alignat}
 ```
+
 A short form of the diffusion equation with variable coefficients is
 $u_t = (\alpha u_x)_x + f$.
 
-## Discretization
-{#sec-diffu-varcoeff-discr}
+## Discretization {#sec-diffu-varcoeff-discr}
 
-We can discretize (@eq-diffu-pde2) by a $\theta$-rule in time
+We can discretize the diffusion equation $u_t = (\alpha u_x)_x + f$ by a $\theta$-rule in time
 and centered differences in space:
-
 $$
 \lbrack D_t u\rbrack^{n+\half}_i = \theta\lbrack D_x(\overline{\dfc}^x
 D_x u) + f\rbrack^{n+1}_i +
@@ -49,13 +44,10 @@ Written out, this becomes
 &\quad \theta f_i^{n+1} + (1-\theta)f_i^{n},
 \end{align*}
 where, e.g., an arithmetic mean can to be used for $\dfc_{i+\half}$:
-
 $$
 \dfc_{i+\half} = \half(\dfc_i + \dfc_{i+1})\tp
 $$
-
-## Implementation
-{#sec-diffu-varcoeff-impl}
+## Implementation {#sec-diffu-varcoeff-impl}
 
 Suitable code for solving the discrete equations is very similar to
 what we created for a constant $\dfc$.
@@ -115,17 +107,16 @@ def solver_theta(I, a, L, Nx, D, T, theta=0.5, u_L=1, u_R=0,
 
         u_n, u = u, u_n
 ```
+
 The code is found in the file [`diffu1D_vc.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu1D_vc.py).
 
-## Stationary solution
-{#sec-diffu-varcoeff-stationary}
+## Stationary solution {#sec-diffu-varcoeff-stationary}
 
 As $t\rightarrow\infty$, the solution of the
-problem (@eq-diffu-pde2)-(@eq-diffu-pde2-bc-L)
+variable-coefficient diffusion problem
 will approach
 a stationary limit where $\partial u/\partial t=0$. The governing
 equation is then
-
 $$
 \frac{d}{dx}\left(\alpha\frac{du}{dx}\right) =0,
 $$ {#eq-diffu-fd2-pde-st}
@@ -133,13 +124,11 @@ with boundary conditions $u(0)=U_0$ and $u(L)=U_L$.
 It is possible to obtain an exact solution of (@eq-diffu-fd2-pde-st)
 for any $\alpha$. Integrating twice and applying the boundary conditions
 to determine the integration constants gives
-
 $$
 u(x) = U_0 + (U_L-U_0)\frac{\int_0^x (\alpha(\xi))^{-1}d\xi}{\int_0^L (\alpha(\xi))^{-1}d\xi} \tp
 $$ {#eq-diffu-fd2-pde-st-sol}
 
-## Piecewise constant medium
-{#sec-diffu-varcoeff-piecewise}
+## Piecewise constant medium {#sec-diffu-varcoeff-piecewise}
 
 Consider a medium built of $M$ layers. The layer boundaries
 are denoted $b_0, \ldots, b_M$,
@@ -147,7 +136,6 @@ where $b_0=0$ and $b_M=L$.
 If the layers potentially have different material properties, but
 these properties are constant within each layer, we can express $\alpha$ as a
 *piecewise constant function* according to
-
 $$
 \alpha (x) = \left\lbrace\begin{array}{ll}
 \alpha_0,& b_0 \leq x < b_1,\\
@@ -164,8 +152,6 @@ $x$ is in the $m$-th layer: $x\in [b_m, b_{m+1}]$. In the integral
 $\int_0^x (a(\xi))^{-1}d\xi$ we must integrate through the first
 $m-1$ layers and then add the contribution from the remaining part
 $x-b_m$ into the $m$-th layer:
-
-
 $$
 u(x) = U_0 + (U_L-U_0)
 \frac{\sum_{j=0}^{m-1} (b_{j+1}-b_j)/\alpha(b_j) + (x-b_m)/\alpha(b_m)}{\sum_{j=0}^{M-1} (b_{j+1}-b_j)/\alpha(b_j)}
@@ -177,8 +163,7 @@ equation where one is to differentiate, but a discontinuous $\alpha$
 is compensated by a discontinuous $u_x$ such that $\alpha u_x$ is
 continuous and therefore can be differentiated as $(\alpha u_x)_x$.
 
-## Implementation of diffusion in a piecewise constant medium
-{#sec-diffu-varcoeff-impl-piecewise}
+## Implementation of diffusion in a piecewise constant medium {#sec-diffu-varcoeff-impl-piecewise}
 
 Programming with piecewise function definitions quickly becomes
 cumbersome as the most naive approach is to test for which interval
@@ -268,7 +253,7 @@ class SerialLayers:
         plt.show()
 ```
 
-Figure @eq-diffu-fd2-pde-st-sol-pc-fig1 shows the case where
+Figure @fig-diffu-fd2-pde-st-sol-pc-fig1 shows the case where
 
 ```python
 b = [0, 0.25, 0.5, 1]   # material boundaries
@@ -280,15 +265,13 @@ U_0 = 0.5;  U_L = 5     # boundary conditions
 
 By adding the `eps` parameter to the constructor of the `SerialLayers`
 class, we can experiment with smoothed versions of $\alpha$ and see
-the (small) impact on $u$. Figure @eq-diffu-fd2-pde-st-sol-pc-fig2
+the (small) impact on $u$. Figure @fig-diffu-fd2-pde-st-sol-pc-fig2
 shows the result.
 
 ![Solution of the stationary diffusion equation corresponding to a *smoothed* piecewise constant diffusion coefficient.](fig/flow_in_layers_case1_eps){#fig-diffu-fd2-pde-st-sol-pc-fig2 width="400px"}
 
 ## Axi-symmetric diffusion
-{#sec-diffu-fd2-radial}
-
-## http://www.ewp.rpi.edu/hartford/~ernesto/S2004/CHT/Notes/s06.pdf
+## http://www.ewp.rpi.edu/hartford/~ernesto/S2004/CHT/Notes/s06.pdf {#sec-diffu-fd2-radial}
 
 Suppose we have a diffusion process taking place in a straight tube
 with radius $R$. We assume axi-symmetry such that $u$ is just a
@@ -301,31 +284,31 @@ quantities are independent of $\theta$. From the relations $x=\cos\theta$,
 $y=\sin\theta$, and $z=z$, between Cartesian and cylindrical coordinates,
 one can (with some effort) derive the diffusion equation in cylindrical
 coordinates, which with axi-symmetry takes the form
-
 $$
 \frac{\partial u}{\partial t} = \frac{1}{r}\frac{\partial}{\partial r}
 \left(r\dfc(r,z)\frac{\partial u}{\partial r}\right) + \frac{\partial}{\partial z}
 \left(\alpha(r,z)\frac{\partial u}{\partial z}\right) + f(r,z,t)\tp
 $$
-
 Let us assume that $u$ does not change along the tube axis so it
 suffices to compute variations in a cross section. Then $\partial u/\partial
 z = 0$ and we have a 1D diffusion equation in the radial coordinate
 $r$ and time $t$. In particular, we shall address the initial-boundary
 value problem
 
-```{=latex}
-\begin{alignat}{2}
-\frac{\partial u}{\partial t} &= \frac{1}{r}\frac{\partial}{\partial r}
-\left(r\dfc(r)\frac{\partial u}{\partial r}\right) + f(t), & r\in (0,R),\ t\in (0,T],
-\\
-\frac{\partial u}{\partial r}(0,t) &= 0, & t\in (0,T],
-\\
-u(R,t) &= 0, & t\in (0,T],
-\\
-u(r,0) &= I(r), & r\in [0,R].
-\end{alignat}
-```
+$$
+\frac{\partial u}{\partial t} = \frac{1}{r}\frac{\partial}{\partial r}
+\left(r\dfc(r)\frac{\partial u}{\partial r}\right) + f(t), \quad r\in (0,R),\ t\in (0,T],
+$$ {#eq-diffu-fd2-radial-PDE}
+$$
+\frac{\partial u}{\partial r}(0,t) = 0, \quad t\in (0,T],
+$$ {#eq-diffu-fd2-radial-symmr0}
+$$
+u(R,t) = 0, \quad t\in (0,T],
+$$ {#eq-diffu-fd2-radial-uR}
+$$
+u(r,0) = I(r), \quad r\in [0,R].
+$$ {#eq-diffu-fd2-radial-initial}
+
 The condition (@eq-diffu-fd2-radial-symmr0) is a necessary symmetry condition
 at $r=0$, while (@eq-diffu-fd2-radial-uR) could be any Dirichlet
 or Neumann condition (or Robin condition in case of cooling or heating).
@@ -336,26 +319,22 @@ implementing Neumann conditions). However, discretizing the PDE at
 $r=0$ poses a problem because of the $1/r$ factor. We therefore need
 to work out the PDE for discretization at $r=0$ with care.
 Let us, for the case of constant $\dfc$, expand the spatial derivative term to
-
 $$
 \alpha\frac{\partial^2 u}{\partial r^2} + \alpha\frac{1}{r}\frac{\partial u}{\partial r}\tp
 $$
 The last term faces a difficulty at $r=0$, since it becomes a $0/0$ expression
 caused by the symmetry condition at $r=0$.
 However, L'Hospital's rule can be used:
-
 $$
 \lim_{r\rightarrow 0} \frac{1}{r}\frac{\partial u}{\partial r}
 = \frac{\partial^2 u}{\partial r^2}\tp
 $$
 The PDE at $r=0$ therefore becomes
-
 $$
 \frac{\partial u}{\partial t} = 2\dfc\frac{\partial^2 u}{\partial r^2}
-+ f(t)\tp
+- f(t)\tp
 $$ {#eq-diffu-fd2-radial-eq-PDEr0-aconst}
 For a variable coefficient $\dfc(r)$ the expanded spatial derivative term reads
-
 $$
 \dfc(r)\frac{\partial^2 u}{\partial r^2} +
 \frac{1}{r}(\dfc(r) + r\dfc'(r))\frac{\partial u}{\partial r}\tp
@@ -364,18 +343,16 @@ We are interested in this expression for $r=0$. A necessary condition
 for $u$ to be axi-symmetric is that all input data, including $\alpha$,
 must also be axi-symmetric, implying that $\alpha'(0)=0$ (the second
 term vanishes anyway because of $r=0$). The limit of interest is
-
 $$
 \lim_{r\rightarrow 0}
 \frac{1}{r}\dfc(r)\frac{\partial u}{\partial r} =
 \dfc(0)\frac{\partial^2 u}{\partial r^2}\tp
 $$
 The PDE at $r=0$ now looks like
-
 $$
 \frac{\partial u}{\partial t} = 2\dfc(0)
 \frac{\partial^2 u}{\partial r^2}
-+ f(t),
+- f(t),
 $$ {#eq-diffu-fd2-radial-eq-PDEr0-avar}
 so there is no essential difference between the constant coefficient
 and variable coefficient cases.
@@ -383,7 +360,6 @@ and variable coefficient cases.
 The second-order derivative in (@eq-diffu-fd2-radial-eq-PDEr0-aconst)
 and (@eq-diffu-fd2-radial-eq-PDEr0-avar)
 is discretized in the usual way.
-
 $$
 2\dfc\frac{\partial^2}{\partial r^2}u(r_0,t_n) \approx
 [2\dfc D_rD_r u]^n_0 =
@@ -391,17 +367,14 @@ $$
 $$
 The fictitious value $u^n_{-1}$ can be eliminated using the discrete
 symmetry condition
-
 $$
 [D_{2r} u =0]^n_0 \quad\Rightarrow\quad u^n_{-1} = u^n_1,
 $$
 which then gives the modified approximation to the term with the second-order derivative
 of $u$ in $r$ at $r=0$:
-
 $$
 4\dfc \frac{u^{n}_{1} - u^{n}_0}{\Delta r^2}\tp
 $$
-
 The discretization of the term with the second-order derivative in $r$ at any
 internal mesh point is straightforward:
 
@@ -416,17 +389,13 @@ r_{i+\half}\dfc_{i+\half}(u_{i+1}^n - u_i^n) - r_{i-\half}\dfc_{i-\half}(u_{i}^n
 To complete the discretization, we need a scheme in time, but that can
 be done as before and does not interfere with the discretization in space.
 
-
 ## Spherically-symmetric diffusion
-{#sec-diffu-fd2-spherical}
-
-### Discretization in spherical coordinates
-Let us now pose the problem from Section @eq-diffu-fd2-radial
+### Discretization in spherical coordinates {#sec-diffu-fd2-spherical}
+Let us now pose the problem from Section @sec-diffu-fd2-radial
 in spherical coordinates, where $u$ only depends on the radial coordinate
 $r$ and time $t$. That is, we have spherical symmetry.
 For simplicity we restrict the diffusion coefficient $\dfc$ to be
 a constant. The PDE reads
-
 $$
 \frac{\partial u}{\partial t} = \frac{\dfc}{r^\gamma}\frac{\partial}{\partial r}
 \left(r^\gamma\frac{\partial u}{\partial r}\right) + f(t),
@@ -438,22 +407,19 @@ have the same mathematical form as
 in (@eq-diffu-fd2-radial-PDE)-(@eq-diffu-fd2-radial-initial).
 
 Since the PDE in spherical coordinates has the same form as the PDE
-in Section @eq-diffu-fd2-radial, just with the $\gamma$ parameter
+in Section @sec-diffu-fd2-radial, just with the $\gamma$ parameter
 being different, we can use the same discretization approach.
 At the origin $r=0$ we get problems with the term
-
 $$
 \frac{\gamma}{r}\frac{\partial u}{\partial t},
 $$
 but L'Hospital's rule shows that this term equals $\gamma\partial^2 u/
 \partial r^2$, and the PDE at $r=0$ becomes
-
 $$
 \frac{\partial u}{\partial t} = (\gamma+1)\dfc\frac{\partial^2 u}{\partial r^2}
-+ f(t)\tp
+- f(t)\tp
 $$
 The associated discrete form is then
-
 $$
 [D_t u = \half (\gamma+1)\dfc D_rD_r \overline{u}^t + \overline{f}^t]^{n+\frac{1}{2}}_i,
 $$
@@ -462,18 +428,15 @@ for a Crank-Nicolson scheme.
 ### Discretization in Cartesian coordinates
 The spherically-symmetric spatial derivative can be transformed to
 the Cartesian counterpart by introducing
-
 $$
 v(r,t) = ru(r,t)\tp
 $$
 Inserting $u=v/r$ in
-
 $$
 \frac{1}{r^2}\frac{\partial}{\partial r}
 \left(\dfc(r)r^2\frac{\partial u}{\partial r}\right),
 $$
 yields
-
 $$
 r\left(\frac{d \dfc}{dr}\frac{\partial v}{\partial r} +
 \dfc\frac{\partial^2 v}{\partial r^2}\right) - \frac{d \dfc}{dr}v \tp
@@ -483,7 +446,6 @@ $$
 r\frac{\partial}{\partial r}\left( \dfc\frac{\partial v}{\partial r}\right)\tp
 $$
 The PDE for $v$ takes the form
-
 $$
 \frac{\partial v}{\partial t} = \frac{\partial}{\partial r}\left( \dfc
 \frac{\partial v}{\partial r}\right) - \frac{1}{r}\frac{d\dfc}{dr}v + rf(r,t),
@@ -494,7 +456,6 @@ solver in Cartesian coordinates to compute $v$. With variable $\alpha$,
 a ``reaction'' term $v/r$ needs to be added to the Cartesian solver.
 The boundary condition $\partial u/\partial r=0$ at $r=0$, implied
 by symmetry, forces $v(0,t)=0$, because
-
 $$
 \frac{\partial u}{\partial r} = \frac{1}{r^2}\left(
 r\frac{\partial v}{\partial r} - v\right) = 0,\quad r=0\tp

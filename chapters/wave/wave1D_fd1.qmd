@@ -1,7 +1,3 @@
----
-title: "Wave1D Fd1.Do"
----
-
 Computational algorithms: Can they be briefly stated in words and then
 shown directly in Python code rather than in an Algorithm box?
 Think so, for wave1D we can say dx, dt, etc what they are and then
@@ -10,19 +6,19 @@ and sample call.
 
 Examples:
 
-  * Debugging: constant solution when we have Neumann conditions.
-  * Verification: convergence test, example with $h=\Delta x=\Delta t$.
-  * Make file database for solutions, 1D, 2D, 3D.
-  * guitar string, triangular, C=1
-  * a different C, ok solution
-  * $C>1$ instability
-  * moving left
-  * plug, C=1
-  * plug, C=0.95
-  * spherical waves
-  * Software: put spatial update in a separate function,
+* Debugging: constant solution when we have Neumann conditions.
+* Verification: convergence test, example with $h=\Delta x=\Delta t$.
+* Make file database for solutions, 1D, 2D, 3D.
+* guitar string, triangular, C=1
+* a different C, ok solution
+* $C>1$ instability
+* moving left
+* plug, C=1
+* plug, C=0.95
+* spherical waves
+* Software: put spatial update in a separate function,
 could introduce a version with a class for Mesh, Function (w/interpolation)
-  * Develop study guides for each file or module
+* Develop study guides for each file or module
 
 2D: lots of implementations (Fortran, Instant C++, Cython, vectorized)
 
@@ -36,7 +32,7 @@ Many types of wave motion can be described by the equation
 $u_{tt}=\nabla\cdot (c^2\nabla u) + f$, which we will solve
 in the forthcoming text by finite difference methods.
 
-{#sec-wave-string}
+## Simulation of waves on a string {#sec-wave-string}
 
 We begin our study of wave equations by simulating one-dimensional
 waves on a string, say on a guitar or violin.
@@ -46,19 +42,22 @@ $[0,L]$ on the $x$ axis, and let $u(x,t)$ be the displacement at
 time $t$ in the $y$ direction of a point initially at $x$.
 The displacement function $u$ is governed by the mathematical model
 
-\begin{align}
-\frac{\partial^2 u}{\partial t^2} &=
-c^2 \frac{\partial^2 u}{\partial x^2}, \quad &x\in (0,L),\ t\in (0,T]
-\\
-u(x,0) &= I(x), \quad &x\in [0,L]
-\\
-\frac{\partial}{\partial t}u(x,0) &= 0, \quad &x\in [0,L]
-\\
-u(0,t) & = 0, \quad  &t\in (0,T]
-\\
-u(L,t) & = 0, \quad  &t\in (0,T]
-\label{wave:pde1}
-\end{align}
+$$
+\frac{\partial^2 u}{\partial t^2} =
+c^2 \frac{\partial^2 u}{\partial x^2}, \quad x\in (0,L),\ t\in (0,T]
+$$ {#eq-wave-pde1}
+$$
+u(x,0) = I(x), \quad x\in [0,L]
+$$ {#eq-wave-pde1-ic-u}
+$$
+\frac{\partial}{\partial t}u(x,0) = 0, \quad x\in [0,L]
+$$ {#eq-wave-pde1-ic-ut}
+$$
+u(0,t) = 0, \quad  t\in (0,T]
+$$ {#eq-wave-pde1-bc-0}
+$$
+u(L,t) = 0, \quad  t\in (0,T]
+$$ {#eq-wave-pde1-bc-L}
 The constant $c$ and the function $I(x)$ must be prescribed.
 
 Equation (@eq-wave-pde1) is known as the one-dimensional
@@ -75,10 +74,8 @@ the string is fixed at the ends, i.e., that the displacement $u$ is zero.
 The solution $u(x,t)$ varies in space and time and describes waves that
 move with velocity $c$ to the left and right.
 
-
 Sometimes we will use a more compact notation for the partial derivatives
 to save space:
-
 $$
 u_t = \frac{\partial u}{\partial t}, \quad
 u_{tt} = \frac{\partial^2 u}{\partial t^2},
@@ -90,27 +87,23 @@ wave equation can be written compactly as $u_{tt} = c^2u_{xx}$.
 The PDE problem (@eq-wave-pde1)-(@eq-wave-pde1-bc-L) will now be
 discretized in space and time by a finite difference method.
 
-## Discretizing the domain
-{#sec-wave-string-mesh}
+## Discretizing the domain {#sec-wave-string-mesh}
 
 The temporal domain $[0,T]$ is represented by a finite number of mesh points
-
 $$
 0 = t_0 < t_1 < t_2 < \cdots < t_{N_t-1} < t_{N_t} = T \tp
 $$
 Similarly, the spatial domain $[0,L]$ is replaced by a set of mesh points
-
 $$
 0 = x_0 < x_1 < x_2 < \cdots < x_{N_x-1} < x_{N_x} = L \tp
 $$
 One may view the mesh as two-dimensional in the $x,t$ plane, consisting
 of points $(x_i, t_n)$, with $i=0,\ldots,N_x$ and $n=0,\ldots,N_t$.
 
-
 ### Uniform meshes
+
 For uniformly distributed mesh points we can introduce the constant
 mesh spacings $\Delta t$ and $\Delta x$. We have that
-
 $$
 x_i = i\Delta x,\ i=0,\ldots,N_x,\quad
 t_n = n\Delta t,\ n=0,\ldots,N_t\tp
@@ -120,8 +113,7 @@ $\Delta t = t_n - t_{n-1}$, $n=1,\ldots,N_t$. Figure @fig-wave-pde1-fig-mesh
 displays a mesh in the $x,t$ plane with $N_t=5$, $N_x=5$, and constant
 mesh spacings.
 
-## The discrete solution
-{#sec-wave-string-numerical-sol}
+## The discrete solution {#sec-wave-string-numerical-sol}
 
 The solution $u(x,t)$ is sought at the mesh points. We introduce
 the mesh function $u_i^n$, which approximates the exact
@@ -130,14 +122,12 @@ mesh point $(x_i,t_n)$ for $i=0,\ldots,N_x$ and $n=0,\ldots,N_t$.
 Using the finite difference method, we shall
 develop algebraic equations for computing the mesh function.
 
-## Fulfilling the equation at the mesh points
-{#sec-wave-string-samplingPDE}
+## Fulfilling the equation at the mesh points {#sec-wave-string-samplingPDE}
 
 In the finite difference method, we relax
 the condition that (@eq-wave-pde1) holds at all points in
 the space-time domain $(0,L)\times (0,T]$ to the requirement that the PDE is
 fulfilled at the *interior* mesh points only:
-
 $$
 \frac{\partial^2}{\partial t^2} u(x_i, t_n) =
 c^2\frac{\partial^2}{\partial x^2} u(x_i, t_n),
@@ -147,19 +137,16 @@ the initial conditions $u=I(x)$ and $u_t=0$,
 and at the boundaries $i=0,N_x$ we
 have the boundary condition $u=0$.
 
-## Replacing derivatives by finite differences
-{#sec-wave-string-fd}
+## Replacing derivatives by finite differences {#sec-wave-string-fd}
 
 The second-order derivatives can be replaced by central
 differences. The most widely used difference approximation of
 the second-order derivative is
-
 $$
 \frac{\partial^2}{\partial t^2}u(x_i,t_n)\approx
 \frac{u_i^{n+1} - 2u_i^n + u^{n-1}_i}{\Delta t^2}\tp
 $$
 It is convenient to introduce the finite difference operator notation
-
 $$
 [D_tD_t u]^n_i = \frac{u_i^{n+1} - 2u_i^n + u^{n-1}_i}{\Delta t^2}\tp
 $$
@@ -169,17 +156,14 @@ $$
 \frac{\partial^2}{\partial x^2}u(x_i,t_n)\approx
 \frac{u_{i+1}^{n} - 2u_i^n + u^{n}_{i-1}}{\Delta x^2} = [D_xD_x u]^n_i \tp
 $$
-
 ### Algebraic version of the PDE
 We can now replace the derivatives in (@eq-wave-pde1-step2)
 and get
-
 $$
 \frac{u_i^{n+1} - 2u_i^n + u^{n-1}_i}{\Delta t^2} =
 c^2\frac{u_{i+1}^{n} - 2u_i^n + u^{n}_{i-1}}{\Delta x^2},
 $$ {#eq-wave-pde1-step3b}
 or written more compactly using the operator notation:
-
 $$
 [D_tD_t u = c^2 D_xD_x]^{n}_i \tp
 $$ {#eq-wave-pde1-step3a}
@@ -202,53 +186,44 @@ a *finite difference scheme*.
 
 ![Mesh in space and time. The circles show points connected in a finite difference equation.](fig/stencil_n_interior){#fig-wave-pde1-fig-mesh width="500px"}
 
-
 ### Algebraic version of the initial conditions
 We also need to replace the derivative in the initial condition
 (@eq-wave-pde1-ic-ut) by a finite difference approximation.
 A centered difference of the type
-
 $$
 \frac{\partial}{\partial t} u(x_i,t_0)\approx
 \frac{u^1_i - u^{-1}**i}{2\Delta t} = [D**{2t} u]^0_i,
 $$
 seems appropriate. Writing out this equation and ordering the terms give
-
 $$
 u^{-1}_i=u^{1}_i,\quad i=0,\ldots,N_x\tp
 $$ {#eq-wave-pde1-step3c}
 The other initial condition can be computed by
-
 $$
 u_i^0 = I(x_i),\quad i=0,\ldots,N_x\tp
 $$
 
-
-## Formulating a recursive algorithm
-{#sec-wave-string-alg}
+## Formulating a recursive algorithm {#sec-wave-string-alg}
 
 We assume that $u^n_i$ and $u^{n-1}_i$ are available for
 $i=0,\ldots,N_x$.  The only unknown quantity in
 (@eq-wave-pde1-step3b) is therefore $u^{n+1}_i$, which we now can
 solve for:
-
 $$
 u^{n+1}_i = -u^{n-1}_i + 2u^n_i + C^2
 \left(u^{n}**{i+1}-2u^{n}**{i} + u^{n}_{i-1}\right)\tp
 $$ {#eq-wave-pde1-step4}
 We have here introduced the parameter
-
 $$
 C = c\frac{\Delta t}{\Delta x},
 $$
 known as the *Courant number*.
 
-
 :::{.callout-note title="$C$ is the key parameter in the discrete wave equation"}
 We see that the discrete version of the PDE features only one
 parameter, $C$, which is therefore the key parameter, together with
 $N_x$, that governs the quality of the numerical solution (see Section
-@eq-wave-pde1-analysis for details). Both the primary physical
+@sec-wave-pde1-analysis for details). Both the primary physical
 parameter $c$ and the numerical parameters $\Delta x$ and $\Delta t$
 are lumped together in $C$. Note that $C$ is a dimensionless
 parameter.
@@ -260,7 +235,6 @@ we find new values at the next time level by applying the formula
 @fig-wave-pde1-fig-mesh illustrates the points that are used to
 compute $u^3_2$. For the boundary points, $i=0$ and $i=N_x$, we apply
 the boundary conditions $u_i^{n+1}=0$.
-
 
 Even though sound reasoning leads up to
 (@eq-wave-pde1-step4), there is still a minor challenge with it that needs
@@ -274,7 +248,6 @@ quantity outside the time mesh (and the time domain). However, we can
 use the initial condition (@eq-wave-pde1-step3c) in combination with
 (@eq-wave-pde1-step4) when $n=0$ to eliminate $u^{-1}_i$ and
 arrive at a special formula for $u_i^1$:
-
 $$
 u_i^1 = u^0_i - \half
 C^2\left(u^{0}**{i+1}-2u^{0}**{i} + u^{0}_{i-1}\right) \tp
@@ -294,14 +267,9 @@ We can now summarize the computational algorithm:
    1. set $u^{n+1}_i=0$ for the boundary points having $i=0$, $i=N_x$.
 
 The algorithm essentially consists of moving a finite difference
-stencil through all the mesh points, which can be seen as an animation
-in a [web page](http://hplgit.github.io/fdm-book/doc/pub/book/html/mov-wave/D_stencil_gpl/index.html)
-or a "movie file":
-"{{< var docraw >}}/mov-wave/D_stencil_gpl/movie.ogg".
+stencil through all the mesh points.
 
-
-## Sketch of an implementation
-{#sec-wave-string-impl}
+## Sketch of an implementation {#sec-wave-string-impl}
 
 The algorithm only involves the three most recent time levels, so we
 need only three arrays for $u_i^{n+1}$, $u_i^n$, and $u_i^{n-1}$,
@@ -346,40 +314,38 @@ for n in range(1, Nt):
     u_nm1[:], u_n[:] = u_n, u
 ```
 
-
 Before implementing the algorithm, it is convenient to add a source
 term to the PDE (@eq-wave-pde1), since that gives us more freedom in
 finding test problems for verification. Physically, a source term acts
 as a generator for waves in the interior of the domain.
 
-## A slightly generalized model problem
-{#sec-wave-pde2-fd}
+## A slightly generalized model problem {#sec-wave-pde2-fd}
 
 We now address the following extended initial-boundary value problem
 for one-dimensional wave phenomena:
 
-\begin{align}
-u_{tt} &= c^2 u_{xx} + f(x,t), \quad &x\in (0,L),\ t\in (0,T]
-\\
-u(x,0) &= I(x), \quad &x\in [0,L]
-\\
-u_t(x,0) &= V(x), \quad &x\in [0,L]
-\\
-u(0,t) & = 0, \quad  &t>0
-\\
-u(L,t) & = 0, \quad  &t>0
-\label{wave:pde2}
-\end{align}
-
+$$
+u_{tt} = c^2 u_{xx} + f(x,t), \quad x\in (0,L),\ t\in (0,T]
+$$ {#eq-wave-pde2}
+$$
+u(x,0) = I(x), \quad x\in [0,L]
+$$ {#eq-wave-pde2-ic-u}
+$$
+u_t(x,0) = V(x), \quad x\in [0,L]
+$$ {#eq-wave-pde2-ic-ut}
+$$
+u(0,t) = 0, \quad  t>0
+$$ {#eq-wave-pde2-bc-0}
+$$
+u(L,t) = 0, \quad  t>0
+$$ {#eq-wave-pde2-bc-L}
 
 Sampling the PDE at $(x_i,t_n)$ and using the same finite difference
 approximations as above, yields
-
 $$
 [D_tD_t u = c^2 D_xD_x u + f]^{n}_i \tp
 $$ {#eq-wave-pde2-fdop}
 Writing this out and solving for the unknown $u^{n+1}_i$ results in
-
 $$
 u^{n+1}_i = -u^{n-1}_i + 2u^n_i + C^2
 (u^{n}**{i+1}-2u^{n}**{i} + u^{n}_{i-1}) + \Delta t^2 f^n_i \tp
@@ -388,26 +354,22 @@ $$ {#eq-wave-pde2-step3b}
 The equation for the first time step must be rederived. The discretization
 of the initial condition $u_t = V(x)$ at $t=0$
 becomes
-
 $$
 [D_{2t}u = V]^0_i\quad\Rightarrow\quad u^{-1}_i = u^{1}_i - 2\Delta t V_i,
 $$
 which, when inserted in (@eq-wave-pde2-step3b) for $n=0$, gives
 the special formula
-
 $$
 u^{1}_i = u^0_i - \Delta t V_i + {\half}
 C^2
 \left(u^{0}**{i+1}-2u^{0}**{i} + u^{0}_{i-1}\right) + \half\Delta t^2 f^0_i \tp
 $$ {#eq-wave-pde2-step3c}
 
-## Using an analytical solution of physical significance
-{#sec-wave-pde2-fd-standing-waves}
+## Using an analytical solution of physical significance {#sec-wave-pde2-fd-standing-waves}
 
 Many wave problems feature sinusoidal oscillations in time
 and space. For example, the original PDE problem
 (@eq-wave-pde1)-(@eq-wave-pde1-bc-L) allows an exact solution
-
 $$
 \uex(x,t) = A\sin\left(\frac{\pi}{L}x\right)
 \cos\left(\frac{\pi}{L}ct\right)\tp
@@ -443,14 +405,12 @@ There is also a detailed example on computing convergence rates in
 Section @sec-vib-ode1-verify.
 
 In the present problem, one expects the method to have a convergence rate
-of 2 (see Section @eq-wave-pde1-analysis), so if the computed rates
+of 2 (see Section @sec-wave-pde1-analysis), so if the computed rates
 are close to 2 on a sufficiently fine mesh, we have good evidence that
 the implementation is free of programming mistakes.
 
 ## Manufactured solution and estimation of convergence rates
-{#sec-wave-pde2-fd-MMS}
-
-### Specifying the solution and computing corresponding data
+### Specifying the solution and computing corresponding data {#sec-wave-pde2-fd-MMS}
 
 One problem with the exact solution (@eq-wave-pde2-test-ue) is
 that it requires a simplification ($V=0, f=0$) of the implemented problem
@@ -462,12 +422,10 @@ conditions to be compatible with the chosen solution.
 Given that our boundary conditions in the implementation are
 $u(0,t)=u(L,t)=0$, we must choose a solution that fulfills these
 conditions. One example is
-
 $$
 \uex(x,t) = x(L-x)\sin t\tp
 $$
 Inserted in the PDE $u_{tt}=c^2u_{xx}+f$ we get
-
 $$
 -x(L-x)\sin t = -c^2 2\sin t + f\quad\Rightarrow f = (2c^2 - x(L-x))\sin t\tp
 $$
@@ -485,7 +443,6 @@ simulations, letting each simulation use a finer mesh than the
 previous one. Such empirical estimation of convergence rates relies on
 an assumption that some measure $E$ of the numerical error is related
 to the discretization parameters through
-
 $$
 E = C_t\Delta t^r + C_x\Delta x^p,
 $$
@@ -508,13 +465,11 @@ $\Delta t$ and $\Delta x$ are related through the Courant number,
 $\Delta t = C\Delta x/c$, we set $h=\Delta t$, and then $\Delta x =
 hc/C$.  Now the expression for the error measure is greatly
 simplified:
-
 $$
 E = C_t\Delta t^r + C_x\Delta x^r =
 C_t h^r + C_x\left(\frac{c}{C}\right)^r h^r
 = Dh^r,\quad D = C_t+C_x\left(\frac{c}{C}\right)^r \tp
 $$
-
 ### Computing errors
 We choose an initial discretization parameter $h_0$ and run
 experiments with decreasing $h$: $h_i=2^{-i}h_0$, $i=1,2,\ldots,m$.
@@ -523,14 +478,14 @@ choice.  For each experiment we must record $E$ and $h$.  Standard
 choices of error measure are the $\ell^2$ and $\ell^\infty$ norms of the
 error mesh function $e^n_i$:
 
-\begin{align}
-E &= ||e^n_i||_{\ell^2} = \left( \Delta t\Delta x
+$$
+E = ||e^n_i||_{\ell^2} = \left( \Delta t\Delta x
 \sum_{n=0}^{N_t}\sum_{i=0}^{N_x}
 (e^n_i)^2\right)^{\half},\quad e^n_i = \uex(x_i,t_n)-u^n_i,
-\\
-E &= ||e^n_i||**{\ell^\infty} = \max**{i,n} |e^n_i|\tp
-\label{wave:pde2:fd:MMS:E:l2}
-\end{align}
+$$ {#eq-wave-pde2-fd-MMS-E-l2}
+$$
+E = ||e^n_i||_{\ell^\infty} = \max_{i,n} |e^n_i|\tp
+$$ {#eq-wave-pde2-fd-MMS-E-linf}
 In Python, one can compute $\sum_{i}(e^{n}_i)^2$ at each time step
 and accumulate the value in some sum variable, say `e2_sum`.  At the
 final time step one can do `sqrt(dt*dx*e2_sum)`.  For the
@@ -563,7 +518,6 @@ E_{i}& =D h_{i}^{r}\tp
 \end{align*}
 Dividing the two equations eliminates the (uninteresting) constant $D$.
 Thereafter, solving for $r$ yields
-
 $$
 r = \frac{\ln E_{i+1}/E_{i}}{\ln h_{i+1}/h_{i}}\tp
 $$
@@ -574,8 +528,7 @@ have $m$ experiments: $(h_0,E_0),\ldots,(h_{m-1}, E_{m-1})$.
 In our present discretization of the wave equation we expect $r=2$, and
 hence the $r_i$ values should converge to 2 as $i$ increases.
 
-## Constructing an exact solution of the discrete equations
-{#sec-wave-pde2-fd-verify-quadratic}
+## Constructing an exact solution of the discrete equations {#sec-wave-pde2-fd-verify-quadratic}
 
 With a manufactured or known analytical solution, as outlined above,
 we can estimate convergence rates and see if they have the correct
@@ -585,7 +538,7 @@ convergence rates. A significantly better test though,
 would be to check that the
 numerical solution is exactly what it should be. This will in general
 require exact knowledge of the numerical error, which we do not normally have
-(although we in Section @eq-wave-pde1-analysis establish such knowledge
+(although we in Section @sec-wave-pde1-analysis establish such knowledge
 in simple cases).
 However, it is possible to look for solutions where we can show that
 the numerical error vanishes, i.e., the solution of the original continuous
@@ -603,7 +556,6 @@ We shall now illustrate the construction of an exact solution to both the
 PDE itself and the discrete equations.
 Our chosen manufactured solution is quadratic in space
 and linear in time. More specifically, we set
-
 $$
 \uex (x,t) = x(L-x)(1+{\half}t),
 $$ {#eq-wave-pde2-fd-verify-quadratic-uex}
@@ -636,13 +588,11 @@ Similarly, we get that
 &= -2(1+{\half}t_n)
 \end{align*} \tp
 Now, $f^n_i = 2(1+{\half}t_n)c^2$, which results in
-
 $$
 [D_tD_t \uex - c^2D_xD_x\uex - f]^n_i = 0 +
 c^2 2(1 + {\half}t_{n}) +
 2(1+{\half}t_n)c^2 = 0\tp
 $$
-
 Moreover, $\uex(x_i,0)=I(x_i)$,
 $\partial \uex/\partial t = V(x_i)$ at $t=0$, and
 $\uex(x_0,t)=\uex(x_{N_x},0)=0$. Also the modified scheme for the
@@ -668,5 +618,5 @@ However, for 1D wave
 equations of the type $u_{tt}=c^2u_{xx}$ we shall see that there is always
 another much more powerful way of generating exact
 solutions (which consists in just setting $C=1$ (!), as shown in
-Section @eq-wave-pde1-analysis).
+Section @sec-wave-pde1-analysis).
 :::

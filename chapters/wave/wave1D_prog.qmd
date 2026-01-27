@@ -1,15 +1,11 @@
----
-title: "Wave1D Prog.Do"
----
-
-{#sec-wave-pde1-impl}
+## Implementation {#sec-wave-pde1-impl}
 
 This section presents the complete computational algorithm, its
 implementation in Python code, animation of the solution, and
 verification of the implementation.
 
 A real implementation of the basic computational algorithm from
-Sections @eq-wave-string-alg and @sec-wave-string-impl can be
+Sections @sec-wave-string-alg and @sec-wave-string-impl can be
 encapsulated in a function, taking all the input data for the problem
 as arguments.  The physical input data consists of $c$, $I(x)$,
 $V(x)$, $f(x,t)$, $L$, and $T$.  The numerical input is the mesh
@@ -30,8 +26,7 @@ mesh resolutions. Plotting functions of $x$
 with different spatial resolution is trivial,
 so it is easier to let $\Delta x$ vary in the simulations than $\Delta t$.
 
-## Callback function for user-specific actions
-{#sec-wave-pde1-impl-useraction}
+## Callback function for user-specific actions {#sec-wave-pde1-impl-useraction}
 
 The solution at all spatial points at a new time level is stored in an
 array `u` of length $N_x+1$. We need to decide what to do with
@@ -42,6 +37,7 @@ the user in the form of a user-supplied function
 ```python
 user_action(u, x, t, n)
 ```
+
 where `u` is the solution at the spatial points `x` at time `t[n]`.
 The `user_action` function is called from the solver at each time level `n`.
 
@@ -65,13 +61,12 @@ if the user returns `True`. For example,
 def my_user_action_function(u, x, t, n):
     return np.abs(u).max() > 10
 ```
+
 is a callback function that will terminate the solver function (given below) of the
 amplitude of the waves exceed 10, which is here considered as a numerical
 instability.
 
-
-## The solver function
-{#sec-wave-pde1-impl-solver}
+## The solver function {#sec-wave-pde1-impl-solver}
 
 A first attempt at a solver function is listed below.
 
@@ -150,17 +145,15 @@ def solver(I, V, f, c, L, dt, C, T, user_action=None):
 
 A couple of remarks about the above code is perhaps necessary:
 
- * Although we give `dt` and compute `dx` via `C` and `c`, the resulting
+* Although we give `dt` and compute `dx` via `C` and `c`, the resulting
    `t` and `x` meshes do not necessarily correspond exactly to these values
    because of rounding errors. To explicitly ensure that `dx` and `dt`
    correspond to the cell sizes in `x` and `t`, we recompute the values.
- * According to the particular choice made in Section @sec-wave-pde1-impl-useraction, a true value returned from `user_action` should terminate the simulation. This is here implemented by a `break` statement inside the for loop in the solver.
+* According to the particular choice made in Section @sec-wave-pde1-impl-useraction, a true value returned from `user_action` should terminate the simulation. This is here implemented by a `break` statement inside the for loop in the solver.
 
+## Verification: exact quadratic solution {#sec-wave-pde1-impl-verify-quadratic}
 
-## Verification: exact quadratic solution
-{#sec-wave-pde1-impl-verify-quadratic}
-
-We use the test problem derived in Section @eq-wave-pde2-fd for
+We use the test problem derived in Section @sec-wave-pde2-fd for
 verification. Below is a unit test based on this test problem
 and realized as a proper *test function* compatible with the unit test
 frameworks nose or pytest.
@@ -196,6 +189,7 @@ def test_quadratic():
 
     solver(I, V, f, c, L, dt, C, T, user_action=assert_no_error)
 ```
+
 When this function resides in the file `wave1D_u0.py`, one can run
 pytest to check that all test functions with names `test_*()`
 in this file work:
@@ -204,13 +198,12 @@ in this file work:
 Terminal> py.test -s -v wave1D_u0.py
 ```
 
-## Verification: convergence rates
-{#sec-wave-pde1-impl-verify-rate}
+## Verification: convergence rates {#sec-wave-pde1-impl-verify-rate}
 
 A more general method, but not so reliable as a verification method,
 is to compute the convergence rates and see if they coincide with
 theoretical estimates. Here we expect a rate of 2 according to
-the various results in Section @eq-wave-pde1-analysis.
+the various results in Section @sec-wave-pde1-analysis.
 A general function for computing convergence rates can be written like
 this:
 
@@ -474,7 +467,7 @@ def convergence_rates(
 ```
 
 Using the analytical solution from Section
-@eq-wave-pde2-fd-standing-waves, we can call `convergence_rates` to
+@sec-wave-pde2-fd-standing-waves, we can call `convergence_rates` to
 see if we get a convergence rate that approaches 2 and use the final
 estimate of the rate in an `assert` statement such that this function becomes
 a proper test function:
@@ -500,12 +493,11 @@ def test_convrate_sincos():
     print("rates sin(x)*cos(t) solution:", [round(r_, 2) for r_ in r])
     assert abs(r[-1] - 2) < 0.002
 ```
+
 Doing `py.test -s -v wave1D_u0.py` will run also this test function and
 show the rates 2.05, 1.98, 2.00, 2.00, and 2.00 (to two decimals).
 
-
-## Visualization: animating the solution
-{#sec-wave-pde1-impl-animate}
+## Visualization: animating the solution {#sec-wave-pde1-impl-animate}
 
 Now that we have verified the implementation it is time to do a
 real computation where we also display evolution of the waves
@@ -515,6 +507,7 @@ what type of visualizations we may want, it calls the callback function
 find the proper statements for plotting the solution.
 
 ### Function for administering the simulation
+
 The following `viz` function
 
  1. defines a `user_action` callback function
@@ -608,24 +601,24 @@ frame in the animation to file. We then need a filename where the
 frame number is padded with zeros, here `tmp_0000.png`,
 `tmp_0001.png`, and so on.  The proper printf construction is then
 `tmp_%04d.png`.
-Section @eq-vib-ode1-anim contains more basic
+Section @sec-vib-ode1-anim contains more basic
 information on making animations.
 
 ### Making movie files
+
 From the
 `frame_*.png` files containing the frames in the animation we can
 make video files.
-Section @eq-vib-ode1-anim presents basic information on how to
+Section @sec-vib-ode1-anim presents basic information on how to
 use the `ffmpeg` (or `avconv`) program for producing video files
 in different modern formats: Flash, MP4, Webm, and Ogg.
-
 
 The `viz` function creates an `ffmpeg` or `avconv` command
 with the proper arguments for each of the formats Flash, MP4, WebM,
 and Ogg. The task is greatly simplified by having a
 `codec2ext` dictionary for mapping
 video codec names to filename extensions.
-As mentioned in Section @eq-vib-ode1-anim, only
+As mentioned in Section @sec-vib-ode1-anim, only
 two formats are actually needed to ensure that all browsers can
 successfully play the video: MP4 and WebM.
 
@@ -637,10 +630,11 @@ or create an animated GIF using ImageMagick's `convert` command:
 ```bash
 Terminal> convert -delay 25 tmp_*.png animation.gif
 ```
+
 The `-delay` option specifies the delay between frames in hundredths of a second.
 
-
 ### Skipping frames for animation speed
+
 Sometimes the time step is small and $T$ is large, leading to an
 inconveniently large number of plot files and a slow animation on the
 screen. The solution to such a problem is to decide on a total number
@@ -658,6 +652,7 @@ skip_frame = int(t.size/float(num_frames))
 if n % skip_frame == 0 or n == t.size-1:
     st.plot(x, u, 'r-', ...)
 ```
+
 The initial condition (`n=0`) is included by `n % skip_frame == 0`,
 as well as every `skip_frame`-th frame.
 As `n % skip_frame == 0` will very seldom be true for the
@@ -674,13 +669,11 @@ is true when `n` equals $0, 13, 26, 39, ..., 780, 801$. The associated
 code is included in the `plot_u` function, inside the `viz` function,
 in the file [`wave1D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_u0.py).
 
-## Running a case
-{#sec-wave-pde1-guitar-data}
+## Running a case {#sec-wave-pde1-guitar-data}
 
 The first demo of our 1D wave equation solver concerns vibrations of a
 string that is initially deformed to a triangular shape, like when picking
 a guitar string:
-
 $$
 I(x) = \left\lbrace
 \begin{array}{ll}
@@ -736,7 +729,6 @@ The string should ideally consist of straight segments, but these are
 somewhat wavy due to numerical approximation. Run the case with the
 `wave1D_u0.py` code and $C=1$ to see the exact solution.
 
-
 ## Working with a scaled PDE model
 
 Depending on the model, it may be a substantial job to establish
@@ -747,7 +739,6 @@ physical parameters dramatically. The scaling technique consists of
 introducing new independent and dependent variables, with the aim that
 the absolute values of these lie in $[0,1]$. We introduce the
 dimensionless variables (details are found in Section 3.1.1 in [@Langtangen_scaling])
-
 $$
 \bar x = \frac{x}{L},\quad \bar t = \frac{c}{L}t,\quad
 \bar u = \frac{u}{a} \tp
@@ -757,7 +748,6 @@ and $a$ is a typical size of $u$, e.g., determined from the
 initial condition: $a=\max_x|I(x)|$.
 
 We get by the chain rule that
-
 $$
 \frac{\partial u}{\partial t} =
 \frac{\partial}{\partial\bar t}\left(a\bar u\right)
@@ -765,36 +755,30 @@ $$
 \frac{ac}{L}\frac{\partial\bar u}{\partial\bar t}\tp
 $$
 Similarly,
-
 $$
 \frac{\partial u}{\partial x}
 = \frac{a}{L}\frac{\partial\bar u}{\partial\bar x}\tp
 $$
 Inserting the dimensionless variables in the PDE gives, in case $f=0$,
-
 $$
 \frac{a^2c^2}{L^2}\frac{\partial^2\bar u}{\partial\bar t^2}
 = \frac{a^2c^2}{L^2}\frac{\partial^2\bar u}{\partial\bar x^2}\tp
 $$
 Dropping the bars, we arrive at the scaled PDE
-
 $$
 \frac{\partial^2 u}{\partial t^2} = \frac{\partial^2 u}{\partial x^2},
 \quad x\in (0,1),\ t\in (0,cT/L),
 $$
 which has no parameter $c^2$ anymore. The initial conditions are scaled
 as
-
 $$
 a\bar u(\bar x, 0) = I(L\bar x)
 $$
 and
-
 $$
 \frac{a}{L/c}\frac{\partial\bar u}{\partial\bar t}(\bar x,0) = V(L\bar x),
 $$
 resulting in
-
 $$
 \bar u(\bar x, 0) = \frac{I(L\bar x)}{\max_x |I(x)|},\quad
 \frac{\partial\bar u}{\partial\bar t}(\bar x,0) = \frac{L}{ac}V(L\bar x)\tp
@@ -837,7 +821,7 @@ by dividing $P$ by the time scale $L/c$, which results in $\tilde P=2$.
 Shorter waves in the initial condition will have a dimensionless
 shorter period $\tilde P=2/n$ ($n>1$).
 
-{#sec-wave-pde1-impl-vec}
+## Vectorized computations {#sec-wave-pde1-impl-vec}
 
 The computational algorithm for solving the wave equation visits one
 mesh point at a time and evaluates a formula for the new value
@@ -855,9 +839,7 @@ exploit parallel computing. Actually, there are Python tools like
 [Numba](http://numba.pydata.org) that can automatically turn
 vectorized code into parallel code.
 
-
-## Operations on slices of arrays
-{#sec-wave-pde1-impl-vec-slices-basics}
+## Operations on slices of arrays {#sec-wave-pde1-impl-vec-slices-basics}
 
 Efficient computing with `numpy` arrays demands that we avoid loops
 and compute with entire arrays at once (or at least large portions of them).
@@ -871,7 +853,7 @@ All the differences here are independent of each other.
 The computation of `d` can therefore alternatively be done by
 subtracting the array $(u_0,u_1,\ldots,u_{n-1})$ from
 the array where the elements are shifted one index upwards:
-$(u_1,u_2,\ldots,u_n)$, see Figure @eq-wave-pde1-vec-fig1.
+$(u_1,u_2,\ldots,u_n)$, see Figure @fig-wave-pde1-vec-fig1.
 The former subset of the array can be
 expressed by `u[0:n-1]`,
 `u[0:-1]`, or just
@@ -994,11 +976,10 @@ u2[1:-1] = u[:-2] - 2*u[1:-1] + u[2:] + f(x[1:-1])
 Obviously, `f` must be able to take an array as argument for `f(x[1:-1])`
 to make sense.
 
-## Finite difference schemes expressed as slices
-{#sec-wave-pde1-impl-vec-slices-fdm}
+## Finite difference schemes expressed as slices {#sec-wave-pde1-impl-vec-slices-fdm}
 
 We now have the necessary tools to vectorize the wave equation
-algorithm as described mathematically in Section @eq-wave-string-alg
+algorithm as described mathematically in Section @sec-wave-string-alg
 and through code in Section @sec-wave-pde1-impl-solver.  There are
 three loops: one for the initial condition, one for the first time
 step, and finally the loop that is repeated for all subsequent time
@@ -1023,16 +1004,13 @@ u[1:Nx] = 2*u_n[1:Nx]- u_nm1[1:Nx] + \
           C2*(u_n[0:Nx-1] - 2*u_n[1:Nx] + u_n[2:Nx+1])
 ```
 
-
 The program
 [`wave1D_u0v.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_u0v.py)
 contains a new version of the function `solver` where both the scalar
 and the vectorized loops are included (the argument `version` is
 set to `scalar` or `vectorized`, respectively).
 
-
-## Verification
-{#sec-wave-pde1-impl-vec-verify-quadratic}
+## Verification {#sec-wave-pde1-impl-vec-verify-quadratic}
 
 We may reuse the quadratic solution $\uex(x,t)=x(L-x)(1+{\half}t)$ for
 verifying also the vectorized code. A test function can now verify
@@ -1163,7 +1141,6 @@ def viz(
         )
     return cpu
 
-
 def test_quadratic():
     """
     Check the scalar and vectorized versions for
@@ -1190,7 +1167,6 @@ def test_quadratic():
     solver(I, V, f, c, L, dt, C, T, user_action=assert_no_error, version="scalar")
     solver(I, V, f, c, L, dt, C, T, user_action=assert_no_error, version="vectorized")
 
-
 def guitar(C):
     """Triangular wave (pulled guitar string)."""
     L = 0.75
@@ -1210,7 +1186,6 @@ def guitar(C):
     umin = -1.2 * a
     umax = -umin
     cpu = viz(I, 0, 0, c, L, dt, C, T, umin, umax, animate=True)
-
 
 def run_efficiency_experiments():
     L = 1
@@ -1243,7 +1218,6 @@ def run_efficiency_experiments():
         print("Nx=%3d: cpu_v/cpu_s: %.3f" % (Nx, 1.0 / speedup[-1]))
     print("Nx:", intervals)
     print("Speed-up:", speedup)
-
 
 if __name__ == "__main__":
     test_quadratic()  # verify
@@ -1312,8 +1286,7 @@ that the vectorized
 code runs substantially faster: the vectorized code runs approximately
 $N_x/10$ times as fast as the scalar code!
 
-## Remark on the updating of arrays
-{#sec-wave-pde1-impl-ref-switch}
+## Remark on the updating of arrays {#sec-wave-pde1-impl-ref-switch}
 
 At the end of each time step we need to update the `u_nm1` and `u_n`
 arrays such that they have the right content for the next time step:
@@ -1389,7 +1362,6 @@ the `user_action` function
 reduces the need to return the solution from the solver.)
 :::
 
-
 ## Making Movies
 
 We could also add making a hardcopy of the plot for later production of
@@ -1414,25 +1386,21 @@ The `animate` program, also in the ImageMagick suite, can play the movie file.
 Alternatively, the `display` program can be used to walk through each
 frame, i.e., solution curve, by pressing the space bar.
 
-## Exercise: Simulate a standing wave
-{#sec-wave-exer-standingwave}
+## Exercise: Simulate a standing wave {#sec-wave-exer-standingwave}
 file=wave_standing
 
 The purpose of this exercise is to simulate standing waves on $[0,L]$
 and illustrate the error in the simulation.
 Standing waves arise from an initial condition
-
 $$
 u(x,0)= A \sin\left(\frac{\pi}{L}mx\right),
 $$
 where $m$ is an integer and $A$ is a freely chosen amplitude.
 The corresponding exact solution can be computed and reads
-
 $$
 \uex(x,t) =  A\sin\left(\frac{\pi}{L}mx\right)
 \cos\left(\frac{\pi}{L}mct\right)\tp
 $$
-
 !bsubex
 Explain that for a function $\sin kx\cos \omega t$ the wave length
 in space is $\lambda = 2\pi /k$ and the period in time is $P=2\pi/\omega$.
@@ -1496,11 +1464,10 @@ The important
 parameters for numerical quality are $C$ and $k\Delta x$, where
 $C=c\Delta t/\Delta x$ is the Courant number and $k$ is defined above
 ($k\Delta x$ is proportional to how many mesh points we have per wave length
-in space, see Section @eq-wave-pde1-num-dispersion for explanation).
+in space, see Section @sec-wave-pde1-num-dispersion for explanation).
 !eremarks
 
-## Exercise: Add storage of solution in a user action function
-{#sec-wave-exer-store-list}
+## Exercise: Add storage of solution in a user action function {#sec-wave-exer-store-list}
 file=wave1D_u0_s_store
 
 Extend the `plot_u` function in the file `wave1D_u0.py` to also store
@@ -1524,8 +1491,7 @@ We have to explicitly use a copy of u, i.e. as `all_u.append(u.copy())`, otherwi
 
 !esol
 
-## Exercise: Use a class for the user action function
-{#sec-wave-exer-store-list-class}
+## Exercise: Use a class for the user action function {#sec-wave-exer-store-list-class}
 file=wave1D_u0_s2c
 
 Redo Exercise @sec-wave-exer-store-list using a class for the user
@@ -1543,9 +1509,7 @@ Using a class, we get
 
 !esol
 
-
-## Exercise: Compare several Courant numbers in one movie
-{#sec-wave-exer-multiple-C}
+## Exercise: Compare several Courant numbers in one movie {#sec-wave-exer-multiple-C}
 file=wave_numerics_comparison
 
 The goal of this exercise is to make movies where several curves,
@@ -1573,8 +1537,7 @@ Modifying the code to store all solutions for each $C$ value and also each corre
 
 !esol
 
-## Exercise: Implementing the solver function as a generator
-{#sec-wave-exer-useraction-generator}
+## Exercise: Implementing the solver function as a generator {#sec-wave-exer-useraction-generator}
 file=wave1D_u0_generator
 
 The callback function `user_action(u, x, t, n)` is called from the
@@ -1617,8 +1580,7 @@ at each time step.
 !bsol
 !esol
 
-## Project: Calculus with 1D mesh functions
-{#sec-wave-exer-mesh1D-calculus}
+## Project: Calculus with 1D mesh functions {#sec-wave-exer-mesh1D-calculus}
 file=mesh_calculus_1D
 
 This project explores integration and differentiation of
@@ -1655,7 +1617,6 @@ To compute the discrete integral $F_i$ of $f_i$, we assume that
 the mesh function $f_i$ varies linearly between the mesh points.
 Let $f(x)$ be such a linear interpolant of $f_i$. We then
 have
-
 $$
 F_i = \int_{x_0}^{x_i} f(x) dx\tp
 $$
@@ -1663,7 +1624,6 @@ The exact integral of a piecewise linear function $f(x)$ is
 given by the Trapezoidal rule. Show
 that if $F_{i}$ is already computed, we can find $F_{i+1}$
 from
-
 $$
 F_{i+1} = F_i + \half(f_i + f_{i+1})\Delta x\tp
 $$
@@ -1678,7 +1638,6 @@ function (say $f(x)=4x-2.5$) is exact.
 We know that the difference $F_{i+1} - F_i$ must amount to the area
 of a trapezoid, which is exactly what $\half(f_i + f_{i+1})\Delta x$ is.
 To show the relation above, we may start with the Trapezoidal rule:
-
 $$
 F_{i+1} = \Delta x \left[\frac{1}{2}f(x_0) + \sum_{j=1}^{n-1}f(x_j) + \frac{1}{2}f(x_n) \right] \thinspace . \nonumber
 $$
@@ -1694,7 +1653,6 @@ Finally, this gives
 $$
 F_{i+1} = F_i + \half(f_i + f_{i+1})\Delta x\tp
 $$
-
 See code below for implementation.
 !esol
 
@@ -1736,7 +1694,6 @@ See code below.
 !esol
 
 !esubex
-
 
 !bsol
 The final version of the code reads

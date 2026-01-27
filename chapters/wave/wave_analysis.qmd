@@ -1,20 +1,13 @@
----
-title: "Wave Analysis.Do"
----
+## Analysis of the wave equation {#sec-wave-pde1-analysis}
 
-{#sec-wave-pde1-analysis}
-
-## Properties of the solution of the wave equation
-{#sec-wave-pde1-properties}
+### Properties of the solution {#sec-wave-pde1-properties}
 
 The wave equation
-
 $$
 \frac{\partial^2 u}{\partial t^2} =
 c^2 \frac{\partial^2 u}{\partial x^2}
 $$
 has solutions of the form
-
 $$
 u(x,t) = g_R(x-ct) + g_L(x+ct),
 $$ {#eq-wave-pde1-gensol}
@@ -36,18 +29,15 @@ $x$ direction with constant velocity $c$ (introduce $\xi=x+ct$,
 look at the point $\xi=0$, $x=-ct$, which has velocity $dx/dt=-c$).
 
 With the particular initial conditions
-
 $$
 u(x,0)=I(x),\quad \frac{\partial}{\partial t}u(x,0) =0,
 $$
 we get, with $u$ as in (@eq-wave-pde1-gensol),
-
 $$
 g_R(x) + g_L(x) = I(x),\quad -cg_R'(x) + cg_L'(x) = 0\tp
 $$
 The former suggests $g_R=g_L$, and the former then leads to
 $g_R=g_L=I/2$. Consequently,
-
 $$
 u(x,t) = \half I(x-ct) + \half I(x+ct) \tp
 $$ {#eq-wave-pde1-gensol2}
@@ -56,7 +46,6 @@ the initial shape of $u$ is split into two parts, each with the same
 shape as $I$ but half
 of the initial amplitude. One part is traveling to the left and the
 other one to the right.
-
 
 The solution has two important physical features: constant amplitude
 of the left and right wave, and constant velocity of these two waves.
@@ -73,7 +62,6 @@ of the spatial domain $[0,L]$, which means that the
 boundaries are placed far away from the initial disturbance of $u$,
 the solution (@eq-wave-pde1-gensol2) is very clearly observed
 in a simulation.
-
 
 A useful representation of solutions of wave equations is a linear
 combination of sine and/or cosine waves. Such a sum of waves is a
@@ -107,7 +95,6 @@ Letting the number of $k$ values in $K$ tend to infinity, makes the sum
 $I(x)$ is represented as in (@eq-wave-Fourier-I), is also built of
 basic complex exponential wave components of the form $e^{ik(x\pm
 ct)}$ according to
-
 $$
 u(x,t) = \half \sum_{k\in K} b_k e^{ik(x - ct)}
 + \half \sum_{k\in K} b_k e^{ik(x + ct)} \tp
@@ -120,8 +107,7 @@ $\omega^2 = k^2c^2$, or $\omega =\pm kc$, reflecting the
 two solutions: one ($+kc$) traveling to the right and the other ($-kc$)
 traveling to the left.)
 
-## More precise definition of Fourier representations
-{#sec-wave-pde1-Fourier}
+## More precise definition of Fourier representations {#sec-wave-pde1-Fourier}
 
 The above introduction to function representation by sine and cosine
 waves was quick and intuitive, but will suffice as background
@@ -136,13 +122,12 @@ It is well known that periodic functions can be represented by
 Fourier series. A generalization of the Fourier series idea to
 non-periodic functions defined on the real line is the *Fourier transform*:
 
-
-\begin{align}
-I(x) &= \int_{-\infty}^\infty A(k)e^{ikx}dk,
- \\
-A(k) &= \int_{-\infty}^\infty I(x)e^{-ikx}dx\tp
-\label{wave:pde1:Fourier:I}
-\end{align}
+$$
+I(x) = \int_{-\infty}^\infty A(k)e^{ikx}dk,
+$$ {#eq-wave-pde1-Fourier-I}
+$$
+A(k) = \int_{-\infty}^\infty I(x)e^{-ikx}dx\tp
+$$ {#eq-wave-pde1-Fourier-A}
 The function $A(k)$ reflects the weight of each wave component $e^{ikx}$
 in an infinite sum of such wave components. That is, $A(k)$
 reflects the frequency content in the function $I(x)$. Fourier transforms
@@ -150,11 +135,9 @@ are particularly fundamental for analyzing and understanding time-varying
 signals.
 
 The solution of the linear 1D wave PDE can be expressed as
-
 $$
 u(x,t) = \int_{-\infty}^\infty A(k)e^{i(kx-\omega(k)t)}dx\tp
 $$
-
 In a finite difference method, we represent $u$ by a mesh function
 $u^n_q$, where $n$ counts temporal mesh points and $q$ counts
 the spatial ones (the usual counter for spatial points, $i$, is
@@ -194,10 +177,8 @@ the discrete Fourier transform appears in the example below.
 import numpy as np
 from numpy import pi, sin
 
-
 def I(x):
     return sin(2 * pi * x) + 0.5 * sin(4 * pi * x) + 0.1 * sin(6 * pi * x)
-
 
 L = 10
 Nx = 100
@@ -215,16 +196,13 @@ plt.plot(freqs, A_amplitude)
 plt.show()
 ```
 
-## Stability
-{#sec-wave-pde1-stability}
+## Stability {#sec-wave-pde1-stability}
 
 The scheme
-
 $$
 [D_tD_t u = c^2 D_xD_x u]^n_q
 $$ {#eq-wave-pde1-analysis-scheme}
 for the wave equation $u_{tt} = c^2u_{xx}$ allows basic wave components
-
 $$
 u^n_q=e^{i(kx_q - \tilde\omega t_n)}
 $$
@@ -244,26 +222,23 @@ The following analysis will answer these questions. We shall
 continue using $q$ as an identifier for a certain mesh point in
 the $x$ direction.
 
-##We use $p$ because we can then naturally continue with $q$ and $r$ as indices
-##in the $y$ and $z$ directions.
+## We use $p$ because we can then naturally continue with $q$ and $r$ as indices
+## in the $y$ and $z$ directions.
 
 ### Preliminary results
 A key result needed in the investigations is the finite difference
 approximation of a second-order derivative acting on a complex
 wave component:
-
 $$
 [D_tD_t e^{i\omega t}]^n = -\frac{4}{\Delta t^2}\sin^2\left(
 \frac{\omega\Delta t}{2}\right)e^{i\omega n\Delta t} \tp
 $$
 By just changing symbols ($\omega\rightarrow k$,
 $t\rightarrow x$, $n\rightarrow q$) it follows that
-
 $$
 [D_xD_x e^{ikx}]_q = -\frac{4}{\Delta x^2}\sin^2\left(
 \frac{k\Delta x}{2}\right)e^{ikq\Delta x} \tp
 $$
-
 ### Numerical wave propagation
 Inserting a basic wave component $u^n_q=e^{i(kx_q-\tilde\omega t_n)}$ in
 (@eq-wave-pde1-analysis-scheme) results in the need to
@@ -275,32 +250,27 @@ evaluate two expressions:
 \lbrack D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q &= \lbrack D_xD_x e^{ikx}\rbrack_q e^{-i\tilde\omega n\Delta t}\nonumber\\ &= -\frac{4}{\Delta x^2}\sin^2\left(
 \frac{k\Delta x}{2}\right)e^{ikq\Delta x}e^{-i\tilde\omega n\Delta t} \tp  \end{align}
 Then the complete scheme,
-
 $$
 \lbrack D_tD_t e^{ikx}e^{-i\tilde\omega t} = c^2D_xD_x e^{ikx}e^{-i\tilde\omega t}\rbrack^n_q
 $$
 leads to the following equation for the unknown numerical
 frequency $\tilde\omega$
 (after dividing by $-e^{ikx}e^{-i\tilde\omega t}$):
-
 $$
 \frac{4}{\Delta t^2}\sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
 = c^2 \frac{4}{\Delta x^2}\sin^2\left(\frac{k\Delta x}{2}\right),
 $$
 or
-
 $$
 \sin^2\left(\frac{\tilde\omega\Delta t}{2}\right)
 = C^2\sin^2\left(\frac{k\Delta x}{2}\right),
 $$ {#eq-wave-pde1-analysis-sineq1}
 where
-
 $$
 C = \frac{c\Delta t}{\Delta x}
 $$
 is the Courant number.
 Taking the square root of (@eq-wave-pde1-analysis-sineq1) yields
-
 $$
 \sin\left(\frac{\tilde\omega\Delta t}{2}\right)
 = C\sin\left(\frac{k\Delta x}{2}\right),
@@ -312,7 +282,6 @@ The right-hand side of
 the sine function on the left-hand side has values in $[-1,1]$
 for real $\tilde\omega$. The magnitude of the sine function on
 the right-hand side attains the value 1 when
-
 $$
 \frac{k\Delta x}{2} = \frac{\pi}{2} + m\pi,\quad m\in\Integer \tp
 $$
@@ -325,7 +294,6 @@ waves are too short to be represented
 on a mesh with spacing $\Delta x$.
 For the shortest possible wave in the mesh, $\sin\left(k\Delta x/2\right)=1$,
 and we must require
-
 $$
 C\leq 1 \tp
 $$ {#eq-wave-pde1-stability-crit}
@@ -353,12 +321,10 @@ the shortest possible wave component in the mesh. This noise will
 therefore grow with time and destroy the whole solution.
 :::
 
-## Numerical dispersion relation
-{#sec-wave-pde1-num-dispersion}
+## Numerical dispersion relation {#sec-wave-pde1-num-dispersion}
 
 Equation (@eq-wave-pde1-analysis-sineq2) can be solved with respect
 to $\tilde\omega$:
-
 $$
 \tilde\omega = \frac{2}{\Delta t}
 \sin^{-1}\left( C\sin\left(\frac{k\Delta x}{2}\right)\right) \tp
@@ -377,7 +343,6 @@ where the wave velocity depends on $k$.
 
 The special case $C=1$ deserves attention since then the right-hand side
 of (@eq-wave-pde1-disprel) reduces to
-
 $$
 \frac{2}{\Delta t}\frac{k\Delta x}{2} = \frac{1}{\Delta t}
 \frac{\omega\Delta x}{c} = \frac{\omega}{C} = \omega \tp
@@ -398,7 +363,6 @@ error measures in wave velocity: $\tilde c - c$ and $\tilde c/c$,
 where $c=\omega /k$ and $\tilde c = \tilde\omega /k$.
 It appears that the most convenient expression to work with is $\tilde c/c$,
 since it can be written as a function of just two parameters:
-
 $$
 \frac{\tilde c}{c} = \frac{1}{Cp}{\sin}^{-1}\left(C\sin p\right),
 $$
@@ -414,7 +378,6 @@ so it does not make sense to have $p>\pi/2$.
 
 We may introduce the function $r(C, p)=\tilde c/c$ for further investigation
 of numerical errors in the wave velocity:
-
 $$
 r(C, p) = \frac{1}{Cp}{\sin}^{-1}\left(C\sin p\right), \quad C\in (0,1],\ p\in (0,\pi/2] \tp
 $$ {#eq-wave-pde1-disprel2}
@@ -466,7 +429,6 @@ that makes it impossible to convert the series to a Python function
 
 From the `rs_error_leading_order` expression above, we see that the leading
 order term in the error of this series expansion is
-
 $$
 \frac{1}{6}\left(\frac{k\Delta x}{2}\right)^2(C^2-1)
 = \frac{k^2}{24}\left( c^2\Delta t^2 - \Delta x^2\right),
@@ -503,12 +465,9 @@ Since we already know that the numerical solution is exact for $C=1$, the
 remaining terms in the Taylor series expansion
 will also contain factors of $C-1$ and cancel for $C=1$.
 
-
-## Extending the analysis to 2D and 3D
-{#sec-wave-pde1-analysis-2D3D}
+## Extending the analysis to 2D and 3D {#sec-wave-pde1-analysis-2D3D}
 
 The typical analytical solution of a 2D wave equation
-
 $$
 u_{tt} = c^2(u_{xx} + u_{yy}),
 $$
@@ -516,22 +475,18 @@ is a wave traveling in the direction of $\kk = k_x\ii + k_y\jj$, where
 $\ii$ and $\jj$ are unit vectors in the $x$ and $y$ directions, respectively
 ($\ii$ should not be confused with $i=\sqrt{-1}$ here).
 Such a wave can be expressed by
-
 $$
 u(x,y,t) = g(k_xx + k_yy - kct)
 $$
 for some twice differentiable function $g$, or with $\omega =kc$, $k=|\kk|$:
-
 $$
 u(x,y,t) = g(k_xx + k_yy - \omega t)\tp
 $$
 We can, in particular, build a solution by adding complex Fourier components
 of the form
-
 $$
 e^{(i(k_xx + k_yy - \omega t))} \tp
 $$
-
 A discrete 2D wave equation can be written as
 $$
 \lbrack D_tD_t u = c^2(D_xD_x u + D_yD_y u)\rbrack^n_{q,r} \tp
@@ -556,7 +511,6 @@ $$
 + C_y^2\sin^2 p_y,
 $$
 where we have eliminated the factor 4 and introduced the symbols
-
 $$
 C_x = \frac{c\Delta t}{\Delta x},\quad
 C_y = \frac{c\Delta t}{\Delta y}, \quad
@@ -566,39 +520,32 @@ $$
 For a real-valued $\tilde\omega$ the right-hand side
 must be less than or equal to unity in absolute value, requiring in general
 that
-
 $$
 C_x^2 + C_y^2 \leq 1 \tp
 $$ {#eq-wave-pde1-analysis-2DstabC}
 This gives the stability criterion, more commonly expressed directly
 in an inequality for the time step:
-
 $$
 \Delta t \leq \frac{1}{c} \left( \frac{1}{\Delta x^2} +
 \frac{1}{\Delta y^2}\right)^{-\halfi}
 $$ {#eq-wave-pde1-analysis-2Dstab}
 A similar, straightforward analysis for the 3D case leads to
-
 $$
 \Delta t \leq \frac{1}{c}\left( \frac{1}{\Delta x^2} +
 \frac{1}{\Delta y^2} + \frac{1}{\Delta z^2}\right)^{-\halfi}
 $$
 In the case of a variable coefficient $c^2=c^2(\xpoint)$, we must use
 the worst-case value
-
 $$
 \bar c = \sqrt{\max_{\xpoint\in\Omega} c^2(\xpoint)}
 $$
 in the stability criteria. Often, especially in the variable wave
 velocity case, it is wise to introduce a safety factor $\beta\in (0,1]$ too:
-
 $$
 \Delta t \leq \beta \frac{1}{\bar c}
 \left( \frac{1}{\Delta x^2} +
 \frac{1}{\Delta y^2} + \frac{1}{\Delta z^2}\right)^{-\halfi}
 $$
-
-
 The exact numerical dispersion relations in 2D and 3D becomes, for constant $c$,
 
 \begin{align}
@@ -612,13 +559,11 @@ We can visualize the numerical dispersion error in 2D much like we did
 in 1D. To this end, we need to reduce the number of parameters in
 $\tilde\omega$. The direction of the wave is parameterized by the
 polar angle $\theta$, which means that
-
 $$
 k_x = k\sin\theta,\quad k_y=k\cos\theta\tp
 $$
 A simplification is to set $\Delta x=\Delta y=h$.
 Then $C_x=C_y=c\Delta t/h$, which we call $C$. Also,
-
 $$
 p_x=\half kh\cos\theta,\quad p_y=\half kh\sin\theta\tp
 $$
@@ -633,13 +578,11 @@ We want to visualize the error in the numerical frequency. To avoid having
 $\Delta t$ as a free parameter in $\tilde\omega$, we work with
 $\tilde c/c = \tilde\omega/(kc)$. The coefficient in front of the
 $\sin^{-1}$ factor is then
-
 $$
 \frac{2}{kc\Delta t} = \frac{2}{2kc\Delta t h/h} =
 \frac{1}{Ckh} = \frac{2}{Cp},
 $$
 and
-
 $$
 \frac{\tilde c}{c} = \frac{2}{Cp}
 \sin^{-1}\left(C\left(\sin^2 (p\cos\theta)
@@ -663,6 +606,7 @@ see that the maximum $C$ value gives the best results, and that
 waves whose propagation direction makes an angle of 45 degrees with
 an axis are the most accurate.
 
-@@@CODE src-wave/analysis/dispersion_relation_2D.py def disp@# See
+```{.python include="../src/wave/analysis/dispersion_relation_2D.py" start-after="def disp" end-before="# See"}
+```
 
 ![Error in numerical dispersion in 2D.](fig/disprel2D.png){#fig-wave-pde1-fig-disprel2D width="600px"}

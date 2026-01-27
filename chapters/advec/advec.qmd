@@ -1,10 +1,4 @@
----
-title: "Advec.Do"
----
-
-{#sec-ch-advec}
-
-Wave (Chapter @eq-ch-wave) and diffusion (Chapter @eq-ch-diffu)
+Wave (Chapter @sec-ch-wave) and diffusion (Chapter @sec-ch-diffu)
 equations are solved reliably by finite difference methods. As soon as
 we add a first-order derivative in space, representing *advective*
 transport (also known as *convective* transport), the numerics gets
@@ -13,7 +7,7 @@ well. We shall show how and why such methods fail and provide
 remedies. The present chapter builds on basic knowledge about finite
 difference methods for diffusion and wave equations, including the
 analysis by Fourier components, truncation error analysis (Appendix
-@eq-ch-trunc), and compact difference notation.
+@sec-ch-trunc), and compact difference notation.
 
 :::{.callout-note title="Remark on terminology"}
 It is common to refer to movement of a fluid as convection, while advection
@@ -31,19 +25,20 @@ advection PDEs, with emphasis on generalizations to real geophysical
 problems. The book by Fletcher [@FletcherI_2013] also has a good
 overview of methods for advection and convection problems.
 
-{#sec-advec-1D}
+## 1D linear advection equations with constant velocity {#sec-advec-1D}
 
 We consider the pure advection model
 
-\begin{align}
-\frac{\partial u}{\partial t} + v\frac{\partial u}{\partial x} &= 0,\quad
-& x\in (0,L),\ t\in (0,T],
-\\
-u(x,0) &= I(x),& x\in (0,L),
-\\
-u(0,t) &= U_0,& t\in (0,T].
-\label{advec:1D:pde1:u}
-\end{align}
+$$
+\frac{\partial u}{\partial t} + v\frac{\partial u}{\partial x} = 0,\quad
+x\in (0,L),\ t\in (0,T],
+$$ {#eq-advec-1D-pde1}
+$$
+u(x,0) = I(x), \quad x\in (0,L),
+$$ {#eq-advec-1D-pde1-I}
+$$
+u(0,t) = U_0, \quad t\in (0,T].
+$$ {#eq-advec-1D-pde1-u}
 In (@eq-advec-1D-pde1-u), $v$ is a given parameter, typically reflecting
 the transport velocity of a quantity $u$ with a flow.
 There is only one boundary condition (@eq-advec-1D-pde1-I) since
@@ -55,7 +50,6 @@ if $v>0$ through the domain.
 It is easiest to find the solution of (@eq-advec-1D-pde1-u) if we remove the
 boundary condition and consider a process on the
 infinite domain $(-\infty, \infty)$. The solution is simply
-
 $$
 u(x,t) = I(x-vt)\tp
 $$ {#eq-advec-1D-pde1-sol}
@@ -63,7 +57,6 @@ This is also the solution we expect locally in a finite domain before boundary
 conditions have reflected or modified the wave.
 
 A particular feature of the solution (@eq-advec-1D-pde1-sol) is that
-
 $$
 u(x_i, t_{n+1}) = u(x_{i-1}, t_n),
 $$ {#eq-advec-1D-pde1-uprop1}
@@ -78,7 +71,6 @@ u(i\Delta x, (n+1)\Delta t) &= I(i\Delta x - v(n+1)\Delta t) \nonumber \\
 \end{align}
 provided $v = \Delta x/\Delta t$. So, whenever we see a scheme that
 collapses to
-
 $$
 u^{n+1}**i = u**{i-1}^n,
 $$ {#eq-advec-1D-pde1-uprop2}
@@ -91,37 +83,30 @@ for the advection PDE in multiple dimensions is a challenging topic beyond
 the scope of this text.
 
 ## Simplest scheme: forward in time, centered in space
-{#sec-advec-1D-FTCS}
-
-### Method
+### Method {#sec-advec-1D-FTCS}
 A first attempt to solve a PDE like (@eq-advec-1D-pde1-u) will normally
 be to look for a time-discretization scheme that is explicit so we avoid
 solving systems of linear equations. In space, we anticipate that
 centered differences are most accurate and therefore best. These
 two arguments lead us to a Forward Euler scheme in time and
 centered differences in space:
-
 $$
 [D_t^+ u + vD_{2x} u = 0]^n_i
 $$
 Written out, we see that this expression implies that
-
 $$
 u^{n+1} = u^n - \half C (u^n_{i+1}-u_{i-1}^n),
 $$
 with $C$ as the Courant number
-
 $$
 C = \frac{v\Delta t}{\Delta x}\tp
 $$
-
 ### Implementation
 
 A solver function for our scheme goes as follows.
 
 ```python
 import numpy as np
-
 
 def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
     Nt = int(round(T / float(dt)))
@@ -152,7 +137,6 @@ def solver_FECS(I, U0, v, L, dt, C, T, user_action=None):
             user_action(u, x, t, n + 1)
 
         u_n, u = u, u_n
-
 
 def solver(I, U0, v, L, dt, C, T, user_action=None, scheme="FE", periodic_bc=True):
     Nt = int(round(T / float(dt)))
@@ -239,7 +223,6 @@ def solver(I, U0, v, L, dt, C, T, user_action=None, scheme="FE", periodic_bc=Tru
         print("I:", integral[n + 1])
     return integral
 
-
 def run_FECS(case):
     """Special function for the FECS case."""
     if case == "gaussian":
@@ -286,7 +269,6 @@ def run_FECS(case):
     plt.savefig("tmp.pdf")
     plt.axis([0, L, -0.75, 1.1])
     plt.show()
-
 
 def run(scheme="UP", case="gaussian", C=1, dt=0.01):
     """General admin routine for explicit and implicit solvers."""
@@ -379,7 +361,6 @@ def run(scheme="UP", case="gaussian", C=1, dt=0.01):
         os.system(cmd)
     print("Integral of u:", integral.max(), integral.min())
 
-
 def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
     """
     Full solver for the model problem using the theta-rule
@@ -460,7 +441,6 @@ def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
     t1 = time.perf_counter()
     return integral
 
-
 if __name__ == "__main__":
     run(scheme="LW", case="gaussian", C=1, dt=0.01)
 ```
@@ -471,19 +451,18 @@ velocity $v$ to the right (if $v>0$). Let us consider two different
 initial conditions, one smooth (Gaussian pulse) and one non-smooth
 (half-truncated cosine pulse):
 
-\begin{align}
-u(x,0) &= Ae^{-\half\left(\frac{x-L/10}{\sigma}\right)^2},
-\\
-u(x,0) &= A\cos\left(\frac{5\pi}{L}\left( x - \frac{L}{10}\right)\right),\quad
+$$
+u(x,0) = Ae^{-\half\left(\frac{x-L/10}{\sigma}\right)^2},
+$$
+$$
+u(x,0) = A\cos\left(\frac{5\pi}{L}\left( x - \frac{L}{10}\right)\right),\quad
 x < \frac{L}{5} \hbox{ else } 0\tp
-\label{advec:1D:case_gaussian}
-\end{align}
+$$ {#eq-advec-1D-case_gaussian}
 The parameter $A$ is the maximum value of the initial condition.
 
 Before doing numerical simulations, we scale the PDE
 problem and introduce $\bar x = x/L$ and $\bar t= vt/L$,
 which gives
-
 $$
 \frac{\partial\bar u}{\partial \bar t} +
 \frac{\partial\bar u}{\partial\bar x} = 0\tp
@@ -543,7 +522,6 @@ def run_FECS(case):
     plt.axis([0, L, -0.75, 1.1])
     plt.show()
 
-
 def run(scheme="UP", case="gaussian", C=1, dt=0.01):
     """General admin routine for explicit and implicit solvers."""
 
@@ -635,7 +613,6 @@ def run(scheme="UP", case="gaussian", C=1, dt=0.01):
         os.system(cmd)
     print("Integral of u:", integral.max(), integral.min())
 
-
 def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
     """
     Full solver for the model problem using the theta-rule
@@ -716,7 +693,6 @@ def solver_theta(I, v, L, dt, C, T, theta=0.5, user_action=None, FE=False):
     t1 = time.perf_counter()
     return integral
 
-
 if __name__ == "__main__":
     run(scheme="LW", case="gaussian", C=1, dt=0.01)
 ```
@@ -732,11 +708,9 @@ hand calculations produces the same numbers as the code, so
 the implementation seems to be correct.
 The hypothesis is therefore that the solution is unstable.
 
-## Analysis of the scheme
-{#sec-advec-1D-FTCS-anal}
+## Analysis of the scheme {#sec-advec-1D-FTCS-anal}
 
 It is easy to show that a typical Fourier component
-
 $$
 u(x,t)= B\sin (k(x-ct))
 $$
@@ -748,12 +722,10 @@ this amplitude, but keep it here in the beginning for completeness.)
 A general solution may be viewed as a collection of long and
 short waves with different amplitudes. Algebraically, the work
 simplifies if we introduce the complex Fourier component
-
 $$
 u(x,t)=\Aex e^{ikx},
 $$
 with
-
 $$
 \Aex=Be^{-ikv\Delta t} = Be^{-iCk\Delta x}\tp
 $$
@@ -764,24 +736,19 @@ solution, and we can use the numerically computed values of $\Aex$
 (denoted $A$) to learn about the
 quality of the scheme. Hence, to analyze the difference scheme we have just
 implemented, we look at how it treats the Fourier component
-
 $$
 u_q^n = A^n e^{ikq\Delta x}\tp
 $$
-
 Inserting the numerical component in the scheme,
-
 $$
 [D_t^+ A e^{ikq\Delta x} + v D_{2x}A e^{ikq\Delta x} = 0]^n_q,
 $$
 and making use of (@eq-form-exp-fd1c-center)
 results in
-
 $$
 [e^{ikq\Delta x} (\frac{A-1}{\Delta t} + v\frac{1}{\Delta x}i\sin (k\Delta x)) = 0]^n_q,
 $$
 which implies
-
 $$
 A = 1 - iC\sin(k\Delta x)\tp
 $$
@@ -795,18 +762,14 @@ exact solution will not. Regardless of $\Delta t$, we get unstable
 numerical solutions.
 
 ## Leapfrog in time, centered differences in space
-{#sec-advec-1D-leapfrog}
-
-### Method
+### Method {#sec-advec-1D-leapfrog}
 
 Another explicit scheme is to do a ``leapfrog'' jump over $2\Delta t$ in
 time and combine it with central differences in space:
-
 $$
 [D_{2t} u + vD_{2x} u = 0]_i^n,
 $$
 which results in the updating formula
-
 $$
 u^{n+1}_i = u^{n-1}**i - C(u**{i+1}^n-u_{i-1}^n)\tp
 $$
@@ -853,35 +816,24 @@ is in fact identical to the exact solution (!).
 
 ### Running more test cases
 We can run two types of initial conditions for $C=0.8$: one very
-smooth with a Gaussian function (Figure @eq-advec-1D-LF-fig1-C08) and
+smooth with a Gaussian function (Figure @fig-advec-1D-LF-fig1-C08) and
 one with a discontinuity in the first derivative (Figure
-@eq-advec-1D-LF-fig2-C08).  Unless we have a very fine mesh, as in
+@fig-advec-1D-LF-fig2-C08).  Unless we have a very fine mesh, as in
 the left plots in the figures, we get small ripples behind the main
 wave, and this main wave has the amplitude reduced.
 
 ![Advection of a Gaussian function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).](fig/gaussian_LF_C08){#fig-advec-1D-LF-fig1-C08 width="800px"}
 
-Advection of the Gaussian function with a leapfrog scheme, using $C=0.8$ and $\Delta t = 0.01$ can be seen in a "movie file":
-"{{< var docraw >}}/mov-advec/gaussian/LF/C08_dt01.ogg". Alternatively, with $\Delta t = 0.001$, we get this "movie file":
-"{{< var docraw >}}/mov-advec/gaussian/LF/C08_dt001.ogg".
-
 ![Advection of half a cosine function with a leapfrog scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).](fig/cosinehat_LF_C08){#fig-advec-1D-LF-fig2-C08 width="800px"}
-
-Advection of the cosine hat function with a leapfrog scheme, using $C=0.8$ and $\Delta t = 0.01$ can be seen in a "movie file":
-"{{< var docraw >}}/mov-advec/cosinehat/LF/C08_dt01.ogg". Alternatively, with $\Delta t = 0.001$, we get this "movie file":
-"{{< var docraw >}}/mov-advec/cosinehat/LF/C08_dt001.ogg".
-
 
 ### Analysis
 
 We can perform a Fourier analysis again. Inserting the numerical
 Fourier component in the Leapfrog scheme, we get
-
 $$
 A^2 - i2C\sin(k\Delta x) A - 1 = 0,
 $$
 and
-
 $$
 A = -iC\sin(k\Delta x) \pm \sqrt{1-C^2\sin^2(k\Delta x)}\tp
 $$
@@ -893,7 +845,6 @@ complex valued, so stability is obtained only as long as $C\leq 1$.
 :::{.callout-warning title="Stability"}
 For all the working schemes to be presented in this chapter, we
 get the stability condition $C\leq 1$:
-
 $$
 \Delta t \leq \frac{\Delta x}{v}\tp
 $$
@@ -905,28 +856,23 @@ less desired damping problems.
 :::
 
 We introduce $p=k\Delta x$. The amplification factor now reads
-
 $$
 A = -iC\sin p \pm \sqrt{1-C^2\sin^2 p},
 $$
 and is to be compared to the exact amplification factor
-
 $$
 \Aex = e^{-ikv\Delta t} = e^{-ikC\Delta x} = e^{-iCp}\tp
 $$
-Section @eq-advec-1D-disprel compares numerical amplification factors
+Section @sec-advec-1D-disprel compares numerical amplification factors
 of many schemes with the exact expression.
 
-
-## Upwind differences in space
-{#sec-advec-1D-FTUP}
+## Upwind differences in space {#sec-advec-1D-FTUP}
 
 Since the PDE reflects transport of information along with a flow in
 positive $x$ direction, when $v>0$, it could be natural to go (what is called)
 upstream and not
 downstream in the spatial derivative to collect information about the
 change of the function. That is, we approximate
-
 $$
 \frac{\partial u}{\partial x}(x_i,t_n)\approx [D^-_x u]^n_i = \frac{u^n_{i} - u^n_{i-1}}{\Delta x}\tp
 $$
@@ -937,12 +883,10 @@ the flow in advection problems). This spatial approximation does magic
 compared to
 the scheme we had with Forward Euler in time and centered difference in space.
 With an upwind difference,
-
 $$
 [D^+_t u + vD^-_x u = 0]^n_i,
 $$ {#eq-advec-1D-upwind}
 written out as
-
 $$
 u^{n+1}_i = u^n_i - C(u^{n}**{i}-u^{n}**{i-1}),
 $$
@@ -952,48 +896,38 @@ Figure @fig-advec-1D-case-gaussian-fig-LFCS. This is easy to see since
 $C=1$ gives the property (@eq-advec-1D-pde1-uprop2).
 However, any $C<1$ gives a significant reduction in the amplitude of the
 solution, which is a purely numerical effect, see Figures
-@eq-advec-1D-UP-fig1-C08 and @eq-advec-1D-UP-fig2-C08.
+@fig-advec-1D-UP-fig1-C08 and @fig-advec-1D-UP-fig2-C08.
 Experiments show, however, that
 reducing $\Delta t$ or $\Delta x$, while keeping $C$ reduces the
 error.
 
 ![Advection of a Gaussian function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.001$ (right).](fig/gaussian_UP_C08){#fig-advec-1D-UP-fig1-C08 width="800px"}
 
-Advection of the Gaussian function with a forward in time, upwind in space scheme, using $C=0.8$ and $\Delta t = 0.01$ can be seen in a "movie file":"{{< var docraw >}}/mov-advec/gaussian/UP/C08_dt001/movie.ogg". Alternatively, with $\Delta t = 0.005$, we get this "movie file":
-"{{< var docraw >}}/mov-advec/gaussian/UP/C08_dt0005/movie.ogg".
-
 ![Advection of half a cosine function with a forward in time, upwind in space scheme and $C=0.8$, $\Delta t = 0.001$ (left) and $\Delta t=0.01$ (right).](fig/cosinehat_UP_08){#fig-advec-1D-UP-fig2-C08 width="800px"}
-
-Advection of the cosine hat function with a forward in time, upwind in space scheme, using $C=0.8$ and $\Delta t = 0.01$ can be seen in a "movie file":"{{< var docraw >}}/mov-advec/cosinehat/UP/C08_dt01.ogg". Alternatively, with $\Delta t = 0.001$, we get this "movie file":
-"{{< var docraw >}}/mov-advec/cosinehat/UP/C08_dt001.ogg".
 
 The amplification factor can be computed using the
 formula (@eq-form-exp-fd1-bw),
-
 $$
 \frac{A - 1}{\Delta t} + \frac{v}{\Delta x}(1 - e^{-ik\Delta x}) = 0,
 $$
 which means
-
 $$
 A = 1 - C(1 - \cos(p) - i\sin(p))\tp
 $$
 For $C<1$ there is, unfortunately,
 non-physical damping of discrete Fourier components, giving rise to reduced
-amplitude of $u^n_i$ as in Figures @eq-advec-1D-UP-fig1-C08
-and @eq-advec-1D-UP-fig2-C08. The damping seen
+amplitude of $u^n_i$ as in Figures @fig-advec-1D-UP-fig1-C08
+and @fig-advec-1D-UP-fig2-C08. The damping seen
 in these figures is quite severe. Stability requires $C\leq 1$.
 
 :::{.callout-note title="Interpretation of upwind difference as artificial diffusion"}
 One can interpret the upwind difference as extra, artificial diffusion
 in the equation. Solving
-
 $$
 \frac{\partial u}{\partial t} + v\frac{\partial u}{\partial x}
 = \nu\frac{\partial^2 u}{\partial x^2},
 $$
 by a forward difference in time and centered differences in space,
-
 $$
 D^+**t u + vD**{2x} u = \nu D_xD_x u]^n_i,
 $$
@@ -1002,7 +936,6 @@ $\nu = v\Delta x/2$. That is, solving the PDE $u_t + vu_x=0$
 by centered differences in space and forward difference in time is
 unsuccessful, but by adding some artificial diffusion $\nu u_{xx}$,
 the method becomes stable:
-
 $$
 \frac{\partial u}{\partial t} + v
 \frac{\partial u}{\partial x} = \left(\dfc + \frac{v\Delta x}{2}\right)
@@ -1010,8 +943,7 @@ $$
 $$
 :::
 
-## Periodic boundary conditions
-{#sec-advec-1D-periodic-BC}
+## Periodic boundary conditions {#sec-advec-1D-periodic-BC}
 
 So far, we have given the value on the left boundary, $u_0^n$, and used
 the scheme to propagate the solution signal through the domain.
@@ -1021,7 +953,6 @@ leaves the right boundary to immediately enter the left boundary and propagate
 through the domain again.
 
 The periodic boundary condition is
-
 $$
 u(0,t) = u(L,t),\quad u_0^n = u_{N_x}^n\tp
 $$
@@ -1062,7 +993,6 @@ is constant:
 [v u]_0^L =0
 \end{align*}
 as long as $u(0)=u(L)=0$. We can therefore use the property
-
 $$
 \int_0^L u(x,t)dx = \hbox{const}
 $$
@@ -1243,40 +1173,33 @@ def run(scheme='UP', case='gaussian', C=1, dt=0.01):
 The complete code is found in the file
 [`advec1D.py`](https://github.com/hplgit/fdm-book/tree/master/src/advec/advec1D.py).
 
-## A Crank-Nicolson discretization in time and centered differences in space
-{#sec-advec-1D-CN}
+## A Crank-Nicolson discretization in time and centered differences in space {#sec-advec-1D-CN}
 
 Another obvious candidate for time discretization is the Crank-Nicolson
 method combined with centered differences in space:
-
 $$
 [D_t u]^n_i + v\half([D_{2x} u]^{n+1}**i + [D**{2x} u]^{n}_i) = 0\tp
 $$
 It can be nice to include the Backward Euler scheme too, via the
 $\theta$-rule,
-
 $$
 [D_t u]^n_i + v\theta [D_{2x} u]^{n+1}**i + v(1-\theta)[D**{2x} u]^{n}_i = 0\tp
 $$
 When $\theta$ is different from zero, this gives rise to an *implicit* scheme,
-
 $$
 u^{n+1}**i + \frac{\theta}{2} C (u^{n+1}**{i+1} - u^{n+1}_{i-1})
 = u^n_i - \frac{1-\theta}{2} C (u^{n}**{i+1} - u^{n}**{i-1})
 $$
 for $i=1,\ldots,N_x-1$. At the boundaries we set $u=0$ and simulate just to
 the point of time when the signal hits the boundary (and gets reflected).
-
 $$
 u^{n+1}**0 = u^{n+1}**{N_x} = 0\tp
 $$
 The elements on the diagonal in the matrix become:
-
 $$
 A_{i,i} = 1,\quad i=0,\ldots,N_x\tp
 $$
 On the subdiagonal and superdiagonal we have
-
 $$
 A_{i-1,i} = -\frac{\theta}{2} C,\quad A_{i+1,i} = \frac{\theta}{2} C,\quad i=1,\ldots,N_x-1,
 $$
@@ -1292,7 +1215,6 @@ b_{N_x} &= u^n_0
 The dispersion relation follows from inserting $u^n_q = A^ne^{ikx}$
 and using the formula (@eq-form-exp-fd1c-center) for the spatial
 differences:
-
 $$
 A = \frac{1 - (1-\theta) i C\sin p}{1 + \theta i C\sin p}\tp
 $$
@@ -1300,10 +1222,6 @@ $$
 ![Crank-Nicolson in time, centered in space, Gaussian profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right).](fig/gaussian_CN_C08){#fig-advec-1D-CN-fig-C08 width="800px"}
 
 ![Backward-Euler in time, centered in space, half a cosine profile, $C=0.8$, $\Delta t = 0.01$ (left) and $\Delta t=0.005$ (right).](fig/cosinehat_BE_C08){#fig-advec-1D-BE-fig-C08 width="800px"}
-
-MOVIE: [https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/gaussian/CN/C08_dt0005/movie.ogg] Crank-Nicolson in time, centered in space, $C=0.8$, $\Delta t = 0.005$. {#sec-advec-1D-CN-mov-C08-dt2}
-
-MOVIE: [https://raw.githubusercontent.com/hplgit/fdm-book/master/doc/pub/book/html/mov-advec/cosinehat/BE/C_08_dt005.ogg] Backward-Euler in time, centered in space, $C=0.8$, $\Delta t = 0.005$. {#sec-advec-1D-BE-mov-C08-dt2}
 
 Figure @fig-advec-1D-CN-fig-C08 depicts a numerical solution for $C=0.8$
 and the Crank-Nicolson
@@ -1317,9 +1235,7 @@ smooth profile. All in all, there are no major differences between the
 Gaussian initial condition and the half a cosine condition for any of
 the schemes.
 
-
-## The Lax-Wendroff method
-{#sec-advec-1D-LaxW}
+## The Lax-Wendroff method {#sec-advec-1D-LaxW}
 
 The Lax-Wendroff method is based on three ideas:
 
@@ -1331,37 +1247,31 @@ The Lax-Wendroff method is based on three ideas:
    achieve a scheme of accuracy $\Oof{\Delta t^2} + \Oof{\Delta x^2}$.
 
 Let us follow the recipe. First we have the three-term Taylor polynomial,
-
 $$
 u^{n+1}_i = u^n_i + \Delta t\left(\frac{\partial u}{\partial t}\right)^n_i
 + \frac{1}{2}\Delta t^2\left(\frac{\partial^2 u}{\partial t^2}\right)^n_i\tp
 $$
 From the PDE we have that temporal derivatives can be substituted by
 spatial derivatives:
-
 $$
 \frac{\partial u}{\partial t} = -v\frac{\partial u}{\partial x},
 $$
 and furthermore,
-
 $$
 \frac{\partial ^2 u}{\partial t^2} = v^2\frac{\partial^2 u}{\partial x^2}\tp
 $$
 Inserted in the Taylor polynomial formula, we get
-
 $$
 u^{n+1}_i = u^n_i -v \Delta t\left(\frac{\partial u}{\partial x}\right)^n_i
 + \frac{1}{2}\Delta t^2 v^2
 \left(\frac{\partial^2 u}{\partial x^2}\right)^n_i\tp
 $$
 To obtain second-order accuracy in space we now use central differences:
-
 $$
 u^{n+1}_i = u^n_i -v \Delta t [D_{2x} u]^n_i
 + \frac{1}{2}\Delta t^2 v^2 [D_xD_x u]^n_i,
 $$
 or written out,
-
 $$
 u^{n+1}_i = u^n_i - \frac{1}{2} C (u^{n}**{i+1} - u^{n}**{i-1})
 + \frac{1}{2} C^2 (u^{n}_{i+1}-2u^n_i+u^n_{i-1})\tp
@@ -1379,18 +1289,14 @@ is not sufficiently large to make schemes stable, so then we also add
 artificial diffusion.
 :::
 
-
 From an analysis similar to the ones carried out above, we get an
 amplification factor for the Lax-Wendroff method that equals
-
 $$
 A = 1 - iC\sin p - 2C^2\sin^2 (p/2)\tp
 $$
 This means that $|A|=1$ and also that we have an exact solution if $C=1$!
 
-
-## Analysis of dispersion relations
-{#sec-advec-1D-disprel}
+## Analysis of dispersion relations {#sec-advec-1D-disprel}
 
 We have developed expressions for $A(C,p)$ in the exact solution
 $u_q^n=A^ne^{ikq\Delta x}$ of the discrete equations.
@@ -1407,41 +1313,34 @@ Given a complex $A$ as a function of $C$ and $p$, how can we visualize
 it? The two key ingredients in $A$ is the magnitude, reflecting damping or
 growth of the wave, and the angle, closely related to the
 velocity of the wave. The Fourier component
-
 $$
 D^n e^{ik(x-ct)}
 $$
 has damping $D$ and wave velocity $c$. Let us express our $A$ in
 polar form, $A = A_re^{-i\phi}$, and insert this expression in
 our discrete component $u_q^n = A^ne^{ikq\Delta x} = A^ne^{ikx}$:
-
 $$
 u^n_q = A_r^n e^{-i\phi n} e^{ikx} = A_r^n e^{i(kx - n\phi)} =
 A_r^ne^{i(k(x - ct))},
 $$
 for
-
 $$
 c = \frac{\phi}{k\Delta t}\tp
 $$
 Now,
-
 $$
 k\Delta t = \frac{Ck\Delta x}{v}=\frac{Cp}{v},
 $$
 so
-
 $$
 c = \frac{\phi v}{Cp}\tp
 $$
 An appropriate dimensionless quantity to plot is the scaled wave velocity $c/v$:
-
 $$
 \frac{c}{v} = \frac{\phi}{Cp}\tp
 $$
-
 Figures
-@eq-advec-1D-disprel-C1-1--@eq-advec-1D-disprel-C05-2 contain
+@fig-advec-1D-disprel-C1-1--@fig-advec-1D-disprel-C05-2 contain
 dispersion curves, velocity and damping, for various values of $C$.
 The horizontal axis shows the dimensionless frequency $p$ of the wave,
 while the figures to the left illustrate the error in wave velocity $c/v$
@@ -1449,16 +1348,14 @@ while the figures to the left illustrate the error in wave velocity $c/v$
 the absolute value (magnitude) of the damping factor $A_r$.
 The curves are labeled according to the table below.
 
-|---c------c----------------------|
-| Label | Method |
-|---l------l----------------------|
-| FE | Forward Euler in time, centered difference in space |
-| LF | Leapfrog in time, centered difference in space |
-| UP | Forward Euler in time, upwind difference in space |
+| Label | Method                                            |
+|:------|:--------------------------------------------------|
+| FE | Forward Euler in time, centered difference in space  |
+| LF | Leapfrog in time, centered difference in space       |
+| UP | Forward Euler in time, upwind difference in space    |
 | CN | Crank-Nicolson in time, centered difference in space |
-| LW | Lax-Wendroff's method |
+| LW | Lax-Wendroff's method                                |
 | BE | Backward Euler in time, centered difference in space |
-|---------------------------------|
 
 ![Dispersion relations for $C=1$.](fig/disprel_C1_LW_UP_LF){#fig-advec-1D-disprel-C1-1 width="800px"}
 
@@ -1507,11 +1404,10 @@ Truncation analysis just says that Lax-Wendroff is
 better than upwind, because of the increased order in time, but
 most people would say upwind is the better one when looking at the plots.
 
-{#sec-advec-1D-stationary}
+## Stationary 1D advection-diffusion {#sec-advec-1D-stationary}
 
 Now we pay attention to a physical process where advection (or convection)
 is in balance with diffusion:
-
 $$
 v\frac{du}{dx} = \dfc\frac{d^2 u}{dx^2}\tp
 $$ {#eq-advec-1D-stat-pde1}
@@ -1519,7 +1415,6 @@ For simplicity, we assume $v$ and $\dfc$ to be constant, but the extension to
 the variable-coefficient case is trivial.
 This equation can be viewed as the stationary limit of the corresponding
 time-dependent problem
-
 $$
 \frac{\partial u}{\partial t} + v\frac{\partial u}{\partial x} =
 \dfc\frac{\partial^2 u}{\partial x^2}\tp
@@ -1537,26 +1432,22 @@ difficulty is related to non-physical oscillations of the solution
 (instability) if the first-derivative spatial term dominates over the
 second-derivative term.
 
-## A simple model problem
-{#sec-advec-1D-stationary-model}
+## A simple model problem {#sec-advec-1D-stationary-model}
 
 We consider (@eq-advec-1D-stat-pde1) on $[0,L]$ equipped with the
 boundary conditions $u(0)=U_0$, $u(L)=U_L$.  By scaling we can reduce the
 number of parameters in the problem. We scale $x$ by $\bar x = x/L$,
 and $u$ by
-
 $$
 \bar u = \frac{u - U_0}{U_L-U_0}\tp
 $$
 Inserted in the governing equation we get
-
 $$
 \frac{v(U_L-U_0)}{L}\frac{d\bar u}{d\bar x} =
 \frac{\dfc(U_L-U_0)}{L^2}\frac{d^2\bar u}{d\bar x^2},\quad
 \bar u(0)=0,\ \bar u(1)=1\tp
 $$
 Dropping the bars is common. We can then simplify to
-
 $$
 \frac{du}{dx} = \epsilon\frac{d^2 u}{d x^2},\quad u(0)=0,\ u(1)=1\tp
 $$ {#eq-advec-1D-stat-pde1s}
@@ -1575,19 +1466,16 @@ equation problem and also to many of its discretizations. This is one
 reason why this model problem has been so successful in designing and
 investigating numerical methods for mixed convection/advection and
 diffusion.  The exact solution reads
-
 $$
 \uex (x) = \frac{e^{x/\epsilon} - 1}{e^{1/\epsilon} - 1}\tp
 $$
 The forthcoming plots illustrate this function for various values of
 $\epsilon$.
 
-## A centered finite difference scheme
-{#sec-advec-1D-stationary-fdm}
+## A centered finite difference scheme {#sec-advec-1D-stationary-fdm}
 
 The most obvious idea to solve (@eq-advec-1D-stat-pde1s) is to apply
 centered differences:
-
 $$
 [D_{2x} u = \epsilon D_xD_x u]_i
 $$
@@ -1596,7 +1484,6 @@ Note that this is a coupled system of algebraic equations
 involving $u_0,\ldots,u_{N_x}$.
 
 Written out, the scheme becomes a tridiagonal system
-
 $$
 A_{i-1,i}u_{i-1} + A_{i,i}u_i + A_{i+1.i}u_{i+1} = 0,
 $$
@@ -1611,15 +1498,14 @@ A_{N_x,N_x} &= 1\tp
 \end{align*}
 The right-hand side of the linear system is zero except $b_{N_x}=1$.
 
-Figure @eq-advec-1D-stationary-fdm-fig1 shows reasonably accurate
+Figure @fig-advec-1D-stationary-fdm-fig1 shows reasonably accurate
 results with $N_x=20 $ and $N_x=40$ cells in $x$ direction and a value of
 $\epsilon = 0.1$. Decreasing $\epsilon$ to $0.01$ leads to oscillatory
-solutions as depicted in Figure @eq-advec-1D-stationary-fdm-fig2.
+solutions as depicted in Figure @fig-advec-1D-stationary-fdm-fig2.
 This is, unfortunately, a typical phenomenon in this type of problem:
 non-physical oscillations arise for small $\epsilon$ unless the resolution
 $N_x$ is big enough. Exercise @sec-advec-1D-stationary-exer-analysis1
 develops a precise criterion: $u$ is oscillation-free if
-
 $$
 \Delta x \leq \frac{2}{\epsilon}\tp
 $$
@@ -1639,7 +1525,6 @@ A suitable solver for doing the experiments is presented below.
 
 ```python
 import numpy as np
-
 
 def solver(eps, Nx, method="centered"):
     """
@@ -1684,39 +1569,34 @@ def solver(eps, Nx, method="centered"):
 ```
 :::
 
-## Remedy: upwind finite difference scheme
-{#sec-advec-1D-stationary-upwind}
+## Remedy: upwind finite difference scheme {#sec-advec-1D-stationary-upwind}
 
 The scheme can be stabilized by letting the advective transport term, which
 is the dominating term, collect its information in the flow direction, i.e.,
 upstream or upwind of the point in question. So, instead of using a
 centered difference
-
 $$
 \frac{du}{dx}**i\approx \frac{u**{i+1}-u_{i-1}}{2\Delta x},
 $$
 we use the one-sided *upwind* difference
-
 $$
 \frac{du}{dx}**i\approx \frac{u**{i}-u_{i-1}}{\Delta x},
 $$
 in case $v>0$. For $v<0$ we set
-
 $$
 \frac{du}{dx}**i\approx \frac{u**{i+1}-u_{i}}{\Delta x},
 $$
 On compact operator notation form, our upwind scheme can be expressed
 as
-
 $$
 [D^-_x u = \epsilon D_xD_x u]_i
 $$
 provided $v>0$ (and $\epsilon > 0$).
 
 We write out the equations and implement them as shown in the program
-in Section @eq-advec-1D-stationary-fdm. The results appear in Figures
-@eq-advec-1D-stationary-upwind-fig1 and
-@eq-advec-1D-stationary-upwind-fig2: no more oscillations!
+in Section @sec-advec-1D-stationary-fdm. The results appear in Figures
+@fig-advec-1D-stationary-upwind-fig1 and
+@fig-advec-1D-stationary-upwind-fig2: no more oscillations!
 
 ![Comparison of exact and numerical solution for $\epsilon =0.1$ and $N_x=20,40$ with upwind difference.](fig/twopt_BVP_upw_01){#fig-advec-1D-stationary-upwind-fig1 width="800px"}
 
@@ -1741,7 +1621,6 @@ the differential equation problem at any mesh point.
 
 Now it is time to combine time-dependency, convection (advection) and
 diffusion into one equation:
-
 $$
 \frac{\partial u}{\partial t} + v\frac{\partial u}{\partial x} =
 \dfc\frac{\partial^2 u}{\partial x^2}\tp
@@ -1751,7 +1630,6 @@ $$ {#eq-advec-1D-stat-pde3}
 The diffusion is now dominated by convection, a wave, and diffusion, a loss
 of amplitude. One possible analytical solution is a traveling Gaussian
 function
-
 $$
 u(x,t) = B\exp{\left(-\left(\frac{x - vt}{4at}\right)\right)}\tp
 $$
@@ -1764,7 +1642,6 @@ The Forward Euler for the diffusion equation is a successful scheme, but it
 has a very strict stability condition. The similar Forward in time, centered
 in space strategy always gives unstable solutions for the advection PDE.
 What happens when we have both diffusion and advection present at once?
-
 $$
 [D_t u + vD_{2x} u = \dfc D_xD_x u + f]_i^n\tp
 $$
@@ -1789,7 +1666,6 @@ an upwind difference on the advection term.
 A good approximation for the pure advection equation is to use upwind
 discretization of the advection term. We also know that centered differences
 are good for the diffusion term, so let us combine these two discretizations:
-
 $$
 [D_t u + vD^-_{x} u = \dfc D_xD_x u + f]_i^n,
 $$
@@ -1800,18 +1676,16 @@ reduction in amplitude compared with the exact solution.
 
 We may also interpret the upwind difference as artificial numerical diffusion
 and centered differences in space everywhere, so the scheme can be expressed as
-
 $$
 [D_t u + vD^-_{2x} u = \dfc \frac{v\Delta x}{2} D_xD_x u + f]_i^n\tp
 $$
 
-
-{#sec-advec-app}
+## Applications of advection equations {#sec-advec-app}
 
 There are two major areas where advection and convection applications arise:
 transport of a substance and heat transport *in a fluid*.
 To derive the models, we may look at the similar derivations of
-diffusion models in Section @eq-diffu-app,
+diffusion models in Section @sec-diffu-app,
 but change the assumption from a solid to fluid medium.
 This gives rise to the extra advection or convection term $\vv\cdot\nabla u$.
 We briefly show how this is done.
@@ -1819,13 +1693,10 @@ We briefly show how this is done.
 Normally, transport in a fluid is dominated by the fluid flow and not
 diffusion, so we can neglect diffusion compared to advection or convection.
 The end result is anyway an equation of the form
-
 $$
 \frac{\partial u}{\partial t} + \vv\cdot\nabla u = 0\tp
 $$
-
-## Transport of a substance
-{#sec-advec-app-mass}
+## Transport of a substance {#sec-advec-app-mass}
 
 The diffusion of a substance in Section @sec-diffu-app-substance takes place
 in a solid medium, but in a fluid we can have two transport mechanisms:
@@ -1833,8 +1704,7 @@ one by diffusion and one by advection.
 The latter arises from the fact
 that the substance particles are moved with the fluid velocity $\vv$ such that
 the effective flux now consists of two and not only one component as in
-(@sec-diffu-app-substance-Fick):
-
+(@eq-diffu-app-substance-Fick):
 $$
 \q = -\dfc\nabla c + \vv\c\tp
 $$
@@ -1842,45 +1712,37 @@ Inserted in the equation $\nabla\cdot\q = 0$ we get the extra advection
 term $\nabla\cdot (\vv\c)$. Very often we deal with incompressible flows,
 $\nabla\cdot\vv = 0$ such that the advective term becomes $\vv\cdot\nabla c$.
 The mass transport equation for a substance then reads
-
 $$
 \frac{\partial c}{\partial t} + \vv\cdot\nabla c = \dfc\nabla^2 c\tp
 $$
-
-## Transport of heat in fluids
-{#sec-advec-app-heat}
+## Transport of heat in fluids {#sec-advec-app-heat}
 
 The derivation of the heat equation in Section @sec-diffu-app-heat is limited
 to heat transport in solid bodies. If we turn the attention to heat transport
 in fluids, we get a material derivative of the internal energy in
-(@sec-diffu-app-heat-PDE1),
-
+(@eq-diffu-app-heat-PDE1),
 $$
 \frac{De}{dt} = - \nabla\cdot\q,
 $$
 and more terms if work by stresses is also included, where
-
 $$
 \frac{De}{dt} = \frac{\partial e}{\partial t} + \vv\cdot\nabla e,
 $$
 $\vv$ being the velocity of the fluid. The convective term
 $\vv\cdot\nabla e$ must therefore be added to the governing equation,
 resulting typically in
-
 $$
 \varrho c\left(\frac{\partial T}{\partial t} + \vv\cdot\nabla T\right)
 = \nabla\cdot(k\nabla T) + f,
 $$ {#eq-advec-app-heat-PDE}
 where $f$ is some external heating inside the medium.
 
-## Exercise: Analyze 1D stationary convection-diffusion problem
-{#sec-advec-1D-stationary-exer-analysis1}
+## Exercise: Analyze 1D stationary convection-diffusion problem {#sec-advec-1D-stationary-exer-analysis1}
 file=twopt_BVP_analysis1
 
 Explain the observations in the numerical experiments from Sections
-@eq-advec-1D-stationary-fdm and @eq-advec-1D-stationary-upwind by
+@sec-advec-1D-stationary-fdm and @sec-advec-1D-stationary-upwind by
 finding exact numerical solutions.
-
 
 :::{.callout-tip title="The difference equations allow solutions on the form $A^i$, where"}
 $A$ is an unknown constant and $i$ is a mesh point counter.
@@ -1889,8 +1751,7 @@ combination of the two, where the constants in the linear combination
 are determined from the boundary conditions.
 :::
 
-## Exercise: Interpret upwind difference as artificial diffusion
-{#sec-advec-1D-stationary-exer-analysis2}
+## Exercise: Interpret upwind difference as artificial diffusion {#sec-advec-1D-stationary-exer-analysis2}
 file=twopt_BVP_analysis2
 
 Consider an upwind, one-sided difference approximation to

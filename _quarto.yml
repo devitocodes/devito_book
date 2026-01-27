@@ -35,6 +35,7 @@ format:
     code-fold: false
     toc: true
     number-sections: true
+    number-depth: 3
     crossref:
       chapters: true
   pdf:
@@ -42,6 +43,7 @@ format:
     papersize: letter
     toc: true
     number-sections: true
+    number-depth: 3
     colorlinks: true
     default-image-extension: png
     pdf-engine: pdflatex

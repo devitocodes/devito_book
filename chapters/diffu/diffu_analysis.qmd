@@ -1,11 +1,7 @@
----
-title: "Diffu Analysis.Do"
----
-
-{#sec-diffu-pde1-analysis}
+## Analysis of schemes for the diffusion equation {#sec-diffu-pde1-analysis}
 
 The numerical experiments in Sections
-@eq-diffu-pde1-FE-experiments and @eq-diffu-pde1-theta-experiments
+@sec-diffu-pde1-FE-experiments and @sec-diffu-pde1-theta-experiments
 reveal that there are some
 numerical problems with the Forward Euler and Crank-Nicolson schemes:
 sawtooth-like noise is sometimes present in solutions that are,
@@ -14,14 +10,12 @@ This section presents a mathematical analysis that explains the
 observed behavior and arrives at criteria for obtaining numerical
 solutions that reproduce the qualitative properties of the exact
 solutions. In short, we shall explain what is observed in
-Figures @fig-diffu-pde1-FE-fig-F=0.5-@fig-diffu-pde1-CN-fig-F=10.
+Figures @fig-diffu-pde1-FE-fig-F-05-@fig-diffu-pde1-CN-fig-F-10.
 
-## Properties of the solution
-{#sec-diffu-pde1-analysis-uex}
+## Properties of the solution {#sec-diffu-pde1-analysis-uex}
 
 A particular characteristic of diffusive processes, governed
 by an equation like
-
 $$
 u_t = \dfc u_{xx},
 $$ {#eq-diffu-pde1-eq}
@@ -34,12 +28,10 @@ The diffusion equation (@eq-diffu-pde1-eq) admits solutions
 that depend on $\eta = (x-c)/\sqrt{4\dfc t}$ for a given value
 of $c$. One particular solution
 is
-
 $$
 u(x,t) = a\,\mbox{erf}(\eta) + b,
 $$ {#eq-diffu-pdf1-erf-sol}
 where
-
 $$
 \mbox{erf}(\eta) = \frac{2}{\sqrt{\pi}}\int_0^\eta e^{-\zeta^2}d\zeta,
 $$ {#eq-diffu-analysis-erf-def}
@@ -60,7 +52,6 @@ As $t\rightarrow 0$, the error function approaches a step function centered
 at $x=c$. For a diffusion problem posed on the unit interval $[0,1]$,
 we may choose the step at $x=1/2$ (meaning $c=1/2$), $a=-1/2$, $b=1/2$.
 Then
-
 $$
 u(x,t) = \half\left(1 -
 \mbox{erf}\left(\frac{x-\half}{\sqrt{4\dfc t}}\right)\right) =
@@ -71,12 +62,12 @@ $\mbox{erfc}(\eta) = 1-\mbox{erf}(\eta)$.
 The solution (@eq-diffu-analysis-pde1-step-erf-sol)
 implies the boundary conditions
 
-\begin{align}
-u(0,t) &= \half\left(1 - \mbox{erf}\left(\frac{-1/2}{\sqrt{4\dfc t}}\right)\right),
- \\
-u(1,t) &= \half\left(1 - \mbox{erf}\left(\frac{1/2}{\sqrt{4\dfc t}}\right)\right)
-\label{diffu:analysis:pde1:p1:erf:uL}
-\end{align} \tp
+$$
+u(0,t) = \half\left(1 - \mbox{erf}\left(\frac{-1/2}{\sqrt{4\dfc t}}\right)\right),
+$$ {#eq-diffu-analysis-pde1-p1-erf-uL}
+$$
+u(1,t) = \half\left(1 - \mbox{erf}\left(\frac{1/2}{\sqrt{4\dfc t}}\right)\right)\tp
+$$ {#eq-diffu-analysis-pde1-p1-erf-uR}
 For small enough $t$, $u(0,t)\approx 1$ and $u(1,t)\approx 0$, but as
 $t\rightarrow\infty$, $u(x,t)\rightarrow 1/2$ on $[0,1]$.
 
@@ -84,7 +75,6 @@ $t\rightarrow\infty$, $u(x,t)\rightarrow 1/2$ on $[0,1]$.
 
 The standard diffusion equation $u_t = \dfc u_{xx}$ admits a
 Gaussian function as solution:
-
 $$
 u(x,t) = \frac{1}{\sqrt{4\pi\dfc t}} \exp{\left({-\frac{(x-c)^2}{4\dfc t}}\right)} \tp
 $$ {#eq-diffu-pde1-sol-Gaussian}
@@ -98,21 +88,17 @@ the standard deviation $\sigma$ of a sharp initial Gaussian pulse
 increases in time according to $\sigma = \sqrt{2\dfc t}$, making
 the pulse diffuse and flatten out.
 
-
 ### Solution for a sine component
 
 Also, (@eq-diffu-pde1-eq) admits a solution of the form
-
 $$
 u(x,t) = Qe^{-at}\sin\left( kx\right) \tp
 $$ {#eq-diffu-pde1-sol1}
 The parameters $Q$ and $k$ can be freely chosen, while
 inserting (@eq-diffu-pde1-sol1) in (@eq-diffu-pde1-eq) gives the constraint
-
 $$
 a = -\dfc k^2 \tp
 $$
-
 A very important feature is that the initial shape $I(x)=Q\sin\left( kx\right)$
 undergoes a damping $\exp{(-\dfc k^2t)}$, meaning that
 rapid oscillations in space, corresponding to large $k$, are very much
@@ -134,7 +120,6 @@ u(x,0) & = \sin (\pi x) + 0.1\sin(100\pi x)
 The initial condition has been chosen such that adding
 two solutions like (@eq-diffu-pde1-sol1) constructs
 an analytical solution to the problem:
-
 $$
 u(x,t) = e^{-\pi^2 t}\sin (\pi x) + 0.1e^{-\pi^2 10^4 t}\sin (100\pi x) \tp
 $$ {#eq-diffu-pde1-sol2}
@@ -147,11 +132,9 @@ becomes very small.
 
 ![Evolution of the solution of a diffusion problem: initial condition (upper left), 1/100 reduction of the small waves (upper right), 1/10 reduction of the long wave (lower left), and 1/100 reduction of the long wave (lower right).](fig/diffusion_damping){#fig-diffu-pde1-fig-damping width="800px"}
 
-
 ## Analysis of discrete equations
 A counterpart to (@eq-diffu-pde1-sol1) is the complex representation
 of the same function:
-
 $$
 u(x,t) = Qe^{-at}e^{ikx},
 $$
@@ -159,7 +142,6 @@ where $i=\sqrt{-1}$ is the imaginary unit.
 We can add such functions, often referred to as wave components,
 to make a Fourier representation
 of a general solution of the diffusion equation:
-
 $$
 u(x,t) \approx \sum_{k\in K} b_k e^{-\dfc k^2t}e^{ikx},
 $$ {#eq-diffu-pde1-u-Fourier}
@@ -174,7 +156,6 @@ and $b_{100\pi}=0.1$.
 The amplitudes $b_k$ of the individual Fourier waves must be determined
 from the initial condition. At $t=0$ we have $u\approx\sum_kb_k\exp{(ikx)}$
 and find $K$ and $b_k$ such that
-
 $$
 I(x) \approx \sum_{k\in K} b_k e^{ikx}\tp
 $$
@@ -191,13 +172,10 @@ ease the forthcoming algebra, we write the damping factor as
 $A^n$. The exact amplification factor corresponding to $A$ is $\Aex =
 \exp{(-\dfc k^2\Delta t)}$.
 
-
-## Analysis of the finite difference schemes
-{#sec-diffu-pde1-analysis-details}
+## Analysis of the finite difference schemes {#sec-diffu-pde1-analysis-details}
 
 We have seen that a general solution of the diffusion equation
 can be built as a linear combination of basic components
-
 $$
 e^{-\dfc k^2t}e^{ikx} \tp
 $$
@@ -206,7 +184,6 @@ the finite difference schemes. This is indeed the case, but the
 amplitude $\exp{(-\dfc k^2t)}$ might be modified (which also happens when
 solving the ODE counterpart $u'=-\dfc u$).
 We therefore look for numerical solutions of the form
-
 $$
 u^n_q = A^n e^{ikq\Delta x} = A^ne^{ikx},
 $$ {#eq-diffu-pde1-analysis-uni}
@@ -235,12 +212,11 @@ or how well $A$ approximates $\Aex$.
 We can plot $\Aex$ and the various expressions for $A$, and we can
 make Taylor expansions of $A/\Aex$ to see the error more analytically.
 
-
 ### Truncation error
 
 As an alternative to examining the accuracy of the damping of a wave
 component, we can perform a general truncation error analysis as
-explained in ref[Appendix @eq-ch-trunc][ in
+explained in ref[Appendix @sec-ch-trunc][ in
 [@Langtangen_deqbook_trunc]]["Truncation error analysis": ""
 [@Langtangen_deqbook_trunc]]. Such results are more general, but
 less detailed than what we get from the wave component analysis.  The
@@ -250,69 +226,55 @@ into the equations. In particular, the truncation error analysis tells
 the order of the scheme, which is of fundamental importance when
 verifying codes based on empirical estimation of convergence rates.
 
-## Analysis of the Forward Euler scheme
-{#sec-diffu-pde1-analysis-FE}
-
+## Analysis of the Forward Euler scheme {#sec-diffu-pde1-analysis-FE}
 
 The Forward Euler finite difference scheme for $u_t = \dfc u_{xx}$ can
 be written as
-
 $$
 [D_t^+ u = \dfc D_xD_x u]^n_q\tp
 $$
 Inserting a wave component (@eq-diffu-pde1-analysis-uni)
 in the scheme demands calculating the terms
-
 $$
 e^{ikq\Delta x}[D_t^+ A]^n = e^{ikq\Delta x}A^n\frac{A-1}{\Delta t},
 $$
 and
-
 $$
 A^nD_xD_x [e^{ikx}]_q = A^n\left( - e^{ikq\Delta x}\frac{4}{\Delta x^2}
 \sin^2\left(\frac{k\Delta x}{2}\right)\right) \tp
 $$
 Inserting these terms in the discrete equation and
 dividing by $A^n e^{ikq\Delta x}$ leads to
-
-
 $$
 \frac{A-1}{\Delta t} = -\dfc \frac{4}{\Delta x^2}\sin^2\left(
 \frac{k\Delta x}{2}\right),
 $$
 and consequently
-
 $$
 A = 1 -4F\sin^2 p
 $$
 where
-
 $$
 F = \frac{\dfc\Delta t}{\Delta x^2}
 $$
 is the *numerical Fourier number*, and $p=k\Delta x/2$.
 The complete numerical solution is then
-
 $$
 u^n_q = \left(1 -4F\sin^2 p\right)^ne^{ikq\Delta x} \tp
 $$
-
 ### Stability
 We easily see that $A\leq 1$. However, the $A$ can be less than $-1$,
 which will lead
 to growth of a numerical wave component. The criterion $A\geq -1$ implies
-
 $$
 4F\sin^2 (p/2)\leq 2 \tp
 $$
 The worst case is when $\sin^2 (p/2)=1$, so a sufficient criterion for
 stability is
-
 $$
 F\leq {\half},
 $$
 or expressed as a condition on $\Delta t$:
-
 $$
 \Delta t\leq \frac{\Delta x^2}{2\dfc}\tp
 $$
@@ -320,14 +282,12 @@ Note that halving the spatial mesh size, $\Delta x \rightarrow {\half}
 \Delta x$, requires $\Delta t$ to be reduced by a factor of $1/4$.
 The method hence becomes very expensive for fine spatial meshes.
 
-
 ### Accuracy
 
 Since $A$ is expressed in terms of $F$ and the parameter we now call
 $p=k\Delta x/2$, we should also express $\Aex$ by $F$ and $p$. The exponent
 in $\Aex$ is $-\dfc k^2\Delta t$, which equals $-F k^2\Delta x^2=-F4p^2$.
 Consequently,
-
 $$
 \Aex = \exp{(-\dfc k^2\Delta t)} = \exp{(-4Fp^2)} \tp
 $$
@@ -351,79 +311,66 @@ A_err_FE = A_FE(F, p)/A_exact(F, p)
 print A_err_FE.series(F, 0, 6)
 ```
 The result is
-
 $$
 \frac{A}{\Aex} = 1 - 4 F \sin^{2}p + 2F p^{2} - 16F^{2} p^{2} \sin^{2}p + 8 F^{2} p^{4} + \cdots
 $$
 Recalling that $F=\dfc\Delta t/\Delta x^2$, $p=k\Delta x/2$, and that
 $\sin^2p\leq 1$, we
 realize that the dominating terms in $A/\Aex$ are at most
-
 $$
 1 - 4\dfc \frac{\Delta t}{\Delta x^2} +
 \dfc\Delta t - 4\dfc^2\Delta t^2
 + \dfc^2 \Delta t^2\Delta x^2 + \cdots \tp
 $$
-
 ### Truncation error
 We follow the theory explained in
-ref[Appendix @eq-ch-trunc][ in
+ref[Appendix @sec-ch-trunc][ in
 [@Langtangen_deqbook_trunc]]["Truncation error analysis": ""
 [@Langtangen_deqbook_trunc]]. The recipe is to set up the
 scheme in operator notation and use formulas from
-ref[Appendix @tbl-trunc-table][ in
+ref[Section @sec-trunc-table][ in
 [@Langtangen_deqbook_trunc]]["Overview of leading-order error terms in finite difference formulas": ""
 [@Langtangen_deqbook_trunc]] to derive an expression for
 the residual. The details are documented in
-ref[Appendix @eq-trunc-diffu-1D][ in
+ref[Section @sec-trunc-diffu-1D][ in
 [@Langtangen_deqbook_trunc]]["Linear diffusion equation in 1D": ""
 [@Langtangen_deqbook_trunc]]. We end up with a truncation error
-
 $$
 R^n_i = \Oof{\Delta t} + \Oof{\Delta x^2}\tp
 $$
 Although this is not the true error $\uex(x_i,t_n) - u^n_i$, it indicates
 that the true error is of the form
-
 $$
 E = C_t\Delta t + C_x\Delta x^2
 $$
 for two unknown constants $C_t$ and $C_x$.
 
-
-## Analysis of the Backward Euler scheme
-{#sec-diffu-pde1-analysis-BE}
+## Analysis of the Backward Euler scheme {#sec-diffu-pde1-analysis-BE}
 
 Discretizing $u_t = \dfc u_{xx}$ by a Backward Euler scheme,
-
 $$
 [D_t^- u = \dfc D_xD_x u]^n_q,
 $$
 and inserting a wave component (@eq-diffu-pde1-analysis-uni),
 leads to calculations similar to those arising from the Forward Euler scheme,
 but since
-
 $$
 e^{ikq\Delta x}[D_t^- A]^n = A^ne^{ikq\Delta x}\frac{1 - A^{-1}}{\Delta t},
 $$
 we get
-
 $$
 \frac{1-A^{-1}}{\Delta t} = -\dfc \frac{4}{\Delta x^2}\sin^2\left(
 \frac{k\Delta x}{2}\right),
 $$
 and then
-
 $$
 A = \left(1  + 4F\sin^2p\right)^{-1} \tp
 $$ {#eq-diffu-pde1-analysis-BE-A}
 The complete numerical solution can be written
-
 $$
 u^n_q = \left(1  + 4F\sin^2 p\right)^{-n}
 e^{ikq\Delta x} \tp
 $$
-
 ### Stability
 We see from (@eq-diffu-pde1-analysis-BE-A) that $0<A<1$, which means
 that all numerical wave components are stable and non-oscillatory
@@ -432,52 +379,42 @@ for any $\Delta t >0$.
 ### Truncation error
 The derivation of the truncation error for the Backward Euler scheme is almost
 identical to that for the Forward Euler scheme. We end up with
-
 $$
 R^n_i = \Oof{\Delta t} + \Oof{\Delta x^2}\tp
 $$
 
-
-## Analysis of the Crank-Nicolson scheme
-{#sec-diffu-pde1-analysis-CN}
+## Analysis of the Crank-Nicolson scheme {#sec-diffu-pde1-analysis-CN}
 
 The Crank-Nicolson scheme can be written as
-
 $$
 [D_t u = \dfc D_xD_x \overline{u}^x]^{n+\half}_q,
 $$
 or
-
 $$
 [D_t u]^{n+\half}_q = \half\dfc\left( [D_xD_x u]^{n}_q +
 [D_xD_x u]^{n+1}_q\right) \tp
 $$
 Inserting (@eq-diffu-pde1-analysis-uni) in the time derivative approximation
 leads to
-
 $$
 [D_t A^n e^{ikq\Delta x}]^{n+\half} = A^{n+\half} e^{ikq\Delta x}\frac{A^{\half}-A^{-\half}}{\Delta t} = A^ne^{ikq\Delta x}\frac{A-1}{\Delta t} \tp
 $$
 Inserting (@eq-diffu-pde1-analysis-uni) in the other terms
 and dividing by
 $A^ne^{ikq\Delta x}$ gives the relation
-
 $$
 \frac{A-1}{\Delta t} = -\half\dfc\frac{4}{\Delta x^2}
 \sin^2\left(\frac{k\Delta x}{2}\right)
 (1 + A),
 $$
 and after some more algebra,
-
 $$
 A = \frac{ 1 - 2F\sin^2p}{1 + 2F\sin^2p} \tp
 $$
 The exact numerical solution is hence
-
 $$
 u^n_q = \left(\frac{ 1 - 2F\sin^2p}{1 + 2F\sin^2p}\right)^ne^{ikq\Delta x} \tp
 $$
-
 ### Stability
 The criteria $A>-1$ and $A<1$ are fulfilled for any $\Delta t >0$.
 Therefore, the solution cannot grow, but it will oscillate if
@@ -486,28 +423,22 @@ $F\leq\half$.
 
 ### Truncation error
 The truncation error is derived in
-ref[Appendix @eq-trunc-diffu-1D][ in
+ref[Section @sec-trunc-diffu-1D][ in
 [@Langtangen_deqbook_trunc]]["Linear diffusion equation in 1D": ""
 [@Langtangen_deqbook_trunc]]:
-
 $$
 R^{n+\half}_i = \Oof{\Delta x^2} + \Oof{\Delta t^2}\tp
 $$
-
-
-## Analysis of the Leapfrog scheme
-{#sec-diffu-pde1-analysis-leapfrog}
+## Analysis of the Leapfrog scheme {#sec-diffu-pde1-analysis-leapfrog}
 
 An attractive feature of the Forward Euler scheme is the explicit
 time stepping and no need for solving linear systems. However, the
 accuracy in time is only $\Oof{\Delta t}$. We can get an explicit
 *second-order* scheme in time by using the Leapfrog method:
-
 $$
 [D_{2t} u = \dfc D_xDx u + f]^n_q\tp
 $$
 Written out,
-
 $$
 u_q^{n+1} = u_q^{n-1} + \frac{2\dfc\Delta t}{\Delta x^2}
 (u^{n}_{q+1} - 2u^n_q + u^n_{q-1}) + f(x_q,t_n)\tp
@@ -518,17 +449,14 @@ a Forward Euler step.
 Unfortunately, the Leapfrog scheme is always unstable for the
 diffusion equation. To see this, we insert a wave component $A^ne^{ikx}$
 and get
-
 $$
 \frac{A - A^{-1}}{\Delta t} = -\dfc \frac{4}{\Delta x^2}\sin^2 p,
 $$
 or
-
 $$
 A^2 + 4F \sin^2 p\, A - 1 = 0,
 $$
 which has roots
-
 $$
 A = -2F\sin^2 p \pm \sqrt{4F^2\sin^4 p + 1}\tp
 $$
@@ -536,22 +464,22 @@ Both roots have $|A|>1$ so the amplitude always grows, which is not in
 accordance with the physics of the problem.
 However, for a PDE with a first-order derivative in space, instead of
 a second-order one, the Leapfrog scheme performs very well.
-Details are provided in Section @eq-advec-1D-leapfrog.
+Details are provided in Section @sec-advec-1D-leapfrog.
 
 ## Summary of accuracy of amplification factors
 We can plot the various amplification factors against $p=k\Delta x/2$
 for different choices of the $F$ parameter. Figures
-@fig-diffu-pde1-fig-A-err-C20, @fig-diffu-pde1-fig-A-err-C0.5, and
-@fig-diffu-pde1-fig-A-err-C0.1 show how long and small waves are
+@fig-diffu-pde1-fig-A-err-C20, @fig-diffu-pde1-fig-A-err-C05, and
+@fig-diffu-pde1-fig-A-err-C01 show how long and small waves are
 damped by the various schemes compared to the exact damping. As long
 as all schemes are stable, the amplification factor is positive,
 except for Crank-Nicolson when $F>0.5$.
 
 ![Amplification factors for large time steps.](fig/diffusion_A_F20_F2){#fig-diffu-pde1-fig-A-err-C20 width="800px"}
 
-![Amplification factors for time steps around the Forward Euler stability limit.](fig/diffusion_A_F05_F025){#fig-diffu-pde1-fig-A-err-C0.5 width="800px"}
+![Amplification factors for time steps around the Forward Euler stability limit.](fig/diffusion_A_F05_F025){#fig-diffu-pde1-fig-A-err-C05 width="800px"}
 
-![Amplification factors for small time steps.](fig/diffusion_A_F01_F001){#fig-diffu-pde1-fig-A-err-C0.1 width="800px"}
+![Amplification factors for small time steps.](fig/diffusion_A_F01_F001){#fig-diffu-pde1-fig-A-err-C01 width="800px"}
 
 The effect of negative amplification factors is that $A^n$ changes
 sign from one time level to the next, thereby giving rise to
@@ -573,65 +501,50 @@ wave on the mesh.
 To demonstrate the oscillatory behavior of the Crank-Nicolson scheme,
 we choose an initial condition that leads to short waves with
 significant amplitude. A discontinuous $I(x)$ will in particular serve
-this purpose: Figures @fig-diffu-pde1-CN-fig-F=3 and
-@fig-diffu-pde1-CN-fig-F=10 correspond to $F=3$ and $F=10$,
+this purpose: Figures @fig-diffu-pde1-CN-fig-F-3 and
+@fig-diffu-pde1-CN-fig-F-10 correspond to $F=3$ and $F=10$,
 respectively, and we see how short waves pollute the overall solution.
 
-## Analysis of the 2D diffusion equation
-{#sec-diffu-2D-analysis}
+## Analysis of the 2D diffusion equation {#sec-diffu-2D-analysis}
 
 Diffusion in several dimensions is treated later, but it is appropriate to
 include the analysis here. We first consider the 2D diffusion equation
-
 $$
 u_{t} = \dfc(u_{xx} + u_{yy}),
 $$
 which has Fourier component solutions of the form
-
 $$
 u(x,y,t) = Ae^{-\dfc k^2t}e^{i(k_x x + k_yy)},
 $$
 and the schemes have discrete versions of this Fourier component:
-
 $$
 u^{n}_{q,r} = A\xi^{n}e^{i(k_x q\Delta x + k_y r\Delta y)}\tp
 $$
-
 ### The Forward Euler scheme
 For the Forward Euler discretization,
-
 $$
 [D_t^+u = \dfc(D_xD_x u + D_yD_y u)]_{q,r}^n,
 $$
 we get
-
 $$
-\frac{\xi - 1}{\Delta t}
-=
--\dfc\frac{4}{\Delta x^2}\sin^2\left(\frac{k_x\Delta x}{2}\right) -
+\frac{\xi - 1}{\Delta t} = -\dfc\frac{4}{\Delta x^2}\sin^2\left(\frac{k_x\Delta x}{2}\right) -
 \dfc\frac{4}{\Delta y^2}\sin^2\left(\frac{k_y\Delta y}{2}\right)\tp
 $$
 Introducing
-
 $$
 p_x = \frac{k_x\Delta x}{2},\quad p_y = \frac{k_y\Delta y}{2},
 $$
 we can write the equation for $\xi$ more compactly as
-
 $$
-\frac{\xi - 1}{\Delta t}
-=
--\dfc\frac{4}{\Delta x^2}\sin^2 p_x -
+\frac{\xi - 1}{\Delta t} = -\dfc\frac{4}{\Delta x^2}\sin^2 p_x -
 \dfc\frac{4}{\Delta y^2}\sin^2 p_y,
 $$
 and solve for $\xi$:
-
 $$
 \xi = 1 - 4F_x\sin^2 p_x - 4F_y\sin^2 p_y\tp
 $$ {#eq-diffu-2D-analysis-xi}
 
 The complete numerical solution for a wave component is
-
 $$
 u^{n}_{q,r} = A(1 - 4F_x\sin^2 p_x - 4F_y\sin^2 p_y)^n
 e^{i(k_xq\Delta x + k_yr\Delta y)}\tp
@@ -641,13 +554,11 @@ For stability we demand $-1\leq\xi\leq 1$, and $-1\leq\xi$ is the
 critical limit, since clearly $\xi \leq 1$, and the worst case
 happens when the sines are at their maximum. The stability criterion
 becomes
-
 $$
 F_x + F_y \leq \half\tp
 $$ {#eq-diffu-2D-analysis-FE-stab}
 For the special, yet common, case $\Delta x=\Delta y=h$, the
 stability criterion can be written as
-
 $$
 \Delta t \leq \frac{h^2}{2d\dfc},
 $$
@@ -655,38 +566,31 @@ where $d$ is the number of space dimensions: $d=1,2,3$.
 
 ### The Backward Euler scheme
 The Backward Euler method,
-
 $$
 [D_t^-u = \dfc(D_xD_x u + D_yD_y u)]_{q,r}^n,
 $$
 results in
-
 $$
 1 - \xi^{-1} = - 4F_x \sin^2 p_x - 4F_y \sin^2 p_y,
 $$
 and
-
 $$
 \xi = (1 + 4F_x \sin^2 p_x + 4F_y \sin^2 p_y)^{-1},
 $$
 which is always in $(0,1]$. The solution for a wave component becomes
-
 $$
 u^{n}_{q,r} = A(1 + 4F_x\sin^2 p_x + 4F_y\sin^2 p_y)^{-n}
 e^{i(k_xq\Delta x + k_yr\Delta y)}\tp
 $$ {#eq-diffu-2D-analysis-BN-numexact}
 
-
 ### The Crank-Nicolson scheme
 With a Crank-Nicolson discretization,
-
 $$
 [D_tu]^{n+\half}_{q,r} =
 \half [\dfc(D_xD_x u + D_yD_y u)]_{q,r}^{n+1} +
 \half [\dfc(D_xD_x u + D_yD_y u)]_{q,r}^n,
 $$
 we have, after some algebra,
-
 $$
 \xi = \frac{1 - 2(F_x\sin^2 p_x + F_x\sin^2p_y)}{1 + 2(F_x\sin^2 p_x + F_x\sin^2p_y)}\tp
 $$
@@ -695,12 +599,10 @@ in the sense of non-growing wave components is guaranteed for all
 physical and numerical parameters. However,
 the fraction can become negative and result in non-physical
 oscillations. This phenomenon happens when
-
 $$
 F_x\sin^2 p_x + F_x\sin^2p_y > \half\tp
 $$
 A criterion against non-physical oscillations is therefore
-
 $$
 F_x + F_y \leq \half,
 $$
@@ -708,7 +610,6 @@ which is the same limit as the stability criterion for the Forward Euler
 scheme.
 
 The exact discrete solution is
-
 $$
 u^{n}_{q,r} = A
 \left(
@@ -720,22 +621,22 @@ $$ {#eq-diffu-2D-analysis-CN-numexact}
 ## Explanation of numerical artifacts
 The behavior of the solution generated by Forward Euler discretization in time (and centered
 differences in space) is summarized at the end of
-Section @eq-diffu-pde1-FE-experiments. Can we, from the analysis
+Section @sec-diffu-pde1-FE-experiments. Can we, from the analysis
 above, explain the behavior?
 
-We may start by looking at Figure @fig-diffu-pde1-FE-fig-F=0.51
+We may start by looking at Figure @fig-diffu-pde1-FE-fig-F-051
 where $F=0.51$. The figure shows that the solution is unstable and
 grows in time. The stability limit for such growth is $F=0.5$ and
 since the $F$ in this simulation is slightly larger, growth is
 unavoidable.
 
-Figure @fig-diffu-pde1-FE-fig-F=0.5 has unexpected features:
+Figure @fig-diffu-pde1-FE-fig-F-05 has unexpected features:
 we would expect the solution of the diffusion equation to be
-smooth, but the graphs in Figure @fig-diffu-pde1-FE-fig-F=0.5
+smooth, but the graphs in Figure @fig-diffu-pde1-FE-fig-F-05
 contain non-smooth noise. Turning to Figure
-@fig-diffu-pde1-FE-fig-gauss-F=0.5,  which has a quite similar
+@fig-diffu-pde1-FE-fig-gauss-F-05,  which has a quite similar
 initial condition, we see that the curves are indeed smooth.
-The problem with the results in Figure @fig-diffu-pde1-FE-fig-F=0.5
+The problem with the results in Figure @fig-diffu-pde1-FE-fig-F-05
 is that the initial condition is discontinuous. To represent it, we
 need a significant amplitude on the shortest waves in the mesh.
 However, for $F=0.5$, the shortest wave ($p=\pi/2$) gives
@@ -743,17 +644,17 @@ the amplitude in the numerical solution as $(1-4F)^n$, which oscillates
 between negative and positive values at subsequent time levels
 for $F>\frac{1}{4}$. Since the shortest waves have visible amplitudes in
 the solution profile, the oscillations becomes visible. The
-smooth initial condition in Figure @fig-diffu-pde1-FE-fig-gauss-F=0.5,
+smooth initial condition in Figure @fig-diffu-pde1-FE-fig-gauss-F-05,
 on the other hand, leads to very small amplitudes of the shortest waves.
 That these waves then oscillate in a non-physical way for
 $F=0.5$ is not a visible effect. The oscillations
 in time in the amplitude $(1-4F)^n$ disappear for $F\leq\frac{1}{4}$,
 and that is why also the discontinuous initial condition always leads to
-smooth solutions in Figure @fig-diffu-pde1-FE-fig-F=0.25, where
+smooth solutions in Figure @fig-diffu-pde1-FE-fig-F-025, where
 $F=\frac{1}{4}$.
 
 Turning the attention to the Backward Euler scheme and the experiments
-in Figure @fig-diffu-pde1-BE-fig-F=0.5, we see that even the discontinuous
+in Figure @fig-diffu-pde1-BE-fig-F-05, we see that even the discontinuous
 initial condition gives smooth solutions for $F=0.5$ (and in fact all other
 $F$ values). From the exact expression of the numerical amplitude,
 $(1  + 4F\sin^2p)^{-1}$, we realize that this factor can never flip between
@@ -765,18 +666,16 @@ represent a physically relevant growth).
 
 Finally, we have some small, strange artifacts when simulating the
 development of the initial plug profile with the Crank-Nicolson scheme,
-see Figure @fig-diffu-pde1-CN-fig-F=10, where $F=3$.
+see Figure @fig-diffu-pde1-CN-fig-F-10, where $F=3$.
 The Crank-Nicolson scheme cannot give growing amplitudes, but it may
 give oscillating amplitudes in time. The critical factor is
 $1 - 2F\sin^2p$, which for the shortest waves ($p=\pi/2$) indicates
 a stability limit $F=0.5$. With the discontinuous initial condition, we have
 enough amplitude on the shortest waves so their wrong behavior is visible,
 and this is what we see as small instabilities in
-Figure @fig-diffu-pde1-CN-fig-F=10. The only remedy is to lower the $F$ value.
+Figure @fig-diffu-pde1-CN-fig-F-10. The only remedy is to lower the $F$ value.
 
-
-## Exercise: Explore symmetry in a 1D problem
-{#sec-diffu-exer-1D-gaussian-symmetric}
+## Exercise: Explore symmetry in a 1D problem {#sec-diffu-exer-1D-gaussian-symmetric}
 file=diffu_symmetric_gaussian
 
 This exercise simulates the exact solution (@eq-diffu-pde1-sol-Gaussian).
@@ -809,8 +708,7 @@ u(L,t)& =\frac{1}{\sqrt{4\pi\dfc t}} \exp{\left({-\frac{x^2}{4\dfc t}}\right)}\t
 
 !esubex
 
-## Exercise: Investigate approximation errors from a $u_x=0$ boundary condition
-{#sec-diffu-exer-1D-ux-onesided}
+## Exercise: Investigate approximation errors from a $u_x=0$ boundary condition {#sec-diffu-exer-1D-ux-onesided}
 file=diffu_onesided_fd
 
 We consider the problem solved in Exercise @sec-diffu-exer-1D-gaussian-symmetric
@@ -828,9 +726,7 @@ a one-sided difference approximation to $u_x(0,t)=0$ destroys this
 convergence rate.
 :::
 
-
-## Exercise: Experiment with open boundary conditions in 1D
-{#sec-diffu-exer-1D-openBC}
+## Exercise: Experiment with open boundary conditions in 1D {#sec-diffu-exer-1D-openBC}
 file=diffu_open_BC
 
 We address diffusion of a Gaussian function
@@ -856,7 +752,6 @@ problem for the error $e=\uex - u$. Solve this problem
 numerically using an exact Dirichlet condition at $x=L$.
 Animate the evolution of the error and make a curve plot of
 the error measure
-
 $$
 E(t)=\sqrt{\frac{\int_0^L e^2dx}{\int_0^L udx}}\tp
 $$
@@ -872,12 +767,10 @@ asymptotic solution as $t\rightarrow 0$. To do this,
 integrate the diffusion equation from $0$ to $L$, integrate
 $u_{xx}$ by parts (or use Gauss' divergence theorem in 1D) to
 arrive at the important property
-
 $$
 \frac{d}{dt}\int_{0}^L u(x,t)dx = 0,
 $$
 implying that $\int_0^Ludx$ must be constant in time, and therefore
-
 $$
 \int_{0}^L u(x,t)dx = \int_{0}^LI(x)dx\tp
 $$
@@ -887,7 +780,6 @@ The integral of the initial pulse is 1.
 !bsubex
 Another idea for an artificial boundary condition at $x=L$
 is to use a cooling law
-
 $$
 -\dfc u_x = q(u - u_S),
 $$ {#eq-diffu-pde1-Gaussian-xL-cooling}
@@ -905,7 +797,6 @@ obeys the condition (@eq-diffu-pde1-Gaussian-xL-cooling).
 Test some constant values of $q$ and animate how the corresponding
 error function behaves. Also compute $E(t)$ curves as defined above.
 !esubex
-
 
 ## Exercise: Simulate a diffused Gaussian peak in 2D/3D
 file=diffu_symmetric_gaussian_2D
@@ -936,16 +827,13 @@ in b), but in a four times as large domain. Make an animation and compare
 it with the one in b).
 !esubex
 
-## Exercise: Examine stability of a diffusion model with a source term
-{#sec-diffu-exer-uterm}
+## Exercise: Examine stability of a diffusion model with a source term {#sec-diffu-exer-uterm}
 file=diffu_stability_uterm
 
 Consider a diffusion equation with a linear $u$ term:
-
 $$
 u_t = \dfc u_{xx} + \beta u\tp
 $$
-
 !bsubex
 Derive in detail the Forward Euler, Backward Euler,
 and Crank-Nicolson schemes for this type of diffusion model.

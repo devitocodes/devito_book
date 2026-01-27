@@ -1,8 +1,4 @@
----
-title: "Wave2D Prog.Do"
----
-
-{#sec-wave-2D3D-impl}
+## Implementation of 2D and 3D wave equations {#sec-wave-2D3D-impl}
 
 We shall now describe in detail various Python implementations
 for solving a standard 2D, linear wave equation with constant
@@ -21,6 +17,7 @@ the complete initial-boundary value problem is defined by
 &u = 0,\quad &(x,y)\in\partial\Omega,\ t\in (0,T],
 \end{alignat}
 ```
+
 where $\partial\Omega$ is the boundary of $\Omega$, in this case
 the four sides of the rectangle $\Omega = [0,L_x]\times [0,L_y]$:
 $x=0$, $x=L_x$, $y=0$, and $y=L_y$.
@@ -32,50 +29,49 @@ $$
 which leads to an explicit updating formula to be implemented in a
 program:
 
-\begin{align}
-u^{n+1}**{i,j} &= -u^{n-1}**{i,j} + 2u^n_{i,j} + \nonumber\\
+$$
+\begin{split}
+u^{n+1}_{i,j} &= -u^{n-1}_{i,j} + 2u^n_{i,j} + \\
 &\quad C_x^2(
-u^{n}**{i+1,j} - 2u^{n}**{i,j} + u^{n}_{i-1,j}) + C_y^2
-(u^{n}**{i,j+1} - 2u^{n}**{i,j} + u^{n}**{i,j-1}) + \Delta t^2 f**{i,j}^n,
-\label{wave:2D3D:impl1:2Du0:ueq:discrete}
-\end{align}
+u^{n}_{i+1,j} - 2u^{n}_{i,j} + u^{n}_{i-1,j}) + C_y^2
+(u^{n}_{i,j+1} - 2u^{n}_{i,j} + u^{n}_{i,j-1}) + \Delta t^2 f_{i,j}^n,
+\end{split}
+$$ {#eq-wave-2D3D-impl1-2Du0-ueq-discrete}
 for all interior mesh points $i\in\seti{\Ix}$ and
 $j\in\seti{\Iy}$, for $n\in\setr{\It}$.
 The constants $C_x$ and $C_y$ are defined as
-
 $$
 C_x = c\frac{\Delta t}{\Delta x},\quad C_y = c\frac{\Delta t}{\Delta y} \tp
 $$
-
 At the boundary, we simply set $u^{n+1}_{i,j}=0$ for
 $i=0$, $j=0,\ldots,N_y$; $i=N_x$, $j=0,\ldots,N_y$;
 $j=0$, $i=0,\ldots,N_x$; and $j=N_y$, $i=0,\ldots,N_x$.
-For the first step, $n=0$, (@sec-wave-2D3D-impl1-2Du0-ueq-discrete)
+For the first step, $n=0$, (@eq-wave-2D3D-impl1-2Du0-ueq-discrete)
 is combined with the discretization of the initial condition $u_t=V$,
 $[D_{2t} u = V]^0_{i,j}$ to obtain a special formula for
 $u^1_{i,j}$ at the interior mesh points:
 
-\begin{align}
-u^{1}**{i,j} &= u^0**{i,j} + \Delta t V_{i,j} + \nonumber\\
+$$
+\begin{split}
+u^{1}_{i,j} &= u^0_{i,j} + \Delta t V_{i,j} + \\
 &\quad {\half}C_x^2(
-u^{0}**{i+1,j} - 2u^{0}**{i,j} + u^{0}_{i-1,j}) + {\half}C_y^2
-(u^{0}**{i,j+1} - 2u^{0}**{i,j} + u^{0}_{i,j-1}) +\nonumber\\
+u^{0}_{i+1,j} - 2u^{0}_{i,j} + u^{0}_{i-1,j}) + {\half}C_y^2
+(u^{0}_{i,j+1} - 2u^{0}_{i,j} + u^{0}_{i,j-1}) +\\
 &\quad \half\Delta t^2f_{i,j}^n,
-\label{wave:2D3D:impl1:2Du0:ueq:n0:discrete}
-\end{align}
+\end{split}
+$$ {#eq-wave-2D3D-impl1-2Du0-ueq-n0-discrete}
 
 The algorithm is very similar to the one in 1D:
 
  1. Set initial condition $u^0_{i,j}=I(x_i,y_j)$
- 1. Compute $u^1_{i,j}$ from (@sec-wave-2D3D-impl1-2Du0-ueq-discrete)
+ 1. Compute $u^1_{i,j}$ from (@eq-wave-2D3D-impl1-2Du0-ueq-discrete)
  1. Set $u^1_{i,j}=0$ for the boundaries $i=0,N_x$, $j=0,N_y$
  1. For $n=1,2,\ldots,N_t$:
-  1. Find $u^{n+1}_{i,j}$ from (@sec-wave-2D3D-impl1-2Du0-ueq-discrete)
+ 1. Find $u^{n+1}_{i,j}$ from (@eq-wave-2D3D-impl1-2Du0-ueq-discrete)
     for all internal mesh points, $i\in\seti{\Ix}$, $j\in\seti{\Iy}$
-  1. Set $u^{n+1}_{i,j}=0$ for the boundaries $i=0,N_x$, $j=0,N_y$
+ 1. Set $u^{n+1}_{i,j}=0$ for the boundaries $i=0,N_x$, $j=0,N_y$
 
-## Scalar computations
-{#sec-wave2D3D-impl-scalar}
+## Scalar computations {#sec-wave2D3D-impl-scalar}
 
 The `solver` function for a 2D case with constant wave velocity and
 boundary condition $u=0$ is analogous to the 1D case with similar parameter
@@ -84,6 +80,7 @@ extensions. The code is found in the program
 [`wave2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave2D_u0/wave2D_u0.py).
 
 ### Domain and mesh
+
 The spatial domain is now $[0,L_x]\times [0,L_y]$, specified
 by the arguments `Lx` and `Ly`. Similarly, the number of mesh
 points in the $x$ and $y$ directions,
@@ -98,7 +95,9 @@ the `solver` function is then
 def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
            user_action=None, version='scalar'):
 ```
+
 Key parameters used in the calculations are created as
+
 ```python
 x = linspace(0, Lx, Nx+1)                  # mesh points in x dir
 y = linspace(0, Ly, Ny+1)                  # mesh points in y dir
@@ -111,6 +110,7 @@ dt2 = dt**2
 ```
 
 ### Solution arrays
+
 We store $u^{n+1}**{i,j}$, $u^{n}**{i,j}$, and
 $u^{n-1}_{i,j}$ in three two-dimensional arrays,
 
@@ -118,13 +118,15 @@ $u^{n-1}_{i,j}$ in three two-dimensional arrays,
 u   = zeros((Nx+1,Ny+1))   # solution array
 u_n = [zeros((Nx+1,Ny+1)), zeros((Nx+1,Ny+1))]  # t-dt, t-2*dt
 ```
+
 where $u^{n+1}_{i,j}$ corresponds to `u[i,j]`,
 $u^{n}_{i,j}$ to `u_n[i,j]`, and
 $u^{n-1}_{i,j}$ to `u_nm1[i,j]`.
 
 ### Index sets
+
 It is also convenient to introduce the index sets (cf. Section
-@eq-wave-indexset)
+@sec-wave-indexset)
 
 ```python
 Ix = range(0, u.shape[0])
@@ -133,6 +135,7 @@ It = range(0, t.shape[0])
 ```
 
 ### Computing the solution
+
 Inserting the initial
 condition `I` in `u_n` and making a callback to the user in terms of
 the `user_action` function is a straightforward generalization of
@@ -146,11 +149,12 @@ for i in Ix:
 if user_action is not None:
     user_action(u_n, x, xv, y, yv, t, 0)
 ```
+
 The `user_action` function has additional arguments compared to the
 1D case. The arguments `xv` and `yv` will be commented
 upon in Section @sec-wave2D3D-impl-vectorized.
 
-The key finite difference formula (@sec-wave-2D3D-models-unp1)
+The key finite difference formula (@eq-wave-2D3D-models-unp1)
 for updating the solution at
 a time level is implemented in a separate function as
 
@@ -182,6 +186,7 @@ def advance_scalar(u, u_n, u_nm1, f, x, y, t, n, Cx2, Cy2, dt2,
     for j in It: u[i,j] = 0
     return u
 ```
+
 The `step1` variable has been introduced to allow the formula to be
 reused for the first step, computing $u^1_{i,j}$:
 
@@ -189,6 +194,7 @@ reused for the first step, computing $u^1_{i,j}$:
 u = advance_scalar(u, u_n, f, x, y, t,
                    n, Cx2, Cy2, dt, V, step1=True)
 ```
+
 Below, we will make many alternative implementations of the
 `advance_scalar` function to speed up the code since most of
 the CPU time in simulations is spent in this function.
@@ -204,8 +210,7 @@ a `return u` will actually return `u_nm1` (due to the switching of array
 indices in the loop)!
 :::
 
-## Vectorized computations
-{#sec-wave2D3D-impl-vectorized}
+## Vectorized computations {#sec-wave2D3D-impl-vectorized}
 
 The scalar code above turns out to be extremely slow for large 2D
 meshes, and probably useless in 3D beyond debugging of small test cases.
@@ -231,6 +236,7 @@ yv = y[newaxis,:]
 xv = x.reshape((x.size, 1))
 yv = y.reshape((1, y.size))
 ```
+
 This is a standard required technique when evaluating functions over
 a 2D mesh, say `sin(xv)*cos(xv)`, which then gives a result with shape
 `(Nx+1,Ny+1)`. Calling `I(xv, yv)` and `f(xv, yv, t[n])` will now
@@ -242,6 +248,7 @@ setting the initial condition is just a matter of
 ```python
 u_n[:,:] = I(xv, yv)
 ```
+
 One could also have written `u_n = I(xv, yv)` and let `u_n` point to a
 new object, but vectorized operations often make use of direct
 insertion in the original array through `u_n[:,:]`, because sometimes
@@ -303,9 +310,11 @@ u[Nx,:] = 0
 
 In the vectorized update of `u` (above), the function `f` is first computed
 as an array over all mesh points:
+
 ```python
 f_a = f(xv, yv, t[n])
 ```
+
 We could, alternatively, have used the call `f(xv, yv, t[n])[1:-1,1:-1]`
 in the last term of the update statement, but other implementations
 in compiled languages benefit from having `f` available in an array
@@ -325,16 +334,15 @@ and compute errors, through an expression like
 `u - u_exact(xv, yv, t[n])`.
 
 ## Verification
-{#sec-wave2D3D-impl-verify}
 
-### Testing a quadratic solution
+### Testing a quadratic solution {#sec-wave2D3D-impl-verify}
+
 The 1D solution from Section @sec-wave-pde2-fd-verify-quadratic can be
 generalized to multi-dimensions and provides a test case where the
 exact solution also fulfills the discrete equations, such that we know
 (to machine precision) what numbers the solver function should
 produce. In 2D we use the following generalization of
-(@sec-wave-pde2-fd-verify-quadratic-uex):
-
+(@eq-wave-pde2-fd-verify-quadratic-uex):
 $$
 \uex(x,y,t) = x(L_x-x)y(L_y-y)(1+{\half}t) \tp
 $$ {#eq-wave2D3D-impl-verify-quadratic}
@@ -538,20 +546,17 @@ can use `ffmpeg` to create videos.
 
 MOVIE: [https://github.com/hplgit/fdm-book/blob/master/doc/pub/book/html/mov-wave/mayavi/wave2D_u0_gaussian/movie.mp4]
 
-
-## Exercise: Check that a solution fulfills the discrete model
-{#sec-wave-exer-quadratic-2D}
+## Exercise: Check that a solution fulfills the discrete model {#sec-wave-exer-quadratic-2D}
 file=check_quadratic_solution
 
 Carry out all mathematical details to show that
-(@sec-wave2D3D-impl-verify-quadratic) is indeed a solution of the
+(@eq-wave2D3D-impl-verify-quadratic) is indeed a solution of the
 discrete model for a 2D wave equation with $u=0$ on the boundary.
 One must check the boundary conditions, the initial conditions,
 the general discrete equation at a time level and the special
 version of this equation for the first time level.
 
-## Project: Calculus with 2D mesh functions
-{#sec-wave-exer-mesh3D-calculus}
+## Project: Calculus with 2D mesh functions {#sec-wave-exer-mesh3D-calculus}
 file=mesh_calculus_2D
 
 The goal of this project is to redo
@@ -570,7 +575,6 @@ write a corresponding test function.
 
 __Integration.__
 The integral of a 2D mesh function $f_{i,j}$ is defined as
-
 $$
 F_{i,j} = \int_{y_0}^{y_j} \int_{x_0}^{x_i} f(x,y)dxdy,
 $$
@@ -600,8 +604,7 @@ return $F_{i,j}$ for all mesh indices $i$ and $j$. Use the
 fact that the Trapezoidal rule is exact for linear functions and
 write a test function.
 
-## Exercise: Implement Neumann conditions in 2D
-{#sec-wave-app-exer-wave2D-Neumann}
+## Exercise: Implement Neumann conditions in 2D {#sec-wave-app-exer-wave2D-Neumann}
 file=wave2D_dn
 
 Modify the [`wave2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave2D_u0/wave2D_u0.py)
@@ -615,7 +618,7 @@ To test the code, use $u=1.2$ as solution ($I(x,y)=1.2$, $V=f=0$, and
 $c$ arbitrary), which should be exactly reproduced with any mesh
 as long as the stability criterion is satisfied.
 Another test is to use the plug-shaped pulse
-in the `pulse` function from Section @eq-wave-pde2-software
+in the `pulse` function from Section @sec-wave-pde2-software
 and the [`wave1D_dn_vc.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn_vc.py)
 program. This pulse
 is exactly propagated in 1D if $c\Delta t/\Delta x=1$. Check
@@ -623,9 +626,7 @@ that also the 2D program can propagate this pulse exactly
 in $x$ direction ($c\Delta t/\Delta x=1$, $\Delta y$ arbitrary)
 and $y$ direction ($c\Delta t/\Delta y=1$, $\Delta x$ arbitrary).
 
-
-## Exercise: Test the efficiency of compiled loops in 3D
-{#sec-wave-exer-3D-f77-cy-efficiency}
+## Exercise: Test the efficiency of compiled loops in 3D {#sec-wave-exer-3D-f77-cy-efficiency}
 file=wave3D_u0
 
 Extend the `wave2D_u0.py` code and the Cython, Fortran, and C versions to 3D.

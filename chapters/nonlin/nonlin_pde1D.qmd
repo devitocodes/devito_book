@@ -1,8 +1,4 @@
----
-title: "Nonlin Pde1D.Do"
----
-
-{#sec-nonlin-pdelevel}
+## Nonlinear diffusion model {#sec-nonlin-pdelevel}
 
 The attention is now turned to nonlinear partial differential
 equations (PDEs) and application of the techniques explained above for
@@ -27,57 +23,47 @@ problem ``at the PDE level'' such that we transform the nonlinear
 stationary PDE problem at each time level into a sequence of linear
 PDE problems, which can be solved using any method for linear
 PDEs. This strategy avoids the solution of systems of nonlinear
-algebraic equations.  In Section @eq-nonlin-alglevel-1D we shall take
+algebraic equations.  In Section @sec-nonlin-alglevel-1D we shall take
 the opposite (and more common) approach: discretize the nonlinear
 problem in time and space first, and then solve the resulting
 nonlinear algebraic equations at each time level by the methods of
-Section @eq-nonlin-systems-alg.  Very often, the two approaches are
+Section @sec-nonlin-systems-alg.  Very often, the two approaches are
 mathematically identical, so there is no preference from a
 computational efficiency point of view.  The details of the ideas
 sketched above will hopefully become clear through the forthcoming
 examples.
 
-
-## Explicit time integration
-{#sec-nonlin-pdelevel-explicit}
+## Explicit time integration {#sec-nonlin-pdelevel-explicit}
 
 The nonlinearities in the PDE are trivial to deal with if we choose an
-explicit time integration method for (@sec-nonlin-pdelevel-model-pde),
+explicit time integration method for the nonlinear diffusion equation,
 such as the Forward Euler method:
-
 $$
 [D_t^+ u = \nabla\cdot (\dfc(u)\nabla u) + f(u)]^n,
 $$
 or written out,
-
 $$
 \frac{u^{n+1} - u^n}{\Delta t} = \nabla\cdot (\dfc(u^n)\nabla u^n)
 + f(u^n),
 $$
 which is a linear equation in the unknown $u^{n+1}$ with solution
-
 $$
 u^{n+1} = u^n + \Delta t\nabla\cdot (\dfc(u^n)\nabla u^n) +
 \Delta t f(u^n)\tp
 $$
-
 The disadvantage with this discretization is
 the strict stability criterion $\Delta t \leq h^2/(6\max\alpha)$
 for the case $f=0$ and a standard 2nd-order finite difference discretization
 in 3D space with mesh cell sizes $h=\Delta x=\Delta y=\Delta z$.
 
+## Backward Euler scheme and Picard iteration {#sec-nonlin-pdelevel-Picard}
 
-## Backward Euler scheme and Picard iteration
-{#sec-nonlin-pdelevel-Picard}
-
-A Backward Euler scheme for (@sec-nonlin-pdelevel-model-pde)
+A Backward Euler scheme for the nonlinear diffusion equation
 reads
-
 $$
 [D_t^- u = \nabla\cdot (\dfc(u)\nabla u) + f(u)]^n\tp
 $$
 Written out,
-
 $$
 \frac{u^{n} - u^{n-1}}{\Delta t} = \nabla\cdot (\dfc(u^n)\nabla u^n)
 + f(u^n)\tp
@@ -92,7 +78,6 @@ in iteration $k+1$ is to use the previously computed $u^{n,k}$
 approximation in the diffusion coefficient: $\dfc(u^{n,k})$.
 The nonlinear source term is treated similarly: $f(u^{n,k})$.
 The unknown function $u^{n,k+1}$ then fulfills the linear PDE
-
 $$
 \frac{u^{n,k+1} - u^{n-1}}{\Delta t} = \nabla\cdot (\dfc(u^{n,k})
 \nabla u^{n,k+1})
@@ -107,7 +92,6 @@ the unknown we want to solve for, i.e., $u^{n,k+1}$ above, and $u^{-}$
 is the most recently computed value, $u^{n,k}$ above. Moreover,
 $u^{(1)}$ denotes the unknown function at the previous time level, $u^{n-1}$
 above. The PDE to be solved in a Picard iteration then looks like
-
 $$
 \frac{u - u^{(1)}}{\Delta t} = \nabla\cdot (\dfc(u^{-})
 \nabla u)
@@ -140,9 +124,7 @@ while $\uex$ is not explicitly introduced unless we need to talk about
 the exact solution and the approximate solution at the same time.
 :::
 
-## Backward Euler scheme and Newton's method
-{#sec-nonlin-pdelevel-Newton}
-
+## Backward Euler scheme and Newton's method {#sec-nonlin-pdelevel-Newton}
 
 At time level $n$, we have to solve the stationary PDE
 (@eq-nonlin-pdelevel-pde-BE). In the previous section, we
@@ -156,7 +138,6 @@ but the idea of the method can be applied at the PDE level too.
 Let $u^{n,k}$ be an approximation to the unknown $u^n$. We seek a
 better approximation on
 the form
-
 $$
 u^{n} = u^{n,k} + \delta u\tp
 $$ {#eq-nonlin-pdelevel-Newton-ansatz}
@@ -167,7 +148,6 @@ linear in $\delta u$ (which makes (@eq-nonlin-pdelevel-Newton-ansatz)
 an approximation for $u^{n}$). Then we can solve a linear PDE for
 the correction $\delta u$ and use (@eq-nonlin-pdelevel-Newton-ansatz)
 to find a new approximation
-
 $$
 u^{n,k+1}=u^{n,k}+\delta u
 $$
@@ -179,7 +159,6 @@ Let us carry out all the mathematical details for the nonlinear diffusion
 PDE discretized by the Backward Euler method.
 Inserting (@eq-nonlin-pdelevel-Newton-ansatz) in
 (@eq-nonlin-pdelevel-pde-BE) gives
-
 $$
 \frac{u^{n,k} +\delta u - u^{n-1}}{\Delta t} =
 \nabla\cdot (\dfc(u^{n,k} + \delta u)\nabla (u^{n,k}+\delta u))
@@ -197,38 +176,40 @@ f(u^{n,k}+\delta u) &=  f(u^{n,k}) + \frac{df}{du}(u^{n,k})\delta u
 Inserting the linear approximations of $\dfc$ and $f$ in
 (@eq-nonlin-pdelevel-pde-BE-Newton1) results in
 
-\begin{align}
+$$
+\begin{split}
 \frac{u^{n,k} +\delta u - u^{n-1}}{\Delta t} &=
-\nabla\cdot (\dfc(u^{n,k})\nabla u^{n,k}) + f(u^{n,k}) + \nonumber\\
+\nabla\cdot (\dfc(u^{n,k})\nabla u^{n,k}) + f(u^{n,k}) + \\
 &\qquad \nabla\cdot (\dfc(u^{n,k})\nabla \delta u)
-+ \nabla\cdot (\dfc^{\prime}(u^{n,k})\delta u\nabla u^{n,k}) + \nonumber\\
++ \nabla\cdot (\dfc^{\prime}(u^{n,k})\delta u\nabla u^{n,k}) + \\
 &\qquad \nabla\cdot (\dfc^{\prime}(u^{n,k})\delta u\nabla \delta u)
 + f^{\prime}(u^{n,k})\delta u\tp
-\label{nonlin:pdelevel:pde:BE:Newton2}
-\end{align}
+\end{split}
+$$ {#eq-nonlin-pdelevel-pde-BE-Newton2}
 The term $\dfc^{\prime}(u^{n,k})\delta u\nabla \delta u$ is of
 order $\delta u^2$
 and therefore omitted since we expect the correction $\delta u$
 to be small ($\delta u \gg \delta u^2$).
 Reorganizing the equation gives a PDE
 for $\delta u$ that we can write in short form as
-
 $$
 \delta F(\delta u; u^{n,k}) = -F(u^{n,k}),
 $$
 where
 
-\begin{align}
-F(u^{n,k}) &= \frac{u^{n,k} - u^{n-1}}{\Delta t} -
+$$
+F(u^{n,k}) = \frac{u^{n,k} - u^{n-1}}{\Delta t} -
 \nabla\cdot (\dfc(u^{n,k})\nabla u^{n,k}) + f(u^{n,k}),
-\\
+$$
+$$
+\begin{split}
 \delta F(\delta u; u^{n,k}) &=
 - \frac{1}{\Delta t}\delta u +
-\nabla\cdot (\dfc(u^{n,k})\nabla \delta u) + \nonumber\\
+\nabla\cdot (\dfc(u^{n,k})\nabla \delta u) + \\
 &\quad \nabla\cdot (\dfc^{\prime}(u^{n,k})\delta u\nabla u^{n,k})
 + f^{\prime}(u^{n,k})\delta u\tp
-\label{nonlin:pdelevel:pde:BE:Newton2:F}
-\end{align}
+\end{split}
+$$ {#eq-nonlin-pdelevel-pde-BE-Newton2-F}
 Note that $\delta F$ is a linear function of $\delta u$, and
 $F$ contains only terms that are known, such that
 the PDE for $\delta u$ is indeed linear.
@@ -262,17 +243,19 @@ For coding we want to introduce $u$ for $u^n$, $u^{-}$ for $u^{n,k}$ and
 $u^{(1)}$ for $u^{n-1}$. The formulas for $F$ and $\delta F$
 are then more clearly written as
 
-\begin{align}
-F(u^{-}) &= \frac{u^{-} - u^{(1)}}{\Delta t} -
+$$
+F(u^{-}) = \frac{u^{-} - u^{(1)}}{\Delta t} -
 \nabla\cdot (\dfc(u^{-})\nabla u^{-}) + f(u^{-}),
-\\
+$$
+$$
+\begin{split}
 \delta F(\delta u; u^{-}) &=
 - \frac{1}{\Delta t}\delta u +
-\nabla\cdot (\dfc(u^{-})\nabla \delta u) + \nonumber\\
+\nabla\cdot (\dfc(u^{-})\nabla \delta u) + \\
 &\quad \nabla\cdot (\dfc^{\prime}(u^{-})\delta u\nabla u^{-})
 + f^{\prime}(u^{-})\delta u\tp
-\label{nonlin:pdelevel:pde:BE:Newton2:F2}
-\end{align}
+\end{split}
+$$ {#eq-nonlin-pdelevel-pde-BE-Newton2-F2}
 The form that orders the PDE as the Picard iteration terms plus
 the Newton method's derivative terms becomes
 
@@ -289,7 +272,6 @@ $\gamma=0$ and $\gamma=1$, respectively.
 Some may prefer to derive the linearized PDE for $\delta u$ using
 the more compact notation. We start with inserting $u^n=u^{-}+\delta u$
 to get
-
 $$
 \frac{u^{-} +\delta u - u^{n-1}}{\Delta t} =
 \nabla\cdot (\dfc(u^{-} + \delta u)\nabla (u^{-}+\delta u))
@@ -312,19 +294,16 @@ and inserting these expressions gives a less cluttered PDE for $\delta u$:
 + f^{\prime}(u^{-})\delta u\tp
 \end{align*}
 
-## Crank-Nicolson discretization
-{#sec-nonlin-pdelevel-Picard-CN}
+## Crank-Nicolson discretization {#sec-nonlin-pdelevel-Picard-CN}
 
 A Crank-Nicolson discretization of
-(@sec-nonlin-pdelevel-model-pde) applies a centered difference
+the nonlinear diffusion equation applies a centered difference
 at $t_{n+\frac{1}{2}}$:
-
 $$
 [D_t u = \nabla\cdot (\dfc(u)\nabla u) + f(u)]^{n+\frac{1}{2}}\tp
 $$
 The standard technique is to apply an arithmetic average for
 quantities defined between two mesh points, e.g.,
-
 $$
 u^{n+\frac{1}{2}}\approx \frac{1}{2}(u^n + u^{n+1})\tp
 $$
@@ -353,19 +332,17 @@ mean of products. Exercise @sec-nonlin-exer-products-arith-mean investigates
 this question, and the answer is that the approximation is
 $\Oof{\Delta t^2}$ in both cases.
 
+## Discretization in space and Newton's method {#sec-nonlin-alglevel-1D}
 
-{#sec-nonlin-alglevel-1D}
-
-Section @eq-nonlin-pdelevel presented methods for linearizing
+Section @sec-nonlin-pdelevel presented methods for linearizing
 time-discrete PDEs directly prior to discretization in space.  We can
 alternatively carry out the discretization in space of the
 time-discrete nonlinear PDE problem and get a system of nonlinear
 algebraic equations, which can be solved by Picard iteration or
-Newton's method as presented in Section @eq-nonlin-systems-alg.
+Newton's method as presented in Section @sec-nonlin-systems-alg.
 This latter approach will now be described in detail.
 
 We shall work with the 1D problem
-
 $$
 -(\dfc(u)u^{\prime})^{\prime} + au = f(u),\quad x\in (0,L),
 \quad \dfc(u(0))u^{\prime}(0) = C,\ u(L)=D \tp
@@ -373,7 +350,6 @@ $$ {#eq-nonlin-alglevel-1D-pde}
 
 The problem (@eq-nonlin-alglevel-1D-pde) arises from the stationary
 limit of a diffusion equation,
-
 $$
 \frac{\partial u}{\partial t} = \frac{\partial}{\partial x}\left(
 \alpha(u)\frac{\partial u}{\partial x}\right) - au + f(u),
@@ -383,7 +359,6 @@ Alternatively, the problem (@eq-nonlin-alglevel-1D-pde) arises
 at each time level from implicit time discretization of
 (@eq-nonlin-alglevel-1D-pde-tver). For example, a Backward Euler
 scheme for (@eq-nonlin-alglevel-1D-pde-tver) leads to
-
 $$
 \frac{u^{n}-u^{n-1}}{\Delta t} =
 \frac{d}{dx}\left(
@@ -394,29 +369,25 @@ in (@eq-nonlin-alglevel-1D-pde) to be $f(u)$ in
 (@eq-nonlin-alglevel-1D-pde-tver-BE) plus $u^{n-1}/\Delta t$, gives
 (@eq-nonlin-alglevel-1D-pde) with $a=1/\Delta t$.
 
-
-## Finite difference discretization
-{#sec-nonlin-alglevel-1D-fd}
+## Finite difference discretization {#sec-nonlin-alglevel-1D-fd}
 
 The nonlinearity in the differential equation
 (@eq-nonlin-alglevel-1D-pde) poses no more difficulty than a variable
 coefficient, as in the term $(\dfc(x)u^{\prime})^{\prime}$.  We can
 therefore use a standard finite difference approach when discretizing
 the Laplace term with a variable coefficient:
-
 $$
 [-D_x\dfc D_x u +au = f]_i\tp
 $$
 Writing this out for a uniform mesh with points $x_i=i\Delta x$,
 $i=0,\ldots,N_x$, leads to
 
-\begin{align}
+$$
 -\frac{1}{\Delta x^2}
 \left(\dfc_{i+\half}(u_{i+1}-u_i) -
 \dfc_{i-\half}(u_{i}-u_{i-1})\right)
-+ au_i &= f(u_i)\tp
-\label{nonlin:alglevel:1D:fd:deq0}
-\end{align}
++ au_i = f(u_i)\tp
+$$ {#eq-nonlin-alglevel-1D-fd-deq0}
 This equation is valid at all the mesh points $i=0,1,\ldots,N_x-1$.
 At $i=N_x$ we have the Dirichlet condition $u_i=0$.
 The only difference from the case with $(\dfc(x)u^{\prime})^{\prime}$ and $f(x)$ is that
@@ -431,39 +402,36 @@ mean, although a harmonic mean is also common in this context if
 $\dfc$ features large jumps.
 There are two choices of arithmetic means:
 
-\begin{align}
-\dfc_{i+\half} &\approx
+$$
+\dfc_{i+\half} \approx
 \dfc(\half(u_i + u_{i+1}) =
 [\dfc(\overline{u}^x)]^{i+\half},
-\\
-\dfc_{i+\half} &\approx
+$$
+$$
+\dfc_{i+\half} \approx
 \half(\dfc(u_i) + \dfc(u_{i+1})) = [\overline{\dfc(u)}^x]^{i+\half}
-\label{nonlin:alglevel:1D:fd:dfc:mean:u}
-\end{align}
+$$ {#eq-nonlin-alglevel-1D-fd-dfc-mean-u}
 Equation (@eq-nonlin-alglevel-1D-fd-deq0) with
 the latter approximation then looks like
 
-\begin{align}
+$$
+\begin{split}
 &-\frac{1}{2\Delta x^2}
 \left((\dfc(u_i)+\dfc(u_{i+1}))(u_{i+1}-u_i) -
-(\dfc(u_{i-1})+\dfc(u_{i}))(u_{i}-u_{i-1})\right)\nonumber\\
+(\dfc(u_{i-1})+\dfc(u_{i}))(u_{i}-u_{i-1})\right)\\
 &\qquad\qquad + au_i = f(u_i),
-\label{nonlin:alglevel:1D:fd:deq}
-\end{align}
+\end{split}
+$$ {#eq-nonlin-alglevel-1D-fd-deq}
 or written more compactly,
-
 $$
 [-D_x\overline{\dfc}^x D_x u +au = f]_i\tp
 $$
-
 At mesh point $i=0$ we have the boundary condition $\dfc(u)u^{\prime}=C$,
 which is discretized by
-
 $$
 [\dfc(u)D_{2x}u = C]_0,
 $$
 meaning
-
 $$
 \dfc(u_0)\frac{u_{1} - u_{-1}}{2\Delta x} = C\tp
 $$ {#eq-nonlin-alglevel-1D-fd-Neumann-x0}
@@ -496,7 +464,6 @@ The matrix $A(u)$ is tridiagonal: $A_{i,j}=0$ for $j > i+1$ and $j < i-1$.
 The above expressions are valid for internal mesh points $1\leq i\leq N_x-1$.
 For $i=0$ we need to express $u_{i-1}=u_{-1}$ in terms of $u_1$ using
 (@eq-nonlin-alglevel-1D-fd-Neumann-x0):
-
 $$
 u_{-1} = u_1 -\frac{2\Delta x}{\dfc(u_0)}C\tp
 $$ {#eq-nonlin-alglevel-1D-fd-Neumann-x0-um1}
@@ -518,7 +485,7 @@ $u_{N_x}=D$, corresponding to $A_{i,i}=1$ and $b_i=D$ for $i=N_x$.
 ### Picard iteration
 The obvious Picard iteration scheme is to use previously computed
 values of $u_i$ in $A(u)$ and $b(u)$, as described more in detail in
-Section @eq-nonlin-systems-alg. With the notation $u^{-}$ for the
+Section @sec-nonlin-systems-alg. With the notation $u^{-}$ for the
 most recently computed value of $u$, we have the system $F(u)\approx
 \hat F(u) = A(u^{-})u - b(u^{-})$, with $F=(F_0,F_1,\ldots,F_m)$,
 $u=(u_0,u_1,\ldots,u_m)$.  The index $m$ is $N_x$ if the system
@@ -537,12 +504,12 @@ for the $i$-th component in $u^{-}$.
 The starting point is the basic expressions for the
 nonlinear equations at mesh point $i=0$ and $i=1$:
 
-\begin{align}
-A_{0,-1}u_{-1} + A_{0,0}u_0 + A_{0,1}u_1 &= b_0,
-\\
-A_{1,0}u_{0} + A_{1,1}u_1 + A_{1,2}u_2 &= b_1\tp
-\label{nonlin:alglevel:1D:fd:2x2:x0}
-\end{align}
+$$
+A_{0,-1}u_{-1} + A_{0,0}u_0 + A_{0,1}u_1 = b_0,
+$$ {#eq-nonlin-alglevel-1D-fd-2x2-x0}
+$$
+A_{1,0}u_{0} + A_{1,1}u_1 + A_{1,2}u_2 = b_1\tp
+$$ {#eq-nonlin-alglevel-1D-fd-2x2-x1}
 Equation (@eq-nonlin-alglevel-1D-fd-2x2-x0) written out reads
 
 \begin{align*}
@@ -564,11 +531,9 @@ With Picard iteration we get
 \frac{1}{\dfc(u^-**0)\Delta x}(\dfc(u^-**{-1}) + \dfc(u^-_{0}))C,
 \end{align*}
 where
-
 $$
 u^-_{-1} = u_1^- -\frac{2\Delta x}{\dfc(u^-_0)}C\tp
 $$
-
 Equation (@eq-nonlin-alglevel-1D-fd-2x2-x1) contains the unknown $u_2$
 for which we have a Dirichlet condition. In case we omit the
 condition as a separate equation, (@eq-nonlin-alglevel-1D-fd-2x2-x1)
@@ -590,7 +555,6 @@ occurrences of $u_2$ by $D$:
 \end{align*}
 
 The two equations can be written as a $2\times 2$ system:
-
 $$
 \left(\begin{array}{cc}
 B_{0,0}& B_{0,1}\\
@@ -625,7 +589,6 @@ d_1 &= f(u^-**1) + \frac{1}{2\Delta x^2}(\dfc(u^-**{1}) + \dfc(D))D\tp
 \end{align}
 
 The system with the Dirichlet condition becomes
-
 $$
 \left(\begin{array}{ccc}
 B_{0,0}& B_{0,1} & 0\\
@@ -655,7 +618,6 @@ d_1 &= f(u^-_1)\tp
 \end{align}
 Other entries are as in the $2\times 2$ system.
 
-
 ### Newton's method
 The Jacobian must be derived in order to use Newton's method. Here it means
 that we need to differentiate $F(u)=A(u)u - b(u)$ with respect to
@@ -663,7 +625,6 @@ the unknown parameters
 $u_0,u_1,\ldots,u_m$ ($m=N_x$ or $m=N_x-1$, depending on whether the
 Dirichlet condition is included in the nonlinear system $F(u)=0$ or not).
 Nonlinear equation number $i$ has the structure
-
 $$
 F_i = A_{i,i-1}(u_{i-1},u_i)u_{i-1} +
 A_{i,i}(u_{i-1},u_i,u_{i+1})u_i +
@@ -723,13 +684,14 @@ The explicit expression for nonlinear equation number $i$,
 $F_i(u_0,u_1,\ldots)$, arises from moving the $f(u_i)$ term in
 (@eq-nonlin-alglevel-1D-fd-deq) to the left-hand side:
 
-\begin{align}
+$$
+\begin{split}
 F_i &= -\frac{1}{2\Delta x^2}
 \left((\dfc(u_i)+\dfc(u_{i+1}))(u_{i+1}-u_i) -
-(\dfc(u_{i-1})+\dfc(u_{i}))(u_{i}-u_{i-1})\right)\nonumber\\
+(\dfc(u_{i-1})+\dfc(u_{i}))(u_{i}-u_{i-1})\right)\\
 &\qquad\qquad + au_i - f(u_i) = 0\tp
-\label{nonlin:alglevel:1D:fd:deq2}
-\end{align}
+\end{split}
+$$ {#eq-nonlin-alglevel-1D-fd-deq2}
 
 At the boundary point $i=0$, $u_{-1}$ must be replaced using
 the formula (@eq-nonlin-alglevel-1D-fd-Neumann-x0-um1).
@@ -738,7 +700,6 @@ equation system, the last equation $F_m=0$ for $m=N_x-1$
 involves the quantity $u_{N_x-1}$ which must be replaced by $D$.
 If $u_{N_x}$ is treated as an unknown in the system, the
 last equation $F_m=0$ has $m=N_x$ and reads
-
 $$
 F_{N_x}(u_0,\ldots,u_{N_x}) = u_{N_x} - D = 0\tp
 $$
@@ -757,7 +718,6 @@ in the system that arises in the Picard iteration method.
 The extra terms in Newton's method can be multiplied by a factor
 such that it is easy to program one linear system and set this
 factor to 0 or 1 to generate the Picard or Newton system.
-
 
 ## Must make a program that solves this problem with Picard and Newton
 

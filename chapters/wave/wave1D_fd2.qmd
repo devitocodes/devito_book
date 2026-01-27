@@ -1,18 +1,12 @@
----
-title: "Wave1D Fd2.Do"
----
-
-{#sec-wave-pde2-Neumann}
+## Neumann boundary conditions {#sec-wave-pde2-Neumann}
 
 The boundary condition $u=0$ in a wave equation reflects the wave, but
 $u$ changes sign at the boundary, while the condition $u_x=0$ reflects
-the wave as a mirror and preserves the sign, see a [web page](http://hplgit.github.io/fdm-book/doc/pub/book/html/mov-wave/demo_BC_gaussian/index.html) or a
-"movie file":
-"{{< var docraw >}}/mov-wave/demo_BC_gaussian/movie.flv" for
-demonstration.
+the wave as a mirror and preserves the sign.
 
-## This was not so successful. Could not argue well for Neumann cond.
-## and reflection.
+## This was not so successful. Could not argue well for Neumann cond
+
+## and reflection
 
 Why is it so?
 Consider the boundary $x=0$ and the condition $u=0$. How will two
@@ -20,7 +14,6 @@ values $u(0, t)$ and $u(\Delta x, t$ change from time $t$ to
 $t+\Delta t$? Since $u(0,t)=0$, $u(\Delta x, t)$ and $u(\Delta x,
 t+\Delta t)$ will be close to zero too. Their average in time must also
 be close to zero, especially in the limit $\Delta x,\Delta t\rightarrow 0$:
-
 $$
 \frac{1}{2}(u(\Delta x, t) + u(\Delta x, t+\Delta t))\approx 0\quad
 \Rightarrow\quad u(\Delta x, t+\Delta t) = -u(\Delta x, t)\tp
@@ -44,13 +37,10 @@ in a finite difference scheme, one based on deriving a modified
 stencil at the boundary, and another one based on extending the mesh
 with ghost cells and ghost points.
 
-
-## Neumann boundary condition
-{#sec-wave-pde2-Neumann-bc}
+## Neumann boundary condition {#sec-wave-pde2-Neumann-bc}
 
 When a wave hits a boundary and is to be reflected back, one applies
 the condition
-
 $$
 \frac{\partial u}{\partial n} \equiv \normalvec\cdot\nabla u = 0 \tp
 $$ {#eq-wave-pde1-Neumann-0}
@@ -58,7 +48,6 @@ The derivative $\partial /\partial n$ is in the
 outward normal direction from a general boundary.
 For a 1D domain $[0,L]$,
 we have that
-
 $$
 \left.\frac{\partial}{\partial n}\right\vert_{x=L} =
 \left.\frac{\partial}{\partial x}\right\vert_{x=L},\quad
@@ -76,22 +65,19 @@ When the values are zero ($\partial u/\partial n=0$ or $u=0$) we speak
 about *homogeneous* Neumann or Dirichlet conditions.
 :::
 
-## Discretization of derivatives at the boundary
-{#sec-wave-pde2-Neumann-discr}
+## Discretization of derivatives at the boundary {#sec-wave-pde2-Neumann-discr}
 
 How can we incorporate the condition (@eq-wave-pde1-Neumann-0)
 in the finite difference scheme?  Since we have used central
 differences in all the other approximations to derivatives in the
 scheme, it is tempting to implement (@eq-wave-pde1-Neumann-0) at
 $x=0$ and $t=t_n$ by the difference
-
 $$
 [D_{2x} u]^n_0 = \frac{u_{-1}^n - u_1^n}{2\Delta x} = 0 \tp
 $$ {#eq-wave-pde1-Neumann-0-cd}
 The problem is that $u_{-1}^n$ is not a $u$ value that is being
 computed since the point is outside the mesh. However, if we combine
 (@eq-wave-pde1-Neumann-0-cd) with the scheme
-
 $$
 u^{n+1}_i = -u^{n-1}_i + 2u^n_i + C^2
 \left(u^{n}**{i+1}-2u^{n}**{i} + u^{n}_{i-1}\right),
@@ -100,7 +86,6 @@ for $i=0$, we can eliminate the fictitious value $u_{-1}^n$. We see that
 $u_{-1}^n=u_1^n$ from (@eq-wave-pde1-Neumann-0-cd), which
 can be used in (@eq-wave-pde1-Neumann-0-scheme) to
 arrive at a modified scheme for the boundary point $u_0^{n+1}$:
-
 $$
 u^{n+1}_i = -u^{n-1}_i  + 2u^n_i + 2C^2
 \left(u^{n}**{i+1}-u^{n}**{i}\right),\quad i=0 \tp
@@ -113,28 +98,19 @@ $u^2_1$.
 
 Similarly, (@eq-wave-pde1-Neumann-0) applied at $x=L$
 is discretized by a central difference
-
 $$
 \frac{u_{N_x+1}^n - u_{N_x-1}^n}{2\Delta x} = 0 \tp
 $$ {#eq-wave-pde1-Neumann-0-cd2}
 Combined with the scheme for $i=N_x$ we get a modified scheme for
 the boundary value $u_{N_x}^{n+1}$:
-
 $$
 u^{n+1}_i = -u^{n-1}_i + 2u^n_i + 2C^2
 \left(u^{n}**{i-1}-u^{n}**{i}\right),\quad i=N_x \tp
 $$
-
 The modification of the scheme at the boundary is also required for
-the special formula for the first time step. How the stencil moves
-through the mesh and is modified at the boundary can be illustrated by
-an animation in a [web page](http://hplgit.github.io/fdm-book/doc/pub/book/html/mov-wave/N_stencil_gpl/index.html)
-or a "movie file":
-"{{< var docraw >}}/mov-wave/N_stencil_gpl/movie.ogg".
+the special formula for the first time step.
 
-
-## Implementation of Neumann conditions
-{#sec-wave-pde2-Neumann-impl}
+## Implementation of Neumann conditions {#sec-wave-pde2-Neumann-impl}
 
 We have seen in the preceding section
 that the special formulas for the boundary points
@@ -189,11 +165,9 @@ for this purpose. The only test in `wave1D_n0.py` is to start
 with a plug wave at rest and see that the initial condition is
 reached again perfectly after one period of motion, but such
 a test requires $C=1$ (so the numerical solution coincides with
-the exact solution of the PDE, see Section @eq-wave-pde1-num-dispersion).
+the exact solution of the PDE, see Section @sec-wave-pde1-num-dispersion).
 
-
-## Index set notation
-{#sec-wave-indexset}
+## Index set notation {#sec-wave-indexset}
 
 To improve our mathematical writing and our implementations,
 it is wise to introduce a special notation for index sets. This means
@@ -222,17 +196,14 @@ like $x_{\sete{\Ix}}$ and will instead use $x_i$, $i=\sete{\Ix}$.
 The Python code associated with index sets applies the following
 conventions:
 
-
-|----------------------------|
 | Notation      | Python     |
-|----l---------------l-------|
+|:--------------|:-----------|
 |  $\Ix$        | `Ix`       |
-|  $\setb{\Ix}$      | `Ix[0]`    |
-|  $\sete{\Ix}$      | `Ix[-1]`   |
-|  $\setl{\Ix}$ | `Ix[:-1]`   |
-|  $\setr{\Ix}$ | `Ix[1:]`  |
+|  $\setb{\Ix}$ | `Ix[0]`    |
+|  $\sete{\Ix}$ | `Ix[-1]`   |
+|  $\setl{\Ix}$ | `Ix[:-1]`  |
+|  $\setr{\Ix}$ | `Ix[1:]`   |
 |  $\seti{\Ix}$ | `Ix[1:-1]` |
-|----------------------------|
 
 :::{.callout-note title="Why index sets are useful"}
 An important feature of the index set notation is that it
@@ -251,7 +222,6 @@ Neumann conditions via ghost points (see next section).
 
 For the current problem setting in the $x,t$ plane, we work with
 the index sets
-
 $$
 \Ix = \{0,\ldots,N_x\},\quad \It = \{0,\ldots,N_t\},
 $$
@@ -290,7 +260,6 @@ for n in It[1:-1]:
     i = Ix[-1]; u[i] = 0
 ```
 
-
 :::{.callout-note title="The program [`wave1D_dn.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn.py)"}
 applies the index set notation and
 solves the 1D wave equation $u_{tt}=c^2u_{xx}+f(x,t)$ with
@@ -316,16 +285,13 @@ A lot of test examples are also included in the program:
  * An analytical solution $u(x,t)=\cos(m\pi t/L)\sin({\half}m\pi x/L)$, which can be used for convergence rate tests.
 :::
 
-
-## Verifying the implementation of Neumann conditions
-{#sec-wave-pde1-verify}
-
+## Verifying the implementation of Neumann conditions {#sec-wave-pde1-verify}
 
 How can we test that the Neumann conditions are correctly implemented?
 The `solver` function in the `wave1D_dn.py` program described in the
 box above accepts Dirichlet or Neumann conditions at $x=0$ and $x=L$.
 It is tempting to apply a quadratic solution as described in
-Sections @eq-wave-pde2-fd and @sec-wave-pde1-impl-verify-quadratic,
+Sections @sec-wave-pde2-fd and @sec-wave-pde1-impl-verify-quadratic,
 but it turns out that this solution is no longer an exact solution
 of the discrete equations if a Neumann condition is implemented on
 the boundary. A linear solution does not help since we only have
@@ -450,9 +416,7 @@ Other tests must rely on an unknown approximation error, so effectively
 we are left with tests on the convergence rate.
 
 ## Alternative implementation via ghost cells
-{#sec-wave-pde1-Neumann-ghost}
-
-### Idea
+### Idea {#sec-wave-pde1-Neumann-ghost}
 
 Instead of modifying the scheme at the boundary, we can introduce
 extra points outside the domain such that the fictitious values
@@ -480,7 +444,6 @@ outside of a boundary. Nevertheless, one should view the ghost cell
 technique as a purely mathematical technique, which is valid in the
 limit $\Delta x \rightarrow 0$ and helps us to implement derivatives.
 
-
 ### Implementation
 
 The `u` array now needs extra elements corresponding to the ghost
@@ -498,13 +461,12 @@ This fact gives, apparently, a mismatch between the mathematical
 indices $i=-1,0,\ldots,N_x+1$ and the Python indices running over
 `u`: `0,..,Nx+2`. One remedy is to change the mathematical indexing
 of $i$ in the scheme and write
-
 $$
 u^{n+1}_i = \cdots,\quad i=1,\ldots,N_x+1,
 $$
 instead of $i=0,\ldots,N_x$ as we have previously used. The ghost
 points now correspond to $i=0$ and $i=N_x+1$.
-A better solution is to use the ideas of Section @eq-wave-indexset:
+A better solution is to use the ideas of Section @sec-wave-indexset:
 we hide the specific index value in an index set and operate with
 inner and boundary points using the index set notation.
 
@@ -604,8 +566,7 @@ u[i-1] = u[i+1]  # update ghost value
 The physical solution to be plotted is now in `u[1:]`
 or (as always) `u[Ix[0]:Ix[-1]+1]`.
 
-
-{#sec-wave-pde2-var-c}
+## Variable wave velocity {#sec-wave-pde2-var-c}
 
 Our next generalization of the 1D wave equation (@eq-wave-pde1) or
 (@eq-wave-pde2) is to allow for a variable wave velocity $c$:
@@ -621,15 +582,12 @@ where $c$ jumps from $c_1$ to $c_2$, a part of the wave is reflected back
 into the first medium (the *reflected* wave), while one part is
 transmitted through the second medium (the *transmitted* wave).
 
-
 ![Left: wave entering another medium; right: transmitted and reflected wave.](fig/pulse1_in_two_media){#fig-wave-pde1-fig-pulse1-two-media width="800px"}
-
 
 ## The model PDE with a variable coefficient
 Instead of working with the squared quantity $c^2(x)$, we
 shall for notational convenience introduce $q(x) = c^2(x)$.
 A 1D wave equation with variable wave velocity often takes the form
-
 $$
 \frac{\partial^2 u}{\partial t^2} =
 \frac{\partial}{\partial x}\left( q(x)
@@ -638,26 +596,22 @@ $$ {#eq-wave-pde2-var-c-pde}
 This is the most frequent form of a wave
 equation with variable wave velocity,
 but other forms also appear, see Section @sec-wave-app-string
-and equation (@sec-wave-app-string-model2).
+and equation (@eq-wave-app-string-model2).
 
 As usual, we sample (@eq-wave-pde2-var-c-pde) at a mesh point,
-
 $$
 \frac{\partial^2 }{\partial t^2} u(x_i,t_n) =
 \frac{\partial}{\partial x}\left( q(x_i)
 \frac{\partial}{\partial x} u(x_i,t_n)\right) + f(x_i,t_n),
 $$
 where the only new term to discretize is
-
 $$
 \frac{\partial}{\partial x}\left( q(x_i)
 \frac{\partial}{\partial x} u(x_i,t_n)\right) = \left[
 \frac{\partial}{\partial x}\left( q(x)
 \frac{\partial u}{\partial x}\right)\right]^n_i \tp
 $$
-
-## Discretizing the variable coefficient
-{#sec-wave-pde2-var-c-ideas}
+## Discretizing the variable coefficient {#sec-wave-pde2-var-c-ideas}
 
 The principal idea is to first discretize the outer derivative.
 Define
@@ -710,7 +664,6 @@ when discretizing such a term.
 
 The term with a variable coefficient expresses the net flux
 $qu_x$ into a small volume (i.e., interval in 1D):
-
 $$
 \frac{\partial}{\partial x}\left( q(x)
 \frac{\partial u}{\partial x}\right) \approx
@@ -723,7 +676,6 @@ at the left end, because this follows from the formula
 
 When using the chain rule, we get two
 terms $qu_{xx} + q_xu_x$. The typical discretization is
-
 $$
 [D_x q D_x u + D_{2x}q D_{2x} u]_i^n,
 $$ {#eq-wave-pde2-var-c-chainrule-scheme}
@@ -740,9 +692,7 @@ dominates and very few mention the alternative in
 (@eq-wave-pde2-var-c-chainrule-scheme).
 :::
 
-
-## Computing the coefficient between mesh points
-{#sec-wave-pde2-var-c-means}
+## Computing the coefficient between mesh points {#sec-wave-pde2-var-c-means}
 
 If $q$ is a known function of $x$, we can easily evaluate
 $q_{i+\half}$ simply as $q(x_{i+\half})$ with $x_{i+\half} = x_i +
@@ -768,16 +718,16 @@ q_{i+\half} &\approx
 \quad &\hbox{(geometric mean)}
 \end{alignat}
 ```
-The arithmetic mean in (@eq-wave-pde2-var-c-mean-arithmetic) is by
+The arithmetic mean is by
 far the most commonly used averaging technique and is well suited
 for smooth $q(x)$ functions.
 The harmonic mean is often preferred when $q(x)$ exhibits large
 jumps (which is typical for geological media).
 The geometric mean is less used, but popular in
 discretizations to linearize quadratic
-nonlinearities (see Section @eq-vib-ode2-fdm-fquad for an example).
+nonlinearities (see the vibrations chapter, Section @sec-vib-exer-verify-gen-linear for an example).
 
-With the operator notation from (@eq-wave-pde2-var-c-mean-arithmetic)
+With the operator notation for the arithmetic mean
 we can specify the discretization of the complete variable-coefficient
 wave equation in a compact way:
 $$
@@ -795,26 +745,24 @@ $[\overline{q}^{x}]_{i+\half}=(q_i+q_{i+1})/2$.
 Before implementing, it remains to solve
 (@eq-wave-pde2-var-c-scheme-op) with respect to $u_i^{n+1}$:
 
-\begin{align}
-u^{n+1}_i &= - u_i^{n-1}  + 2u_i^n + \nonumber\\
+$$
+\begin{split}
+u^{n+1}_i = & - u_i^{n-1}  + 2u_i^n + \\
 &\quad \left(\frac{\Delta t}{\Delta x}\right)^2 \left(
 \half(q_{i} + q_{i+1})(u_{i+1}^n - u_{i}^n) -
 \half(q_{i} + q_{i-1})(u_{i}^n - u_{i-1}^n)\right)
-+ \nonumber\\
-& \quad \Delta t^2 f^n_i
-\label{wave:pde2:var:c:scheme:impl}
-\end{align} \tp
++ \\
+& \quad \Delta t^2 f^n_i \tp
+\end{split}
+$$ {#eq-wave-pde2-var-c-scheme-impl}
 
+## How a variable coefficient affects the stability {#sec-wave-pde2-var-c-stability}
 
-## How a variable coefficient affects the stability
-{#sec-wave-pde2-var-c-stability}
-
-The stability criterion derived later (Section @eq-wave-pde1-stability)
+The stability criterion derived later (Section @sec-wave-pde1-stability)
 reads $\Delta t\leq \Delta x/c$. If $c=c(x)$, the criterion will depend
 on the spatial location. We must therefore choose a $\Delta t$ that
 is small enough such that no mesh cell has $\Delta t > \Delta x/c(x)$.
 That is, we must use the largest $c$ value in the criterion:
-
 $$
 \Delta t \leq \beta \frac{\Delta x}{\max_{x\in [0,L]}c(x)} \tp
 $$
@@ -828,22 +776,21 @@ is mathematically attractive at first sight, the implementation
 quickly becomes very complicated, so we stick to a constant $\Delta t$
 and a worst case value of $c(x)$ (with a safety factor $\beta$).
 
-## Neumann condition and a variable coefficient
-{#sec-wave-pde2-var-c-Neumann}
+## Neumann condition and a variable coefficient {#sec-wave-pde2-var-c-Neumann}
 
 Consider a Neumann condition $\partial u/\partial x=0$ at $x=L=N_x\Delta x$,
 discretized as
-
 $$
 [D_{2x} u]^n_i =
 \frac{u_{i+1}^{n} - u_{i-1}^n}{2\Delta x} = 0\quad\Rightarrow\quad
 u_{i+1}^n = u_{i-1}^n,
 $$
-for $i=N_x$. Using the scheme (@sec-wave-pde2-var-c-scheme-impl)
+for $i=N_x$. Using the scheme (@eq-wave-pde2-var-c-scheme-impl)
 at the end point $i=N_x$ with $u_{i+1}^n=u_{i-1}^n$ results in
 
-\begin{align}
-u^{n+1}_i &= - u_i^{n-1}  + 2u_i^n + \nonumber\\
+$$
+\begin{split}
+u^{n+1}_i &= - u_i^{n-1}  + 2u_i^n + \\
 &\quad \left(\frac{\Delta t}{\Delta x}\right)^2 \left(
 q_{i+\half}(u_{i-1}^n - u_{i}^n) -
 q_{i-\half}(u_{i}^n - u_{i-1}^n)\right)
@@ -853,9 +800,9 @@ q_{i-\half}(u_{i}^n - u_{i-1}^n)\right)
 \Delta t^2 f^n_i
 \\
 &\approx - u_i^{n-1}  + 2u_i^n + \left(\frac{\Delta t}{\Delta x}\right)^2
-2q_{i}(u_{i-1}^n - u_{i}^n) + \Delta t^2 f^n_i
-\label{wave:pde2:var:c:scheme:impl:Neumann0}
-\end{align} \tp
+2q_{i}(u_{i-1}^n - u_{i}^n) + \Delta t^2 f^n_i \tp
+\end{split}
+$$ {#eq-wave-pde2-var-c-scheme-impl-Neumann0}
 Here we used the approximation
 
 \begin{align}
@@ -872,8 +819,7 @@ q_i + \left(\frac{dq}{dx}\right)_i \Delta x
 
 An alternative derivation may apply the arithmetic mean of
 $q_{n-\half}$ and $q_{n+\half}$ in
-(@sec-wave-pde2-var-c-scheme-impl-Neumann0), leading to the term
-
+(@eq-wave-pde2-var-c-scheme-impl-Neumann0), leading to the term
 $$
 (q_i + \half(q_{i+1}+q_{i-1}))(u_{i-1}^n-u_i^n)\tp
 $$
@@ -886,27 +832,26 @@ boundary conditions, is to assume $dq/dx=0$ as well. This implies
 $q_{i+1}=q_{i-1}$ and $q_{i+1/2}=q_{i-1/2}$ for $i=N_x$.
 The implications for the scheme are
 
-
-\begin{align}
-u^{n+1}_i &= - u_i^{n-1}  + 2u_i^n + \nonumber\\
+$$
+\begin{split}
+u^{n+1}_i &= - u_i^{n-1}  + 2u_i^n + \\
 &\quad \left(\frac{\Delta t}{\Delta x}\right)^2 \left(
 q_{i+\half}(u_{i-1}^n - u_{i}^n) -
 q_{i-\half}(u_{i}^n - u_{i-1}^n)\right)
-+ \nonumber\\
++ \\
 & \quad \Delta t^2 f^n_i\\
 &= - u_i^{n-1}  + 2u_i^n + \left(\frac{\Delta t}{\Delta x}\right)^2
 2q_{i-\half}(u_{i-1}^n - u_{i}^n) +
-\Delta t^2 f^n_i
-\label{wave:pde2:var:c:scheme:impl:Neumann2}
-\end{align} \tp
+\Delta t^2 f^n_i \tp
+\end{split}
+$$ {#eq-wave-pde2-var-c-scheme-impl-Neumann2}
 
-## Implementation of variable coefficients
-{#sec-wave-pde2-var-c-impl}
+## Implementation of variable coefficients {#sec-wave-pde2-var-c-impl}
 
 The implementation of the scheme with a variable wave velocity $q(x)=c^2(x)$
 may assume that $q$ is available as an array `q[i]` at
 the spatial mesh points. The following loop is a straightforward
-implementation of the scheme (@sec-wave-pde2-var-c-scheme-impl):
+implementation of the scheme (@eq-wave-pde2-var-c-scheme-impl):
 
 ```python
 for i in range(1, Nx):
@@ -922,13 +867,12 @@ inside the parenthesis.
 With Neumann conditions $u_x=0$ at the
 boundary, we need to combine this scheme with the discrete
 version of the boundary condition, as shown in Section
-@eq-wave-pde2-var-c-Neumann.
+@sec-wave-pde2-var-c-Neumann.
 Nevertheless, it would be convenient to reuse the formula for the
 interior points and just modify the indices `ip1=i+1` and `im1=i-1`
 as we did in Section @sec-wave-pde2-Neumann-impl. Assuming
 $dq/dx=0$ at the boundaries, we can implement the scheme at
 the boundary with the following code.
-
 
 ```python
 i = 0
@@ -954,12 +898,10 @@ u[1:-1] = - u_nm1[1:-1] + 2*u_n[1:-1] + \
           dt2*f(x[1:-1], t[n])
 ```
 
-
 ## A more general PDE model with variable coefficients
 
 Sometimes a wave PDE has a variable coefficient in front of
 the time-derivative term:
-
 $$
 \varrho(x)\frac{\partial^2 u}{\partial t^2} =
 \frac{\partial}{\partial x}\left( q(x)
@@ -969,7 +911,6 @@ One example appears when modeling elastic waves in a rod
 with varying density, cf.~(@sec-wave-app-string) with $\varrho (x)$.
 
 A natural scheme for (@eq-wave-pde2-var-c-pde2) is
-
 $$
 [\varrho D_tD_t u = D_x\overline{q}^xD_x u + f]^n_i \tp
 $$
@@ -978,11 +919,9 @@ difficulty, since $\varrho$ enters the formula just as a simple factor
 in front of a derivative. There is hence no need for any averaging
 of $\varrho$. Often, $\varrho$ will be moved to the right-hand side,
 also without any difficulty:
-
 $$
 [D_tD_t u = \varrho^{-1}D_x\overline{q}^xD_x u + f]^n_i \tp
 $$
-
 ## Generalization: damping
 
 Waves die out by two mechanisms. In 2D and 3D the energy of the wave
@@ -998,19 +937,17 @@ mechanical system):
 $$
 \frac{\partial^2 u}{\partial t^2} + b\frac{\partial u}{\partial t} =
 c^2\frac{\partial^2 u}{\partial x^2}
- + f(x,t),
+- f(x,t),
 $$ {#eq-wave-pde3}
 where $b \geq 0$ is a prescribed damping coefficient.
 
 A typical discretization of (@eq-wave-pde3) in terms of centered
 differences reads
-
 $$
 [D_tD_t u + bD_{2t}u = c^2D_xD_x u + f]^n_i \tp
 $$ {#eq-wave-pde3-fd}
 Writing out the equation and solving for the unknown $u^{n+1}_i$
 gives the scheme
-
 $$
 u^{n+1}_i = (1 + {\half}b\Delta t)^{-1}(({\half}b\Delta t -1)
 u^{n-1}_i + 2u^n_i + C^2
@@ -1024,22 +961,27 @@ The damping is very small in many wave phenomena and thus only evident
 for very long time simulations. This makes the standard wave equation
 without damping relevant for a lot of applications.
 
-
-{#sec-wave-pde2-software}
+## Building a general 1D wave equation solver {#sec-wave-pde2-software}
 
 The program [`wave1D_dn_vc.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn_vc.py)
 is a fairly general code for 1D wave propagation problems that
 targets the following initial-boundary value problem
 
-\begin{align}
-u_{tt} &= (c^2(x)u_x)_x + f(x,t),\quad &x\in (0,L),\ t\in (0,T]
-\\
-u(x,0) &= I(x),\quad &x\in [0,L]\\
-u_t(x,0) &= V(t),\quad &x\in [0,L]\\
-u(0,t) &= U_0(t)\hbox{ or } u_x(0,t)=0,\quad &t\in (0,T]\\
-u(L,t) &= U_L(t)\hbox{ or } u_x(L,t)=0,\quad &t\in (0,T]
-\label{wave:pde2:software:ueq}
-\end{align}
+$$
+u_{tt} = (c^2(x)u_x)_x + f(x,t),\quad x\in (0,L),\ t\in (0,T]
+$$ {#eq-wave-pde2-software-ueq}
+$$
+u(x,0) = I(x),\quad x\in [0,L]
+$$
+$$
+u_t(x,0) = V(t),\quad x\in [0,L]
+$$
+$$
+u(0,t) = U_0(t)\hbox{ or } u_x(0,t)=0,\quad t\in (0,T]
+$$
+$$
+u(L,t) = U_L(t)\hbox{ or } u_x(L,t)=0,\quad t\in (0,T]
+$$
 
 The only new feature here is the time-dependent Dirichlet conditions, but
 they are trivial to implement:
@@ -1062,7 +1004,7 @@ preceding text. We refer to the `solver` function in the
 `wave1D_dn_vc.py` file for all the details. Note in that
  `solver` function, however, that the technique of ``hashing'' is
 used to check whether a certain simulation has been run before, or not.
-This technique is further explained in Section @eq-softeng2-wave1D-filestorage-hash.
+This technique is further explained in Section @sec-softeng2-wave1D-filestorage-hash.
 
 The vectorization is only applied inside the time loop, not for the
 initial condition or the first time steps, since this initial work
@@ -1166,7 +1108,6 @@ Understanding this class requires quite some familiarity with Python
 in general and class programming in particular.
 The class supports plotting with Matplotlib for visualization.
 
-
 With the `screen_movie` parameter
 we can suppress displaying each movie frame on the screen.
 Alternatively, for slow movies associated with
@@ -1182,7 +1123,7 @@ saves the plot to file, and stores the solution in a file for
 later retrieval.
 
 More details on storing the solution in files appear in
-ref[Section @eq-softeng2-wave1D-filestorage][ in
+ref[Section @sec-softeng2-wave1D-filestorage][ in
 [@Langtangen_deqbook_softeng2]][in
 the document
 [Scientific software engineering; wave equation case](http://tinyurl.com/k3sdbuv/pub/softeng2)
@@ -1391,9 +1332,7 @@ with
 Terminal> python -c 'import wave1D_dn_vc as w; w.pulse(...)'
 ```
 
-
-## Exercise: Find the analytical solution to a damped wave equation
-{#sec-wave-exer-standingwave-damped-uex}
+## Exercise: Find the analytical solution to a damped wave equation {#sec-wave-exer-standingwave-damped-uex}
 file=damped_waves
 
 Consider the wave equation with damping (@eq-wave-pde3).
@@ -1402,11 +1341,10 @@ A starting point is the standing wave solution from
 Exercise @sec-wave-exer-standingwave. It becomes necessary to
 include a damping term $e^{-\beta t}$ and also have both a sine and cosine
 component in time:
-
 $$
 \uex(x,t) =  e^{-\beta t}
 \sin kx \left( A\cos\omega t
-+ B\sin\omega t\right) \tp
+- B\sin\omega t\right) \tp
 $$
 Find $k$ from the boundary conditions
 $u(0,t)=u(L,t)=0$. Then use the PDE to find constraints on
@@ -1417,7 +1355,6 @@ and its solution.
 !bsol
 
 Mathematical model:
-
 $$
 \frac{\partial^2 u}{\partial t^2} + b\frac{\partial u}{\partial t} =
 c^2\frac{\partial^2 u}{\partial x^2},
@@ -1426,16 +1363,13 @@ $$
 $b \geq 0$ is a prescribed damping coefficient.
 
 Ansatz:
-
 $$
 u(x,t) =  e^{-\beta t}
 \sin kx \left( A\cos\omega t
-+ B\sin\omega t\right)
+- B\sin\omega t\right)
 $$
-
 Boundary condition: $u=0$ for $x=0,L$. Fulfilled for $x=0$. Requirement
 at $x=L$ gives
-
 $$
 kL = m\pi,
 $$
@@ -1475,7 +1409,6 @@ Using $t = 0$ in the expression for $u_e$ gives us the initial condition as
 $$
 I(x) = A sin kx
 $$
-
 Summarizing, the PDE problem can then be states as
 
 \begin{align}
@@ -1494,11 +1427,10 @@ u(L,t) & = 0, \quad  &t\in (0,T]
 where constants $c$, $A$, $b$ and $k$, as well as $I(x)$, are prescribed.
 
 The solution to the problem is then given as
-
 $$
 \uex(x,t) =  e^{-\beta t}
 \sin kx \left( A\cos\omega t
-+ B\sin\omega t\right) \tp
+- B\sin\omega t\right) \tp
 $$
 with $k=m\pi/L$ for arbitrary integer $m$, $\beta = \frac{b}{2}$,
 $\omega = \sqrt{c^2k^2 - \frac{b^2}{4}}$, $B = \frac{b}{2\sqrt{c^2k^2 - \frac{b^2}{4}}} A$
@@ -1506,13 +1438,10 @@ and $I(x) = A sin kx$.
 
 !esol
 
-
-## Problem: Explore symmetry boundary conditions
-{#sec-wave-exer-symmetry-bc}
+## Problem: Explore symmetry boundary conditions {#sec-wave-exer-symmetry-bc}
 file=wave1D_symmetric
 
 Consider the simple "plug" wave where $\Omega = [-L,L]$ and
-
 $$
 I(x) = \left\lbrace\begin{array}{ll}
 1, & x\in [-\delta, \delta],\\
@@ -1538,7 +1467,6 @@ $f(x_0+h) = f(x_0-h)$.
 A symmetric $u$ around $x=0$ means that $u(-x,t)=u(x,t)$.
 Let $x_0=0$ and $x=x_0+h$. Then we can use a *centered* finite difference
 definition of the derivative:
-
 $$
 \frac{\partial}{\partial x}u(x_0,t) =
 \lim_{h\rightarrow 0}\frac{u(x_0+h,t)- u(x_0-h)}{2h} =
@@ -1605,7 +1533,6 @@ u(-L,0) &= 0\\
 u(L,0) &= 0
 \end{align}
 Introduce a new coordinate $\bar x = -x$. We have that
-
 $$
 \frac{\partial^2 u}{\partial x^2} = \frac{\partial}{\partial x}
 \left(
@@ -1676,9 +1603,7 @@ Running the code below, shows that the test case indeed is reproduced exactly.
 !esol
 !esubex
 
-
-## Exercise: Send pulse waves through a layered medium
-{#sec-wave-app-exer-pulse1D}
+## Exercise: Send pulse waves through a layered medium {#sec-wave-app-exer-pulse1D}
 file=pulse1D
 
 Use the `pulse` function in `wave1D_dn_vc.py` to investigate
@@ -1699,9 +1624,7 @@ go from higher to lower velocity, the amplitude builds, and vice versa.
 
 !esol
 
-
-## Exercise: Explain why numerical noise occurs
-{#sec-wave-app-exer-pulse1D-analysis}
+## Exercise: Explain why numerical noise occurs {#sec-wave-app-exer-pulse1D-analysis}
 file=pulse1D_analysis
 
 The experiments performed in Exercise @sec-wave-app-exer-pulse1D shows
@@ -1712,8 +1635,7 @@ case with the plug and half a ``cosinehat'' pulse for $s_f=1$, $C=0.9,
 0.25$, and $N_x=40,80,160$. Use the numerical dispersion relation to
 explain the observations.
 
-## Exercise: Investigate harmonic averaging in a 1D model
-{#sec-wave-app-exer-pulse1D-harmonic}
+## Exercise: Investigate harmonic averaging in a 1D model {#sec-wave-app-exer-pulse1D-harmonic}
 file=pulse1D_harmonic
 
 Harmonic means are often used if the wave velocity is non-smooth or
@@ -1721,42 +1643,36 @@ discontinuous.  Will harmonic averaging of the wave velocity give less
 numerical noise for the case $s_f=4$ in Exercise
 @sec-wave-app-exer-pulse1D?
 
-
-## Problem: Implement open boundary conditions
-{#sec-wave-app-exer-radiationBC}
+## Problem: Implement open boundary conditions {#sec-wave-app-exer-radiationBC}
 file=wave1D_open_BC
-
 
 To enable a wave to leave the computational domain and travel
 undisturbed through
 the boundary $x=L$, one can in a one-dimensional problem impose the
 following condition, called a *radiation condition* or
 *open boundary condition*:
-
 $$
 \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0\tp
 $$ {#eq-wave-app-exer-radiationBC-eq}
 The parameter $c$ is the wave velocity.
 
-Show that (@sec-wave-app-exer-radiationBC-eq) accepts
+Show that (@eq-wave-app-exer-radiationBC-eq) accepts
 a solution $u = g_R(x-ct)$ (right-going wave),
 but not $u = g_L(x+ct)$ (left-going wave). This means
-that (@sec-wave-app-exer-radiationBC-eq) will allow any
+that (@eq-wave-app-exer-radiationBC-eq) will allow any
 right-going wave $g_R(x-ct)$ to pass through the boundary undisturbed.
 
 A corresponding open boundary condition for a left-going wave
 through $x=0$ is
-
 $$
 \frac{\partial u}{\partial t} - c\frac{\partial u}{\partial x} = 0\tp
 $$ {#eq-wave-app-exer-radiationBC-eqL}
 
 !bsubex
 A natural idea for discretizing
-the condition (@sec-wave-app-exer-radiationBC-eq)
+the condition (@eq-wave-app-exer-radiationBC-eq)
 at the spatial end point $i=N_x$ is to apply
 centered differences in time and space:
-
 $$
 [D_{2t}u + cD_{2x}u =0]^n_{i},\quad i=N_x\tp
 $$ {#eq-wave-app-exer-radiationBC-eq-op}
@@ -1771,7 +1687,6 @@ has not yet reached the right boundary.
 !bsubex
 A much more convenient implementation of the open boundary condition
 at $x=L$ can be based on an explicit discretization
-
 $$
 [D^+_tu + cD_x^- u = 0]_i^n,\quad i=N_x\tp
 $$ {#eq-wave-app-exer-radiationBC-eq-op-1storder}
@@ -1782,10 +1697,9 @@ first order.
 
 Implement this scheme for a wave equation
 $u_{tt}=c^2u_{xx}$ in a domain $[0,L]$,
-where you have $u_x=0$ at $x=0$, the condition (@sec-wave-app-exer-radiationBC-eq)
+where you have $u_x=0$ at $x=0$, the condition (@eq-wave-app-exer-radiationBC-eq)
 at $x=L$, and an initial disturbance in the middle
 of the domain, e.g., a plug profile like
-
 $$
 u(x,0) = \left\lbrace\begin{array}{ll} 1,& L/2-\ell \leq x \leq  L/2+\ell,\\
 0,\hbox{otherwise}\end{array}\right.
@@ -1809,14 +1723,12 @@ need to pursue the more complicated discretization in a).
 Add the possibility to have either $u_x=0$ or an open boundary
 condition at the left boundary. The latter condition is discretized
 as
-
 $$
 [D^+_tu - cD_x^+ u = 0]_i^n,\quad i=0,
 $$ {#eq-wave-app-exer-radiationBC-eq-op-1storder2}
 leading to an explicit update of the boundary value $u^{n+1}_0$.
 
 The implementation can be tested with a Gaussian function as initial condition:
-
 $$
 g(x;m,s) = \frac{1}{\sqrt{2\pi}s}e^{-\frac{(x-m)^2}{2s^2}}\tp
 $$
@@ -1836,12 +1748,12 @@ In 2D and 3D it is difficult to compute the correct wave velocity
 normal to the boundary, which is needed in generalizations of
 the open boundary conditions in higher dimensions. Test the effect
 of having a slightly wrong wave velocity in
-(@sec-wave-app-exer-radiationBC-eq-op-1storder).
+(@eq-wave-app-exer-radiationBC-eq-op-1storder).
 Make movies to illustrate what happens.
 !esubex
 
 !bremarks
-The condition (@sec-wave-app-exer-radiationBC-eq)
+The condition (@eq-wave-app-exer-radiationBC-eq)
 works perfectly in 1D when $c$ is known. In 2D and 3D, however, the
 condition reads $u_t + c_x u_x + c_y u_y=0$, where $c_x$ and
 $c_y$ are the wave speeds in the $x$ and $y$ directions. Estimating
@@ -1850,9 +1762,7 @@ challenging. Other methods are normally used in 2D and 3D to
 let waves move out of a computational domain.
 !eremarks
 
-
-## Exercise: Implement periodic boundary conditions
-{#sec-wave-exer-periodic}
+## Exercise: Implement periodic boundary conditions {#sec-wave-exer-periodic}
 file=periodic
 
 It is frequently of interest to follow wave motion over large
@@ -1900,8 +1810,8 @@ file=Neumann_discr
 We have a 1D wave equation with variable wave velocity:
 $u_{tt}=(qu_x)_x$.
 A Neumann condition $u_x$ at $x=0, L$ can be
-discretized as shown in (@sec-wave-pde2-var-c-scheme-impl-Neumann)
-and (@sec-wave-pde2-var-c-scheme-impl-Neumann2).
+discretized as shown in (@eq-wave-pde2-var-c-scheme-impl-Neumann0)
+and (@eq-wave-pde2-var-c-scheme-impl-Neumann2).
 
 The aim of this exercise is to examine the rate of the numerical
 error when using different ways of discretizing the Neumann condition.
@@ -1912,14 +1822,14 @@ adapted such that the solution has a simple form, say
 $u(x,t)=\cos (\pi x/L)\cos (\omega t)$ for, e.g., $\omega = 1$.
 Perform numerical experiments and find the convergence rate of the
 error using the approximation
-(@sec-wave-pde2-var-c-scheme-impl-Neumann).
+(@eq-wave-pde2-var-c-scheme-impl-Neumann0).
 !esubex
 
 !bsubex
 Switch to $q(x)=1+\cos(\pi x/L)$, which is symmetric at $x=0,L$,
 and check the convergence rate
 of the scheme
-(@sec-wave-pde2-var-c-scheme-impl-Neumann2). Now,
+(@eq-wave-pde2-var-c-scheme-impl-Neumann2). Now,
 $q_{i-1/2}$ is a 2nd-order approximation to $q_i$,
 $q_{i-1/2}=q_i + 0.25q_i''\Delta x^2 + \cdots$, because $q_i'=0$
 for $i=N_x$ (a similar argument can be applied to the case $i=0$).
@@ -1936,11 +1846,10 @@ of the scheme.
 
 !bsubex
 A fourth technique is to view the scheme as
-
 $$
 [D_tD_tu]^n_i = \frac{1}{\Delta x}\left(
 [qD_xu]_{i+\half}^n - [qD_xu]_{i-\half}^n\right)
-+ [f]_i^n,
+- [f]_i^n,
 $$
 and place the boundary at $x_{i+\half}$, $i=N_x$, instead of
 exactly at the physical boundary. With this idea of approximating (moving) the
@@ -1954,9 +1863,7 @@ rate. Compute the errors as usual over the entire mesh and use $q$ from
 a) or b).
 !esubex
 
-
-## Exercise: Verification by a cubic polynomial in space
-{#sec-wave-fd2-exer-verify-cubic}
+## Exercise: Verification by a cubic polynomial in space {#sec-wave-fd2-exer-verify-cubic}
 file=wave1D_n0_test_cubic
 
 The purpose of this exercise is to verify the implementation of the
@@ -1989,22 +1896,19 @@ is adjusted such that $u$ fulfills the PDE.
 
 However, the discrete boundary condition is not exactly fulfilled
 by this choice of $u$. The reason is that
-
 $$
 [D_{2x}u]^n_i = u_{x}(x_i,t_n) + \frac{1}{6}u_{xxx}(x_i,t_n)\Delta x^2
-+ \Oof{\Delta x^4}\tp
+- \Oof{\Delta x^4}\tp
 $$ {#eq-wave-fd2-exer-verify-cubic-D2x}
 At the two boundary points, we must demand that
 the derivative $X_x(x)=0$ such that $u_x=0$.
 However, $u_{xxx}$ is a constant and not zero
 when $X(x)$ is a cubic polynomial.
 Therefore, our $u=X(x)T(t)$ fulfills
-
 $$
 [D_{2x}u]^n_i = \frac{1}{6}u_{xxx}(x_i,t_n)\Delta x^2,
 $$
 and not
-
 $$
 [D_{2x}u]^n_i =0, \quad i=0,N_x,
 $$
@@ -2024,7 +1928,6 @@ discretized boundary conditions are fulfilled, under the
 constraint that we can specify a function $f(x,t)$ for the PDE to feed
 to the `solver` function in `wave1D_n0.py`. Both approaches
 are explained in the subexercises.
-
 
 !bsubex
 One can insert $u$ in the discretized PDE and find the corresponding $f$.
@@ -2111,7 +2014,6 @@ follows. We first construct $X(x)$ such that the boundary conditions
 are fulfilled: $X=x(L-x)$. However, to compensate for the fact
 that this choice of $X$ does not fulfill the discrete boundary
 condition, we seek $u$ such that
-
 $$
 u_x = \frac{\partial}{\partial x}x(L-x)T(t) - \frac{1}{6}u_{xxx}\Delta x^2,
 $$

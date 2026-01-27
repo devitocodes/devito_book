@@ -1,6 +1,4 @@
----
-title: "Nonlinear Problems"
----
+# Nonlinear Problems {#sec-ch-nonlin}
 
 {{< include nonlin_ode.qmd >}}
 

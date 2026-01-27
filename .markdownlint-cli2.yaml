@@ -1,0 +1,5 @@
+# markdownlint-cli2 configuration
+# Include both .md and .qmd files for Quarto support
+globs:
+  - "**/*.md"
+  - "**/*.qmd"
