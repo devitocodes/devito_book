@@ -1,6 +1,8 @@
 # Finite Difference Computing with PDEs
 
 [![Build Book PDF](https://github.com/devitocodes/devito_book/actions/workflows/build.yml/badge.svg)](https://github.com/devitocodes/devito_book/actions/workflows/build.yml)
+[![CI](https://github.com/devitocodes/devito_book/actions/workflows/ci.yml/badge.svg)](https://github.com/devitocodes/devito_book/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/devitocodes/devito_book/branch/devito/graph/badge.svg)](https://codecov.io/gh/devitocodes/devito_book)
 
 Resources for the book *Finite Difference Computing with Partial Differential Equations - A Modern Software Approach* by Hans Petter Langtangen and Svein Linge.
 
@@ -23,16 +25,32 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -e .
 
-# Build the book PDF
-cd doc/.src/book
-bash make.sh nospell
+# Build the book (using Quarto)
+quarto render --to pdf
+```
+
+### With Devito (for PDE solvers)
+
+```bash
+# Install with Devito support (explicit schemes)
+pip install -e ".[devito]"
+
+# Or with PETSc branch for implicit schemes
+pip install -e ".[devito-petsc]"
+```
+
+### Run Tests
+
+```bash
+pytest tests/ -v                    # Run all tests
+pytest tests/ -v -m "not devito"    # Skip Devito tests
 ```
 
 ## Prerequisites
 
 ### Python (3.10+)
 
-The book uses [DocOnce](https://github.com/doconce/doconce) for document generation. Install Python dependencies with:
+The book uses [Quarto](https://quarto.org/) for document generation. Install Python dependencies with:
 
 ```bash
 # Create and activate virtual environment (recommended)
@@ -44,6 +62,19 @@ pip install -e .
 
 # Or install from requirements.txt
 pip install -r requirements.txt
+```
+
+### Quarto
+
+Install [Quarto](https://quarto.org/docs/get-started/) for document generation:
+
+```bash
+# macOS (Homebrew)
+brew install quarto
+
+# Ubuntu/Debian
+wget https://github.com/quarto-dev/quarto-cli/releases/latest/download/quarto-linux-amd64.deb
+sudo dpkg -i quarto-linux-amd64.deb
 ```
 
 ### LaTeX (TeX Live)
@@ -111,60 +142,54 @@ Install [MiKTeX](https://miktex.org/download) or [TeX Live for Windows](https://
 ### Full Book PDF
 
 ```bash
-cd doc/.src/book
-bash make.sh nospell  # Skip spellcheck for faster builds
+quarto render --to pdf
 ```
 
-The PDF will be generated as `doc/.src/book/book.pdf`.
+The PDF will be generated as `_book/Finite-Difference-Computing-with-PDEs.pdf`.
 
-### With Spellcheck
+### All Formats (HTML + PDF)
 
 ```bash
-cd doc/.src/book
-bash make.sh  # Runs spellcheck before building
+quarto render
 ```
 
-### Individual Chapters
-
-Each chapter can be built independently:
+### Live Preview
 
 ```bash
-cd doc/.src/chapters/vib  # or wave, diffu, etc.
-bash make.sh
+quarto preview  # Opens browser with hot reload
 ```
 
 ## Directory Structure
 
 ```text
 devito_book/
-├── src/                      # Source code for book examples
-│   └── X/                    # Source code from chapter X
-├── doc/
-│   ├── pub/                  # Published documents
-│   │   ├── book/            # Complete published book
-│   │   └── X/               # Published chapter X
-│   └── .src/                # DocOnce source
-│       ├── book/            # Source for complete book
-│       │   ├── make.sh      # Build script
-│       │   ├── book.do.txt  # Main DocOnce file
-│       │   └── preface.do.txt
-│       └── chapters/
-│           └── X/           # Source for chapter X
+├── src/                      # Python package for book examples
+│   ├── __init__.py          # Package exports
+│   ├── symbols.py           # Canonical SymPy symbols
+│   ├── operators.py         # Finite difference operators
+│   ├── display.py           # LaTeX equation display utilities
+│   ├── verification.py      # Symbolic verification utilities
+│   ├── plotting.py          # Reproducible plotting
+│   ├── common/              # Shared utilities
+│   └── wave/                # Wave equation solvers
+│       └── wave1D_devito.py # 1D wave solver using Devito
+├── tests/                    # Pytest test suite
+│   ├── conftest.py          # Test fixtures
+│   ├── test_operators.py    # FD operator tests
+│   ├── test_derivations.py  # Mathematical derivation tests
+│   └── test_wave_devito.py  # Devito wave solver tests
+├── chapters/                 # Quarto book chapters
+│   ├── vib/                 # Vibration ODEs
+│   ├── wave/                # Wave equations
+│   ├── diffu/               # Diffusion equations
+│   ├── advec/               # Advection equations
+│   └── nonlin/              # Nonlinear problems
+├── _quarto.yml              # Quarto book configuration
 ├── pyproject.toml           # Python package configuration
-├── requirements.txt         # Python dependencies (alternative)
-└── README.md               # This file
+└── README.md                # This file
 ```
 
 ## Troubleshooting
-
-### DocOnce Configuration Errors
-
-If you see permission errors related to DocOnce config:
-
-```bash
-export HOME=$(mktemp -d)  # Use temporary home directory
-bash make.sh nospell
-```
 
 ### Missing LaTeX Packages
 
@@ -178,26 +203,47 @@ tlmgr search --global --file "missing-file.sty"
 sudo tlmgr install package-name
 ```
 
-### Encoding Errors
+### Quarto Errors
 
-The build script automatically fixes encoding issues by converting from `utf8x` to standard `utf8`. If you see encoding errors, ensure you're using the latest `make.sh`.
+Check the Quarto log output for details. For more verbose output:
 
-### Build Logs
+```bash
+quarto render --log-level debug
+```
 
-Check these files for detailed error information:
+### Devito Installation Issues
 
-- `book.log` - LaTeX compilation log
-- `book.dlog` - DocOnce processing log
+If Devito installation fails, ensure you have a C compiler and dependencies:
+
+```bash
+# macOS
+xcode-select --install
+
+# Ubuntu/Debian
+sudo apt-get install build-essential python3-dev
+```
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/improvement`)
-3. Make your changes
-4. Run the build to verify (`bash make.sh nospell`)
-5. Commit your changes (`git commit -am 'Add improvement'`)
-6. Push to the branch (`git push origin feature/improvement`)
-7. Create a Pull Request
+3. Install development dependencies: `pip install -e ".[dev]"`
+4. Install pre-commit hooks: `pre-commit install`
+5. Make your changes
+6. Run tests: `pytest tests/ -v`
+7. Verify the build: `quarto render`
+8. Commit your changes (pre-commit hooks run automatically)
+9. Push to the branch and create a Pull Request
+
+### Code Style
+
+The project uses:
+- **ruff** for linting
+- **isort** for import sorting
+- **typos** for spell checking
+- **markdownlint** for markdown files
+
+Pre-commit hooks enforce these automatically.
 
 ## License
 

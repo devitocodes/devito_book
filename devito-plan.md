@@ -1,5 +1,47 @@
 # Devito Book Refactoring: Development Roadmap
 
+## Progress Summary
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| 0 | ✅ Complete | Infrastructure Setup |
+| 0.5 | ✅ Complete | SymPy Integration for Reproducible Mathematics |
+| 1 | ⬜ Not Started | Restructure Book Organization |
+| 2 | 🚧 In Progress | Wave Equations Chapter |
+| 3 | ⬜ Not Started | Diffusion Equations Chapter |
+| 4 | ⬜ Not Started | Advection Equations Chapter |
+| 5 | ⬜ Not Started | Nonlinear Problems Chapter |
+| 6 | ⬜ Not Started | Appendices |
+| 7 | ✅ Complete | Testing & CI Infrastructure |
+| 8 | ⬜ Not Started | Final Integration & Review |
+
+### Recent Completions (2025-01-27)
+
+**Phase 0 - Infrastructure:**
+- Created `src/` package structure with `__init__.py` exports
+- Added `pyproject.toml` with optional `devito` and `devito-petsc` dependencies
+- Set up pre-commit hooks (ruff, isort, typos, markdownlint)
+- Created `.gitignore` and `.markdownlintignore` configurations
+
+**Phase 0.5 - SymPy Integration:**
+- `src/symbols.py` - Canonical SymPy symbols (x, t, dx, dt, etc.)
+- `src/operators.py` - FD operators with truncation error analysis
+- `src/display.py` - LaTeX equation display utilities
+- `src/verification.py` - Symbolic identity and PDE verification
+- `src/plotting.py` - Reproducible matplotlib/plotly plots
+
+**Phase 7 - Testing & CI:**
+- `tests/conftest.py` - Pytest fixtures including `devito_available`
+- `tests/test_operators.py` - 37 tests for FD operators
+- `tests/test_derivations.py` - 22 tests for mathematical derivations
+- `tests/test_wave_devito.py` - Devito wave solver tests (skipped if Devito not installed)
+- `.github/workflows/ci.yml` - GitHub Actions CI with Codecov integration
+
+**Phase 2 - Wave Equations (Started):**
+- `src/wave/wave1D_devito.py` - 1D wave equation solver using Devito DSL
+
+---
+
 ## Executive Summary
 
 This document outlines the comprehensive plan to refactor *Finite Difference Computing with PDEs - A Modern Software Approach* to use the Devito DSL instead of NumPy-based implementations. The refactored book will teach finite difference methods through Devito's symbolic PDE specification and automatic code generation capabilities.
