@@ -1738,7 +1738,6 @@ $$ {#eq-advec-app-heat-PDE}
 where $f$ is some external heating inside the medium.
 
 ## Exercise: Analyze 1D stationary convection-diffusion problem {#sec-advec-1D-stationary-exer-analysis1}
-file=twopt_BVP_analysis1
 
 Explain the observations in the numerical experiments from Sections
 @sec-advec-1D-stationary-fdm and @sec-advec-1D-stationary-upwind by
@@ -1752,7 +1751,6 @@ are determined from the boundary conditions.
 :::
 
 ## Exercise: Interpret upwind difference as artificial diffusion {#sec-advec-1D-stationary-exer-analysis2}
-file=twopt_BVP_analysis2
 
 Consider an upwind, one-sided difference approximation to
 a term $du/dx$ in a differential equation. Show that this

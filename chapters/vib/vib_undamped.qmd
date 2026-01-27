@@ -1792,8 +1792,9 @@ stability limit to achieve meaningful numerical computations.
 
 ![Numerical solution with $\Delta t$ exactly at the stability limit.](fig/vib_stability_limit){#fig-vib-ode1-dt-stablimit width="400px"}
 
-:::{.callout-important title="From the accuracy and stability"}
-analysis we can draw three important conclusions:
+:::{.callout-important title="Summary"}
+
+From the accuracy and stability analysis we can draw three important conclusions:
 
  1. The key parameter in the formulas is $p=\omega\Delta t$.
    The period of oscillations is $P=2\pi/\omega$, and the
@@ -3115,17 +3116,18 @@ methods are mathematically equivalent.  We refer to the file
 for the details of a unit test (`test_staggered`) that checks this property.
 
 ## Problem: Use linear/quadratic functions for verification {#sec-vib-exer-undamped-verify-linquad}
-file=vib_undamped_verify_mms
 
 Consider the ODE problem
 $$
 u^{\prime\prime} + \omega^2u=f(t), \quad u(0)=I,\ u^{\prime}(0)=V,\ t\in(0,T]\tp
 $$
-!bsubex
+**a)**
+
 Discretize this equation according to $[D_tD_t u + \omega^2 u = f]^n$ and
 derive the equation for the first time step ($u^1$).
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 For the requested discretization, we get
 $$
 \frac{u^{n+1} - 2u^n + u^{n-1}}{\Delta t^2} + \omega^2u^n = f^n\tp
@@ -3157,10 +3159,12 @@ Finally, after isolating $u^1$ on the left hand side, we arrive at
 $$
 u^1 = \left(1 - \frac{1}{2}(\Delta t\omega)^2\right)u^0 + \Delta t V + \frac{1}{2}\Delta t^2 f^n\tp
 $$
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**b)**
+
 For verification purposes, we use the method of manufactured solutions (MMS) with the
 choice of $\uex(t)= ct+d$. Find restrictions on $c$ and $d$ from
 the initial conditions. Compute the corresponding source term $f$.
@@ -3169,7 +3173,8 @@ that the $D_tD_t$ operator is linear,
 $[D_tD_t (ct+d)]^n = c[D_tD_t t]^n + [D_tD_t d]^n = 0$, to show that
 $\uex$ is also a perfect solution of the discrete equations.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The initial conditions $u(0)=I$ and $u^{\prime}(0)=V$ give demands
 $\uex(0)=I$ and $\uex^{\prime}(0)=V$, which imply that
 $d = I$ and {c = V}.
@@ -3207,10 +3212,12 @@ $$
 $$
 Now, since the first term here is zero, we see that the discrete equation is
 fulfilled exactly for the chosen $\uex$ function.
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**c)**
+
 Use `sympy` to do the symbolic calculations above. Here is a
 sketch of the program `vib_undamped_verify_mms.py`:
 
@@ -3268,79 +3275,311 @@ if __name__ == '__main__':
 Fill in the various functions such that the calls in the `main`
 function works.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 This part of the code goes as follows:
 
 ```python
+import numpy as np
+import sympy as sym
+
+V, t, I, w, dt = sym.symbols("V t I w dt")  # global symbols
+f = None  # global variable for the source term in the ODE
+
+
+def ode_source_term(u):
+    """Return the terms in the ODE that the source term
+    must balance, here u'' + w**2*u.
+    u is symbolic Python function of t."""
+    return sym.diff(u(t), t, t) + w**2 * u(t)
+
+
+def residual_discrete_eq(u):
+    """Return the residual of the discrete eq. with u inserted."""
+    R = DtDt(u, dt) + w**2 * u(t) - f
+    return sym.simplify(R)
+
+
+def residual_discrete_eq_step1(u):
+    """Return the residual of the discrete eq. at the first
+    step with u inserted."""
+    half = sym.Rational(1, 2)
+    R = u(t + dt) - I - dt * V - half * dt**2 * f.subs(t, 0) + half * dt**2 * w**2 * I
+    R = R.subs(t, 0)  # t=0 in the rhs of the first step eq.
+    return sym.simplify(R)
+
+
+def DtDt(u, dt):
+    """Return 2nd-order finite difference for u_tt.
+    u is a symbolic Python function of t.
+    """
+    return (u(t + dt) - 2 * u(t) + u(t - dt)) / dt**2
+
+
+def main(u):
+    """
+    Given some chosen solution u (as a function of t, implemented
+    as a Python function), use the method of manufactured solutions
+    to compute the source term f, and check if u also solves
+    the discrete equations.
+    """
+    print(f"=== Testing exact solution: {u(t)} ===")
+    print(
+        f"Initial conditions u(0)={u(t).subs(t, 0)}, u'(0)={sym.diff(u(t), t).subs(t, 0)}:"
+    )
+
+    # Method of manufactured solution requires fitting f
+    global f  # source term in the ODE
+    f = sym.simplify(ode_source_term(u))
+
+    # Residual in discrete equations (should be 0)
+    print("residual step1:", residual_discrete_eq_step1(u))
+    print("residual:", residual_discrete_eq(u))
+
+
+def linear():
+    """Test linear function V*t+I: u(0)=I, u'(0)=V."""
+    main(lambda t: V * t + I)
 ```
 
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**d)**
+
 The purpose now is to choose a quadratic function
 $\uex = bt^2 + ct + d$ as exact solution. Extend the `sympy`
 code above with a function `quadratic` for fitting `f` and checking
 if the discrete equations are fulfilled. (The function is very similar
 to `linear`.)
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Yes, a quadratic function will fulfill the discrete equations exactly.
 The implementation becomes
 
 ```python
+def quadratic():
+    """Test quadratic function q*t**2 + V*t + I."""
+    q = sym.Symbol("q")  # arbitrary constant in t**2 term
+    u_e = lambda t: q * t**2 + V * t + I
+    main(u_e)
 ```
 Calling `quadratic()` shows that the residual vanishes, and the quadratic
 function is an exact solution of the discrete equations.
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**e)**
+
 Will a polynomial of degree three fulfill the discrete equations?
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We can easily make a test:
 
 ```python
+def cubic():
+    r, q = sym.symbols("r q")
+    main(lambda t: r * t**3 + q * t**2 + V * t + I)
 ```
 When running the final code presented below, the printout shows that the
 step1 residual for the cubic function is not zero.
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**f)**
+
 Implement a `solver` function for computing the numerical
 solution of this problem.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The `solver` function may take the form
 
 ```python
+def solver(I, V, f, w, dt, T):
+    """
+    Solve u'' + w**2*u = f for t in (0,T], u(0)=I and u'(0)=V,
+    by a central finite difference method with time step dt.
+    f(t) is a callable Python function.
+    """
+    dt = float(dt)
+    Nt = int(round(T / dt))
+    u = np.zeros(Nt + 1)
+    t = np.linspace(0, Nt * dt, Nt + 1)
+
+    u[0] = I
+    u[1] = u[0] - 0.5 * dt**2 * w**2 * u[0] + 0.5 * dt**2 * f(t[0]) + dt * V
+    for n in range(1, Nt):
+        u[n + 1] = 2 * u[n] - u[n - 1] - dt**2 * w**2 * u[n] + dt**2 * f(t[n])
+    return u, t
 ```
 We can verify the implementation by the following test function:
 
 ```python
-```
-!esol
-!esubex
+def test_quadratic_exact_solution():
+    """Verify solver function via quadratic solution."""
+    # Transform global symbolic variables to functions and numbers
+    # for numerical computations
+    global p, V, I, w
+    p, V, I, w = 2.3, 0.9, 1.2, 1.5
+    global f, t
+    u_e = lambda t: p * t**2 + V * t + I  # use p, V, I, w as numbers
+    f = ode_source_term(u_e)  # fit source term
+    f = sym.lambdify(t, f)  # make function numerical
 
-!bsubex
+    dt = 2.0 / w
+    u, t = solver(I=I, V=V, f=f, w=w, dt=dt, T=3)
+    u_e = u_e(t)
+    error = np.abs(u - u_e).max()
+    tol = 1e-12
+    assert error < tol
+    print("Error in computing a quadratic solution:", error)
+```
+:::
+
+
+
+**g)**
+
 Write a test function for checking that the quadratic solution
 is computed correctly (to machine precision, but the
 round-off errors accumulate and increase with $T$) by the `solver`
 function.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Here is the complete code for this exercise:
 
 ```python
+import numpy as np
+import sympy as sym
+
+V, t, I, w, dt = sym.symbols("V t I w dt")  # global symbols
+f = None  # global variable for the source term in the ODE
+
+
+def ode_source_term(u):
+    """Return the terms in the ODE that the source term
+    must balance, here u'' + w**2*u.
+    u is symbolic Python function of t."""
+    return sym.diff(u(t), t, t) + w**2 * u(t)
+
+
+def residual_discrete_eq(u):
+    """Return the residual of the discrete eq. with u inserted."""
+    R = DtDt(u, dt) + w**2 * u(t) - f
+    return sym.simplify(R)
+
+
+def residual_discrete_eq_step1(u):
+    """Return the residual of the discrete eq. at the first
+    step with u inserted."""
+    half = sym.Rational(1, 2)
+    R = u(t + dt) - I - dt * V - half * dt**2 * f.subs(t, 0) + half * dt**2 * w**2 * I
+    R = R.subs(t, 0)  # t=0 in the rhs of the first step eq.
+    return sym.simplify(R)
+
+
+def DtDt(u, dt):
+    """Return 2nd-order finite difference for u_tt.
+    u is a symbolic Python function of t.
+    """
+    return (u(t + dt) - 2 * u(t) + u(t - dt)) / dt**2
+
+
+def main(u):
+    """
+    Given some chosen solution u (as a function of t, implemented
+    as a Python function), use the method of manufactured solutions
+    to compute the source term f, and check if u also solves
+    the discrete equations.
+    """
+    print(f"=== Testing exact solution: {u(t)} ===")
+    print(
+        f"Initial conditions u(0)={u(t).subs(t, 0)}, u'(0)={sym.diff(u(t), t).subs(t, 0)}:"
+    )
+
+    # Method of manufactured solution requires fitting f
+    global f  # source term in the ODE
+    f = sym.simplify(ode_source_term(u))
+
+    # Residual in discrete equations (should be 0)
+    print("residual step1:", residual_discrete_eq_step1(u))
+    print("residual:", residual_discrete_eq(u))
+
+
+def linear():
+    """Test linear function V*t+I: u(0)=I, u'(0)=V."""
+    main(lambda t: V * t + I)
+
+
+def quadratic():
+    """Test quadratic function q*t**2 + V*t + I."""
+    q = sym.Symbol("q")  # arbitrary constant in t**2 term
+    u_e = lambda t: q * t**2 + V * t + I
+    main(u_e)
+
+
+def cubic():
+    r, q = sym.symbols("r q")
+    main(lambda t: r * t**3 + q * t**2 + V * t + I)
+
+
+def solver(I, V, f, w, dt, T):
+    """
+    Solve u'' + w**2*u = f for t in (0,T], u(0)=I and u'(0)=V,
+    by a central finite difference method with time step dt.
+    f(t) is a callable Python function.
+    """
+    dt = float(dt)
+    Nt = int(round(T / dt))
+    u = np.zeros(Nt + 1)
+    t = np.linspace(0, Nt * dt, Nt + 1)
+
+    u[0] = I
+    u[1] = u[0] - 0.5 * dt**2 * w**2 * u[0] + 0.5 * dt**2 * f(t[0]) + dt * V
+    for n in range(1, Nt):
+        u[n + 1] = 2 * u[n] - u[n - 1] - dt**2 * w**2 * u[n] + dt**2 * f(t[n])
+    return u, t
+
+
+def test_quadratic_exact_solution():
+    """Verify solver function via quadratic solution."""
+    # Transform global symbolic variables to functions and numbers
+    # for numerical computations
+    global p, V, I, w
+    p, V, I, w = 2.3, 0.9, 1.2, 1.5
+    global f, t
+    u_e = lambda t: p * t**2 + V * t + I  # use p, V, I, w as numbers
+    f = ode_source_term(u_e)  # fit source term
+    f = sym.lambdify(t, f)  # make function numerical
+
+    dt = 2.0 / w
+    u, t = solver(I=I, V=V, f=f, w=w, dt=dt, T=3)
+    u_e = u_e(t)
+    error = np.abs(u - u_e).max()
+    tol = 1e-12
+    assert error < tol
+    print("Error in computing a quadratic solution:", error)
+
+
+if __name__ == "__main__":
+    linear()
+    quadratic()
+    cubic()
+    test_quadratic_exact_solution()
 ```
 
-!esol
-!esubex
+:::
+
+
 
 ## Exercise: Show linear growth of the phase with time {#sec-vib-exer-phase-err-growth}
-file=vib_phase_error_growth
 
 Consider an exact solution $I\cos (\omega t)$ and an
 approximation $I\cos(\tilde\omega t)$.
@@ -3349,7 +3588,8 @@ in the exact solution and the corresponding peak in the approximation
 after $m$ periods of oscillations. Show that this phase error
 is linear in $m$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 From (@eq-vib-ode1-tildeomega-series) we have that
 $$
 \tilde\omega = \omega\left( 1 + \frac{1}{24}\omega^2\Delta t^2\right)
@@ -3370,10 +3610,10 @@ This implies that the periods differ by a constant. Since the exact and the nume
 solution start out identically, the phase error $P - \tilde P$ will become
 $m\frac{1}{24}\omega^2\Delta t^2$ after $m$ periods, i.e. the phase error is linear in $m$.
 
-!esol
+:::
+
 
 ## Exercise: Improve the accuracy by adjusting the frequency {#sec-vib-exer-w-adjust}
-file=vib_adjust_w
 
 According to (@eq-vib-ode1-tildeomega-series), the numerical
 frequency deviates from the exact frequency by a (dominating) amount
@@ -3383,21 +3623,43 @@ in the `solver` function in `vib_undamped.py` by `w*(1 -
 algorithm improves the accuracy (use $\Delta t =0.1$ and simulate
 for 80 periods, with and without adjustment of $\omega$).
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We may take a copy of the `vib_undamped.py` file and edit the `solver`
 function to
 
 ```python
+from matplotlib.pyplot import *
+from numpy import *
+
+
+def solver(I, w, dt, T, adjust_w=True):
+    """
+    Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,
+    by a central finite difference method with time step dt.
+    """
+    dt = float(dt)
+    Nt = int(round(T / dt))
+    u = zeros(Nt + 1)
+    t = linspace(0, Nt * dt, Nt + 1)
+    if adjust_w:
+        w = w * (1 - 1.0 / 24 * w**2 * dt**2)
+
+    u[0] = I
+    u[1] = u[0] - 0.5 * dt**2 * w**2 * u[0]
+    for n in range(1, Nt):
+        u[n + 1] = 2 * u[n] - u[n - 1] - dt**2 * w**2 * u[n]
+    return u, t
 ```
 
 The modified code was run for 80 periods with, and without,
 the given adjustment of $\omega$. A substantial difference in accuracy
 was observed between the two,
 showing that the frequency adjustment improves the situation.
-!esol
+:::
+
 
 ## Exercise: See if adaptive methods improve the phase error {#sec-vib-exer-undamped-adaptive}
-file=vib_undamped_adaptive
 
 Adaptive methods for solving ODEs aim at adjusting $\Delta t$ such
 that the error is within a user-prescribed tolerance. Implement the
@@ -3412,11 +3674,69 @@ spaced) mesh points. The question is whether it pays off to use an
 adaptive solver or if equally many points with a simple method gives
 about the same accuracy.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Here is a code where we define the test problem, solve it by the
 Dormand-Prince adaptive method from Odespy, and then call `solver`
 
 ```python
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+import odespy
+
+
+def f(s, t):
+    u, v = s
+    return np.array([v, -u])
+
+
+def u_exact(t):
+    return I * np.cos(w * t)
+
+
+I = 1
+V = 0
+u0 = np.array([I, V])
+w = 1
+T = 50
+tol = float(sys.argv[1])
+solver = odespy.DormandPrince(f, atol=tol, rtol=0.1 * tol)
+
+Nt = 1  # just one step - let scheme find its intermediate points
+t_mesh = np.linspace(0, T, Nt + 1)
+t_fine = np.linspace(0, T, 10001)
+
+solver.set_initial_condition(u0)
+u, t = solver.solve(t_mesh)
+
+# u and t will only consist of [I, u^Nt] and [0,T], i.e. 2 values
+# each, while solver.u_all and solver.t_all contain all computed
+# points. solver.u_all is a list with arrays, one array (with 2
+# values) for each point in time.
+u_adaptive = np.array(solver.u_all)
+
+import os
+
+# For comparison, we solve also with simple FDM method
+import sys
+
+sys.path.insert(0, os.path.join(os.pardir, "src-vib"))
+from vib_undamped import solver as simple_solver
+
+Nt_simple = len(solver.t_all)
+dt = float(T) / Nt_simple
+u_simple, t_simple = simple_solver(I, w, dt, T)
+
+# Compare in plot: adaptive, constant dt, exact
+plt.plot(solver.t_all, u_adaptive[:, 0], "k-")
+plt.plot(t_simple, u_simple, "r--")
+plt.plot(t_fine, u_exact(t_fine), "b-")
+plt.legend([f"tol={tol:.0E}", "u simple", "exact"])
+plt.savefig("tmp_odespy_adaptive.png")
+plt.savefig("tmp_odespy_adaptive.pdf")
+plt.show()
 ```
 
 The program may produce the plots seen in
@@ -3424,10 +3744,11 @@ the figure below,
 which shows how the adaptive solution clearly outperforms the simpler method,
 regardless of the accuracy level.
 
-![!esol](fig/vib_undamped_adaptive){width="100%"}
+:::
+
+![](fig/vib_undamped_adaptive){width="100%"}
 
 ## Exercise: Use a Taylor polynomial to compute $u^1$ {#sec-vib-exer-step4b-alt}
-file=vib_first_step
 
 As an alternative to computing $u^1$ by (@eq-vib-ode1-step4b),
 one can use a Taylor polynomial with three terms:
@@ -3438,7 +3759,8 @@ With $u^{\prime\prime}=-\omega^2 u$ and $u^{\prime}(0)=0$, show that this method
 (@eq-vib-ode1-step4b). Generalize the condition on $u^{\prime}(0)$ to
 be $u^{\prime}(0)=V$ and compute $u^1$ in this case with both methods.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 With $u^{\prime\prime}(0)=-\omega^2 u(0)$ and $u^{\prime}(0)=0$, the given Taylor series
 becomes
 $$
@@ -3479,7 +3801,8 @@ which also gives
 $$
 u^1 = u^0 + \Delta t V - \frac{1}{2}\Delta t^2\omega^2 u^0
 $$
-!esol
+:::
+
 
 ## Problem: Derive and investigate the velocity Verlet method
 The velocity Verlet method for $u^{\prime\prime} + \omega^2u=0$ is
@@ -3492,7 +3815,8 @@ based on the following ideas:
 
 Derive the scheme, implement it, and determine empirically the convergence rate.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Stepping $u$ forward from $t_n$ to $t_{n+1}$ using a three-term Taylor
 series gives
 $$
@@ -3524,6 +3848,37 @@ equation is already computed by the first equation.
 The algorithm can be straightforwardly implemented as shown below:
 
 ```python
+import numpy as np
+from vib_undamped import convergence_rates, main
+
+
+def solver(I, w, dt, T, return_v=False):
+    """
+    Solve u'=v, v'=-w**2*u for t in (0,T], u(0)=I and v(0)=0,
+    by the velocity Verlet method with time step dt.
+    """
+    dt = float(dt)
+    Nt = int(round(T / dt))
+    u = np.zeros(Nt + 1)
+    v = np.zeros(Nt + 1)
+    t = np.linspace(0, Nt * dt, Nt + 1)
+
+    u[0] = I
+    v[0] = 0
+    for n in range(Nt):
+        u[n + 1] = u[n] + v[n] * dt - 0.5 * dt**2 * w**2 * u[n]
+        v[n + 1] = v[n] - 0.5 * dt * w**2 * (u[n] + u[n + 1])
+    if return_v:
+        return u, v, t
+    else:
+        # Return just u and t as in the vib_undamped.py's solver
+        return u, t
+
+
+if __name__ == "__main__":
+    main(solver_function=solver)
+    raw_input()
+    print(convergence_rates(m=5, solver_function=solver))
 ```
 We provide the option that this `solver` function returns the same data
 as the `solver` function from @sec-vib-impl1 (if `return_v`
@@ -3542,10 +3897,10 @@ Section @sec-vib-ode1-verify:
 [2.0036366687367346, 2.0009497328124835, 2.000240105995295]
 ```
 The output confirms that the overall convergence rate is 2.
-!esol
+:::
+
 
 ## Problem: Find the minimal resolution of an oscillatory function {#sec-vib-exer-wdt-limit}
-file=vib_largest_wdt
 
 Sketch the function on a given mesh which has the highest possible
 frequency. That is, this oscillatory "cos-like" function has its
@@ -3554,17 +3909,18 @@ the frequency of this function, and use the result to find the largest
 relevant value of $\omega\Delta t$ when $\omega$ is the frequency
 of an oscillating function and $\Delta t$ is the mesh spacing.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The smallest period must be $2\Delta t$. Since the period $P$ is related
 to the angular frequency $\omega$ by $P=2\pi/\omega$, it means that
 $\omega = \frac{2\pi}{2\Delta t} = \frac{\pi}{\Delta t}$ is the smallest
 meaningful angular frequency.
 This further means that the largest value for $\omega\Delta t$ is $\pi$.
 
-!esol
+:::
+
 
 ## Exercise: Visualize the accuracy of finite differences for a cosine function {#sec-vib-exer-fd-exp-plot}
-file=vib_plot_fd_exp_error
 
 We introduce the error fraction
 $$
@@ -3586,7 +3942,8 @@ The deviation of the curve from unity visualizes the error in the
 approximation. Also expand $E$ as a Taylor polynomial in $p$ up to
 fourth degree (use, e.g., `sympy`).
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 \begin{align}
 E &= \frac{[D_tD_t u]^n}{u^{\prime\prime}(t_n)}, \nonumber \\
   &= \frac{u^{n+1} - 2u^n + u^{n-1}}{u^{\prime\prime}(t_n)\Delta t^2}, \nonumber
@@ -3610,15 +3967,48 @@ E &= \left(\frac{2}{\omega\Delta t}\right)^2 \left(-\frac{1}{2}\left( \left(1-2\
 \end{align}
 
 ```python
+import matplotlib.pyplot as plt
+import numpy as np
+import sympy as sym
+
+
+def E_fraction(p):
+    return (2.0 / p) ** 2 * (np.sin(p / 2.0)) ** 2
+
+
+a = 0
+b = np.pi
+p = np.linspace(a, b, 100)
+E_values = np.zeros(len(p))
+
+# create 4th degree Taylor polynomial (also plotted)
+p_ = sym.symbols("p_")
+E = (2.0 / p_) ** 2 * (sym.sin(p_ / 2.0)) ** 2
+E_series = E.series(p_, 0, 4).removeO()
+print(E_series)
+E_pyfunc = sym.lambdify([p_], E_series, modules="numpy")
+
+# To avoid division by zero when p is 0, we rather take the limit
+E_values[0] = sym.limit(E, p_, 0, dir="+")  # ...when p --> 0, E --> 1
+E_values[1:] = E_fraction(p[1:])
+
+plt.plot(p, E_values, "k-", p, E_pyfunc(p), "k--")
+plt.xlabel("p")
+plt.ylabel("Error fraction")
+plt.legend(["E", "E Taylor"])
+plt.savefig("tmp_error_fraction.png")
+plt.savefig("tmp_error_fraction.pdf")
+plt.show()
 ```
 
 From the plot seen below, we realize
 how the error fraction $E$ deviates from unity as $p$ grows.
 
-![!esol](fig/error_fraction){width="600px"}
+:::
+
+![](fig/error_fraction){width="600px"}
 
 ## Exercise: Verify convergence rates of the error in energy {#sec-vib-exer-energy-convrate}
-file=test_error_conv
 
 We consider the ODE problem $u^{\prime\prime} + \omega^2u=0$, $u(0)=I$, $u^{\prime}(0)=V$,
 for $t\in (0,T]$. The total energy of the solution
@@ -3634,16 +4024,80 @@ incorporate computations of the error in energy and the convergence
 rate of this error. The expected rate is 2, just as for the solution
 itself.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The complete code with test functions goes as follows.
 
 ```python
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.pardir, "src-vib"))
+import numpy as np
+from vib_undamped import solver, u_exact
+
+
+def convergence_rates(m, solver_function, num_periods=8):
+    """
+    Return m-1 empirical estimates of the convergence rate
+    based on m simulations, where the time step is halved
+    for each simulation.
+    solver_function(I, w, dt, T) solves each problem, where T
+    is based on simulation for num_periods periods.
+    """
+    from math import pi
+
+    w = 0.35
+    I = 0.3  # just chosen values
+    P = 2 * pi / w  # period
+    dt = P / 30  # 30 time step per period 2*pi/w
+    T = P * num_periods
+    energy_const = 0.5 * I**2 * w**2  # initial energy when V = 0
+
+    dt_values = []
+    E_u_values = []  # error in u
+    E_energy_values = []  # error in energy
+    for _i in range(m):
+        u, t = solver_function(I, w, dt, T)
+        u_e = u_exact(t, I, w)
+        E_u = np.sqrt(dt * np.sum((u_e - u) ** 2))
+        E_u_values.append(E_u)
+        energy = 0.5 * ((u[2:] - u[:-2]) / (2 * dt)) ** 2 + 0.5 * w**2 * u[1:-1] ** 2
+        E_energy = energy - energy_const
+        E_energy_norm = np.abs(E_energy).max()
+        E_energy_values.append(E_energy_norm)
+        dt_values.append(dt)
+        dt = dt / 2
+
+    r_u = [
+        np.log(E_u_values[i - 1] / E_u_values[i])
+        / np.log(dt_values[i - 1] / dt_values[i])
+        for i in range(1, m, 1)
+    ]
+    r_E = [
+        np.log(E_energy_values[i - 1] / E_energy_values[i])
+        / np.log(dt_values[i - 1] / dt_values[i])
+        for i in range(1, m, 1)
+    ]
+    return r_u, r_E
+
+
+def test_convergence_rates():
+    r_u, r_E = convergence_rates(m=5, solver_function=solver, num_periods=8)
+    # Accept rate to 1 decimal place
+    tol = 0.1
+    assert abs(r_u[-1] - 2.0) < tol
+    assert abs(r_E[-1] - 2.0) < tol
+
+
+if __name__ == "__main__":
+    test_convergence_rates()
 ```
 
-!esol
+:::
+
 
 ## Exercise: Use linear/quadratic functions for verification {#sec-vib-exer-verify-gen-linear}
-file=vib_verify_mms
 
 This exercise is a generalization of Problem
 @sec-vib-exer-undamped-verify-linquad to the extended model problem
@@ -3654,7 +4108,8 @@ quadratic damping. By modifying the code from Problem
 @sec-vib-exer-undamped-verify-linquad, `sympy` will do most
 of the work required to analyze the generalized problem.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 With a linear spring force, i.e. $s(u)=cu$ (for constant $c$),
 our model problem becomes
 $$
@@ -3799,28 +4254,284 @@ For a quadratic solution $u_e$ combined with (zero damping or) linear damping, t
 For a cubic solution $u_e$, we get a nonzero residual for (zero damping and) linear and nonlinear damping.
 
 ```python
+import numpy as np
+import sympy as sym
+
+# The code in vib_undamped_verify_mms.py is here generalized
+# to treat the model m*u'' + f(u') + c*u = F(t), where the
+# damping term f(u') = 0, b*u' or b*V*abs(V).
+
+
+def ode_source_term(u, damping):
+    """Return the terms in the ODE that the source term
+    must balance, here m*u'' + f(u') + c*u.
+    u is a symbolic Python function of t."""
+    if damping == "zero":
+        return m * sym.diff(u(t), t, t) + c * u(t)
+    elif damping == "linear":
+        return m * sym.diff(u(t), t, t) + b * sym.diff(u(t), t) + c * u(t)
+    else:  # damping is nonlinear
+        return (
+            m * sym.diff(u(t), t, t)
+            + b * sym.diff(u(t), t) * abs(sym.diff(u(t), t))
+            + c * u(t)
+        )
+
+
+def residual_discrete_eq(u, damping):
+    """Return the residual of the discrete eq. with u inserted."""
+    if damping == "zero":
+        R = m * DtDt(u, dt) + c * u(t) - F
+    elif damping == "linear":
+        R = m * DtDt(u, dt) + b * D2t(u, dt) + c * u(t) - F
+    else:  # damping is nonlinear
+        R = m * DtDt(u, dt) + b * Dt_p_half(u, dt) * abs(Dt_m_half(u, dt)) + c * u(t) - F
+    return sym.simplify(R)
+
+
+def residual_discrete_eq_step1(u, damping):
+    """Return the residual of the discrete eq. at the first
+    step with u inserted."""
+    half = sym.Rational(1, 2)
+    if damping == "zero":
+        R = (
+            u(t + dt)
+            - u(t)
+            - dt * V
+            - half * dt**2 * (F.subs(t, 0) / m)
+            + half * dt**2 * (c / m) * I
+        )
+    elif damping == "linear":
+        R = u(t + dt) - (
+            I + dt * V + half * (dt**2 / m) * (-b * V - c * I + F.subs(t, 0))
+        )
+    else:  # damping is nonlinear
+        R = u(t + dt) - (
+            I + dt * V + half * (dt**2 / m) * (-b * V * abs(V) - c * I + F.subs(t, 0))
+        )
+    R = R.subs(t, 0)  # t=0 in the rhs of the first step eq.
+    return sym.simplify(R)
+
+
+def DtDt(u, dt):
+    """Return 2nd-order finite difference for u_tt.
+    u is a symbolic Python function of t.
+    """
+    return (u(t + dt) - 2 * u(t) + u(t - dt)) / dt**2
+
+
+def D2t(u, dt):
+    """Return 2nd-order finite difference for u_t.
+    u is a symbolic Python function of t.
+    """
+    return (u(t + dt) - u(t - dt)) / (2.0 * dt)
+
+
+def Dt_p_half(u, dt):
+    """Return 2nd-order finite difference for u_t, sampled at n+1/2,
+    i.e, n pluss one half... u is a symbolic Python function of t.
+    """
+    return (u(t + dt) - u(t)) / dt
+
+
+def Dt_m_half(u, dt):
+    """Return 2nd-order finite difference for u_t, sampled at n-1/2,
+    i.e, n minus one half.... u is a symbolic Python function of t.
+    """
+    return (u(t) - u(t - dt)) / dt
+
+
+def main(u, damping):
+    """
+    Given some chosen solution u (as a function of t, implemented
+    as a Python function), use the method of manufactured solutions
+    to compute the source term f, and check if u also solves
+    the discrete equations.
+    """
+    print(f"=== Testing exact solution: {u(t)} ===")
+    print(
+        f"Initial conditions u(0)={u(t).subs(t, 0)}, u'(0)={sym.diff(u(t), t).subs(t, 0)}:"
+    )
+
+    # Method of manufactured solution requires fitting F
+    global F  # source term in the ODE
+    F = sym.simplify(ode_source_term(u, damping))
+
+    # Residual in discrete equations (should be 0)
+    print("residual step1:", residual_discrete_eq_step1(u, damping))
+    print("residual:", residual_discrete_eq(u, damping))
+
+
+def linear(damping):
+    def u_e(t):
+        """Return chosen linear exact solution."""
+        # General linear function u_e = c*t + d
+        # Initial conditions u(0)=I, u'(0)=V require c=V, d=I
+        return V * t + I
+
+    main(u_e, damping)
+
+
+def quadratic(damping):
+    # Extend with quadratic functions
+    q = sym.Symbol("q")  # arbitrary constant in quadratic term
+
+    def u_e(t):
+        return q * t**2 + V * t + I
+
+    main(u_e, damping)
+
+
+def cubic(damping):
+    r, q = sym.symbols("r q")
+
+    main(lambda t: r * t**3 + q * t**2 + V * t + I, damping)
+
+
+def solver(I, V, F, b, c, m, dt, T, damping):
+    """
+    Solve m*u'' + f(u') + c*u = F for t in (0,T], u(0)=I and u'(0)=V,
+    by a central finite difference method with time step dt.
+    F(t) is a callable Python function.
+    """
+    dt = float(dt)
+    Nt = int(round(T / dt))
+    u = np.zeros(Nt + 1)
+    t = np.linspace(0, Nt * dt, Nt + 1)
+
+    if damping == "zero":
+        u[0] = I
+        u[1] = u[0] - 0.5 * dt**2 * (c / m) * u[0] + 0.5 * dt**2 * F(t[0]) / m + dt * V
+        for n in range(1, Nt):
+            u[n + 1] = 2 * u[n] - u[n - 1] - dt**2 * (c / m) * u[n] + dt**2 * F(t[n]) / m
+    elif damping == "linear":
+        u[0] = I
+        u[1] = u[0] + dt * V + 0.5 * (dt**2 / m) * (-b * V - c * u[0] + F(t[0]))
+        for n in range(1, Nt):
+            u[n + 1] = (
+                2 * m * u[n]
+                + (b * dt / 2.0 - m) * u[n - 1]
+                + dt**2 * (F(t[n]) - c * u[n])
+            ) / (m + b * dt / 2.0)
+    else:  # damping is quadratic
+        u[0] = I
+        u[1] = u[0] + dt * V + 0.5 * (dt**2 / m) * (-b * V * abs(V) - c * u[0] + F(t[0]))
+        for n in range(1, Nt):
+            u[n + 1] = (
+                1.0
+                / (m + b * abs(u[n] - u[n - 1]))
+                * (
+                    2 * m * u[n]
+                    - m * u[n - 1]
+                    + b * u[n] * abs(u[n] - u[n - 1])
+                    + dt**2 * (F(t[n]) - c * u[n])
+                )
+            )
+    return u, t
+
+
+def test_quadratic_exact_solution(damping):
+    # Transform global symbolic variables to functions and numbers
+    # for numerical computations
+
+    global p, V, I, b, c, m
+    p, V, I, b, c, m = 2.3, 0.9, 1.2, 2.1, 1.6, 1.3  # i.e., as numbers
+    global F, t
+    u_e = lambda t: p * t**2 + V * t + I
+    F = ode_source_term(u_e, damping)  # fit source term
+    F = sym.lambdify(t, F)  # ...numerical Python function
+
+    from math import pi, sqrt
+
+    dt = 2 * pi / sqrt(c / m) / 10  # 10 steps per period 2*pi/w, w=sqrt(c/m)
+    u, t = solver(
+        I=I, V=V, F=F, b=b, c=c, m=m, dt=dt, T=(2 * pi / sqrt(c / m)) * 2, damping=damping
+    )
+    u_e = u_e(t)
+    error = np.abs(u - u_e).max()
+    tol = 1e-12
+    assert error < tol
+    print("Error in computing a quadratic solution:", error)
+
+
+if __name__ == "__main__":
+    damping = ["zero", "linear", "quadratic"]
+    for e in damping:
+        V, t, I, dt, m, b, c = sym.symbols("V t I dt m b c")  # global
+        F = None  # global variable for the source term in the ODE
+        print("---------------------------------------Damping:", e)
+        linear(e)  # linear solution used for MMS
+        quadratic(e)  # quadratic solution for MMS
+        cubic(e)  # ... and cubic
+        test_quadratic_exact_solution(e)
 ```
 
-!esol
+:::
+
 
 ## Exercise: Use an exact discrete solution for verification {#sec-vib-exer-discrete-omega}
-file=test_vib_undamped_exact_discrete_sol
 
 Write a test function in a separate file
 that employs the exact discrete solution
 (@eq-vib-ode1-un-exact) to verify the implementation of the
 `solver` function in the file `vib_undamped.py`.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The code goes like this:
 
 ```python
+"""Verify exact solution of vib_undamped.solver function."""
+
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.pardir, "src-vib"))
+from numpy import abs
+from numpy import arcsin as asin
+from numpy import cos, pi
+from vib_undamped import solver
+
+
+def test_solver_exact_discrete_solution():
+    def tilde_w(w, dt):
+        return (2.0 / dt) * asin(w * dt / 2.0)
+
+    def u_numerical_exact(t):
+        return I * cos(tilde_w(w, dt) * t)
+
+    w = 2.5
+    I = 1.5
+
+    # Estimate period and time step
+    P = 2 * pi / w
+    num_periods = 4
+    T = num_periods * P
+    N = 5  # time steps per period
+    dt = P / N
+    u, t = solver(I, w, dt, T)
+    u_e = u_numerical_exact(t)
+    error = abs(u_e - u).max()
+    # Make a plot in a file, but not on the screen
+    import matplotlib.pyplot as plt
+
+    plt.plot(t, u, "bo", label="numerical")
+    plt.plot(t, u_e, "r-", label="exact")
+    plt.legend()
+    plt.savefig("tmp.png")
+    plt.close()
+
+    assert error < 1e-14
+
+
+if __name__ == "__main__":
+    test_solver_exact_discrete_solution()
 ```
 
-!esol
+:::
+
 
 ## Exercise: Use analytical solution for convergence rate tests {#sec-vib-exer-conv-rate}
-file=vib_conv_rate
 
 The purpose of this exercise is to perform convergence tests of the
 problem (@eq-vib-ode2) when $s(u)=cu$, $F(t)=A\sin\phi t$ and there
@@ -3832,16 +4543,86 @@ Modify the `convergence_rate` function from the
 `vib_undamped.py` program to perform experiments with the extended
 model.  Verify that the error is of order $\Delta t^2$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The code:
 ```python
+import numpy as np
+from vib_verify_mms import solver
+
+
+def u_exact(t, I, V, A, f, c, m):
+    """Found by solving mu'' + cu = F in Wolfram alpha."""
+    k_1 = I
+    k_2 = (V - A * 2 * np.pi * f / (c - 4 * np.pi**2 * f**2 * m)) * np.sqrt(m / float(c))
+    return (
+        A * np.sin(2 * np.pi * f * t) / (c - 4 * np.pi**2 * f**2 * m)
+        + k_2 * np.sin(np.sqrt(c / float(m)) * t)
+        + k_1 * np.cos(np.sqrt(c / float(m)) * t)
+    )
+
+
+def convergence_rates(N, solver_function, num_periods=8):
+    """
+    Returns N-1 empirical estimates of the convergence rate
+    based on N simulations, where the time step is halved
+    for each simulation.
+    solver_function(I, V, F, c, m, dt, T, damping) solves
+    each problem, where T is based on simulation for
+    num_periods periods.
+    """
+
+    def F(t):
+        """External driving force"""
+        return A * np.sin(2 * np.pi * f * t)
+
+    b, c, m = 0, 1.6, 1.3  # just some chosen values
+    I = 0  # init. cond. u(0)
+    V = 0  # init. cond. u'(0)
+    A = 1.0  # amplitude of driving force
+    f = 1.0  # chosen frequency of driving force
+    damping = "zero"
+
+    P = 1 / f
+    dt = P / 30  # 30 time step per period 2*pi/w
+    T = P * num_periods
+
+    dt_values = []
+    E_values = []
+    for _i in range(N):
+        u, t = solver_function(I, V, F, b, c, m, dt, T, damping)
+        u_e = u_exact(t, I, V, A, f, c, m)
+        E = np.sqrt(dt * np.sum((u_e - u) ** 2))
+        dt_values.append(dt)
+        E_values.append(E)
+        dt = dt / 2
+
+    # plt.plot(t, u, 'b--', t, u_e, 'r-'); plt.grid(); plt.show()
+
+    r = [
+        np.log(E_values[i - 1] / E_values[i]) / np.log(dt_values[i - 1] / dt_values[i])
+        for i in range(1, N, 1)
+    ]
+    print(r)
+    return r
+
+
+def test_convergence_rates():
+    r = convergence_rates(N=5, solver_function=solver, num_periods=8)
+    # Accept rate to 1 decimal place
+    tol = 0.1
+    assert abs(r[-1] - 2.0) < tol
+
+
+if __name__ == "__main__":
+    test_convergence_rates()
 ```
 
 The output from the program shows that $r$ approaches 2.
-!esol
+:::
+
 
 ## Exercise: Investigate the amplitude errors of many solvers {#sec-vib-exer-undamped-odespy}
-file=vib_amplitude_errors
 
 Use the program `vib_undamped_odespy.py` from Section
 @sec-vib-model2x2-compare (utilize the function `amplitudes`) to investigate
@@ -3863,16 +4644,91 @@ show that `RK4` is superior to the others, but that also `CrankNicolson` perform
 
 ![The amplitude as it changes over 100 periods for Adams-Bashforth 2 and 3.](fig/Amplitudes_AdamsBashforth2_AdamsBashforth3){#fig-vib-exer-fig-ampl-AB width="600px"}
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We modify the proposed code to the following:
 
 ```python
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+import odespy
+
+# import matplotlib.pyplot as plt
+from vib_empirical_analysis import amplitudes, minmax
+
+
+def f(u, t, w=1):
+    # v, u numbering for EulerCromer to work well
+    v, u = u  # u is array of length 2 holding our [v, u]
+    return [-(w**2) * u, v]
+
+
+def run_solvers_and_check_amplitudes(
+    solvers, timesteps_per_period=20, num_periods=1, I=1, w=2 * np.pi
+):
+    P = 2 * np.pi / w  # duration of one period
+    dt = P / timesteps_per_period
+    Nt = num_periods * timesteps_per_period
+    T = Nt * dt
+    t_mesh = np.linspace(0, T, Nt + 1)
+
+    file_name = "Amplitudes"  # initialize filename for plot
+    for solver in solvers:
+        solver.set(f_kwargs={"w": w})
+        solver.set_initial_condition([0, I])
+        u, t = solver.solve(t_mesh)
+
+        solver_name = (
+            "CrankNicolson"
+            if solver.__class__.__name__ == "MidpointImplicit"
+            else solver.__class__.__name__
+        )
+        file_name = file_name + "_" + solver_name
+
+        minima, maxima = minmax(t, u[:, 0])
+        a = amplitudes(minima, maxima)
+        plt.plot(range(len(a)), a, "-", label=solver_name)
+        plt.hold("on")
+
+    plt.xlabel("Number of periods")
+    plt.ylabel("Amplitude (absolute value)")
+    plt.legend(loc="upper left")
+    plt.savefig(file_name + ".png")
+    plt.savefig(file_name + ".pdf")
+    plt.show()
+
+
+# Define different sets of experiments
+solvers_CNB2 = [
+    odespy.CrankNicolson(f, nonlinear_solver="Newton"),
+    odespy.Backward2Step(f),
+]
+solvers_RK34 = [odespy.RK3(f), odespy.RK4(f)]
+solvers_AB = [odespy.AdamsBashforth2(f), odespy.AdamsBashforth3(f)]
+
+if __name__ == "__main__":
+    # Default values
+    timesteps_per_period = 30
+    solver_collection = "CNB2"
+    num_periods = 100
+    # Override from command line
+    try:
+        # Example: python vib_undamped_odespy.py 30 RK34 50
+        timesteps_per_period = int(sys.argv[1])
+        solver_collection = sys.argv[2]
+        num_periods = int(sys.argv[3])
+    except IndexError:
+        pass  # default values are ok
+    solvers = eval("solvers_" + solver_collection)  # list of solvers
+    run_solvers_and_check_amplitudes(solvers, timesteps_per_period, num_periods)
 ```
 
-!esol
+:::
+
 
 ## Problem: Minimize memory usage of a simple vibration solver {#sec-vib-exer-memsave0}
-file=vib_memsave0
 
 We consider the model problem $u''+\omega^2 u = 0$, $u(0)=I$, $u'(0)=V$,
 solved by a second-order finite difference scheme. A standard implementation
@@ -3886,13 +4742,47 @@ Store the solution in a file
 for later visualization. Make a test function that verifies the implementation
 by comparing with the another code for the same problem.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The modified solver function needs more manual steps initially, and it needs
 shuffling of the `u_n` and `u_nm1` variables at each time  level. Otherwise
 it is very similar to the previous `solver` function with an array `u` for
 the entire mesh function.
 
 ```python
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.pardir, "src-vib"))
+
+import numpy as np
+
+
+def solver_memsave(I, w, dt, T, filename="tmp.dat"):
+    """
+    As vib_undamped.solver, but store only the last three
+    u values in the implementation. The solution is written to
+    file `tmp_memsave.dat`.
+    Solve u'' + w**2*u = 0 for t in (0,T], u(0)=I and u'(0)=0,
+    by a central finite difference method with time step dt.
+    """
+    dt = float(dt)
+    Nt = int(round(T / dt))
+    t = np.linspace(0, Nt * dt, Nt + 1)
+    outfile = open(filename, "w")
+
+    u_n = I
+    outfile.write(f"{0:20.12f} {u_n:20.12f}\n")
+    u = u_n - 0.5 * dt**2 * w**2 * u_n
+    outfile.write(f"{dt:20.12f} {u:20.12f}\n")
+    u_nm1 = u_n
+    u_n = u
+    for n in range(1, Nt):
+        u = 2 * u_n - u_nm1 - dt**2 * w**2 * u_n
+        outfile.write(f"{t[n]:20.12f} {u:20.12f}\n")
+        u_nm1 = u_n
+        u_n = u
+    return u, t
 ```
 
 Verification can be done by comparing with the `solver` function in
@@ -3903,12 +4793,21 @@ tabular data and returns them as a table `data`. Our interest is in the
 second column of the data (the `u` values).
 
 ```python
+def test_solver_memsave():
+    from vib_undamped import solver
+
+    _, _ = solver_memsave(I=1, dt=0.1, w=1, T=30)
+    u_expected, _ = solver(I=1, dt=0.1, w=1, T=30)
+    data = np.loadtxt("tmp.dat")
+    u_computed = data[:, 1]
+    diff = np.abs(u_expected - u_computed).max()
+    assert diff < 5e-13, diff
 ```
 
-!esol
+:::
+
 
 ## Problem: Minimize memory usage of a general vibration solver {#sec-vib-exer-memsave}
-file=vib_memsave
 
 The program [`vib.py`](https://github.com/hplgit/fdm-book/tree/master/src/vib/vib.py) stores the complete
 solution $u^0,u^1,\ldots,u^{N_t}$ in memory, which is convenient for
@@ -3922,37 +4821,203 @@ line at a time and plot the $u$ value using the line-by-line plotter
 in the `visualize_front_ascii` function - this technique makes it
 trivial to visualize very long time simulations).
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Here is the complete program:
 
 ```python
+def solve_and_store(filename, I, V, m, b, s, F, dt, T, damping="linear"):
+    """
+    Solve m*u'' + f(u') + s(u) = F(t) for t in (0,T], u(0)=I and
+    u'(0)=V, by a central finite difference method with time step
+    dt. If damping is 'linear', f(u')=b*u, while if damping is
+    'quadratic', f(u')=b*u'*abs(u'). F(t) and s(u) are Python
+    functions. The solution is written to file (filename).
+    Naming convention: we use the name u for the new solution
+    to be computed, u_n for the solution one time step prior to
+    that and u_nm1 for the solution two time steps prior to that.
+    Returns min and max u values needed for subsequent plotting.
+    """
+    dt = float(dt)
+    b = float(b)
+    m = float(m)  # avoid integer div.
+    Nt = int(round(T / dt))
+    outfile = open(filename, "w")
+    outfile.write("Time          Position\n")
+
+    u_nm1 = I
+    u_min = u_max = u_nm1
+    outfile.write(f"{0 * dt:6.3f}         {u_nm1:7.5f}\n")
+    if damping == "linear":
+        u_n = u_nm1 + dt * V + dt**2 / (2 * m) * (-b * V - s(u_nm1) + F(0 * dt))
+    elif damping == "quadratic":
+        u_n = u_nm1 + dt * V + dt**2 / (2 * m) * (-b * V * abs(V) - s(u_nm1) + F(0 * dt))
+    if u_n < u_nm1:
+        u_min = u_n
+    else:  # either equal or u_n > u_nm1
+        u_max = u_n
+    outfile.write(f"{1 * dt:6.3f}         {u_n:7.5f}\n")
+
+    for n in range(1, Nt):
+        # compute  solution at next time step
+        if damping == "linear":
+            u = (
+                2 * m * u_n + (b * dt / 2 - m) * u_nm1 + dt**2 * (F(n * dt) - s(u_n))
+            ) / (m + b * dt / 2)
+        elif damping == "quadratic":
+            u = (
+                2 * m * u_n
+                - m * u_nm1
+                + b * u_n * abs(u_n - u_nm1)
+                + dt**2 * (F(n * dt) - s(u_n))
+            ) / (m + b * abs(u_n - u_nm1))
+        if u < u_min:
+            u_min = u
+        elif u > u_max:
+            u_max = u
+
+        # write solution to file
+        outfile.write(f"{(n + 1) * dt:6.3f}         {u:7.5f}\n")
+        # switch references before next step
+        u_nm1, u_n, u = u_n, u, u_nm1
+
+    outfile.close()
+    return u_min, u_max
+
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--I", type=float, default=1.0)
+    parser.add_argument("--V", type=float, default=0.0)
+    parser.add_argument("--m", type=float, default=1.0)
+    parser.add_argument("--b", type=float, default=0.0)
+    parser.add_argument("--s", type=str, default="u")
+    parser.add_argument("--F", type=str, default="0")
+    parser.add_argument("--dt", type=float, default=0.05)
+    parser.add_argument("--T", type=float, default=10)
+    parser.add_argument(
+        "--window_width", type=float, default=30.0, help="Number of periods in a window"
+    )
+    parser.add_argument("--damping", type=str, default="linear")
+    parser.add_argument("--savefig", action="store_true")
+    a = parser.parse_args()
+
+    from sympy import lambdify, symbols, sympify
+
+    u_sym = symbols("u")
+    t_sym = symbols("t")
+    s = lambdify(u_sym, sympify(a.s), modules=["numpy"])
+    F = lambdify(t_sym, sympify(a.F), modules=["numpy"])
+    I, V, m, b, dt, T, _window_width, _savefig, damping = (
+        a.I,
+        a.V,
+        a.m,
+        a.b,
+        a.dt,
+        a.T,
+        a.window_width,
+        a.savefig,
+        a.damping,
+    )
+
+    filename = "vibration_sim.dat"
+    u_min, u_max = solve_and_store(filename, I, V, m, b, s, F, dt, T, damping)
+
+    read_and_plot(filename, u_min, u_max)
+
+
+def read_and_plot(filename, u_min, u_max):
+    """
+    Read file and plot u vs t using matplotlib.
+    """
+    import matplotlib.pyplot as plt
+
+    umin = 1.2 * u_min
+    umax = 1.2 * u_max
+    t_values = []
+    u_values = []
+
+    with open(filename) as infile:
+        infile.readline()  # skip header line
+        for line in infile:
+            time_and_pos = line.split()
+            t_values.append(float(time_and_pos[0]))
+            u_values.append(float(time_and_pos[1]))
+
+    plt.figure()
+    plt.plot(t_values, u_values, "b-")
+    plt.xlabel("t")
+    plt.ylabel("u")
+    plt.axis([t_values[0], t_values[-1], umin, umax])
+    plt.title("Solution from file")
+    plt.savefig("vib_memsave.png")
+    plt.savefig("vib_memsave.pdf")
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()
 ```
 
-!esol
+:::
+
 
 ## Exercise: Implement the Euler-Cromer scheme for the generalized model {#sec-vib-exer-EC-vs-centered}
-file=vib_EulerCromer
 
 We consider the generalized model problem
 $$
 mu'' + f(u') + s(u) = F(t),\quad u(0)=I,\ u'(0)=V\tp
 $$ {#eq-vib-ode2}
-!bsubex
+**a)**
+
 Implement the Euler-Cromer method from Section @sec-vib-model2x2-EulerCromer.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 A suitable function is
 
 ```python
-```
-!esol
-!esubex
+import os
+import sys
 
-!bsubex
+sys.path.insert(0, os.path.join(os.pardir, "src"))  # for import vib
+from math import pi
+
+import numpy as np
+
+
+def solver(I, V, m, b, s, F, dt, T, damping="linear"):
+    """
+    Solve m*u'' + f(u') + s(u) = F(t) for t in (0,T], u(0)=I,
+    u'(0)=V by an Euler-Cromer method.
+    """
+    f = lambda v: b * v if damping == "linear" else b * abs(v) * v
+    dt = float(dt)
+    Nt = int(round(T / dt))
+    u = np.zeros(Nt + 1)
+    v = np.zeros(Nt + 1)
+    t = np.linspace(0, Nt * dt, Nt + 1)
+
+    v[0] = V
+    u[0] = I
+    for n in range(0, Nt):
+        v[n + 1] = v[n] + dt * (1.0 / m) * (F(t[n]) - s(u[n]) - f(v[n]))
+        u[n + 1] = u[n] + dt * v[n + 1]
+    return u, v, t
+```
+:::
+
+
+
+**b)**
+
 We expect the Euler-Cromer method to have first-order convergence rate.
 Make a unit test based on this expectation.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We may use SymPy to derive a problem based on a manufactured solution
 $u=3\cos t$. Then we may run some $\Delta t$ values, compute the error
 divided by $\Delta t$, and check that this ratio remains approximately
@@ -3960,11 +5025,51 @@ constant. (An alternative is to compute true convergence rates and check
 that they are close to unity.)
 
 ```python
-```
-!esol
-!esubex
+def test_solver():
+    """Check 1st order convergence rate."""
+    m = 4
+    b = 0.1
+    s = lambda u: 2 * u
+    f = lambda v: b * v
 
-!bsubex
+    import sympy as sym
+
+    def ode(u):
+        """Return source F(t) in ODE for given manufactured u."""
+        print("ode:", m * sym.diff(u, t, 2), f(sym.diff(u, t)), s(u))
+        return m * sym.diff(u, t, 2) + f(sym.diff(u, t)) + s(u)
+
+    t = sym.symbols("t")
+    u = 3 * sym.cos(t)
+    F = ode(u)
+    F = sym.simplify(F)
+    print("F:", F, "u:", u)
+    F = sym.lambdify([t], F, modules="numpy")
+    u_exact = sym.lambdify([t], u, modules="numpy")
+    I = u_exact(0)
+    V = sym.diff(u, t).subs(t, 0)
+    print("V:", V, "I:", I)
+
+    # Numerical parameters
+    w = np.sqrt(0.5)
+    P = 2 * pi / w
+    dt_values = [P / 20, P / 40, P / 80, P / 160, P / 320]
+    T = 8 * P
+    error_vs_dt = []
+    for n, dt in enumerate(dt_values):
+        u, v, t = solver(I, V, m, b, s, F, dt, T, damping="linear")
+        error = np.abs(u - u_exact(t)).max()
+        if n > 0:
+            error_vs_dt.append(error / dt)
+    for i in range(len(error_vs_dt)):
+        assert abs(error_vs_dt[i] - error_vs_dt[0]) < 0.1
+```
+:::
+
+
+
+**c)**
+
 Consider a system with $m=4$, $f(v)=b|v|v$, $b=0.2$, $s=2u$, $F=0$.
 Compute the solution using the centered difference scheme
 using linear damping and the Euler-Cromer scheme
@@ -3976,25 +5081,58 @@ take the longest possible time step as a safety factor 0.9 times $2/\omega$.
 Refine $\Delta t$ three times by a factor of two and compare the
 two curves.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We rely on the module `vib` for the implementation of the method
 using linear damping. A suitable function for making
 the comparisons is then
 
 ```python
+def demo():
+    """
+    Demonstrate difference between Euler-Cromer and the
+    scheme for the corresponding 2nd-order ODE.
+    """
+    I = 1.2
+    V = 0.2
+    m = 4
+    b = 0.2
+    s = lambda u: 2 * u
+    F = lambda t: 0
+    w = np.sqrt(2.0 / 4)  # approx freq
+    dt = 0.9 * 2 / w  # longest possible time step
+    w = 0.5
+    P = 2 * pi / w
+    T = 4 * P
+    import matplotlib.pyplot as plt
+
+    from vib import solver as solver2
+
+    for k in range(4):
+        u2, t2 = solver2(I, V, m, b, s, F, dt, T, "quadratic")
+        u, v, t = solver(I, V, m, b, s, F, dt, T, "quadratic")
+        plt.figure()
+        plt.plot(t, u, "r-", t2, u2, "b-")
+        plt.legend(["Euler-Cromer", "centered scheme"])
+        plt.title(f"dt={dt:.3g}")
+        input()
+        plt.savefig("tmp_%d" % k + ".png")
+        plt.savefig("tmp_%d" % k + ".pdf")
+        dt /= 2
 ```
-!esol
-!esubex
+:::
+
+
 
 ## Problem: Interpret $[D_tD_t u]^n$ as a forward-backward difference {#sec-vib-exer-DtDt-asDtpDtm}
-file=vib_DtDt_fw_bw
 
 Show that the difference $[D_t D_tu]^n$ is equal to $[D_t^+D_t^-u]^n$
 and $D_t^-D_t^+u]^n$. That is, instead of applying a centered difference
 twice one can alternatively apply a mixture of forward and backward
 differences.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 \begin{align}
 [D_t^+D_t^-u]^n &= [D_t^+\left(\frac{u^n - u^{n-1}}{\Delta t}\right)]^n \nonumber\\
                  &= [\left(\frac{u^{n+1} - u^n}{\Delta t}\right) - \left(\frac{u^n - u^{n-1}}{\Delta t}\right)]^n  \nonumber\\
@@ -4009,7 +5147,8 @@ Similarly, we get that
                  &= [D_t D_tu]^n. \nonumber
 \end{align}
 
-!esol
+:::
+
 
 ## Exercise: Analysis of the Euler-Cromer scheme {#sec-vib-exer-EulerCromer-analysis}
 
@@ -4019,7 +5158,7 @@ $u^{\prime\prime} + \omega^2 u =0$, $u(0)=I$, $u^{\prime}(0)=0$, is given in
 Find the exact discrete solutions of this scheme and show that the solution
 for $u^n$ coincides with that found in Section @sec-vib-ode1-analysis.
 
-:::{.callout-tip title="Use an "ansatz" $u^n=I\exp{(i\tilde\omega\Delta t\,n)}$ and"}
+:::{.callout-tip title="Use an \"ansatz\" $u^n=I\exp{(i\tilde\omega\Delta t\,n)}$ and"}
 $v^n=qu^n$, where $\tilde\omega$ and $q$ are unknown parameters. The
 following formula is handy:
 $$
@@ -4029,7 +5168,8 @@ $$
 $$
 :::
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We follow the ideas in Section @sec-vib-ode1-analysis. Inserting
 $u^n=I\exp{(i\tilde\omega\Delta t\,n)}$ and
 $v^n=qu^n$ in
@@ -4066,4 +5206,4 @@ which is the same equation for $\tilde\omega$ as found in
 Section @sec-vib-ode1-analysis, such that $\tilde\omega$ is the
 same. The accuracy, stability, and formula for the exact discrete solution
 are then all the same as derived in Section @sec-vib-ode1-analysis.
-!esol
+:::

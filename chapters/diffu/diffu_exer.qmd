@@ -26,13 +26,13 @@ program `diffu_erf_sol.py` shows how to compute the analytical
 solution.
 
 ## Project: Energy estimates for diffusion problems {#sec-diffu-exer-energy-estimates}
-file=diffu_energy
 
 This project concerns so-called *energy estimates* for diffusion problems
 that can be used for qualitative analytical insight and for
 verification of implementations.
 
-!bsubex
+**a)**
+
 We start with a 1D homogeneous diffusion equation with zero Dirichlet
 conditions:
 
@@ -72,9 +72,10 @@ the time derivative of $||u||_{L^2}^2$ must be less than or equal
 to zero. Integrate this expression and derive
 (@eq-diffu-exer-estimates-p1-result).
 
-!esubex
 
-!bsubex
+
+**b)**
+
 Now we address a slightly different problem,
 
 ```{=latex}
@@ -120,9 +121,10 @@ becomes
 $$
 ||u||**{L^2} \leq ||I||**{L^2} + ||f||_{L^2}\tp
 $$ {#eq-diffu-exer-estimates-p3-result}
-!esubex
 
-!bsubex
+
+**c)**
+
 One application of (@eq-diffu-exer-estimates-p3-result) is to prove uniqueness
 of the solution.
 Suppose $u_1$ and $u_2$ both fulfill
@@ -132,9 +134,10 @@ the compound problem
 with $f=0$ and $I=0$. Use (@eq-diffu-exer-estimates-p3-result)
 to deduce that the energy must be zero for all times and therefore
 that $u_1=u_2$, which proves that the solution is unique.
-!esubex
 
-!bsubex
+
+**d)**
+
 Generalize (@eq-diffu-exer-estimates-p3-result) to a 2D/3D
 diffusion equation $u_t = \nabla\cdot (\alpha \nabla u)$ for $x\in\Omega$.
 
@@ -148,9 +151,10 @@ where $\frac{\partial u}{\partial n} = \bm{n}\cdot\nabla u$,
 $\bm{n}$ being the outward unit normal to the boundary $\partial\Omega$
 of the domain $\Omega$.
 :::
-!esubex
 
-!bsubex
+
+**e)**
+
 Now we also consider the multi-dimensional PDE $u_t =
 \nabla\cdot (\alpha \nabla u)$. Integrate both sides over $\Omega$
 and use Gauss' divergence theorem, $\int_\Omega \nabla\cdot\bm{q}\dx
@@ -161,9 +165,10 @@ $u$ surface remains constant in time and
 $$
 \int_{\Omega} u\dx = \int_{\Omega} I\dx \tp
 $$ {#eq-diffu-exer-estimates-p4-result}
-!esubex
 
-!bsubex
+
+**f)**
+
 Establish a code in 1D, 2D, or 3D that can solve a diffusion equation with a
 source term $f$, initial condition $I$, and zero Dirichlet or
 Neumann conditions on the whole boundary.
@@ -176,9 +181,10 @@ time when zero Dirichlet conditions are used.
 Iterate over the same $I$ functions and check that
 (@eq-diffu-exer-estimates-p4-result) is fulfilled
 when using zero Neumann conditions.
-!esubex
 
-!bsubex
+
+**g)**
+
 Make a list of some possible bugs in the code, such as indexing errors
 in arrays, failure to set the correct boundary conditions,
 evaluation of a term at a wrong time level, and similar.
@@ -186,7 +192,7 @@ For each of the bugs, see if the verification tests from the previous
 subexercise pass or fail. This investigation shows how strong
 the energy estimates and the estimate (@eq-diffu-exer-estimates-p4-result)
 are for pointing out errors in the implementation.
-!esubex
+
 
 ## Exercise: Splitting methods and preconditioning {#sec-diffu-exer-splitting-prec}
 
@@ -212,7 +218,8 @@ choosing $M=\omega^{-1}D + L$ ($L$ being the lower triangular part of
 $A$).  This equivalence shows that we can apply one iteration of the
 Jacobi or SOR method as preconditioner.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Inserting $M=I$ and $N=I-A$ in the iterative method leads to
 $$
 u^{k} = (I-A)u^{k-1} + b = u^{k-1} + (b  - Au^{k-1}),
@@ -231,7 +238,8 @@ $$
 which is the standard form for the Jacobi and SOR methods. Choosing $M=D$
 gives Jacobi and $M=\omega^{-1}D+L$ gives SOR. We have shown that we may
 view $M$ as a preconditioner of a simplest possible iteration method.
-!esol
+:::
+
 
 ## Problem: Oscillating surface temperature of the earth {#sec-diffu-exer-earthosc}
 
@@ -250,12 +258,14 @@ oscillations, for $x>L$. The parameters $\varrho$, $c_v$, and $k$ are the
 density, the specific heat capacity at constant volume, and the
 heat conduction coefficient, respectively.
 
-!bsubex
+**a)**
+
 Derive the mathematical model for computing $T(x,t)$.
 Assume the surface oscillations to be sinusoidal around some mean
 temperature $T_m$. Let $T=T_m$ initially. At $x=L$, assume $T\approx T_m$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The surface temperature is set as
 $$
 T(0,t) = T_m + A\sin(\omega t)\tp
@@ -270,10 +280,12 @@ T(x,0)&= T_m, & x\in [0,L],\\
 T(0,t)&= T_m + A\sin(\omega t), & t\in (0,T],\\
 T(L,t) &= T_m, & t\in (0,T].
 \end{alignat*}
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**b)**
+
 Scale the model in a) assuming $k$ is constant. Use a time scale
 $t_c = \omega^{-1}$ and a length scale $x_c = \sqrt{2\dfc/\omega}$,
 where $\dfc = k/(\varrho c_v)$. The primary unknown can be scaled
@@ -298,7 +310,8 @@ appropriate domain for $x$ is $[0,4]$ if a damping $e^{-4}\approx
 0.18$ is appropriate for implementing $\bar u\approx\hbox{const}$;
 increasing to $[0,6]$ damps $\bar u$ to 0.0025.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Chapter 3.2.4 in the book [@Langtangen_scaling] describes the
 scaling of this problem in detail.
 Inserting dimensionless variables $\bar t = \omega t$, $\bar x =
@@ -334,27 +347,80 @@ The boundary condition at $\bar x=\bar L$ is never compatible with the
 given solution unless $\bar u$ is damped to zero, which happens
 mathematically as $\bar L\rightarrow\infty$. For a numerical solution,
 however, we may use a small finite value such as $\bar L=4$.
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**c)**
+
 Compute the scaled temperature and make animations comparing two solutions
 with $\bar L=4$ and $\bar L=8$, respectively (keep $\Delta x$ the same).
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We can use the `viz` function in `diff1D_vc.py` to do the number
 crunching. Appropriate calls and visualization go here:
 
 ```python
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.pardir, "src-diffu"))
+from diffu1D_vc import viz
+
+sol = []  # store solutions
+for Nx, L in [[20, 4], [40, 8]]:
+    dt = 0.1
+    dx = float(L) / Nx
+    D = dt / dx**2
+    from math import pi, sin
+
+    T = 2 * pi * 6
+    from numpy import zeros
+
+    a = zeros(Nx + 1) + 0.5
+    cpu, u_ = viz(
+        I=lambda x: 0,
+        a=a,
+        L=L,
+        Nx=Nx,
+        D=D,
+        T=T,
+        umin=-1.1,
+        umax=1.1,
+        theta=0.5,
+        u_L=lambda t: sin(t),
+        u_R=0,
+        animate=False,
+        store_u=True,
+    )
+    sol.append(u_)
+    print("computed solution for Nx=%d in [0,%g]" % (Nx, L))
+
+print(sol[0].shape)
+print(sol[1].shape)
+import matplotlib.pyplot as plt
+
+counter = 0
+for u0, u1 in zip(sol[0][2:], sol[1][2:], strict=False):
+    x0 = sol[0][0]
+    x1 = sol[1][0]
+    plt.clf()
+    plt.plot(x0, u0, "r-", label="short")
+    plt.plot(x1, u1, "b-", label="long")
+    plt.legend()
+    plt.axis([x1[0], x1[-1], -1.1, 1.1])
+    plt.savefig("tmp_%04d.png" % counter)
+    counter += 1
 ```
 
 MOVIE: [https://github.com/hplgit/fdm-book/raw/master/doc/pub/book/html/mov-diffu/surface_osc/movie.mp4]
 
-!esol
-!esubex
+:::
+
+
 
 ## Problem: Oscillating and pulsating flow in tubes {#sec-diffu-exer-bloodflow}
-file=axisymm_flow
 
 We consider flow in a straight tube with radius $R$ and straight walls.
 The flow is driven by a pressure gradient $\beta(t)$. The effect of
@@ -382,10 +448,12 @@ $$
 Note that both models can be written as $\beta = A\sin^m(\omega t)$, with
 $m=1$ and $m=16$, respectively.
 
-!bsubex
+**a)**
+
 Scale the mathematical model, using the viscous time scale $\varrho R^2/\mu$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We can introduce
 $$
 \bar r = \frac{r}{R}, \quad \bar t = \frac{t}{\varrho R^2/\mu},\quad u = \frac{u}{u_c}\tp
@@ -415,26 +483,149 @@ $$
 r\frac{\partial u}{\partial r}\right) +
 \sin^m (\alpha\bar t),\quad r\in (0,1),\ t\in (0,T]\tp
 $$
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**b)**
+
 Implement the scaled model from a), using the unifying $\theta$ scheme
 in time and centered differences in space.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We need to take into account extensions below: a coefficient in front of
 the viscous term, and an extra source term.
 
 A preliminary and unfinished code:
 
 ```python
+import time
+
+import scipy.sparse
+import scipy.sparse.linalg
+import sympy as sym
+from numpy import linspace, log, ones, sqrt, sum, zeros
+
+
+def solver_theta(I, a, R, Nr, D, T, theta=0.5, u_L=None, u_R=0, user_action=None, f=0):
+    """
+    Solve the diffusion equation for axi-symmetric case:
+        u_t = 1/r * (r*a(r)*u_r)_r + f(r,t)
+    on (0,R) with boundary conditions u(0,t)_r = 0 and u(R,t) = 0.
+
+    Method: (implicit) theta-rule in time.
+    D = dt/dr**2 and implicitly specifies the time step.
+    u_L = None implies du/dr = 0, i.e. a symmetry condition.
+    """
+    t0 = time.perf_counter()
+
+    r = linspace(0, R, Nr + 1)  # mesh points in space
+    dr = r[1] - r[0]
+    dt = D * dr**2
+    Nt = int(round(T / float(dt)))
+    t = linspace(0, T, Nt + 1)  # mesh points in time
+
+    if isinstance(u_L, (float, int)):
+        u_L_ = float(u_L)
+        u_L = lambda t: u_L_
+    if isinstance(u_R, (float, int)):
+        u_R_ = float(u_R)
+        u_R = lambda t: u_R_
+    if isinstance(f, (float, int)):
+        f_ = float(f)
+        f = lambda r, t: f_
+
+    ra = r * a  # help array in scheme
+
+    inv_r = zeros(len(r) - 2)
+    inv_r = 1.0 / r[1:-1]
+
+    u = zeros(Nr + 1)  # solution array at t[n+1]
+    u_1 = zeros(Nr + 1)  # solution at t[n]
+
+    Dl = 0.5 * D * theta
+    Dr = 0.5 * D * (1 - theta)
+
+    # Representation of sparse matrix and right-hand side
+    diagonal = zeros(Nr + 1)
+    lower = zeros(Nr)
+    upper = zeros(Nr)
+    b = zeros(Nr + 1)
+
+    # Precompute sparse matrix (scipy format)
+    diagonal[1:-1] = 1 + Dl * (ra[2:] + 2 * ra[1:-1] + ra[:-2]) * inv_r
+    lower[:-1] = -Dl * (ra[1:-1] + ra[:-2]) * inv_r
+    upper[1:] = -Dl * (ra[2:] + ra[1:-1]) * inv_r
+    # Insert boundary conditions
+    if u_L is None:  # symmetry axis, du/dr = 0
+        diagonal[0] = 1 + 8 * a[0] * Dl
+        upper[0] = -8 * a[0] * Dl
+    else:
+        diagonal[0] = 1
+        upper[0] = 0
+    diagonal[Nr] = 1
+    lower[-1] = 0
+
+    A = scipy.sparse.diags(
+        diagonals=[diagonal, lower, upper],
+        offsets=[0, -1, 1],
+        shape=(Nr + 1, Nr + 1),
+        format="csr",
+    )
+
+    # Set initial condition
+    for i in range(0, Nr + 1):
+        u_1[i] = I(r[i])
+
+    if user_action is not None:
+        user_action(u_1, r, t, 0)
+
+    # Time loop
+    for n in range(0, Nt):
+        b[1:-1] = (
+            u_1[1:-1]
+            + Dr
+            * (
+                (ra[2:] + ra[1:-1]) * (u_1[2:] - u_1[1:-1])
+                - (ra[1:-1] + ra[0:-2]) * (u_1[1:-1] - u_1[:-2])
+            )
+            * inv_r
+            + dt * theta * f(r[1:-1], t[n + 1])
+            + dt * (1 - theta) * f(r[1:-1], t[n])
+        )
+
+        # Boundary conditions
+        if u_L is None:  # symmetry axis, du/dr = 0
+            b[0] = (
+                u_1[0]
+                + 8 * a[0] * Dr * (u_1[1] - u_1[0])
+                + dt * theta * f(0, (n + 1) * dt)
+                + dt * (1 - theta) * f(0, n * dt)
+            )
+        else:
+            b[0] = u_L(t[n + 1])
+        b[-1] = u_R(t[n + 1])
+
+        # Solve
+        u[:] = scipy.sparse.linalg.spsolve(A, b)
+
+        if user_action is not None:
+            user_action(u, r, t, n + 1)
+
+        # Switch variables before next step
+        u_1, u = u, u_1
+
+    t1 = time.perf_counter()
+    return u_1, t, t1 - t0
 ```
 
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**c)**
+
 Verify the implementation in b) using a manufactured solution that is
 quadratic in $r$ and linear in $t$. Make a corresponding test function.
 
@@ -442,15 +633,17 @@ quadratic in $r$ and linear in $t$. Make a corresponding test function.
 in the equation to allow for such tests. Let the spatial variation be
 $1-r^2$ such that the boundary condition is fulfilled.
 :::
-!esubex
 
-!bsubex
+
+**d)**
+
 Make animations for $m=1,16$ and $\alpha=1,0.1$. Choose $T$ such that
 the motion has reached a steady state (non-visible changes from period to
 period in $u$).
-!esubex
 
-!bsubex
+
+**e)**
+
 For $\alpha\gg 1$, the scaling in a) is not good, because the
 characteristic time for changes (due to the pressure) is much smaller
 than the viscous diffusion time scale ($\alpha$ becomes large).
@@ -458,7 +651,8 @@ We should in this case base
 the short time scale on $1/\omega$. Scale the model again, and
 make an animation for $m=1,16$ and $\alpha = 10$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Now the governing PDE becomes
 $$
 \frac{\partial u}{\partial t} =
@@ -476,12 +670,12 @@ gradient:
 $$
 \frac{\partial u}{\partial t} = \sin^m t\tp
 $$
-!esol
+:::
 
-!esubex
+
+
 
 ## Problem: Scaling a welding problem {#sec-diffu-exer-welding}
-file=welding
 
 Welding equipment makes a very localized heat source that moves in
 time. We shall investigate the heating due to welding and choose, for
@@ -511,7 +705,8 @@ where $A$ is the strength, $\sigma$ is a parameter governing how
 peak-shaped (or localized in space) the heat source is, and
 $v$ is the velocity (in positive $x$ direction) of the source.
 
-!bsubex
+**a)**
+
 Let $x_c$, $t_c$, $u_c$, and $f_c$ be scales, i.e., characteristic
 sizes, of $x$, $t$, $u$, and $f$, respectively. The natural choice of
 $x_c$ and $f_c$ is $L$ and $A$, since these make the scaled $x$ and
@@ -526,7 +721,8 @@ $$
 where $\beta$ and $\gamma$ are dimensionless numbers. Give an
 interpretation of $\beta$ and $\gamma$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We introduce
 $$
 \bar x=\frac{x}{L},\quad \bar t = \frac{t}{t_c},\quad \bar u = \frac{u-U_s}{u_c},
@@ -579,10 +775,12 @@ time scale and the time it takes for the heat source to travel through
 the domain. Equivalently, we can multiply by $t_c/t_c$ to get $\gamma
 = v/(t_cL)$ as the ratio between the velocity of the heat source and
 the diffusion velocity.
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**b)**
+
 Argue that for large $\gamma$ we should base the time scale on the
 movement of the heat source. Show that this gives rise to the scaled
 PDE
@@ -597,7 +795,8 @@ $$
 $$
 Discuss when the scalings in a) and b) are appropriate.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We perform the scaling as in a), but this time we determine $t_c$ such
 that the heat source moves with unit velocity. This means that
 $$
@@ -639,10 +838,12 @@ the scaling in b) is appropriate, and $t=1$ corresponds to having the
 heat source traveled through the domain (with the scaling in a), the
 heat source will leave the domain in short time).
 
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**c)**
+
 One aim with scaling is to get a solution that lies in the interval
 $[-1,1]$. This is not always the case when $u_c$ is based on a scale
 involving a source term, as we do in a) and b).  However, from the
@@ -671,26 +872,141 @@ and $\bar f$, and plots with $\bar u$ and $\bar f$ for $t=0.2$ and $t=0.5$.
 it is attractive to plot $\bar f/\delta$ together with $\bar u$.
 :::
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Here is a possible `run` function:
 
 ```python
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.pardir, "src-diffu"))
+import numpy as np
+from diffu1D_vc import solver
+
+
+def run(gamma, beta=10, delta=40, scaling=1, animate=False):
+    """Run the scaled model for welding."""
+    if scaling == 1:
+        v = gamma
+        a = 1
+    elif scaling == 2:
+        v = 1
+        a = 1.0 / gamma
+
+    b = 0.5 * beta**2
+    L = 1.0
+    ymin = 0
+    global ymax
+    ymax = 1.2
+
+    I = lambda x: 0
+    f = lambda x, t: delta * np.exp(-b * (x - v * t) ** 2)
+
+    import time
+
+    import matplotlib.pyplot as plt
+
+    plot_arrays = []
+
+    def process_u(u, x, t, n):
+        global ymax
+        if animate:
+            plt.clf()
+            plt.plot(x, u, "r-", x, f(x, t[n]) / delta, "b-")
+            plt.axis([0, L, ymin, ymax])
+            plt.title(f"t={t[n]:f}")
+            plt.xlabel("x")
+            plt.ylabel(f"u and f/{delta:g}")
+            plt.draw()
+            plt.pause(0.001)
+        if t[n] == 0:
+            time.sleep(1)
+            plot_arrays.append(x)
+        dt = t[1] - t[0]
+        tol = dt / 10.0
+        if abs(t[n] - 0.2) < tol or abs(t[n] - 0.5) < tol:
+            plot_arrays.append((u.copy(), f(x, t[n]) / delta))
+            if u.max() > ymax:
+                ymax = u.max()
+
+    Nx = 100
+    D = 10
+    T = 0.5
+    u_L = u_R = 0
+    theta = 1.0
+    cpu = solver(I, a, f, L, Nx, D, T, theta, u_L, u_R, user_action=process_u)
+    x = plot_arrays[0]
+    plt.figure()
+    for u, f in plot_arrays[1:]:
+        plt.plot(x, u, "r-", x, f, "b--")
+    plt.axis([x[0], x[-1], 0, ymax])
+    plt.xlabel("$x$")
+    plt.ylabel(rf"$u, \ f/{delta:g}$")
+    plt.legend(
+        [
+            "$u,\\ t=0.2$",
+            f"$f/{delta:g},\\ t=0.2$",
+            "$u,\\ t=0.5$",
+            f"$f/{delta:g},\\ t=0.5$",
+        ]
+    )
+    filename = "tmp1_gamma%g_s%d" % (gamma, scaling)
+    s = "diffusion" if scaling == 1 else "source"
+    plt.title(rf"$\beta = {beta:g},\ \gamma = {gamma:g},\ $" + f"scaling={s}")
+    plt.savefig(filename + ".pdf")
+    plt.savefig(filename + ".png")
+    return cpu
 ```
 Note that we have dropped the bar notation in the plots. It is common
 to drop the bars as soon as the scaled problem is established.
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**d)**
+
 Use the software in c) to investigate $\gamma=0.2,1,5,40$ for the
 two scalings. Discuss the results.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 For these investigations, we compare the two scalings for each of
 the different $\gamma$ values. An appropriate function for automating
 the tasks is
 
 ```python
+def investigate():
+    """Do scientific experiments with the run function above."""
+    import glob
+
+    # Clean up old files
+    for filename in glob.glob("tmp1_gamma*") + glob.glob("welding_gamma*"):
+        os.remove(filename)
+
+    gamma_values = 1, 40, 5, 0.2, 0.025
+    for gamma in gamma_values:
+        for scaling in 1, 2:
+            run(gamma=gamma, beta=10, delta=20, scaling=scaling)
+
+    # Combine images
+    for gamma in gamma_values:
+        for ext in "pdf", "png":
+            cmd = (
+                "doconce combine_images -2 "
+                "tmp1_gamma{gamma:g}_s1.{ext} "
+                "tmp1_gamma{gamma:g}_s2.{ext} "
+                "welding_gamma{gamma:g}.{ext}".format(**vars())
+            )
+            os.system(cmd)
+            # pdflatex doesn't like 0.2 in filenames...
+            if "." in str(gamma):
+                os.rename(
+                    "welding_gamma{gamma:g}.{ext}".format(**vars()),
+                    ("welding_gamma{gamma:g}".format(**vars())).replace(".", "_")
+                    + "."
+                    + ext,
+                )
 ```
 We run here a Backward Euler scheme with $N_x=100$ and quite long
 time steps.
@@ -713,11 +1029,11 @@ choice, and for $\gamma=40$, only this scale is appropriate.](fig/welding_gamma4
 
 A conclusion is that the scaling in b) works well for a range of $\gamma$
 values, also in the case $\gamma\ll 1$.
-!esol
-!esubex
+:::
+
+
 
 ## Exercise: Implement a Forward Euler scheme for axi-symmetric diffusion {#sec-diffu-exer-axisymm}
-file=FE_axisym
 
 Based on the discussion in Section @sec-diffu-fd2-radial, derive in detail
 the discrete equations for a Forward Euler in time, centered in space,
@@ -727,7 +1043,8 @@ At the outer boundary $r=R$, we may have either a Dirichlet or Robin
 condition.
 Implement this scheme. Construct appropriate test problems.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We start with the equation at $r=0$. According to Section @sec-diffu-fd2-radial,
 we get
 $$
@@ -769,4 +1086,4 @@ u_{i+1}^n = u_{i-1}^n - 2\Delta r \frac{h_T}{\alpha_i}(u_i^n - U_s)\tp
 $$
 This value is then inserted for $u_{i+1}^n$ in the discrete PDE at $i=N_r$.
 
-!esol
+:::

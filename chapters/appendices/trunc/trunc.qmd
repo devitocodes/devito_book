@@ -1960,16 +1960,15 @@ $$
 R^n_i = -{\half}\frac{\partial^2}{\partial t^2}\uex(x_i,t_n)\Delta t + \Oof{\Delta x^2}\tp
 $$
 ## Exercise: Truncation error of a weighted mean {#sec-trunc-exer-theta-avg}
-file=trunc_weighted_mean
 
 Derive the truncation error of the weighted mean in
 @eq-trunc-table-avg-theta-eq.
 
 :::{.callout-tip title="Expand $\uex^{n+1}$ and $\uex^n$ around $t_{n+\theta}$."}
-!ehint
+:::
+
 
 ## Exercise: Simulate the error of a weighted mean {#sec-trunc-exer-theta-avg2}
-file=trunc_theta_avg
 
 We consider the weighted mean
 $$
@@ -1984,28 +1983,26 @@ $\theta$ and compare with the truncation error
 @eq-trunc-table-avg-theta-eq.
 
 ## Exercise: Verify a truncation error formula {#sec-trunc-exer-decay-bw2}
-file=trunc_backward_2level
 
 Set up a numerical experiment as explained in
 Section @sec-trunc-decay-estimate-R for verifying the formulas
 @eq-trunc-table-fd1-bw2-eq.
 
 ## Problem: Truncation error of the Backward Euler scheme {#sec-trunc-exer-decay-BE}
-file=trunc_decay_BE
 
 Derive the truncation error of the Backward Euler scheme for
 the decay ODE $u'=-au$ with constant $a$. Extend the analysis to
 cover the variable-coefficient case $u'=-a(t)u + b(t)$.
 
 ## Exercise: Empirical estimation of truncation errors {#sec-trunc-exer-decay-estimate}
-file=trunc_decay_BNCN
 
 Use the ideas and tools from Section @sec-trunc-decay-estimate-R to
 estimate the rate of the truncation error of the Backward Euler
 and Crank-Nicolson schemes applied to the exponential decay
 model $u'=-au$, $u(0)=I$.
 
-!bhint
+
+::: {.callout-warning title="Hint"}
 In the Backward Euler scheme, the truncation error can be estimated
 at mesh points $n=1,\ldots,N$, while the truncation error must
 be estimated at midpoints $t_{n+\half}$, $n=0,\ldots,N-1$ for
@@ -2017,7 +2014,6 @@ such that `t[i]` is the time point corresponding to the quantities
 :::
 
 ## Exercise: Correction term for a Backward Euler scheme {#sec-trunc-exer-decay-corr-BE}
-file=trunc_decay_BE_corr
 
 Consider the model $u'=-au$, $u(0)=I$. Use the ideas of
 Section @sec-trunc-decay-corr to add a correction term to the ODE
@@ -2026,7 +2022,6 @@ problem is of second order in $\Delta t$. Find the amplification
 factor.
 
 ## Problem: Verify the effect of correction terms {#sec-trunc-exer-decay-corr-verify}
-file=trunc_decay_corr_verify
 
 Make a program that solves $u'=-au$, $u(0)=I$, by the $\theta$-rule
 and computes convergence rates.  Adjust $a$ such that it incorporates
@@ -2036,7 +2031,6 @@ t^2}$, while the error arising from the Crank-Nicolson scheme with
 perturbed $a$ is $\Oof{\Delta t^4}$.
 
 ## Problem: Truncation error of the Crank-Nicolson scheme {#sec-trunc-exer-decay-varcoeff-CN}
-file=trunc_decay_CN_vc
 
 The variable-coefficient ODE $u'=-a(t)u+b(t)$ can be discretized
 in two different ways by the Crank-Nicolson scheme, depending on
@@ -2050,7 +2044,6 @@ the midpoint $t_{n+\half}$:
 Compute the truncation error in both cases.
 
 ## Problem: Truncation error of $u'=f(u,t)$ {#sec-trunc-exer-decay-nonlin-BEFE}
-file=trunc_nonlinear_ODE
 
 Consider the general nonlinear first-order scalar ODE
 $$
@@ -2080,14 +2073,12 @@ Check that the derived truncation error is consistent with previous
 results for the case $f(u,t)=-au$.
 
 ## Exercise: Truncation error of $[D_t D_tu]^n$ {#sec-trunc-exer-DtDtu}
-file=trunc_d2u
 
 Derive the truncation error of the finite difference approximation
 @eq-trunc-table-fd2-center-eq to
 the second-order derivative.
 
 ## Exercise: Investigate the impact of approximating $u'(0)$ {#sec-trunc-exer-vib-ic-fw}
-file=trunc_vib_ic_fw
 
 Section @sec-trunc-vib-undamped describes two ways of discretizing
 the initial condition $u'(0)=V$ for a vibration model
@@ -2102,7 +2093,6 @@ report how this simpler and more convenient approximation impacts
 the overall convergence rate of the scheme.
 
 ## Problem: Investigate the accuracy of a simplified scheme {#sec-trunc-exer-vib-fbw}
-file=trunc_vib_bw_damping
 
 Consider the ODE
 $$

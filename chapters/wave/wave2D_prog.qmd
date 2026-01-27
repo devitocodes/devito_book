@@ -547,7 +547,6 @@ can use `ffmpeg` to create videos.
 MOVIE: [https://github.com/hplgit/fdm-book/blob/master/doc/pub/book/html/mov-wave/mayavi/wave2D_u0_gaussian/movie.mp4]
 
 ## Exercise: Check that a solution fulfills the discrete model {#sec-wave-exer-quadratic-2D}
-file=check_quadratic_solution
 
 Carry out all mathematical details to show that
 (@eq-wave2D3D-impl-verify-quadratic) is indeed a solution of the
@@ -557,7 +556,6 @@ the general discrete equation at a time level and the special
 version of this equation for the first time level.
 
 ## Project: Calculus with 2D mesh functions {#sec-wave-exer-mesh3D-calculus}
-file=mesh_calculus_2D
 
 The goal of this project is to redo
 Project @sec-wave-exer-mesh1D-calculus with 2D
@@ -605,7 +603,6 @@ fact that the Trapezoidal rule is exact for linear functions and
 write a test function.
 
 ## Exercise: Implement Neumann conditions in 2D {#sec-wave-app-exer-wave2D-Neumann}
-file=wave2D_dn
 
 Modify the [`wave2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave2D_u0/wave2D_u0.py)
 program, which solves the 2D wave equation $u_{tt}=c^2(u_{xx}+u_{yy})$
@@ -627,7 +624,6 @@ in $x$ direction ($c\Delta t/\Delta x=1$, $\Delta y$ arbitrary)
 and $y$ direction ($c\Delta t/\Delta y=1$, $\Delta x$ arbitrary).
 
 ## Exercise: Test the efficiency of compiled loops in 3D {#sec-wave-exer-3D-f77-cy-efficiency}
-file=wave3D_u0
 
 Extend the `wave2D_u0.py` code and the Cython, Fortran, and C versions to 3D.
 Set up an efficiency experiment to determine the relative efficiency of

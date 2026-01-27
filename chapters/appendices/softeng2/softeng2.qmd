@@ -2066,7 +2066,6 @@ plain C/C++ arrays, can be efficiently wrapped in more user-friendly
 C++ array classes in the C++ code, if desired.
 
 ## Exercise: Explore computational efficiency of numpy.sum versus built-in sum {#sec-softeng2-exer-sum}
-file=sumn
 
 Using the task of computing the sum of the first `n` integers, we want to
 compare the efficiency of `numpy.sum` versus Python's built-in function
@@ -2074,7 +2073,8 @@ compare the efficiency of `numpy.sum` versus Python's built-in function
 applied to three different arguments: `range(n)`, `xrange(n)`, and
 `arrange(n)`.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Here are experiments in IPython:
 
 ```python
@@ -2104,10 +2104,10 @@ fastest method. We also see that the plain `sum` function is slow
 when applied to arrays, but faster than `numpy.sum` when applied to
 the `range` list or the `xrange` sequence. There is almost a factor
 of 200 between the best and worst method!
-!esol
+:::
+
 
 ## Exercise: Make an improved `numpy.savez` function {#sec-softeng2-exer-savez}
-file=Savez
 
 The `numpy.savez` function can save multiple arrays to a zip archive.
 Unfortunately, if we want to use `savez` in time-dependent problems
@@ -2154,16 +2154,76 @@ def test_Savez():
 Study the [source code](https://github.com/numpy/numpy/blob/master/numpy/lib/npyio.py) for function `savez` (or more precisely, function `_savez`).
 :::
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Here is the code:
 
 ```python
+import numpy as np
+
+
+class Savez:
+    def __init__(self, zipfilename):
+        import os
+        import sys
+        import tempfile
+        import zipfile
+
+        if isinstance(zipfilename, str):
+            if not zipfilename.endswith(".npz"):
+                zipfilename += ".npz"
+
+        # original _savez has no compression
+        compression = zipfile.ZIP_STORED
+
+        if sys.version_info >= (2, 5):
+            self.zip = zipfile.ZipFile(
+                zipfilename, mode="w", allowZip64=True, compression=compression
+            )
+
+        # Stage arrays in a temporary file on disk,
+        # before writing to zip.
+        fd, tmpfile = tempfile.mkstemp(suffix="-numpy.npy")
+        os.close(fd)
+        self.tmpfile = tmpfile
+        self.i = 0  # array counter
+
+    def savez(self, *args, **kwds):
+        import os
+
+        import numpy.lib.format as format
+
+        namedict = kwds
+        for val in args:
+            key = "arr_%d" % self.i
+            if key in namedict.keys():
+                raise ValueError("Cannot use un-named variables and keyword %s" % key)
+            namedict[key] = val
+            self.i += 1
+
+        try:
+            for key, val in namedict.items():
+                fname = key + ".npy"
+                fid = open(self.tmpfile, "wb")
+                try:
+                    format.write_array(fid, np.asanyarray(val))
+                    fid.close()
+                    fid = None
+                    self.zip.write(self.tmpfile, arcname=fname)
+                finally:
+                    if fid:
+                        fid.close()
+        finally:
+            os.remove(self.tmpfile)
+
+    def close(self):
+        self.zip.close()
 ```
 
-!esol
+:::
+
 
 ## Exercise: Visualize the impact of the Courant number {#sec-softeng2-exer-pulse1D-C}
-file=pulse1D_Courant
 
 Use the `pulse` function in the `wave1D_dn_vc.py` to simulate a pulse
 through two media with different wave velocities. The aim is to
@@ -2177,25 +2237,47 @@ the investigations for different types of initial profiles: a Gaussian
 pulse, a "cosine hat" pulse, half a"cosine hat" pulse, and a plug
 pulse.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We make a little Python script for running one "pulse" simulation:
 
 ```python
+import os
+import sys
+
+path = os.path.join(
+    os.pardir, os.pardir, os.pardir, os.pardir, "wave", "src-wave", "wave1D"
+)
+sys.path.insert(0, path)
+from wave1D_dn_vc import pulse
+
+pulse_tp = sys.argv[1]
+C = float(sys.argv[2])
+pulse(pulse_tp=pulse_tp, C=C, Nx=100, animate=False, slowness_factor=4)
 ```
 
 Then we can make another (Bash) script running through the different types
 of simulations and also making video files:
 
 ```bash
+#!/bin/bash
+for pulse_tp in gaussian cosinehat half-cosinehat plug; do
+    mkdir -p $pulse_tp
+    cd $pulse_tp
+    for C in 1 0.9 0.75; do
+        python ../pulse.py $pulse_tp $C
+    done
+    cd ..
+done
 ```
 
 Note that we make separate directories for the different type initial
 profiles.
 
-!esol
+:::
+
 
 ## Exercise: Visualize the impact of the resolution {#sec-softeng2-exer-pulse1D-Nx}
-file=pulse1D_Nx
 
 We solve the same set of problems as in Exercise @sec-softeng2-exer-pulse1D-C,
 except that we now fix $C=1$ and instead study the impact of

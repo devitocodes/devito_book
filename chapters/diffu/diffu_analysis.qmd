@@ -676,21 +676,22 @@ and this is what we see as small instabilities in
 Figure @fig-diffu-pde1-CN-fig-F-10. The only remedy is to lower the $F$ value.
 
 ## Exercise: Explore symmetry in a 1D problem {#sec-diffu-exer-1D-gaussian-symmetric}
-file=diffu_symmetric_gaussian
 
 This exercise simulates the exact solution (@eq-diffu-pde1-sol-Gaussian).
 Suppose for simplicity that $c=0$.
 
-!bsubex
+**a)**
+
 Formulate an initial-boundary value problem that has
 (@eq-diffu-pde1-sol-Gaussian) as solution in the domain $[-L,L]$.
 Use the exact solution (@eq-diffu-pde1-sol-Gaussian) as Dirichlet
 condition at the boundaries.
 Simulate the diffusion of the Gaussian peak. Observe that the
 solution is symmetric around $x=0$.
-!esubex
 
-!bsubex
+
+**b)**
+
 Show from (@eq-diffu-pde1-sol-Gaussian) that $u_x(c,t)=0$.
 Since the solution is symmetric around $x=c=0$, we can solve the
 numerical problem in half of the domain, using a *symmetry boundary condition*
@@ -698,18 +699,19 @@ $u_x=0$ at $x=0$. Set up the
 initial-boundary value problem in this case. Simulate the
 diffusion problem in $[0,L]$ and compare with the solution in a).
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 \begin{align*}
 u_t &= \dfc u_xx,\\
 u_x(0,t) &= 0,\\
 u(L,t)& =\frac{1}{\sqrt{4\pi\dfc t}} \exp{\left({-\frac{x^2}{4\dfc t}}\right)}\tp
 \end{align*}
-!esol
+:::
 
-!esubex
+
+
 
 ## Exercise: Investigate approximation errors from a $u_x=0$ boundary condition {#sec-diffu-exer-1D-ux-onesided}
-file=diffu_onesided_fd
 
 We consider the problem solved in Exercise @sec-diffu-exer-1D-gaussian-symmetric
 part b). The boundary condition $u_x(0,t)=0$ can be implemented in
@@ -727,7 +729,6 @@ convergence rate.
 :::
 
 ## Exercise: Experiment with open boundary conditions in 1D {#sec-diffu-exer-1D-openBC}
-file=diffu_open_BC
 
 We address diffusion of a Gaussian function
 as in Exercise @sec-diffu-exer-1D-gaussian-symmetric,
@@ -736,7 +737,8 @@ but now we shall explore different types of boundary
 conditions on $x=L$. In real-life problems we do not know
 the exact solution on $x=L$ and must use something simpler.
 
-!bsubex
+**a)**
+
 Imagine that we want to solve the problem numerically on
 $[0,L]$, with a symmetry boundary condition $u_x=0$ at $x=0$,
 but we do not know the exact solution and cannot of that
@@ -756,9 +758,10 @@ $$
 E(t)=\sqrt{\frac{\int_0^L e^2dx}{\int_0^L udx}}\tp
 $$
 Is this a suitable error measure for the present problem?
-!esubex
 
-!bsubex
+
+**b)**
+
 Instead of using $u(L,t)=0$ as approximate boundary condition for
 letting the diffused Gaussian pulse move out of our finite domain,
 one may try $u_x(L,t)=0$ since the solution for large $t$ is
@@ -775,9 +778,10 @@ $$
 \int_{0}^L u(x,t)dx = \int_{0}^LI(x)dx\tp
 $$
 The integral of the initial pulse is 1.
-!esubex
 
-!bsubex
+
+**c)**
+
 Another idea for an artificial boundary condition at $x=L$
 is to use a cooling law
 $$
@@ -796,28 +800,30 @@ Find a function $q=q(t)$ such that the exact solution
 obeys the condition (@eq-diffu-pde1-Gaussian-xL-cooling).
 Test some constant values of $q$ and animate how the corresponding
 error function behaves. Also compute $E(t)$ curves as defined above.
-!esubex
+
 
 ## Exercise: Simulate a diffused Gaussian peak in 2D/3D
-file=diffu_symmetric_gaussian_2D
 
-!bsubex
+**a)**
+
 Generalize (@eq-diffu-pde1-sol-Gaussian) to multi dimensions by
 assuming that one-dimensional solutions can be multiplied to solve
 $u_t = \dfc\nabla^2 u$. Set $c=0$ such that the peak of
 the Gaussian is at the origin.
-!esubex
 
-!bsubex
+
+**b)**
+
 One can from the exact solution show
 that $u_x=0$ on $x=0$, $u_y=0$ on $y=0$, and $u_z=0$ on $z=0$.
 The approximately correct condition $u=0$ can be set
 on the remaining boundaries (say $x=L$, $y=L$, $z=L$), cf. Exercise
 @sec-diffu-exer-1D-openBC.
 Simulate a 2D case and make an animation of the diffused Gaussian peak.
-!esubex
 
-!bsubex
+
+**c)**
+
 The formulation in b) makes use of symmetry of the solution such that we
 can solve the problem in the first quadrant (2D) or octant (3D) only.
 To check that the symmetry assumption is correct, formulate the problem
@@ -825,52 +831,58 @@ without symmetry in a domain $[-L,L]\times [L,L]$ in 2D. Use $u=0$ as
 approximately correct boundary condition. Simulate the same case as
 in b), but in a four times as large domain. Make an animation and compare
 it with the one in b).
-!esubex
+
 
 ## Exercise: Examine stability of a diffusion model with a source term {#sec-diffu-exer-uterm}
-file=diffu_stability_uterm
 
 Consider a diffusion equation with a linear $u$ term:
 $$
 u_t = \dfc u_{xx} + \beta u\tp
 $$
-!bsubex
+**a)**
+
 Derive in detail the Forward Euler, Backward Euler,
 and Crank-Nicolson schemes for this type of diffusion model.
 Thereafter, formulate a $\theta$-rule to summarize the three schemes.
-!esubex
 
-!bsubex
+
+**b)**
+
 Assume a solution like (@eq-diffu-pde1-sol1) and find the relation
 between $a$, $k$, $\dfc$, and $\beta$.
 
 :::{.callout-tip title="Insert (@eq-diffu-pde1-sol1) in the PDE problem."}
-!ehint
-!esubex
+:::
 
-!bsubex
+
+
+**c)**
+
 Calculate the stability of the Forward Euler scheme. Design
 numerical experiments to confirm the results.
 
-!bhint
+
+::: {.callout-warning title="Hint"}
 Insert the discrete counterpart to (@eq-diffu-pde1-sol1) in the
 numerical scheme. Run experiments at the stability limit and slightly above.
 :::
-!esubex
 
-!bsubex
+
+**d)**
+
 Repeat c) for the Backward Euler scheme.
-!esubex
 
-!bsubex
+
+**e)**
+
 Repeat c) for the Crank-Nicolson scheme.
-!esubex
 
-!bsubex
+
+**f)**
+
 How does the extra term $bu$ impact the accuracy of the three schemes?
 
 :::{.callout-tip title="For analysis of the accuracy,"}
 compare the numerical and exact amplification factors, in
 graphs and/or by Taylor series expansion.
 :::
-!esubex

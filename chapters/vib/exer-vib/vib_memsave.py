@@ -1,0 +1,133 @@
+def solve_and_store(filename, I, V, m, b, s, F, dt, T, damping="linear"):
+    """
+    Solve m*u'' + f(u') + s(u) = F(t) for t in (0,T], u(0)=I and
+    u'(0)=V, by a central finite difference method with time step
+    dt. If damping is 'linear', f(u')=b*u, while if damping is
+    'quadratic', f(u')=b*u'*abs(u'). F(t) and s(u) are Python
+    functions. The solution is written to file (filename).
+    Naming convention: we use the name u for the new solution
+    to be computed, u_n for the solution one time step prior to
+    that and u_nm1 for the solution two time steps prior to that.
+    Returns min and max u values needed for subsequent plotting.
+    """
+    dt = float(dt)
+    b = float(b)
+    m = float(m)  # avoid integer div.
+    Nt = int(round(T / dt))
+    outfile = open(filename, "w")
+    outfile.write("Time          Position\n")
+
+    u_nm1 = I
+    u_min = u_max = u_nm1
+    outfile.write(f"{0 * dt:6.3f}         {u_nm1:7.5f}\n")
+    if damping == "linear":
+        u_n = u_nm1 + dt * V + dt**2 / (2 * m) * (-b * V - s(u_nm1) + F(0 * dt))
+    elif damping == "quadratic":
+        u_n = u_nm1 + dt * V + dt**2 / (2 * m) * (-b * V * abs(V) - s(u_nm1) + F(0 * dt))
+    if u_n < u_nm1:
+        u_min = u_n
+    else:  # either equal or u_n > u_nm1
+        u_max = u_n
+    outfile.write(f"{1 * dt:6.3f}         {u_n:7.5f}\n")
+
+    for n in range(1, Nt):
+        # compute  solution at next time step
+        if damping == "linear":
+            u = (
+                2 * m * u_n + (b * dt / 2 - m) * u_nm1 + dt**2 * (F(n * dt) - s(u_n))
+            ) / (m + b * dt / 2)
+        elif damping == "quadratic":
+            u = (
+                2 * m * u_n
+                - m * u_nm1
+                + b * u_n * abs(u_n - u_nm1)
+                + dt**2 * (F(n * dt) - s(u_n))
+            ) / (m + b * abs(u_n - u_nm1))
+        if u < u_min:
+            u_min = u
+        elif u > u_max:
+            u_max = u
+
+        # write solution to file
+        outfile.write(f"{(n + 1) * dt:6.3f}         {u:7.5f}\n")
+        # switch references before next step
+        u_nm1, u_n, u = u_n, u, u_nm1
+
+    outfile.close()
+    return u_min, u_max
+
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--I", type=float, default=1.0)
+    parser.add_argument("--V", type=float, default=0.0)
+    parser.add_argument("--m", type=float, default=1.0)
+    parser.add_argument("--b", type=float, default=0.0)
+    parser.add_argument("--s", type=str, default="u")
+    parser.add_argument("--F", type=str, default="0")
+    parser.add_argument("--dt", type=float, default=0.05)
+    parser.add_argument("--T", type=float, default=10)
+    parser.add_argument(
+        "--window_width", type=float, default=30.0, help="Number of periods in a window"
+    )
+    parser.add_argument("--damping", type=str, default="linear")
+    parser.add_argument("--savefig", action="store_true")
+    a = parser.parse_args()
+
+    from sympy import lambdify, symbols, sympify
+
+    u_sym = symbols("u")
+    t_sym = symbols("t")
+    s = lambdify(u_sym, sympify(a.s), modules=["numpy"])
+    F = lambdify(t_sym, sympify(a.F), modules=["numpy"])
+    I, V, m, b, dt, T, _window_width, _savefig, damping = (
+        a.I,
+        a.V,
+        a.m,
+        a.b,
+        a.dt,
+        a.T,
+        a.window_width,
+        a.savefig,
+        a.damping,
+    )
+
+    filename = "vibration_sim.dat"
+    u_min, u_max = solve_and_store(filename, I, V, m, b, s, F, dt, T, damping)
+
+    read_and_plot(filename, u_min, u_max)
+
+
+def read_and_plot(filename, u_min, u_max):
+    """
+    Read file and plot u vs t using matplotlib.
+    """
+    import matplotlib.pyplot as plt
+
+    umin = 1.2 * u_min
+    umax = 1.2 * u_max
+    t_values = []
+    u_values = []
+
+    with open(filename) as infile:
+        infile.readline()  # skip header line
+        for line in infile:
+            time_and_pos = line.split()
+            t_values.append(float(time_and_pos[0]))
+            u_values.append(float(time_and_pos[1]))
+
+    plt.figure()
+    plt.plot(t_values, u_values, "b-")
+    plt.xlabel("t")
+    plt.ylabel("u")
+    plt.axis([t_values[0], t_values[-1], umin, umax])
+    plt.title("Solution from file")
+    plt.savefig("vib_memsave.png")
+    plt.savefig("vib_memsave.pdf")
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()

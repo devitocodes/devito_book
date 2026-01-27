@@ -17,7 +17,6 @@ in the `wave1D_u0v.py` file.
 :::
 
 ## Exercise: Simulate damped waves on a string {#sec-wave-app-exer-string-damping}
-file=wave1D_u0_sv_damping
 
 Formulate a mathematical model for damped waves on a string.
 Use data from Section @sec-wave-pde1-guitar-data, and
@@ -25,7 +24,6 @@ tune the damping parameter so that the string is very close to
 the rest state after 15 s. Make a movie of the wave motion.
 
 ## Exercise: Simulate elastic waves in a rod {#sec-wave-app-exer-rod}
-file=wave_rod
 
 A hammer hits the end of an elastic rod. The exercise is to simulate
 the resulting wave motion using the model (@eq-wave-app-elastic-rod-eq)
@@ -49,7 +47,6 @@ $u_t=V$ in wave PDEs or the corresponding
 second-order ODEs for vibrations).
 
 ## Exercise: Simulate spherical waves {#sec-wave-app-exer-spherical}
-file=wave1D_spherical
 
 Implement a model for spherically symmetric waves using the method
 described in Section @sec-wave-app-spherical. The boundary condition
@@ -75,7 +72,6 @@ makes it evident that $\partial u/\partial r = 0$ in a plot.
 :::
 
 ## Problem: Earthquake-generated tsunami over a subsea hill {#sec-wave-app-exer-tsunami1D-hill}
-file=tsunami1D_hill
 
 A subsea earthquake leads to an immediate lift of the water surface,
 see Figure @fig-wave-app-fig-1D-tsunami-flat.  The lifted water
@@ -160,7 +156,6 @@ derivative of $H(x)$ and are more likely to generate numerical noise
 than the smooth Gaussian shape of the hill. Investigate if this is true.
 
 ## Problem: Earthquake-generated tsunami over a 3D hill {#sec-wave-app-exer-tsunami2D-hill}
-file=tsunami2D_hill
 
 This problem extends Problem @sec-wave-app-exer-tsunami1D-hill
 to a three-dimensional wave phenomenon, governed by the 2D PDE
@@ -231,7 +226,6 @@ resolutions $\Delta x = \Delta y = h$ and $\Delta t$ influence
 the numerical quality of the solution.
 
 ## Problem: Investigate Mayavi for visualization {#sec-wave-app-exer-tsunami-hill-viz-matplotlib}
-file=tsunami2D_hill_mlab
 
 Play with Mayavi code for visualizing 2D
 solutions of the wave equation with variable wave velocity.
@@ -240,7 +234,6 @@ are effective ways to visualize both the solution and the wave
 velocity scalar field at the same time.
 
 ## Problem: Investigate visualization packages {#sec-wave-app-exer-tsunami-hill-viz-packages}
-file=tsunami2D_hill_viz
 
 Create some fancy 3D visualization of the water waves *and* the subsea hill
 in Problem @sec-wave-app-exer-tsunami2D-hill.
@@ -250,7 +243,6 @@ Try to make the hill transparent. Possible visualization tools are
 [OpenDX](http://www.opendx.org/).
 
 ## Problem: Implement loops in compiled languages {#sec-wave-app-exer-tsunami2D-hill-compiled}
-file=tsunami2D_hill_compiled
 
 Extend the program from Problem @sec-wave-app-exer-tsunami2D-hill such
 that the loops over mesh points, inside the time loop, are
@@ -263,7 +255,6 @@ of the various implementations. It is often advantageous to normalize
 CPU times by the fastest method on a given mesh.
 
 ## Exercise: Simulate seismic waves in 2D {#sec-wave-app-exer-seismic2D}
-file=seismic2D
 
 The goal of this exercise is to simulate seismic waves using the
 PDE model (@eq-wave-app-acoustic-seismic-acoustic1a) in a
@@ -287,7 +278,6 @@ to have $p=p_0$, where $p_0$ is the atmospheric pressure,
 at the upper boundary.
 
 ## Project: Model 3D acoustic waves in a room {#sec-wave-app-exer-acoustics}
-file=acoustics
 
 The equation for sound waves in air is derived in Section @sec-wave-app-sound
 and reads
@@ -342,7 +332,6 @@ because of discontinuity in $b$ and absorption because of growing $b$).
 Experiment with the impact of the $\tau_s$ parameter.
 
 ## Project: Solve a 1D transport equation {#sec-wave-app-exer-advec1D}
-file=advec1D
 
 We shall study the wave equation
 $$
@@ -372,14 +361,15 @@ heat conduction or Fickian diffusion), but we have in
 the model $u_t + cu_x$ assumed that diffusion effects are negligible,
 which they often are.
 
-!bsubex
+**a)**
+
 Show that under the assumption of $a=\hbox{const}$,
 $$
 u(x,t) = I(x - ct)
 $$ {#eq-wave-app-exer-advec1D-uexact}
 fulfills the PDE as well as the initial and boundary condition
 (provided $I(0)=I(L)$).
-!esubex
+
 
 A widely used numerical scheme for (@eq-wave-app-exer-advec1D-ueq)
 applies a forward difference in time and a backward difference in
@@ -389,18 +379,21 @@ $$
 $$ {#eq-wave-app-exer-advec1D-u-upwind}
 For $c<0$ we use a forward difference in space: $[cD_x^+u]_i^n$.
 
-!bsubex
+**b)**
+
 Set up a computational algorithm and implement it in a function.
 Assume $a$ is constant and positive.
-!esubex
 
-!bsubex
+
+**c)**
+
 Test the implementation by using the remarkable property that
 the numerical solution is exact at the mesh points if
 $\Delta t = c^{-1}\Delta x$.
-!esubex
 
-!bsubex
+
+**d)**
+
 Make a movie comparing the numerical and exact solution for the
 following two choices of initial conditions:
 $$
@@ -412,9 +405,10 @@ $$
 I(x) = \exp{\left( -\frac{(x-L/2)^2}{2\sigma2}\right)} \tp
 $$ {#eq-wave-app-exer-advec1D-I-gauss}
 Choose $\Delta t = c^{-1}\Delta x, 0.9c^{-1}\Delta x, 0.5c^{-1}\Delta x$.
-!esubex
 
-!bsubex
+
+**e)**
+
 The performance of the suggested numerical scheme can be investigated
 by analyzing the numerical dispersion relation.
 Analytically, we have that the *Fourier component*
@@ -444,22 +438,25 @@ $$
 \frac{\Delta t}{c\Delta x}\leq 1,
 $$
 the discrete Fourier component cannot grow (i.e., $\tilde\omega$ is real).
-!esubex
 
-!bsubex
+
+**f)**
+
 Write a test for your implementation where you try to use information
 from the numerical dispersion relation.
-!esubex
+
 
 We shall hereafter assume that $c(x)>0$.
 
-!bsubex
+**g)**
+
 Set up a computational algorithm for the variable
 coefficient case and implement it in a function.
 Make a test that the function works for constant $a$.
-!esubex
 
-!bsubex
+
+**h)**
+
 It can be shown that
 for an observer moving with velocity $c(x)$, $u$ is constant.
 This can be used to derive an exact solution when $a$ varies
@@ -474,7 +471,8 @@ $$
 is a solution of (@eq-wave-app-exer-advec1D-ueq) for any
 differentiable function $f$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Let $\xi = C(x) - t$.
 We have that
 $$
@@ -486,10 +484,12 @@ u_x = f'(\xi)C'(x) = f'(\xi)\frac{1}{c(x)},
 $$
 implying that $au_x = f'(\xi)$. Then we have $u_t + cu_x= -f'(\xi) +
 f'(\xi) = 0$.
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**i)**
+
 Use the initial condition to show that an exact solution is
 $$
 u(x,t) = I(C^{-1}(C(x)-t)),
@@ -499,13 +499,15 @@ Since $C(x)$ is an integral $\int_0^x (1/c)dx$,
 $C(x)$ is monotonically increasing and there exists hence an
 inverse function $C^{-1}$ with values in $[0,L]$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 In general we have $u(x,t) = f(C(x)-t)$ and the solution is
 of this form with $f(\xi)=I(C^{-1}(\xi))$.
 Moreover, at $t=0$ we have
 $I(C^{-1}(C(x)))=I(x)$, which is the required initial condition.
-!esol
-!esubex
+:::
+
+
 
 To compute (@eq-wave-app-exer-advec1D-u-avar-sol) we need to integrate
 $1/c$ to obtain $C$ and then compute the inverse of $C$.
@@ -554,15 +556,17 @@ applying (@eq-wave-app-exer-advec1D-C-recursion) for
 $i=0,1,\ldots,N_x-1$ if a mesh $x_0,x_,\ldots,x_{N_x}$ is prescribed.
 Note that $C(0)=0$.
 
-!bsubex
+**j)**
+
 Implement a function for computing $C(x_i)$ and one for computing
 $C^{-1}(x)$ for any $x$. Use these two functions for computing
 the exact solution $I(C^{-1}(C(x)-t))$.
 End up with a function `u_exact_variable_c(x, n, c, I)` that returns
 the value of $I(C^{-1}(C(x)-t_n))$.
-!esubex
 
-!bsubex
+
+**k)**
+
 Make movies showing a comparison of the numerical and exact solutions
 for the two initial conditions
 (@sec-wave-app-exer-advec1D-I-sin) and (@eq-wave-app-exer-advec1D-I-gauss).
@@ -575,10 +579,9 @@ and the velocity of the medium as
 
 The PDE $u_t + cu_x=0$ expresses that the initial condition $I(x)$
 is transported with velocity $c(x)$.
-!esubex
+
 
 ## Problem: General analytical solution of a 1D damped wave equation {#sec-wave-app-exer-anal-damped-wave1D}
-file=damped_wave1D
 
 ## For solution, see damped_wave_equation.pdf in joakibo on bitbucket.
 
@@ -595,7 +598,8 @@ Here, $b\geq 0$ and $c$ are given constants. The aim is to derive a general
 analytical solution of this problem. Familiarity with the method of
 separation of variables for solving PDEs will be assumed.
 
-!bsubex
+**a)**
+
 Seek a solution on the form $u(x,t)=X(x)T(t)$. Insert this solution in
 the PDE and show that it leads to two differential equations for $X$ and $T$:
 $$
@@ -603,18 +607,20 @@ T'' + bT' + \lambda T = 0,\quad c^2 X'' +\lambda X = 0,
 $$
 with $X(0)=X(L)=0$ as boundary conditions, and $\lambda$ as a constant
 to be determined.
-!esubex
 
-!bsubex
+
+**b)**
+
 Show that $X(x)$ is on the form
 $$
 X_n(x) = C_n\sin kx,\quad k = \frac{n\pi}{L},\quad n=1,2,\ldots
 $$
 where $C_n$ is an arbitrary constant.
 
-!esubex
 
-!bsubex
+
+**c)**
+
 Under the assumption that $(b/2)^2 < k^2$, show that $T(t)$ is on
 the form
 $$
@@ -628,19 +634,22 @@ A_n\cos\omega t + B_n\sin\omega t),
 $$
 where the constants $A_n$ and $B_n$ must be computed from the initial
 conditions.
-!esubex
 
-!bsubex
+
+**d)**
+
 Derive a formula for $A_n$ from $u(x,0)=I(x)$ and developing $I(x)$ as a sine
 Fourier series on $[0,L]$.
-!esubex
 
-!bsubex
+
+**e)**
+
 Derive a formula for $B_n$ from $u_t(x,0)=V(x)$ and developing $V(x)$ as
 a sine Fourier series on $[0,L]$.
-!esubex
 
-!bsubex
+
+**f)**
+
 Calculate $A_n$ and $B_n$ from vibrations of a string where $V(x)=0$ and
 $$
 I(x) = \left\lbrace
@@ -649,24 +658,25 @@ ax/x_0, & x < x_0,\\
 a(L-x)/(L-x_0), & \hbox{otherwise}
 \end{array}\right.
 $$
-!esubex
 
-!bsubex
+
+**g)**
+
 Implement a function `u_series(x, t, tol=1E-10)` for
 the series for $u(x,t)$,
 where `tol` is a tolerance for truncating the series. Simply sum
 the terms until $|a_n|$ and $|b_b|$ both are less than `tol`.
-!esubex
 
-!bsubex
+
+**h)**
+
 What will change in the derivation of the analytical solution if we
 have $u_x(0,t)=u_x(L,t)=0$ as boundary conditions?
 And how will you solve the problem with $u(0,t)=0$ and $u_x(L,t)=0$?
 
-!esubex
+
 
 ## Problem: General analytical solution of a 2D damped wave equation {#sec-wave-app-exer-anal-damped-wave2D}
-file=damped_wave2D
 
 Carry out Problem @sec-wave-app-exer-anal-damped-wave1D in the 2D
 case: $u_{tt}+bu_t = c^2(u_{xx}+u_{yy})$, where $(x,y)\in (0,L_x)\times

@@ -1387,7 +1387,6 @@ Alternatively, the `display` program can be used to walk through each
 frame, i.e., solution curve, by pressing the space bar.
 
 ## Exercise: Simulate a standing wave {#sec-wave-exer-standingwave}
-file=wave_standing
 
 The purpose of this exercise is to simulate standing waves on $[0,L]$
 and illustrate the error in the simulation.
@@ -1401,13 +1400,15 @@ $$
 \uex(x,t) =  A\sin\left(\frac{\pi}{L}mx\right)
 \cos\left(\frac{\pi}{L}mct\right)\tp
 $$
-!bsubex
+**a)**
+
 Explain that for a function $\sin kx\cos \omega t$ the wave length
 in space is $\lambda = 2\pi /k$ and the period in time is $P=2\pi/\omega$.
 Use these expressions to find the wave length in space and period in
 time of $\uex$ above.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Since the sin and cos functions depend on $x$ and $t$, respectively,
 the sin function will run through one period as $x$ increases by $\frac{2\pi}{k}$, while the cos function starts repeating as $t$ increases by $\frac{2\pi}{\omega}$.
 
@@ -1419,21 +1420,26 @@ The period in time becomes
 $$
 P =  \frac{2\pi}{\frac{\pi}{L}mc} = \frac{2L}{mc}\tp
 $$
-!esol
+:::
 
-!esubex
 
-!bsubex
+
+
+**b)**
+
 Import the `solver` function from `wave1D_u0.py` into a new file
 where the `viz` function is reimplemented such that it
 plots either the numerical *and* the exact solution, *or* the error.
 
-!bsol
-See code below.
-!esol
-!esubex
 
-!bsubex
+::: {.callout-tip collapse="true" title="Solution"}
+See code below.
+:::
+
+
+
+**c)**
+
 Make animations where you illustrate how the error
 $e^n_i =\uex(x_i, t_n)- u^n_i$
 develops and increases in time. Also make animations of
@@ -1449,26 +1455,100 @@ while 20-30 periods are needed to show significant differences between
 the curves for the numerical and exact solution.
 :::
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The code:
 
 ```python
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.pardir, os.pardir, "src-wave", "wave1D"))
+
+import numpy as np
+from wave1D_u0 import solver
+
+
+def viz(
+    I, V, f, c, L, dt, C, T,
+    ymax,  # y axis: [-ymax, ymax]
+    u_exact,  # u_exact(x, t)
+    animate="u and u_exact",  # or 'error'
+    movie_filename="movie",
+):
+    """Run solver and visualize u at each time level."""
+    import glob
+    import os
+
+    import matplotlib.pyplot as plt
+
+    class Plot:
+        def __init__(self, ymax, frame_name="frame"):
+            self.max_error = []  # hold max amplitude errors
+            self.max_error_t = []  # time points corresp. to max_error
+            self.frame_name = frame_name
+            self.ymax = ymax
+
+        def __call__(self, u, x, t, n):
+            """user_action function for solver."""
+            if animate == "u and u_exact":
+                plt.clf()
+                plt.plot(x, u, "r-", x, u_exact(x, t[n]), "b--")
+                plt.xlabel("x")
+                plt.ylabel("u")
+                plt.axis([0, L, -self.ymax, self.ymax])
+                plt.title(f"t={t[n]:f}")
+                plt.draw()
+                plt.pause(0.001)
+            else:
+                error = u_exact(x, t[n]) - u
+                local_max_error = np.abs(error).max()
+                if self.max_error == [] or local_max_error > max(self.max_error):
+                    self.max_error.append(local_max_error)
+                    self.max_error_t.append(t[n])
+                self.ymax = max(self.ymax, max(self.max_error))
+                plt.clf()
+                plt.plot(x, error, "r-")
+                plt.xlabel("x")
+                plt.ylabel("error")
+                plt.axis([0, L, -self.ymax, self.ymax])
+                plt.title(f"t={t[n]:f}")
+                plt.draw()
+                plt.pause(0.001)
+            plt.savefig("%s_%04d.png" % (self.frame_name, n))
+
+    # Clean up old movie frames
+    for filename in glob.glob("frame_*.png"):
+        os.remove(filename)
+
+    plot = Plot(ymax)
+    u, x, t, cpu = solver(I, V, f, c, L, dt, C, T, plot)
+
+    # Make plot of max error versus time
+    plt.figure()
+    plt.plot(plot.max_error_t, plot.max_error)
+    plt.xlabel("time")
+    plt.ylabel("max abs(error)")
+    plt.savefig("error.png")
+    plt.savefig("error.pdf")
 ```
 
-!esol
+:::
 
-!esubex
 
-!bremarks
+
+
+
+::: {.callout-note title="Remarks"}
 The important
 parameters for numerical quality are $C$ and $k\Delta x$, where
 $C=c\Delta t/\Delta x$ is the Courant number and $k$ is defined above
 ($k\Delta x$ is proportional to how many mesh points we have per wave length
 in space, see Section @sec-wave-pde1-num-dispersion for explanation).
-!eremarks
+:::
+
 
 ## Exercise: Add storage of solution in a user action function {#sec-wave-exer-store-list}
-file=wave1D_u0_s_store
 
 Extend the `plot_u` function in the file `wave1D_u0.py` to also store
 the solutions `u` in a list.
@@ -1483,16 +1563,56 @@ Why does one of these constructions fail to store the solution correctly?
 Let the `viz` function return the `all_u` list
 converted to a two-dimensional `numpy` array.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We have to explicitly use a copy of u, i.e. as `all_u.append(u.copy())`, otherwise we just get a reference to `u`, which goes on changing with the computations.
 
 ```python
+def viz(
+    I, V, f, c, L, dt, C, T,
+    umin, umax,
+    animate=True,
+    solver_function=solver,
+):
+    """Run solver, store and visualize u at each time level."""
+    import glob
+    import os
+    import time
+
+    import matplotlib.pyplot as plt
+
+    all_u = []  # store solutions
+
+    def plot_u(u, x, t, n):
+        """user_action function for solver."""
+        if n == 0:
+            plt.ion()
+            lines = plt.plot(x, u, "r-")
+            plt.xlabel("x")
+            plt.ylabel("u")
+            plt.axis([0, L, umin, umax])
+            plt.legend([f"t={t[n]:f}"], loc="lower left")
+        else:
+            lines[0].set_ydata(u)
+            plt.legend([f"t={t[n]:f}"], loc="lower left")
+            plt.draw()
+        time.sleep(2) if t[n] == 0 else time.sleep(0.2)
+        plt.savefig("tmp_%04d.png" % n)
+        all_u.append(u.copy())  # must use copy!
+
+    # Clean up old movie frames
+    for filename in glob.glob("tmp_*.png"):
+        os.remove(filename)
+
+    user_action = plot_u if animate else None
+    u, x, t, cpu = solver_function(I, V, f, c, L, dt, C, T, user_action)
+    return cpu, np.array(all_u)
 ```
 
-!esol
+:::
+
 
 ## Exercise: Use a class for the user action function {#sec-wave-exer-store-list-class}
-file=wave1D_u0_s2c
 
 Redo Exercise @sec-wave-exer-store-list using a class for the user
 action function. Let the `all_u` list be an attribute in this class
@@ -1501,16 +1621,54 @@ and implement the user action function as a method (the special method
 user action function depends on parameters defined outside the
 function (such as `all_u` in Exercise @sec-wave-exer-store-list).
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Using a class, we get
 
 ```python
+class PlotMatplotlib:
+    def __init__(self):
+        self.all_u = []
+
+    def __call__(self, u, x, t, n):
+        """user_action function for solver."""
+        if n == 0:
+            plt.ion()
+            self.lines = plt.plot(x, u, "r-")
+            plt.xlabel("x")
+            plt.ylabel("u")
+            plt.axis([0, L, umin, umax])
+            plt.legend([f"t={t[n]:f}"], loc="lower left")
+        else:
+            self.lines[0].set_ydata(u)
+            plt.legend([f"t={t[n]:f}"], loc="lower left")
+            plt.draw()
+        time.sleep(2) if t[n] == 0 else time.sleep(0.2)
+        plt.savefig("tmp_%04d.png" % n)  # for movie making
+        self.all_u.append(u.copy())
+
+
+def viz(I, V, f, c, L, dt, C, T, umin, umax,
+        animate=True, solver_function=solver):
+    """Run solver, store and visualize u at each time level."""
+    import glob
+    import os
+
+    plot_u = PlotMatplotlib()
+
+    # Clean up old movie frames
+    for filename in glob.glob("tmp_*.png"):
+        os.remove(filename)
+
+    user_action = plot_u if animate else None
+    u, x, t, cpu = solver_function(I, V, f, c, L, dt, C, T, user_action)
+    return cpu, np.array(plot_u.all_u)
 ```
 
-!esol
+:::
+
 
 ## Exercise: Compare several Courant numbers in one movie {#sec-wave-exer-multiple-C}
-file=wave_numerics_comparison
 
 The goal of this exercise is to make movies where several curves,
 corresponding to different Courant numbers, are visualized. Write a
@@ -1529,16 +1687,65 @@ keep the time resolution constant and change the space resolution
 to change the Courant number. Note that each spatial grid is needed for
 the final plotting, so it is an option to store those grids too.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Modifying the code to store all solutions for each $C$ value and also each corresponding spatial grid (needed for final plotting), we get
 
 ```python
+class PlotMatplotlib:
+    def __init__(self):
+        self.all_u = []
+        self.all_u_for_all_C = []
+        self.x_mesh = []  # need each mesh for final plots
+
+    def __call__(self, u, x, t, n):
+        """user_action function for solver."""
+        self.all_u.append(u.copy())
+        if t[n] == T:  # i.e., whole time interv. done for this C
+            self.x_mesh.append(x.copy())
+            self.all_u_for_all_C.append(self.all_u)
+            self.all_u = []  # reset to empty list
+
+            if len(self.all_u_for_all_C) == len(C):  # all C done
+                print("Finished all C. Proceed with plots...")
+                plt.ion()
+                for n_ in range(0, n + 1):  # for each tn
+                    plt.clf()
+                    for j in range(len(C)):
+                        plt.plot(self.x_mesh[j], self.all_u_for_all_C[j][n_])
+                    plt.axis([0, L, umin, umax])
+                    plt.xlabel("x")
+                    plt.ylabel("u")
+                    plt.title(f"Solutions for all C at t={t[n_]:f}")
+                    plt.draw()
+                    time.sleep(2) if t[n_] == 0 else time.sleep(0.2)
+                    plt.savefig("tmp_%04d.png" % n_)  # for movie
+
+
+def viz(I, V, f, c, L, dt, C, T, umin, umax,
+        animate=True, solver_function=solver):
+    """Run solver, store and viz. u at each time level with all C values."""
+    import glob
+    import os
+
+    plot_u = PlotMatplotlib()
+
+    # Clean up old movie frames
+    for filename in glob.glob("tmp_*.png"):
+        os.remove(filename)
+
+    user_action = plot_u if animate else None
+    for C_value in C:
+        print("C_value:", C_value)
+        u, x, t, cpu = solver_function(I, V, f, c, L, dt, C_value, T, user_action)
+
+    return cpu
 ```
 
-!esol
+:::
+
 
 ## Exercise: Implementing the solver function as a generator {#sec-wave-exer-useraction-generator}
-file=wave1D_u0_generator
 
 The callback function `user_action(u, x, t, n)` is called from the
 `solver` function (in, e.g., `wave1D_u0.py`) at every time level and lets
@@ -1577,18 +1784,20 @@ generator case.
 Implement the `solver` function as a generator, and plot the solution
 at each time step.
 
-!bsol
-!esol
+
+::: {.callout-tip collapse="true" title="Solution"}
+:::
+
 
 ## Project: Calculus with 1D mesh functions {#sec-wave-exer-mesh1D-calculus}
-file=mesh_calculus_1D
 
 This project explores integration and differentiation of
 mesh functions, both with scalar and vectorized implementations.
 We are given a mesh function $f_i$ on a spatial one-dimensional
 mesh $x_i=i\Delta x$, $i=0,\ldots,N_x$, over the interval $[a,b]$.
 
-!bsubex
+**a)**
+
 Define the discrete derivative of $f_i$ by using centered
 differences at internal mesh points and one-sided differences
 at the end points. Implement a scalar version of
@@ -1596,23 +1805,29 @@ the computation in a Python function and write an associated unit test
 for the linear case $f(x)=4x-2.5$ where the discrete derivative should
 be exact.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 See code below.
-!esol
+:::
 
-!esubex
 
-!bsubex
+
+
+**b)**
+
 Vectorize the implementation of the discrete derivative.
 Extend the unit test to check the validity of the implementation.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 See code below.
-!esol
+:::
 
-!esubex
 
-!bsubex
+
+
+**c)**
+
 To compute the discrete integral $F_i$ of $f_i$, we assume that
 the mesh function $f_i$ varies linearly between the mesh points.
 Let $f(x)$ be such a linear interpolant of $f_i$. We then
@@ -1634,7 +1849,8 @@ For a unit test one can use the fact that the above defined
 discrete integral of a linear
 function (say $f(x)=4x-2.5$) is exact.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We know that the difference $F_{i+1} - F_i$ must amount to the area
 of a trapezoid, which is exactly what $\half(f_i + f_{i+1})\Delta x$ is.
 To show the relation above, we may start with the Trapezoidal rule:
@@ -1654,11 +1870,13 @@ $$
 F_{i+1} = F_i + \half(f_i + f_{i+1})\Delta x\tp
 $$
 See code below for implementation.
-!esol
+:::
 
-!esubex
 
-!bsubex
+
+
+**d)**
+
 Vectorize the implementation of the discrete integral.
 Extend the unit test to check the validity of the implementation.
 
@@ -1668,13 +1886,16 @@ Make an array with each element of the sum and use the "cumsum"
 `numpy.cumsum([1,3,5])` is `[1,4,9]`.
 :::
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 See code below.
-!esol
+:::
 
-!esubex
 
-!bsubex
+
+
+**e)**
+
 Create a class `MeshCalculus` that can integrate and differentiate
 mesh functions. The class can just define some methods that call
 the previously implemented Python functions. Here is an example
@@ -1689,16 +1910,115 @@ df = calc.differentiate(f, x)    # discrete derivative
 F = calc.integrate(f, x)         # discrete anti-derivative
 ```
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 See code below.
-!esol
+:::
 
-!esubex
 
-!bsol
+
+
+
+::: {.callout-tip collapse="true" title="Solution"}
 The final version of the code reads
 
 ```python
+"""
+Calculus with a 1D mesh function.
+"""
+
+import numpy as np
+
+
+class MeshCalculus:
+    def __init__(self, vectorized=True):
+        self.vectorized = vectorized
+
+    def differentiate(self, f, x):
+        """
+        Computes the derivative of f by centered differences, but
+        forw and back difference at the start and end, respectively.
+        """
+        dx = x[1] - x[0]
+        Nx = len(x) - 1  # number of spatial steps
+        num_dfdx = np.zeros(Nx + 1)
+        # Compute approximate derivatives at end-points first
+        num_dfdx[0] = (f(x[1]) - f(x[0])) / dx  # FD approx.
+        num_dfdx[Nx] = (f(x[Nx]) - f(x[Nx - 1])) / dx  # BD approx.
+        # proceed with approximate derivatives for inner mesh points
+        if self.vectorized:
+            num_dfdx[1:-1] = (f(x[2:]) - f(x[:-2])) / (2 * dx)
+        else:  # scalar version
+            for i in range(1, Nx):
+                num_dfdx[i] = (f(x[i + 1]) - f(x[i - 1])) / (2 * dx)
+        return num_dfdx
+
+    def integrate(self, f, x):
+        """
+        Computes the integral of f(x) over the interval
+        covered by x.
+        """
+        dx = x[1] - x[0]
+        F = np.zeros(len(x))
+        F[0] = 0  # starting value for iterative scheme
+        if self.vectorized:
+            all_trapezoids = np.zeros(len(x) - 1)
+            all_trapezoids[:] = 0.5 * (f(x[:-1]) + f(x[1:])) * dx
+            F[1:] = np.cumsum(all_trapezoids)
+        else:  # scalar version
+            for i in range(0, len(x) - 1):
+                F[i + 1] = F[i] + 0.5 * (f(x[i]) + f(x[i + 1])) * dx
+        return F
+
+
+def test_differentiate():
+    def f(x):
+        return 4 * x - 2.5
+
+    def dfdx(x):
+        derivatives = np.zeros(len(x))
+        derivatives[:] = 4
+        return derivatives
+
+    a = 0
+    b = 1
+    Nx = 10
+    x = np.linspace(a, b, Nx + 1)
+    exact_dfdx = dfdx(x)
+    # test vectorized version
+    calc_v = MeshCalculus(vectorized=True)
+    num_dfdx = calc_v.differentiate(f, x)
+    diff = np.abs(num_dfdx - exact_dfdx).max()
+    tol = 1e-14
+    assert diff < tol
+    # test scalar version
+    calc = MeshCalculus(vectorized=False)
+    num_dfdx = calc.differentiate(f, x)
+    diff = np.abs(num_dfdx - exact_dfdx).max()
+    assert diff < tol
+
+
+def test_integrate():
+    def f(x):
+        return 4 * x - 2.5
+
+    a = 0
+    b = 1
+    Nx = 10
+    x = np.linspace(a, b, Nx + 1)
+    # The exact integral amounts to the total area of two triangles
+    I_exact = 0.5 * abs(2.5 / 4 - a) * f(a) + 0.5 * abs(b - 2.5 / 4) * f(b)
+    # test vectorized version
+    calc_v = MeshCalculus(vectorized=True)
+    F = calc_v.integrate(f, x)
+    diff = np.abs(F[-1] - I_exact)
+    tol = 1e-14
+    assert diff < tol
+    # test scalar version
+    calc = MeshCalculus(vectorized=False)
+    F = calc.integrate(f, x)
+    diff = np.abs(F[-1] - I_exact)
+    assert diff < tol
 ```
 
-!esol
+:::

@@ -1329,7 +1329,6 @@ Terminal> python -c 'import wave1D_dn_vc as w; w.pulse(...)'
 ```
 
 ## Exercise: Find the analytical solution to a damped wave equation {#sec-wave-exer-standingwave-damped-uex}
-file=damped_waves
 
 Consider the wave equation with damping (@eq-wave-pde3).
 The goal is to find an exact solution to a wave problem with damping and zero source term.
@@ -1348,7 +1347,8 @@ $\beta$, $\omega$, $A$, and $B$.
 Set up a complete initial-boundary value problem
 and its solution.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 
 Mathematical model:
 $$
@@ -1432,10 +1432,10 @@ with $k=m\pi/L$ for arbitrary integer $m$, $\beta = \frac{b}{2}$,
 $\omega = \sqrt{c^2k^2 - \frac{b^2}{4}}$, $B = \frac{b}{2\sqrt{c^2k^2 - \frac{b^2}{4}}} A$
 and $I(x) = A sin kx$.
 
-!esol
+:::
+
 
 ## Problem: Explore symmetry boundary conditions {#sec-wave-exer-symmetry-bc}
-file=wave1D_symmetric
 
 Consider the simple "plug" wave where $\Omega = [-L,L]$ and
 $$
@@ -1451,7 +1451,8 @@ The solution to this problem is symmetric around $x=0$.
 This means that we can simulate the wave process in only half
 of the domain $[0,L]$.
 
-!bsubex
+**a)**
+
 Argue why the symmetry boundary condition
 is $u_x=0$ at $x=0$.
 
@@ -1459,7 +1460,8 @@ is $u_x=0$ at $x=0$.
 $f(x_0+h) = f(x_0-h)$.
 :::
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 A symmetric $u$ around $x=0$ means that $u(-x,t)=u(x,t)$.
 Let $x_0=0$ and $x=x_0+h$. Then we can use a *centered* finite difference
 definition of the derivative:
@@ -1471,11 +1473,13 @@ $$
 since $u(h,t)=u(-h,t)$ for any $h$. Symmetry around a point $x=x_0$
 therefore always implies $u_x(x_0,t)=0$.
 
-!esol
+:::
 
-!esubex
 
-!bsubex
+
+
+**b)**
+
 Perform simulations of the complete wave problem
 on $[-L,L]$. Thereafter, utilize the
 symmetry of the solution and run a simulation
@@ -1483,7 +1487,8 @@ in half of the domain $[0,L]$, using a boundary condition
 at $x=0$. Compare plots from the two solutions and
 confirm that they are the same.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We can utilize the `wave1D_dn.py` code which allows Dirichlet and
 Neumann conditions. The `solver` and `viz` functions must take $x_0$
 and $x_L$ as parameters instead of just $L$ such that we can solve the
@@ -1502,17 +1507,20 @@ separate movie files or movie directories.
 
 The plots produced by the code (below) shows that the solutions indeed
 are the same.
-!esol
+:::
 
-!esubex
 
-!bsubex
+
+
+**c)**
+
 Prove the symmetry property of the solution
 by setting up the complete initial-boundary value problem
 and showing that if $u(x,t)$ is a solution, then also $u(-x,t)$
 is a solution.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The plan in this proof is to introduce $v(x,t)=u(-x,t)$
 and show that $v$ fulfills the same
 initial-boundary value problem as $u$. If the problem has a unique
@@ -1580,27 +1588,62 @@ To summarize, the necessary conditions for symmetry are that
   * the boundary conditions are symmetric in the sense that they
     can be flipped (the condition at $x=-L$ can be applied
     at $x=L$ and vice versa).
-!esol
+:::
 
-!esubex
 
-!bsubex
+
+
+**d)**
+
 If the code works correctly, the solution $u(x,t) = x(L-x)(1+\frac{t}{2})$
 should be reproduced exactly. Write a test function `test_quadratic` that
 checks whether this is the case. Simulate for $x$ in $[0, \frac{L}{2}]$ with
 a symmetry condition at the end $x = \frac{L}{2}$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Running the code below, shows that the test case indeed is reproduced exactly.
 
 ```python
+def test_quadratic():
+    """
+    Check the scalar and vectorized versions work for
+    a quadratic u(x,t)=x(L-x)(1+t/2) that is exactly reproduced.
+    We simulate in [0, L/2] and apply a symmetry condition
+    at the end x=L/2.
+    """
+    exact_solution = lambda x, t: x * (L - x) * (1 + 0.5 * t)
+    I = lambda x: exact_solution(x, 0)
+    V = lambda x: 0.5 * exact_solution(x, 0)
+    f = lambda x, t: 2 * (1 + 0.5 * t) * c**2
+    U_0 = lambda t: exact_solution(0, t)
+    U_L = None
+    L = 2.5
+    c = 1.5
+    Nx = 3  # very coarse mesh
+    C = 1
+    T = 18  # long time integration
+
+    def assert_no_error(u, x, t, n):
+        u_e = exact_solution(x, t[n])
+        diff = abs(u - u_e).max()
+        assert diff < 1e-13, f"Max error: {diff}"
+
+    solver(
+        I, V, f, c, U_0, U_L, 0, L / 2, Nx, C, T,
+        user_action=assert_no_error, version="scalar",
+    )
+    solver(
+        I, V, f, c, U_0, U_L, 0, L / 2, Nx, C, T,
+        user_action=assert_no_error, version="vectorized",
+    )
 ```
 
-!esol
-!esubex
+:::
+
+
 
 ## Exercise: Send pulse waves through a layered medium {#sec-wave-app-exer-pulse1D}
-file=pulse1D
 
 Use the `pulse` function in `wave1D_dn_vc.py` to investigate
 sending a pulse, located with its peak at $x=0$, through two
@@ -1610,18 +1653,31 @@ Report what happens with a Gaussian pulse, a "cosine hat" pulse,
 half a "cosine hat" pulse, and a plug pulse for resolutions
 $N_x=40,80,160$, and $s_f=2,4$. Simulate until $T=2$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 In all cases, the change in velocity causes some of the wave to
 be reflected back (while the rest is let through). When the waves
 go from higher to lower velocity, the amplitude builds, and vice versa.
 
 ```python
+import os
+import sys
+
+path = os.path.join(
+    os.pardir, os.pardir, os.pardir, os.pardir, "wave", "src-wave", "wave1D"
+)
+sys.path.insert(0, path)
+from wave1D_dn_vc import pulse
+
+pulse_tp = sys.argv[1]
+C = float(sys.argv[2])
+pulse(pulse_tp=pulse_tp, C=C, Nx=100, animate=False, slowness_factor=4)
 ```
 
-!esol
+:::
+
 
 ## Exercise: Explain why numerical noise occurs {#sec-wave-app-exer-pulse1D-analysis}
-file=pulse1D_analysis
 
 The experiments performed in Exercise @sec-wave-app-exer-pulse1D shows
 considerable numerical noise in the form of non-physical waves,
@@ -1632,7 +1688,6 @@ case with the plug and half a "cosinehat" pulse for $s_f=1$, $C=0.9,
 explain the observations.
 
 ## Exercise: Investigate harmonic averaging in a 1D model {#sec-wave-app-exer-pulse1D-harmonic}
-file=pulse1D_harmonic
 
 Harmonic means are often used if the wave velocity is non-smooth or
 discontinuous.  Will harmonic averaging of the wave velocity give less
@@ -1640,7 +1695,6 @@ numerical noise for the case $s_f=4$ in Exercise
 @sec-wave-app-exer-pulse1D?
 
 ## Problem: Implement open boundary conditions {#sec-wave-app-exer-radiationBC}
-file=wave1D_open_BC
 
 To enable a wave to leave the computational domain and travel
 undisturbed through
@@ -1664,7 +1718,8 @@ $$
 \frac{\partial u}{\partial t} - c\frac{\partial u}{\partial x} = 0\tp
 $$ {#eq-wave-app-exer-radiationBC-eqL}
 
-!bsubex
+**a)**
+
 A natural idea for discretizing
 the condition (@eq-wave-app-exer-radiationBC-eq)
 at the spatial end point $i=N_x$ is to apply
@@ -1678,9 +1733,10 @@ the discrete equation at the same point.
 The equation for the first step, $u_i^1$, is in principle also affected,
 but we can then use the condition $u_{N_x}=0$ since the wave
 has not yet reached the right boundary.
-!esubex
 
-!bsubex
+
+**b)**
+
 A much more convenient implementation of the open boundary condition
 at $x=L$ can be based on an explicit discretization
 $$
@@ -1713,9 +1769,10 @@ need to pursue the more complicated discretization in a).
 :::{.callout-tip title="Modify the solver function in"}
 [`wave1D_dn.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn.py).
 :::
-!esubex
 
-!bsubex
+
+**c)**
+
 Add the possibility to have either $u_x=0$ or an open boundary
 condition at the left boundary. The latter condition is discretized
 as
@@ -1737,18 +1794,20 @@ Run two tests:
 
 Make test functions for both cases, testing that the solution is zero
 after the waves have left the domain.
-!esubex
 
-!bsubex
+
+**d)**
+
 In 2D and 3D it is difficult to compute the correct wave velocity
 normal to the boundary, which is needed in generalizations of
 the open boundary conditions in higher dimensions. Test the effect
 of having a slightly wrong wave velocity in
 (@eq-wave-app-exer-radiationBC-eq-op-1storder).
 Make movies to illustrate what happens.
-!esubex
 
-!bremarks
+
+
+::: {.callout-note title="Remarks"}
 The condition (@eq-wave-app-exer-radiationBC-eq)
 works perfectly in 1D when $c$ is known. In 2D and 3D, however, the
 condition reads $u_t + c_x u_x + c_y u_y=0$, where $c_x$ and
@@ -1756,10 +1815,10 @@ $c_y$ are the wave speeds in the $x$ and $y$ directions. Estimating
 these components (i.e., the direction of the wave) is often
 challenging. Other methods are normally used in 2D and 3D to
 let waves move out of a computational domain.
-!eremarks
+:::
+
 
 ## Exercise: Implement periodic boundary conditions {#sec-wave-exer-periodic}
-file=periodic
 
 It is frequently of interest to follow wave motion over large
 distances and long times. A straightforward approach is to
@@ -1801,7 +1860,6 @@ interval $[0,1]$. Run these two shapes for Courant numbers 1 and
 Reason why the solutions are correct.
 
 ## Exercise: Compare discretizations of a Neumann condition
-file=Neumann_discr
 
 We have a 1D wave equation with variable wave velocity:
 $u_{tt}=(qu_x)_x$.
@@ -1812,16 +1870,18 @@ and (@eq-wave-pde2-var-c-scheme-impl-Neumann2).
 The aim of this exercise is to examine the rate of the numerical
 error when using different ways of discretizing the Neumann condition.
 
-!bsubex
+**a)**
+
 As a test problem, $q=1+(x-L/2)^4$ can be used, with $f(x,t)$
 adapted such that the solution has a simple form, say
 $u(x,t)=\cos (\pi x/L)\cos (\omega t)$ for, e.g., $\omega = 1$.
 Perform numerical experiments and find the convergence rate of the
 error using the approximation
 (@eq-wave-pde2-var-c-scheme-impl-Neumann0).
-!esubex
 
-!bsubex
+
+**b)**
+
 Switch to $q(x)=1+\cos(\pi x/L)$, which is symmetric at $x=0,L$,
 and check the convergence rate
 of the scheme
@@ -1829,18 +1889,20 @@ of the scheme
 $q_{i-1/2}$ is a 2nd-order approximation to $q_i$,
 $q_{i-1/2}=q_i + 0.25q_i''\Delta x^2 + \cdots$, because $q_i'=0$
 for $i=N_x$ (a similar argument can be applied to the case $i=0$).
-!esubex
 
-!bsubex
+
+**c)**
+
 A third discretization can be based on a simple and convenient,
 but less accurate, one-sided difference:
 $u_{i}-u_{i-1}=0$ at $i=N_x$ and $u_{i+1}-u_i=0$ at $i=0$.
 Derive the resulting scheme in detail and implement it.
 Run experiments with $q$ from a) or b) to establish the rate of convergence
 of the scheme.
-!esubex
 
-!bsubex
+
+**d)**
+
 A fourth technique is to view the scheme as
 $$
 [D_tD_tu]^n_i = \frac{1}{\Delta x}\left(
@@ -1857,10 +1919,9 @@ $L-\Delta x/2$ is $\Oof{\Delta x^2}$ accurate, but the interesting question
 is what impact the movement of the boundary has on the convergence
 rate. Compute the errors as usual over the entire mesh and use $q$ from
 a) or b).
-!esubex
+
 
 ## Exercise: Verification by a cubic polynomial in space {#sec-wave-fd2-exer-verify-cubic}
-file=wave1D_n0_test_cubic
 
 The purpose of this exercise is to verify the implementation of the
 `solver` function in the program [`wave1D_n0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_n0.py) by using an exact numerical solution
@@ -1925,7 +1986,8 @@ constraint that we can specify a function $f(x,t)$ for the PDE to feed
 to the `solver` function in `wave1D_n0.py`. Both approaches
 are explained in the subexercises.
 
-!bsubex
+**a)**
+
 One can insert $u$ in the discretized PDE and find the corresponding $f$.
 Then one can insert $u$ in the discretized boundary conditions.
 This yields two equations for the four coefficients $a_0,\ldots,a_3$.
@@ -2002,9 +2064,10 @@ will then work with array arguments if it contains mathematical
 functions (but here we only do plain arithmetics, which automatically
 work with arrays).
 :::
-!esubex
 
-!bsubex
+
+**b)**
+
 An alternative way of determining $a_0,\ldots,a_3$ is to reason as
 follows. We first construct $X(x)$ such that the boundary conditions
 are fulfilled: $X=x(L-x)$. However, to compensate for the fact
@@ -2044,4 +2107,3 @@ in new functions `I`, `V`, and `f`, with the right signature as
 required by the `solver` function. Set parameters as in a) and
 check that the solution is exact to machine precision at each
 time level using an appropriate `user_action` function.
-!esubex

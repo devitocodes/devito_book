@@ -14,7 +14,8 @@ all other symbols are known quantities.
  1. $u^{\prime} = f(u,t)$
  1. $\nabla^2 u = \lambda e^u$
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
  1. $mu^{\prime\prime}$ is linear; $\beta |u^{\prime}|u^{\prime}$ is
    nonlinear; $cu$ is linear; $F(t)$ does not contain the unknown $u$
    and is hence constant in $u$, so the term is linear.
@@ -28,16 +29,15 @@ all other symbols are known quantities.
    $\nabla\cdot\uu$ is linear.
  1. $u^{\prime}$ is linear;  $f(u,t)$ is nonlinear if $f$ is nonlinear in $u$.
  1. $\nabla^2 u$ is linear; $\lambda e^u$ is nonlinear.
-!esol
+:::
+
 
 ## Exercise: Derive a relaxation formula {#sec-nonlin-exer-relax-formula}
-file=relaxed_Newton
 
 Derive (@eq-nonlin-timediscrete-logistic-relaxation-Newton-formula)
 in Section @sec-nonlin-timediscrete-logistic-relaxation.
 
 ## Problem: Derive and investigate a generalized logistic model {#sec-nonlin-exer-logistic-gen}
-file=logistic_p
 
 The logistic model for population growth is derived by assuming
 a nonlinear growth rate,
@@ -57,7 +57,8 @@ a(u) = \varrho(1-u/M)^p,
 $$ {#eq-nonlin-exer-logistic-gen-r1}
 where $p>0$ is some real number.
 
-!bsubex
+**a)**
+
 Formulate a Forward Euler, Backward Euler, and a Crank-Nicolson
 scheme for (@eq-nonlin-exer-logistic-gen-eq).
 
@@ -65,7 +66,8 @@ scheme for (@eq-nonlin-exer-logistic-gen-eq).
 $[a(u)u]^{n+1/2}\approx a(u^n)u^{n+1}$.
 :::
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The Forward Euler scheme reads
 $$
 [D^+_t u = a(u)u]^n,
@@ -113,13 +115,16 @@ leading to a linear equation in $u^{n+1}$:
 $$
 (1 - \Delta t a(u^n))u^{n+1} = u^n\tp
 $$
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**b)**
+
 Formulate Picard and Newton iteration for the Backward Euler scheme in a).
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 A Picard iteration for
 $$
 u^{n+1} - \Delta t a(u^{n+1})u^{n+1} = u^n\tp
@@ -147,15 +152,18 @@ The key equation in Newton's method is then
 $$
 J(u^-)\delta u = - F(u^-),\quad u\leftarrow u - \delta u\tp
 $$
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**c)**
+
 Implement the numerical solution methods from a) and b).
 Use [`logistic.py`](https://github.com/hplgit/fdm-book/tree/master/src/nonlin/logistic.py) to compare the case
 $p=1$ and the choice (@eq-nonlin-exer-logistic-gen-r1).
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 We specialize the code for $a(u)$ to (@eq-nonlin-exer-logistic-gen-r1)
 since the code was developed from `logistic.py`. It is convenient to
 work with a dimensionless form of the problem.
@@ -171,48 +179,186 @@ $$
 The three schemes can be implemented as follows.
 
 ```python
+import numpy as np
+
+
+def FE_logistic(p, u0, dt, Nt):
+    u = np.zeros(Nt + 1)
+    u[0] = u0
+    for n in range(Nt):
+        u[n + 1] = u[n] + dt * (1 - u[n]) ** p * u[n]
+    return u
+
+
+def BE_logistic(p, u0, dt, Nt, choice="Picard", eps_r=1e-3, omega=1, max_iter=1000):
+    if choice == "Picard1":
+        choice = "Picard"
+        max_iter = 1
+
+    u = np.zeros(Nt + 1)
+    iterations = []
+    u[0] = u0
+    for n in range(1, Nt + 1):
+        c = -u[n - 1]
+        if choice == "Picard":
+
+            def F(u):
+                return -dt * (1 - u) ** p * u + u + c
+
+            u_ = u[n - 1]
+            k = 0
+            while abs(F(u_)) > eps_r and k < max_iter:
+                u_ = omega * (-c / (1 - dt * (1 - u_) ** p)) + (1 - omega) * u_
+                k += 1
+            u[n] = u_
+            iterations.append(k)
+
+        elif choice == "Newton":
+
+            def F(u):
+                return -dt * (1 - u) ** p * u + u + c
+
+            def dF(u):
+                return dt * p * (1 - u) ** (p - 1) * u - dt * (1 - u) ** p + 1
+
+            u_ = u[n - 1]
+            k = 0
+            while abs(F(u_)) > eps_r and k < max_iter:
+                u_ = u_ - F(u_) / dF(u_)
+                k += 1
+            u[n] = u_
+            iterations.append(k)
+    return u, iterations
+
+
+def CN_logistic(p, u0, dt, Nt):
+    u = np.zeros(Nt + 1)
+    u[0] = u0
+    for n in range(0, Nt):
+        u[n + 1] = u[n] / (1 - dt * (1 - u[n]) ** p)
+    return u
 ```
 
 A first verification is to choose $p=1$ and compare the results with
 those from `logistic.py`. The number of iterations and the final
 numerical answers should be identical.
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**d)**
+
 Implement unit tests that check the asymptotic limit of the solutions:
 $u\rightarrow M$ as $t\rightarrow\infty$.
 
-:::{.callout-tip title="You need to experiment to find what "infinite time" is"}
+:::{.callout-tip title="You need to experiment to find what \"infinite time\" is"}
 (increases substantially with $p$) and what the
 appropriate tolerance is for testing the asymptotic limit.
 :::
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 The test function may look like
 
 ```python
+def test_asymptotic_value():
+    T = 100
+    dt = 0.1
+    Nt = int(round(T / float(dt)))
+    u0 = 0.1
+    p = 1.8
+
+    u_CN = CN_logistic(p, u0, dt, Nt)
+    u_BE_Picard, iter_Picard = BE_logistic(
+        p, u0, dt, Nt, choice="Picard", eps_r=1e-5, omega=1, max_iter=1000
+    )
+    u_BE_Newton, iter_Newton = BE_logistic(
+        p, u0, dt, Nt, choice="Newton", eps_r=1e-5, omega=1, max_iter=1000
+    )
+    u_FE = FE_logistic(p, u0, dt, Nt)
+
+    for arr in u_CN, u_BE_Picard, u_BE_Newton, u_FE:
+        expected = 1
+        computed = arr[-1]
+        tol = 0.01
+        msg = f"expected={expected}, computed={computed}"
+        print(msg)
+        assert abs(expected - computed) < tol
 ```
 It is important with a sufficiently small `eps_r` tolerance for the
 asymptotic value to be accurate (using `eps_r=1E-3` leads to a value
 0.92 at $t=T$ instead of 0.994 when `eps_r=1E-5`).
-!esol
-!esubex
+:::
 
-!bsubex
+
+
+**e)**
+
 Perform experiments with Newton and Picard iteration for
 the model (@eq-nonlin-exer-logistic-gen-r1).
 See how sensitive
 the number of iterations is to $\Delta t$ and $p$.
 
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 Appropriate code is
 
 ```python
+import matplotlib.pyplot as plt
+
+
+def demo():
+    T = 12
+    p = 1.2
+    try:
+        dt = float(sys.argv[1])
+        eps_r = float(sys.argv[2])
+        omega = float(sys.argv[3])
+    except:
+        dt = 0.8
+        eps_r = 1e-3
+        omega = 1
+    N = int(round(T / float(dt)))
+
+    u_FE = FE_logistic(p, 0.1, dt, N)
+    u_BE31, iter_BE31 = BE_logistic(p, 0.1, dt, N, "Picard1", eps_r, omega)
+    u_BE3, iter_BE3 = BE_logistic(p, 0.1, dt, N, "Picard", eps_r, omega)
+    u_BE4, iter_BE4 = BE_logistic(p, 0.1, dt, N, "Newton", eps_r, omega)
+    u_CN = CN_logistic(p, 0.1, dt, N)
+
+    print(f"Picard mean no of iterations (dt={dt:g}):", int(round(np.mean(iter_BE3))))
+    print(f"Newton mean no of iterations (dt={dt:g}):", int(round(np.mean(iter_BE4))))
+
+    t = np.linspace(0, dt * N, N + 1)
+    plt.figure()
+    plt.plot(t, u_FE, label="FE")
+    plt.plot(t, u_BE3, label="BE Picard")
+    plt.plot(t, u_BE31, label="BE Picard1")
+    plt.plot(t, u_BE4, label="BE Newton")
+    plt.plot(t, u_CN, label="CN gm")
+    plt.legend(loc="lower right")
+    plt.title(f"dt={dt:g}, eps={eps_r:.0E}")
+    plt.xlabel("t")
+    plt.ylabel("u")
+    filestem = "logistic_N%d_eps%03d" % (N, np.log10(eps_r))
+    plt.savefig(filestem + "_u.png")
+    plt.savefig(filestem + "_u.pdf")
+
+    plt.figure()
+    plt.plot(range(1, len(iter_BE3) + 1), iter_BE3, "r-o", label="Picard")
+    plt.plot(range(1, len(iter_BE4) + 1), iter_BE4, "b-o", label="Newton")
+    plt.legend()
+    plt.title(f"dt={dt:g}, eps={eps_r:.0E}")
+    plt.axis([1, N + 1, 0, max(iter_BE3 + iter_BE4) + 1])
+    plt.xlabel("Time level")
+    plt.ylabel("No of iterations")
+    plt.savefig(filestem + "_iter.png")
+    plt.savefig(filestem + "_iter.pdf")
 ```
 
-!esol
-!esubex
+:::
+
+
 
 ## Problem: Experience the behavior of Newton's method {#sec-nonlin-exer-Newton-problems1}
 
@@ -240,7 +386,6 @@ Write up the system (@eq-nonlin-ode-generic-sys-pendulum-u0)-(@eq-nonlin-ode-gen
 and compute the Jacobian $J_{i,j}=\partial F_i/\partial u_j$.
 
 ## Problem: Solve nonlinear equations arising from a vibration ODE {#sec-nonlin-exer-vib-geometric-mean}
-file=nonlin_vib
 
 Consider a nonlinear vibration problem
 $$
@@ -253,27 +398,29 @@ vibration problems where $s(u)$ is a spring or restoring force,
 $mu^{\prime\prime}$ is mass times acceleration, and
 $bu^{\prime}|u^{\prime}|$ models water or air drag.
 
-!bsubex
+**a)**
+
 Rewrite the equation for $u$ as a system of two first-order ODEs, and
 discretize this system by a Crank-Nicolson (centered difference)
 method. With $v=u^\prime$, we get a nonlinear term
 $v^{n+\frac{1}{2}}|v^{n+\frac{1}{2}}|$. Use a geometric
 average for $v^{n+\frac{1}{2}}$.
-!esubex
 
-!bsubex
+
+**b)**
+
 Formulate a Picard iteration method to solve the system of nonlinear
 algebraic equations.
-!esubex
 
-!bsubex
+
+**c)**
+
 Explain how to apply Newton's method to solve the nonlinear equations
 at each time level. Derive expressions for the Jacobian and the
 right-hand side in each Newton iteration.
-!esubex
+
 
 ## Exercise: Find the truncation error of arithmetic mean of products {#sec-nonlin-exer-products-arith-mean}
-file=product_arith_mean
 
 In Section @sec-nonlin-pdelevel-Picard-CN we introduce alternative
 arithmetic means of a product. Say the product is $P(t)Q(t)$ evaluated
@@ -346,13 +493,11 @@ of Taylor series.)
 :::
 
 ## Problem: Newton's method for linear problems {#sec-nonlin-exer-Newton-linear}
-file=Newton_linear
 
 Suppose we have a linear system $F(u) = Au- b=0$. Apply Newton's method
 to this system, and show that the method converges in one iteration.
 
 ## Problem: Discretize a 1D problem with a nonlinear coefficient {#sec-nonlin-exer-1D-1pu2-fem}
-file=nonlin_1D_coeff_discretize
 
 We consider the problem
 $$
@@ -363,37 +508,39 @@ Discretize (@eq-nonlin-exer-1D-1pu2-fem-pde) by a centered
 finite difference method on a uniform mesh.
 
 ## Problem: Linearize a 1D problem with a nonlinear coefficient {#sec-nonlin-exer-1D-1pu2-PicardNewton}
-file=nonlin_1D_coeff_linearize
 
 We have a two-point boundary value problem
 $$
 ((1 + u^2)u^{\prime})^{\prime} = 1,\quad x\in (0,1),\quad u(0)=u(1)=0\tp
 $$ {#eq-nonlin-exer-1D-1pu2-PicardNewton-pde}
 
-!bsubex
+**a)**
+
 Construct a Picard iteration method for (@eq-nonlin-exer-1D-1pu2-PicardNewton-pde)
 without discretizing in space.
-!esubex
 
-!bsubex
+
+**b)**
+
 Apply Newton's method to (@eq-nonlin-exer-1D-1pu2-PicardNewton-pde)
 without discretizing in space.
-!esubex
 
-!bsubex
+
+**c)**
+
 Discretize (@eq-nonlin-exer-1D-1pu2-PicardNewton-pde) by a centered finite
 difference scheme. Construct a Picard method for the resulting
 system of nonlinear algebraic equations.
-!esubex
 
-!bsubex
+
+**d)**
+
 Discretize (@eq-nonlin-exer-1D-1pu2-PicardNewton-pde) by a centered finite
 difference scheme. Define the system of nonlinear algebraic equations,
 calculate the Jacobian, and set up Newton's method for solving the system.
-!esubex
+
 
 ## Problem: Finite differences for the 1D Bratu problem {#sec-nonlin-exer-1D-fu-discretize-fd}
-file=nonlin_1D_Bratu_fd
 
 ## Good: http://faculty.oxy.edu/ron/research/bratu/bratu.pdf
 ## It has a collocation method too
@@ -423,31 +570,34 @@ $$
 $$
 A numerical value is $\lambda_c = 3.513830719$.
 
-!bsubex
+**a)**
+
 Discretize (@eq-nonlin-exer-1D-fu-discretize-fd-pde) by a
 centered finite difference method.
-!esubex
 
-!bsubex
+
+**b)**
+
 Set up the nonlinear equations $F_i(u_0,u_1,\ldots,u_{N_x})=0$
 from a). Calculate the associated Jacobian.
-!esubex
 
-!bsubex
+
+**c)**
+
 Implement a solver that can compute $u(x)$ using Newton's method.
 Plot the error as a function of $x$ in each iteration.
-!esubex
 
-!bsubex
+
+**d)**
+
 Investigate whether Newton's method gives second-order convergence
 by computing
 $|| \uex - u||/||\uex - u^{-}||^2$
 in each iteration, where $u$ is solution in the current iteration and
 $u^{-}$ is the solution in the previous iteration.
-!esubex
+
 
 ## Problem: Discretize a nonlinear 1D heat conduction PDE by finite differences {#sec-nonlin-exer-1D-heat-nonlinear-fdm}
-file=nonlin_1D_heat_FD
 
 We address the 1D heat conduction PDE
 $$
@@ -464,33 +614,37 @@ $$
 where $h(T)$ is a heat transfer coefficient and $T_s$ is the
 given surrounding temperature.
 
-!bsubex
+**a)**
+
 Discretize this PDE in time using either a
 Backward Euler or Crank-Nicolson scheme.
-!esubex
 
-!bsubex
+
+**b)**
+
 Formulate a Picard iteration method for the time-discrete problem
 (i.e., an iteration method before discretizing in space).
-!esubex
 
-!bsubex
+
+**c)**
+
 Formulate a Newton method for the time-discrete problem in b).
-!esubex
 
-!bsubex
+
+**d)**
+
 Discretize the PDE by a finite difference method in space.
 Derive the matrix and right-hand side of a Picard iteration method applied
 to the space-time discretized PDE.
-!esubex
 
-!bsubex
+
+**e)**
+
 Derive the matrix and right-hand side of a Newton method applied
 to the discretized PDE in d).
-!esubex
+
 
 ## Problem: Differentiate a highly nonlinear term {#sec-nonlin-exer-grad-pow-term}
-file=nonlin_differentiate
 
 The operator $\nabla\cdot(\dfc(u)\nabla u)$ with
 $\dfc(u) = |\nabla u|^q$ appears in several physical problems,
@@ -505,7 +659,8 @@ $$
 q|\nabla  u|^{q-2}\nabla u\cdot
 \nabla\baspsi_j\tp
 $$
-!bsol
+
+::: {.callout-tip collapse="true" title="Solution"}
 \begin{align*}
 \frac{\partial }{\partial c_j}|\nabla u |^q &=
 \frac{\partial }{\partial c_j}(\nabla u\cdot \nabla u )^{\tfrac{q}{2}}
@@ -516,10 +671,10 @@ $$
 &=q|\nabla u |^{q-2}(\nabla u \cdot \nabla \frac{\partial u}{\partial c_j})
 =q|\nabla u |^{q-2}(\nabla u \cdot \nabla\psi_j)
 \end{align*}
-!esol
+:::
+
 
 ## Exercise: Crank-Nicolson for a nonlinear 3D diffusion equation {#sec-nonlin-exer-2D-heat-nonlinear-fd}
-file=nonlin_heat_FD_CN_2D
 
 Redo Section @sec-nonlin-alglevel-dD-fd when a Crank-Nicolson scheme
 is used to discretize the equations in time and the problem is
@@ -531,7 +686,6 @@ as well as $r=i$, $s=j$, and $t=k$.
 :::
 
 ## Problem: Find the sparsity of the Jacobian {#sec-nonlin-exer-sparsity-Jacobian}
-file=nonlin_sparsity_Jacobian
 
 Consider a typical nonlinear Laplace term like
 $\nabla\cdot\dfc(u)\nabla u$ discretized by centered finite differences.
@@ -556,33 +710,37 @@ $$
 where $\beta>0$ and $\mu_0>0$ are constants.
 A target value of $n$ may be $n=0.2$.
 
-!bsubex
+**a)**
+
 Formulate a Picard iteration method directly for the differential
 equation problem.
-!esubex
 
-!bsubex
+
+**b)**
+
 Perform a finite difference discretization of the problem in
 each Picard iteration. Implement a solver that can compute $u$
 on a mesh. Verify that the solver gives an exact solution for $n=1$
 on a uniform mesh regardless of the cell size.
-!esubex
 
-!bsubex
+
+**c)**
+
 Given a sequence of decreasing $n$ values, solve the problem for each
 $n$ using the solution for the previous $n$ as initial guess for
 the Picard iteration. This is called a continuation method.
 Experiment with $n=(1,0.6,0.2)$ and $n=(1,0.9,0.8,\ldots,0.2)$
 and make a table of the number of Picard iterations versus $n$.
-!esubex
 
-!bsubex
+
+**d)**
+
 Derive a Newton method at the differential equation level and
 discretize the resulting linear equations in each Newton iteration
 with the finite difference method.
-!esubex
 
-!bsubex
+
+**e)**
+
 Investigate if Newton's method has better convergence properties than
 Picard iteration, both in combination with a continuation method.
-!esubex
