@@ -29,8 +29,13 @@ user_action is a function of (u, x, t, n) where the calling code
 can add visualization, error computations, data analysis,
 store solutions, etc.
 """
-import time, glob, shutil, os
+import glob
+import os
+import shutil
+import time
+
 import numpy as np
+
 
 def solver(
     I, V, f, c, U_0, U_L, L, dt, C, T,
@@ -85,7 +90,8 @@ def solver(
             U_L = lambda t: 0
 
     # --- Make hash of all input data ---
-    import hashlib, inspect
+    import hashlib
+    import inspect
     data = inspect.getsource(I) + '_' + inspect.getsource(V) + \
            '_' + inspect.getsource(f) + '_' + str(c) + '_' + \
            ('None' if U_0 is None else inspect.getsource(U_0)) + \
@@ -97,13 +103,12 @@ def solver(
         # Simulation is already run
         return -1, hashed_input
 
-    # --- Allocate memomry for solutions ---
+    # --- Allocate memory for solutions ---
     u     = np.zeros(Nx+1)   # Solution array at new time level
     u_n   = np.zeros(Nx+1)   # Solution at 1 time level back
     u_nm1 = np.zeros(Nx+1)   # Solution at 2 time levels back
 
-    import time;  t0 = time.clock()  # CPU time measurement
-
+    import time;  t0 = time.perf_counter()  # CPU time measurement
     # --- Valid indices for space and time mesh ---
     Ix = range(0, Nx+1)
     It = range(0, Nt+1)
@@ -204,7 +209,7 @@ def solver(
         # Update data structures for next step
         u_nm1, u_n, u = u_n, u, u_nm1
 
-    cpu_time = time.clock() - t0
+    cpu_time = time.perf_counter() - t0
     return cpu_time, hashed_input
 
 
@@ -318,7 +323,6 @@ class PlotAndStoreSolution:
         casename='tmp',    # Prefix in filenames
         umin=-1, umax=1,   # Fixed range of y axis
         pause_between_frames=None,  # Movie speed
-        backend='matplotlib',       # or 'gnuplot' or None
         screen_movie=True, # Show movie on screen?
         title='',          # Extra message in title
         skip_frame=1,      # Skip every skip_frame frame
@@ -326,13 +330,7 @@ class PlotAndStoreSolution:
         self.casename = casename
         self.yaxis = [umin, umax]
         self.pause = pause_between_frames
-        self.backend = backend
-        if backend is None:
-            # Use native matplotlib
-            import matplotlib.pyplot as plt
-        elif backend in ('matplotlib', 'gnuplot'):
-            module = 'scitools.easyviz.' + backend + '_'
-            exec('import %s as plt' % module)
+        import matplotlib.pyplot as plt
         self.plt = plt
         self.screen_movie = screen_movie
         self.title = title
@@ -370,30 +368,23 @@ class PlotAndStoreSolution:
         title = 't=%.3f' % t[n]
         if self.title:
             title = self.title + ' ' + title
-        if self.backend is None:
-            # native matplotlib animation
-            if n == 0:
-                self.plt.ion()
-                self.lines = self.plt.plot(x, u, 'r-')
-                self.plt.axis([x[0], x[-1],
-                               self.yaxis[0], self.yaxis[1]])
-                self.plt.xlabel('x')
-                self.plt.ylabel('u')
-                self.plt.title(title)
-                self.plt.legend(['t=%.3f' % t[n]])
-            else:
-                # Update new solution
-                self.lines[0].set_ydata(u)
-                self.plt.legend(['t=%.3f' % t[n]])
-                self.plt.draw()
+
+        # matplotlib animation
+        if n == 0:
+            self.plt.ion()
+            self.lines = self.plt.plot(x, u, 'r-')
+            self.plt.axis([x[0], x[-1],
+                           self.yaxis[0], self.yaxis[1]])
+            self.plt.xlabel('x')
+            self.plt.ylabel('u')
+            self.plt.title(title)
+            self.plt.legend(['t=%.3f' % t[n]])
         else:
-            # scitools.easyviz animation
-            self.plt.plot(x, u, 'r-',
-                          xlabel='x', ylabel='u',
-                          axis=[x[0], x[-1],
-                                self.yaxis[0], self.yaxis[1]],
-                          title=title,
-                          show=self.screen_movie)
+            # Update new solution
+            self.lines[0].set_ydata(u)
+            self.plt.legend(['t=%.3f' % t[n]])
+            self.plt.draw()
+
         # pause
         if t[n] == 0:
             time.sleep(2)  # let initial condition stay 2 s
@@ -423,12 +414,8 @@ class PlotAndStoreSolution:
         os.chdir(directory)        # cd directory
 
         fps = 24 # frames per second
-        if self.backend is not None:
-            from scitools.std import movie
-            movie('frame_*.png', encoder='html',
-                  output_file='index.html', fps=fps)
 
-        # Make other movie formats: Flash, Webm, Ogg, MP4
+        # Make movie formats using ffmpeg: Flash, Webm, Ogg, MP4
         codec2ext = dict(flv='flv', libx264='mp4', libvpx='webm',
                          libtheora='ogg')
         filespec = 'frame_%04d.png'
@@ -456,7 +443,7 @@ class PlotAndStoreSolution:
             archive_name = '.' + hashed_input + '_archive.npz'
             filenames = glob.glob('.' + self.filename + '*.dat.npz')
             merge_zip_archives(filenames, archive_name)
-	    print 'Archive name:', archive_name
+            print('Archive name:', archive_name)
             # data = numpy.load(archive); data.files holds names
             # data[name] extract the array
 
@@ -477,7 +464,7 @@ def demo_BC_plug(C=1, Nx=40, T=4):
     action.make_movie_file()
     if cpu > 0:  # did we generate new data?
         action.close_file(hashed_input)
-    print 'cpu:', cpu
+    print('cpu:', cpu)
 
 def demo_BC_gaussian(C=1, Nx=80, T=4):
     """Demonstrate u=0 and u_x=0 boundary conditions with a bell function."""
@@ -558,37 +545,28 @@ class PlotMediumAndSolution(PlotAndStoreSolution):
         title = 'Nx=%d' % (x.size-1)
         if self.title:
             title = self.title + ' ' + title
-        if self.backend is None:
-            # native matplotlib animation
-            if n == 0:
-                self.plt.ion()
-                self.lines = self.plt.plot(
-                    x, u, 'r-',
-                    [x_L, x_L], [umin, umax], 'k--',
-                    [x_R, x_R], [umin, umax], 'k--')
-                self.plt.axis([x[0], x[-1],
-                               self.yaxis[0], self.yaxis[1]])
-                self.plt.xlabel('x')
-                self.plt.ylabel('u')
-                self.plt.title(title)
-                self.plt.text(0.75, 1.0, 'c lower')
-                self.plt.text(0.32, 1.0, 'c=1')
-                self.plt.legend(['t=%.3f' % t[n]])
-            else:
-                # Update new solution
-                self.lines[0].set_ydata(u)
-                self.plt.legend(['t=%.3f' % t[n]])
-                self.plt.draw()
+
+        # matplotlib animation
+        if n == 0:
+            self.plt.ion()
+            self.lines = self.plt.plot(
+                x, u, 'r-',
+                [x_L, x_L], [umin, umax], 'k--',
+                [x_R, x_R], [umin, umax], 'k--')
+            self.plt.axis([x[0], x[-1],
+                           self.yaxis[0], self.yaxis[1]])
+            self.plt.xlabel('x')
+            self.plt.ylabel('u')
+            self.plt.title(title)
+            self.plt.text(0.75, 1.0, 'c lower')
+            self.plt.text(0.32, 1.0, 'c=1')
+            self.plt.legend(['t=%.3f' % t[n]])
         else:
-            # scitools.easyviz animation
-            self.plt.plot(x, u, 'r-',
-                          [x_L, x_L], [umin, umax], 'k--',
-                          [x_R, x_R], [umin, umax], 'k--',
-                          xlabel='x', ylabel='u',
-                          axis=[x[0], x[-1],
-                                self.yaxis[0], self.yaxis[1]],
-                          title=title,
-                          show=self.screen_movie)
+            # Update new solution
+            self.lines[0].set_ydata(u)
+            self.plt.legend(['t=%.3f' % t[n]])
+            self.plt.draw()
+
         # pause
         if t[n] == 0:
             time.sleep(2)  # let initial condition stay 2 s
@@ -687,7 +665,7 @@ def pulse(
     if cpu > 0:  # did we generate new data?
         action.close_file(hashed_input)
         action.make_movie_file()
-    print 'cpu (-1 means no new data generated):', cpu
+    print('cpu (-1 means no new data generated):', cpu)
 
 def convergence_rates(
     u_exact,
@@ -720,8 +698,8 @@ def convergence_rates(
         E.append(error_calculator.error)
         h.append(dt)
         dt /= 2  # halve the time step for next simulation
-    print 'E:', E
-    print 'h:', h
+    print('E:', E)
+    print('h:', h)
     r = [np.log(E[i]/E[i-1])/np.log(h[i]/h[i-1])
          for i in range(1,num_meshes)]
     return r
@@ -746,8 +724,8 @@ def test_convrate_sincos():
         T=1,
         version='scalar',
         stability_safety_factor=1.0)
-    print 'rates sin(x)*cos(t) solution:', \
-          [round(r_,2) for r_ in r]
+    print('rates sin(x)*cos(t) solution:',
+          [round(r_,2) for r_ in r])
     assert abs(r[-1] - 2) < 0.002
 
 if __name__ == '__main__':

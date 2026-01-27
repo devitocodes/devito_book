@@ -1,6 +1,8 @@
 import numpy as np
-cimport numpy as np
+
 cimport cython
+cimport numpy as np
+
 ctypedef np.float64_t DT    # data type
 
 @cython.boundscheck(False)  # turn off array bounds check

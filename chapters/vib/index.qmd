@@ -1,0 +1,3 @@
+# Vibration ODEs {#sec-ch-vib}
+
+{{< include vib_undamped.qmd >}}

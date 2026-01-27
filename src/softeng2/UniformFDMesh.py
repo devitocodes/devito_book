@@ -1,6 +1,7 @@
 import numpy as np
 
-class Mesh(object):
+
+class Mesh:
     """
     Holds data structures for a uniform mesh on a hypercube in
     space, plus a uniform mesh in time.
@@ -47,33 +48,27 @@ class Mesh(object):
     space: [0,1]x[-1,1] N=2x2 d=0.5,1 time: [0,3] Nt=10 dt=0.3
 
     """
-    def __init__(self,
-                 L=None, T=None, t0=0,
-                 N=None, d=None,
-                 Nt=None, dt=None):
+
+    def __init__(self, L=None, T=None, t0=0, N=None, d=None, Nt=None, dt=None):
         if N is None and d is None:
             # No spatial mesh
             if Nt is None and dt is None:
-                raise ValueError(
-                'Mesh constructor: either Nt or dt must be given')
+                raise ValueError("Mesh constructor: either Nt or dt must be given")
             if T is None:
-                raise ValueError(
-                'Mesh constructor: T must be given')
+                raise ValueError("Mesh constructor: T must be given")
         if Nt is None and dt is None:
             if N is None and d is None:
-                raise ValueError(
-                'Mesh constructor: either N or d must be given')
+                raise ValueError("Mesh constructor: either N or d must be given")
             if L is None:
-                raise ValueError(
-                'Mesh constructor: L must be given')
+                raise ValueError("Mesh constructor: L must be given")
 
         # Allow 1D interface without nested lists with one element
-        if L is not None and isinstance(L[0], (float,int)):
+        if L is not None and isinstance(L[0], (float, int)):
             # Only an interval was given
             L = [L]
-        if N is not None and isinstance(N, (float,int)):
+        if N is not None and isinstance(N, (float, int)):
             N = [N]
-        if d is not None and isinstance(d, (float,int)):
+        if d is not None and isinstance(d, (float, int)):
             d = [d]
 
         # Set all attributes to None
@@ -89,37 +84,42 @@ class Mesh(object):
             self.L = L
             if len(d) != len(L):
                 raise ValueError(
-                    'd has different size (no of space dim.) from '
-                    'L: %d vs %d', len(d), len(L))
+                    "d has different size (no of space dim.) from L: %d vs %d",
+                    len(d),
+                    len(L),
+                )
             self.d = d
-            self.N = [int(round(float(self.L[i][1] -
-                                      self.L[i][0])/d[i]))
-                      for i in range(len(d))]
+            self.N = [
+                int(round(float(self.L[i][1] - self.L[i][0]) / d[i]))
+                for i in range(len(d))
+            ]
         if d is None and N is not None and L is not None:
             self.L = L
             if len(N) != len(L):
                 raise ValueError(
-                    'N has different size (no of space dim.) from '
-                    'L: %d vs %d', len(N), len(L))
+                    "N has different size (no of space dim.) from L: %d vs %d",
+                    len(N),
+                    len(L),
+                )
             self.N = N
-            self.d = [float(self.L[i][1] - self.L[i][0])/N[i]
-                      for i in range(len(N))]
+            self.d = [float(self.L[i][1] - self.L[i][0]) / N[i] for i in range(len(N))]
 
         if Nt is None and dt is not None and T is not None:
             self.T = T
             self.dt = dt
-            self.Nt = int(round(T/dt))
+            self.Nt = int(round(T / dt))
         if dt is None and Nt is not None and T is not None:
             self.T = T
             self.Nt = Nt
-            self.dt = T/float(Nt)
+            self.dt = T / float(Nt)
 
         if self.N is not None:
-            self.x = [np.linspace(
-                      self.L[i][0], self.L[i][1], self.N[i]+1)
-                      for i in range(len(self.L))]
+            self.x = [
+                np.linspace(self.L[i][0], self.L[i][1], self.N[i] + 1)
+                for i in range(len(self.L))
+            ]
         if Nt is not None:
-            self.t = np.linspace(self.t0, self.T, self.Nt+1)
+            self.t = np.linspace(self.t0, self.T, self.Nt + 1)
 
     def get_num_space_dim(self):
         return len(self.d) if self.d is not None else 0
@@ -131,21 +131,30 @@ class Mesh(object):
         return self.dt is not None
 
     def dump(self):
-        s = ''
+        s = ""
         if self.has_space():
-            s += 'space: ' + \
-                 'x'.join(['[%g,%g]' % (self.L[i][0], self.L[i][1])
-                          for i in range(len(self.L))]) + ' N='
-            s += 'x'.join([str(Ni) for Ni in self.N]) + ' d='
-            s += ','.join([str(di) for di in self.d])
+            s += (
+                "space: "
+                + "x".join(
+                    ["[%g,%g]" % (self.L[i][0], self.L[i][1]) for i in range(len(self.L))]
+                )
+                + " N="
+            )
+            s += "x".join([str(Ni) for Ni in self.N]) + " d="
+            s += ",".join([str(di) for di in self.d])
         if self.has_space() and self.has_time():
-            s += ' '
+            s += " "
         if self.has_time():
-            s += 'time: ' + '[%g,%g]' % (self.t0, self.T) + \
-                 ' Nt=%g' % self.Nt + ' dt=%g' % self.dt
+            s += (
+                "time: "
+                + "[%g,%g]" % (self.t0, self.T)
+                + " Nt=%g" % self.Nt
+                + " dt=%g" % self.dt
+            )
         return s
 
-class Function(object):
+
+class Function:
     """
     A scalar or vector function over a mesh (of class Mesh).
 
@@ -222,58 +231,55 @@ class Function(object):
     >>> f.u[1,2]  # space point (1,2)
     0.0
     """
+
     def __init__(self, mesh, num_comp=1, space_only=True):
         self.mesh = mesh
         self.num_comp = num_comp
         self.indices = []
 
         # Create array(s) to store mesh point values
-        if (self.mesh.has_space() and not self.mesh.has_time()) or \
-           (self.mesh.has_space() and self.mesh.has_time() and \
-            space_only):
+        if (self.mesh.has_space() and not self.mesh.has_time()) or (
+            self.mesh.has_space() and self.mesh.has_time() and space_only
+        ):
             # Space mesh only
             if num_comp == 1:
-                self.u = np.zeros(
-                    [self.mesh.N[i] + 1
-                     for i in range(len(self.mesh.N))])
-                self.indices = [
-                    'x'+str(i) for i in range(len(self.mesh.N))]
+                self.u = np.zeros([self.mesh.N[i] + 1 for i in range(len(self.mesh.N))])
+                self.indices = ["x" + str(i) for i in range(len(self.mesh.N))]
             else:
                 self.u = np.zeros(
-                    [self.mesh.N[i] + 1
-                     for i in range(len(self.mesh.N))] +
-                    [num_comp])
-                self.indices = [
-                    'x'+str(i)
-                    for i in range(len(self.mesh.N))] +\
-                    ['component']
+                    [self.mesh.N[i] + 1 for i in range(len(self.mesh.N))] + [num_comp]
+                )
+                self.indices = ["x" + str(i) for i in range(len(self.mesh.N))] + [
+                    "component"
+                ]
         if not self.mesh.has_space() and self.mesh.has_time():
             # Time mesh only
             if num_comp == 1:
-                self.u = np.zeros(self.mesh.Nt+1)
-                self.indices = ['time']
+                self.u = np.zeros(self.mesh.Nt + 1)
+                self.indices = ["time"]
             else:
                 # Need num_comp entries per time step
-                self.u = np.zeros((self.mesh.Nt+1, num_comp))
-                self.indices = ['time', 'component']
-        if self.mesh.has_space() and self.mesh.has_time() \
-            and not space_only:
+                self.u = np.zeros((self.mesh.Nt + 1, num_comp))
+                self.indices = ["time", "component"]
+        if self.mesh.has_space() and self.mesh.has_time() and not space_only:
             # Space-time mesh
-            size = [self.mesh.Nt+1] + \
-                   [self.mesh.N[i]+1
-                    for i in range(len(self.mesh.N))]
+            size = [self.mesh.Nt + 1] + [
+                self.mesh.N[i] + 1 for i in range(len(self.mesh.N))
+            ]
             if num_comp > 1:
-                self.indices = ['time'] + \
-                               ['x'+str(i)
-                                for i in range(len(self.mesh.N))] +\
-                               ['component']
+                self.indices = (
+                    ["time"]
+                    + ["x" + str(i) for i in range(len(self.mesh.N))]
+                    + ["component"]
+                )
                 size += [num_comp]
             else:
-                self.indices = ['time'] + ['x'+str(i)
-                                for i in range(len(self.mesh.N))]
+                self.indices = ["time"] + ["x" + str(i) for i in range(len(self.mesh.N))]
             self.u = np.zeros(size)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Run all functions with doctests in this module
     import doctest
+
     failure_count, test_count = doctest.testmod()

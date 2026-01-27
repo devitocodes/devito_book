@@ -1,0 +1,746 @@
+## Problem: Determine if equations are nonlinear or not {#sec-nonlin-exer}
+
+Classify each term in the following equations as linear or nonlinear.
+Assume that $u$, $\uu$, and $p$ are unknown functions and that
+all other symbols are known quantities.
+
+ 1. $mu^{\prime\prime} + \beta |u^{\prime}|u^{\prime} + cu = F(t)$
+ 1. $u_t = \dfc u_{xx}$
+ 1. $u_{tt} = c^2\nabla^2 u$
+ 1. $u_t = \nabla\cdot(\dfc(u)\nabla u) + f(x,y)$
+ 1. $u_t + f(u)_x = 0$
+ 1. $\uu_t + \uu\cdot\nabla \uu = -\nabla p + r\nabla^2\uu$, $\nabla\cdot\uu = 0$
+   ($\uu$ is a vector field)
+ 1. $u^{\prime} = f(u,t)$
+ 1. $\nabla^2 u = \lambda e^u$
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+ 1. $mu^{\prime\prime}$ is linear; $\beta |u^{\prime}|u^{\prime}$ is
+   nonlinear; $cu$ is linear; $F(t)$ does not contain the unknown $u$
+   and is hence constant in $u$, so the term is linear.
+ 1. $u_t$ is linear; $\dfc u_{xx}$ is linear.
+ 1. $u_{tt}$ is linear; $c^2\nabla^2 u$ is linear.
+ 1. $u_t$ is linear; $\nabla\cdot(\dfc(u)\nabla u)$ is nonlinear;
+   $f(x,y)$ is constant in $u$ and hence linear.
+ 1. $u_t$ is linear;  $f(u)_x$ is nonlinear if $f$ is nonlinear in $u$.
+ 1. $\uu_t$ is linear; $\uu\cdot\nabla \uu$ is nonlinear;
+   $-\nabla p$ is linear (in $p$);  $r\nabla^2\uu$ is linear;
+   $\nabla\cdot\uu$ is linear.
+ 1. $u^{\prime}$ is linear;  $f(u,t)$ is nonlinear if $f$ is nonlinear in $u$.
+ 1. $\nabla^2 u$ is linear; $\lambda e^u$ is nonlinear.
+:::
+
+
+## Exercise: Derive a relaxation formula {#sec-nonlin-exer-relax-formula}
+
+Derive (@eq-nonlin-timediscrete-logistic-relaxation-Newton-formula)
+in Section @sec-nonlin-timediscrete-logistic-relaxation.
+
+## Problem: Derive and investigate a generalized logistic model {#sec-nonlin-exer-logistic-gen}
+
+The logistic model for population growth is derived by assuming
+a nonlinear growth rate,
+$$
+u^{\prime} = a(u)u,\quad u(0)=I,
+$$ {#eq-nonlin-exer-logistic-gen-eq}
+and the logistic model arises from the simplest possible choice of
+$a(u)$: $r(u)=\varrho(1 - u/M)$, where $M$ is the maximum value of $u$ that
+the environment can sustain, and $\varrho$ is the growth under
+unlimited access to resources (as in the beginning when $u$ is small).
+The idea is that $a(u)\sim\varrho$ when $u$ is small and that
+$a(t)\rightarrow 0$ as $u\rightarrow M$.
+
+An $a(u)$ that generalizes the linear choice is the polynomial form
+$$
+a(u) = \varrho(1-u/M)^p,
+$$ {#eq-nonlin-exer-logistic-gen-r1}
+where $p>0$ is some real number.
+
+**a)**
+
+Formulate a Forward Euler, Backward Euler, and a Crank-Nicolson
+scheme for (@eq-nonlin-exer-logistic-gen-eq).
+
+:::{.callout-tip title="Use a geometric mean approximation in the Crank-Nicolson scheme:"}
+$[a(u)u]^{n+1/2}\approx a(u^n)u^{n+1}$.
+:::
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+The Forward Euler scheme reads
+$$
+[D^+_t u = a(u)u]^n,
+$$
+or written out,
+$$
+\frac{u^{n+1}-u^n}{\Delta t} = a(u^n)u^n\tp
+$$
+The scheme is linear in the unknown $u^{n+1}$:
+$$
+u^{n+1} = u^n + {\Delta t}a(u^n)u^n\tp
+$$
+The Backward Euler scheme,
+$$
+[D^-_t u = a(u)u]^n,
+$$
+becomes
+$$
+\frac{u^{n}-u^{n-1}}{\Delta t} = a(u^n)u^n,
+$$
+which is a nonlinear equation in the unknown $u$, here expressed as
+$u^{n+1}$:
+$$
+u^{n+1} - \Delta t a(u^{n+1})u^{n+1} = u^n\tp
+$$
+The standard Crank-Nicolson scheme,
+$$
+D_t u = \overline{a(u)u}^t]^{n+\half},
+$$
+takes the form
+$$
+\frac{u^{n+1}-u^n}{\Delta t} = \half a(u^n)u^n + \half a(u^{n+1})u^{n+1}\tp
+$$
+This is a nonlinear equation in the unknown $u^{n+1}$,
+$$
+u^{n+1} - \half {\Delta t} a(u^{n+1})u^{n+1}
+= u^n + \half {\Delta t} a(u^n)u^n\tp
+$$
+However, with the suggested geometric mean, the $a(u)u$ term is
+linearized:
+$$
+\frac{u^{n+1}-u^n}{\Delta t} = a(u^n)u^{n+1},
+$$
+leading to a linear equation in $u^{n+1}$:
+$$
+(1 - \Delta t a(u^n))u^{n+1} = u^n\tp
+$$
+:::
+
+
+
+**b)**
+
+Formulate Picard and Newton iteration for the Backward Euler scheme in a).
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+A Picard iteration for
+$$
+u^{n+1} - \Delta t a(u^{n+1})u^{n+1} = u^n\tp
+$$
+applies old values in for $u^{n+1}$ in $a(u^{n+1})$. If $u^-$ is the
+most recently computed approximation to $u^{n+1}$, we can write the Picard
+linearization as
+$$
+(1 - \Delta t a(u^-))u^{n+1} = u^n\tp
+$$
+Alternatively, with an iteration index $k$,
+$$
+(1 - \Delta t a(u^{n+1,k}))u^{n+1,k+1} = u^n\tp
+$$
+Newton's method starts with identifying the nonlinear equation as
+$F(u)=0$, and here
+$$
+F(u) = u - \Delta t a(u)u - u^n\tp
+$$
+The Jacobian is
+$$
+J(u) = \frac{F(u)}{du} = 1 - \Delta t(a'(u)u + a(u))\tp
+$$
+The key equation in Newton's method is then
+$$
+J(u^-)\delta u = - F(u^-),\quad u\leftarrow u - \delta u\tp
+$$
+:::
+
+
+
+**c)**
+
+Implement the numerical solution methods from a) and b).
+Use [`logistic.py`](https://github.com/hplgit/fdm-book/tree/master/src/nonlin/logistic.py) to compare the case
+$p=1$ and the choice (@eq-nonlin-exer-logistic-gen-r1).
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+We specialize the code for $a(u)$ to (@eq-nonlin-exer-logistic-gen-r1)
+since the code was developed from `logistic.py`. It is convenient to
+work with a dimensionless form of the problem.
+Choosing a time scale $t_c = 1\varrho$ and a scale for $u$,
+$u_c=M$, leads to
+$$
+u^{\prime} = \varrho (1-u)^p u,\quad u(0)=\alpha,
+$$
+where $\alpha$ is a dimensionless number
+$$
+\alpha = \frac{I}{M}\tp
+$$
+The three schemes can be implemented as follows.
+
+```python
+import numpy as np
+
+
+def FE_logistic(p, u0, dt, Nt):
+    u = np.zeros(Nt + 1)
+    u[0] = u0
+    for n in range(Nt):
+        u[n + 1] = u[n] + dt * (1 - u[n]) ** p * u[n]
+    return u
+
+
+def BE_logistic(p, u0, dt, Nt, choice="Picard", eps_r=1e-3, omega=1, max_iter=1000):
+    if choice == "Picard1":
+        choice = "Picard"
+        max_iter = 1
+
+    u = np.zeros(Nt + 1)
+    iterations = []
+    u[0] = u0
+    for n in range(1, Nt + 1):
+        c = -u[n - 1]
+        if choice == "Picard":
+
+            def F(u):
+                return -dt * (1 - u) ** p * u + u + c
+
+            u_ = u[n - 1]
+            k = 0
+            while abs(F(u_)) > eps_r and k < max_iter:
+                u_ = omega * (-c / (1 - dt * (1 - u_) ** p)) + (1 - omega) * u_
+                k += 1
+            u[n] = u_
+            iterations.append(k)
+
+        elif choice == "Newton":
+
+            def F(u):
+                return -dt * (1 - u) ** p * u + u + c
+
+            def dF(u):
+                return dt * p * (1 - u) ** (p - 1) * u - dt * (1 - u) ** p + 1
+
+            u_ = u[n - 1]
+            k = 0
+            while abs(F(u_)) > eps_r and k < max_iter:
+                u_ = u_ - F(u_) / dF(u_)
+                k += 1
+            u[n] = u_
+            iterations.append(k)
+    return u, iterations
+
+
+def CN_logistic(p, u0, dt, Nt):
+    u = np.zeros(Nt + 1)
+    u[0] = u0
+    for n in range(0, Nt):
+        u[n + 1] = u[n] / (1 - dt * (1 - u[n]) ** p)
+    return u
+```
+
+A first verification is to choose $p=1$ and compare the results with
+those from `logistic.py`. The number of iterations and the final
+numerical answers should be identical.
+:::
+
+
+
+**d)**
+
+Implement unit tests that check the asymptotic limit of the solutions:
+$u\rightarrow M$ as $t\rightarrow\infty$.
+
+:::{.callout-tip title="You need to experiment to find what \"infinite time\" is"}
+(increases substantially with $p$) and what the
+appropriate tolerance is for testing the asymptotic limit.
+:::
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+The test function may look like
+
+```python
+def test_asymptotic_value():
+    T = 100
+    dt = 0.1
+    Nt = int(round(T / float(dt)))
+    u0 = 0.1
+    p = 1.8
+
+    u_CN = CN_logistic(p, u0, dt, Nt)
+    u_BE_Picard, iter_Picard = BE_logistic(
+        p, u0, dt, Nt, choice="Picard", eps_r=1e-5, omega=1, max_iter=1000
+    )
+    u_BE_Newton, iter_Newton = BE_logistic(
+        p, u0, dt, Nt, choice="Newton", eps_r=1e-5, omega=1, max_iter=1000
+    )
+    u_FE = FE_logistic(p, u0, dt, Nt)
+
+    for arr in u_CN, u_BE_Picard, u_BE_Newton, u_FE:
+        expected = 1
+        computed = arr[-1]
+        tol = 0.01
+        msg = f"expected={expected}, computed={computed}"
+        print(msg)
+        assert abs(expected - computed) < tol
+```
+It is important with a sufficiently small `eps_r` tolerance for the
+asymptotic value to be accurate (using `eps_r=1E-3` leads to a value
+0.92 at $t=T$ instead of 0.994 when `eps_r=1E-5`).
+:::
+
+
+
+**e)**
+
+Perform experiments with Newton and Picard iteration for
+the model (@eq-nonlin-exer-logistic-gen-r1).
+See how sensitive
+the number of iterations is to $\Delta t$ and $p$.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+Appropriate code is
+
+```python
+import matplotlib.pyplot as plt
+
+
+def demo():
+    T = 12
+    p = 1.2
+    try:
+        dt = float(sys.argv[1])
+        eps_r = float(sys.argv[2])
+        omega = float(sys.argv[3])
+    except:
+        dt = 0.8
+        eps_r = 1e-3
+        omega = 1
+    N = int(round(T / float(dt)))
+
+    u_FE = FE_logistic(p, 0.1, dt, N)
+    u_BE31, iter_BE31 = BE_logistic(p, 0.1, dt, N, "Picard1", eps_r, omega)
+    u_BE3, iter_BE3 = BE_logistic(p, 0.1, dt, N, "Picard", eps_r, omega)
+    u_BE4, iter_BE4 = BE_logistic(p, 0.1, dt, N, "Newton", eps_r, omega)
+    u_CN = CN_logistic(p, 0.1, dt, N)
+
+    print(f"Picard mean no of iterations (dt={dt:g}):", int(round(np.mean(iter_BE3))))
+    print(f"Newton mean no of iterations (dt={dt:g}):", int(round(np.mean(iter_BE4))))
+
+    t = np.linspace(0, dt * N, N + 1)
+    plt.figure()
+    plt.plot(t, u_FE, label="FE")
+    plt.plot(t, u_BE3, label="BE Picard")
+    plt.plot(t, u_BE31, label="BE Picard1")
+    plt.plot(t, u_BE4, label="BE Newton")
+    plt.plot(t, u_CN, label="CN gm")
+    plt.legend(loc="lower right")
+    plt.title(f"dt={dt:g}, eps={eps_r:.0E}")
+    plt.xlabel("t")
+    plt.ylabel("u")
+    filestem = "logistic_N%d_eps%03d" % (N, np.log10(eps_r))
+    plt.savefig(filestem + "_u.png")
+    plt.savefig(filestem + "_u.pdf")
+
+    plt.figure()
+    plt.plot(range(1, len(iter_BE3) + 1), iter_BE3, "r-o", label="Picard")
+    plt.plot(range(1, len(iter_BE4) + 1), iter_BE4, "b-o", label="Newton")
+    plt.legend()
+    plt.title(f"dt={dt:g}, eps={eps_r:.0E}")
+    plt.axis([1, N + 1, 0, max(iter_BE3 + iter_BE4) + 1])
+    plt.xlabel("Time level")
+    plt.ylabel("No of iterations")
+    plt.savefig(filestem + "_iter.png")
+    plt.savefig(filestem + "_iter.pdf")
+```
+
+:::
+
+
+
+## Problem: Experience the behavior of Newton's method {#sec-nonlin-exer-Newton-problems1}
+
+The program [`Newton_demo.py`](https://github.com/hplgit/fdm-book/tree/master/src/nonlin/Newton_demo.py) illustrates
+graphically each step in Newton's method and is run like
+
+```bash
+Terminal> python Newton_demo.py f dfdx x0 xmin xmax
+```
+Use this program to investigate potential
+problems with Newton's method when solving $e^{-0.5x^2}\cos (\pi x)=0$.
+Try a starting point $x_0=0.8$ and $x_0=0.85$ and watch the different
+behavior. Just run
+
+```bash
+Terminal>  python Newton_demo.py '0.2 + exp(-0.5*x**2)*cos(pi*x)' \
+           '-x*exp(-x**2)*cos(pi*x) - pi*exp(-x**2)*sin(pi*x)' \
+           0.85 -3 3
+```
+and repeat with 0.85 replaced by 0.8.
+
+## Exercise: Compute the Jacobian of a $2\times 2$ system {#sec-nonlin-exer-vib-Jacobian}
+
+Write up the system (@eq-nonlin-ode-generic-sys-pendulum-u0)-(@eq-nonlin-ode-generic-sys-pendulum-u1) in the form $F(u)=0$, $F=(F_0,F_1)$, $u=(u_0,u_1)$,
+and compute the Jacobian $J_{i,j}=\partial F_i/\partial u_j$.
+
+## Problem: Solve nonlinear equations arising from a vibration ODE {#sec-nonlin-exer-vib-geometric-mean}
+
+Consider a nonlinear vibration problem
+$$
+mu^{\prime\prime} + bu^{\prime}|u^{\prime}| + s(u) = F(t),
+$$
+where $m>0$ is a constant, $b\geq 0$ is a constant, $s(u)$ a possibly
+nonlinear function of $u$, and $F(t)$ is a prescribed function. Such
+models arise from Newton's second law of motion in mechanical
+vibration problems where $s(u)$ is a spring or restoring force,
+$mu^{\prime\prime}$ is mass times acceleration, and
+$bu^{\prime}|u^{\prime}|$ models water or air drag.
+
+**a)**
+
+Rewrite the equation for $u$ as a system of two first-order ODEs, and
+discretize this system by a Crank-Nicolson (centered difference)
+method. With $v=u^\prime$, we get a nonlinear term
+$v^{n+\frac{1}{2}}|v^{n+\frac{1}{2}}|$. Use a geometric
+average for $v^{n+\frac{1}{2}}$.
+
+
+**b)**
+
+Formulate a Picard iteration method to solve the system of nonlinear
+algebraic equations.
+
+
+**c)**
+
+Explain how to apply Newton's method to solve the nonlinear equations
+at each time level. Derive expressions for the Jacobian and the
+right-hand side in each Newton iteration.
+
+
+## Exercise: Find the truncation error of arithmetic mean of products {#sec-nonlin-exer-products-arith-mean}
+
+In Section @sec-nonlin-pdelevel-Picard-CN we introduce alternative
+arithmetic means of a product. Say the product is $P(t)Q(t)$ evaluated
+at $t=t_{n+\frac{1}{2}}$. The exact value is
+$$
+[PQ]^{n+\frac{1}{2}} = P^{n+\frac{1}{2}}Q^{n+\frac{1}{2}}
+$$
+There are two obvious candidates for evaluating $[PQ]^{n+\frac{1}{2}}$
+as a mean of values of $P$ and $Q$ at $t_n$ and $t_{n+1}$. Either
+we can take the arithmetic mean of each factor $P$ and $Q$,
+$$
+[PQ]^{n+\frac{1}{2}} \approx \frac{1}{2}(P^n + P^{n+1})\frac{1}{2}(Q^n + Q^{n+1}),
+$$ {#eq-nonlin-exer-products-arith-mean-f}
+or we can take the arithmetic mean of the product $PQ$:
+$$
+[PQ]^{n+\frac{1}{2}} \approx \frac{1}{2}(P^nQ^n + P^{n+1}Q^{n+1})\tp
+$$ {#eq-nonlin-exer-products-arith-mean-p}
+
+The arithmetic average
+of $P(t_{n+\frac{1}{2}})$ is $\Oof{\Delta t^2}$:
+$$
+P(t_{n+\frac{1}{2}}) = \frac{1}{2}(P^n + P^{n+1}) +\Oof{\Delta t^2}\tp
+$$
+A fundamental question is whether (@eq-nonlin-exer-products-arith-mean-f)
+and (@eq-nonlin-exer-products-arith-mean-p) have different
+orders of accuracy in $\Delta t = t_{n+1}-t_n$. To investigate
+this question, expand quantities at $t_{n+1}$ and $t_n$ in
+Taylor series around $t_{n+\frac{1}{2}}$, and subtract the true
+value $[PQ]^{n+\frac{1}{2}}$ from the approximations
+(@eq-nonlin-exer-products-arith-mean-f) and
+(@eq-nonlin-exer-products-arith-mean-p) to see what the
+order of the error terms are.
+
+:::{.callout-tip title="You may explore `sympy` for carrying out the tedious calculations."}
+A general Taylor series expansion of $P(t+\frac{1}{2}\Delta t)$ around $t$
+involving just a general function $P(t)$ can be
+created as follows:
+
+```python
+>>> from sympy import *
+>>> t, dt = symbols('t dt')
+>>> P = symbols('P', cls=Function)
+>>> P(t).series(t, 0, 4)
+P(0) + t*Subs(Derivative(P(_x), _x), (_x,), (0,)) +
+t**2*Subs(Derivative(P(_x), _x, _x), (_x,), (0,))/2 +
+t**3*Subs(Derivative(P(_x), _x, _x, _x), (_x,), (0,))/6 + O(t**4)
+>>> P_p = P(t).series(t, 0, 4).subs(t, dt/2)
+>>> P_p
+P(0) + dt*Subs(Derivative(P(_x), _x), (_x,), (0,))/2 +
+dt**2*Subs(Derivative(P(_x), _x, _x), (_x,), (0,))/8 +
+dt**3*Subs(Derivative(P(_x), _x, _x, _x), (_x,), (0,))/48 + O(dt**4)
+```
+The error of the arithmetic mean, $\frac{1}{2}(P(-\frac{1}{2}\Delta t)
++ P(-\frac{1}{2}\Delta t))$ for $t=0$ is then
+
+```python
+>>> P_m = P(t).series(t, 0, 4).subs(t, -dt/2)
+>>> mean = Rational(1,2)*(P_m + P_p)
+>>> error = simplify(expand(mean) - P(0))
+>>> error
+dt**2*Subs(Derivative(P(_x), _x, _x), (_x,), (0,))/8 + O(dt**4)
+```
+Use these examples to investigate the error of
+(@eq-nonlin-exer-products-arith-mean-f) and
+(@eq-nonlin-exer-products-arith-mean-p) for $n=0$. (Choosing $n=0$
+is necessary for not making the expressions too complicated for `sympy`,
+but there is of course no lack of generality by using $n=0$ rather
+than an arbitrary $n$ - the main point is the product and addition
+of Taylor series.)
+:::
+
+## Problem: Newton's method for linear problems {#sec-nonlin-exer-Newton-linear}
+
+Suppose we have a linear system $F(u) = Au- b=0$. Apply Newton's method
+to this system, and show that the method converges in one iteration.
+
+## Problem: Discretize a 1D problem with a nonlinear coefficient {#sec-nonlin-exer-1D-1pu2-fem}
+
+We consider the problem
+$$
+((1 + u^2)u^{\prime})^{\prime} = 1,\quad x\in (0,1),\quad u(0)=u(1)=0\tp
+$$ {#eq-nonlin-exer-1D-1pu2-fem-pde}
+
+Discretize (@eq-nonlin-exer-1D-1pu2-fem-pde) by a centered
+finite difference method on a uniform mesh.
+
+## Problem: Linearize a 1D problem with a nonlinear coefficient {#sec-nonlin-exer-1D-1pu2-PicardNewton}
+
+We have a two-point boundary value problem
+$$
+((1 + u^2)u^{\prime})^{\prime} = 1,\quad x\in (0,1),\quad u(0)=u(1)=0\tp
+$$ {#eq-nonlin-exer-1D-1pu2-PicardNewton-pde}
+
+**a)**
+
+Construct a Picard iteration method for (@eq-nonlin-exer-1D-1pu2-PicardNewton-pde)
+without discretizing in space.
+
+
+**b)**
+
+Apply Newton's method to (@eq-nonlin-exer-1D-1pu2-PicardNewton-pde)
+without discretizing in space.
+
+
+**c)**
+
+Discretize (@eq-nonlin-exer-1D-1pu2-PicardNewton-pde) by a centered finite
+difference scheme. Construct a Picard method for the resulting
+system of nonlinear algebraic equations.
+
+
+**d)**
+
+Discretize (@eq-nonlin-exer-1D-1pu2-PicardNewton-pde) by a centered finite
+difference scheme. Define the system of nonlinear algebraic equations,
+calculate the Jacobian, and set up Newton's method for solving the system.
+
+
+## Problem: Finite differences for the 1D Bratu problem {#sec-nonlin-exer-1D-fu-discretize-fd}
+
+## Good: http://faculty.oxy.edu/ron/research/bratu/bratu.pdf
+## It has a collocation method too
+
+We address the so-called Bratu problem
+$$
+u^{\prime\prime} + \lambda e^u=0,\quad x\in (0,1),\quad u(0)=u(1)=0,
+$$ {#eq-nonlin-exer-1D-fu-discretize-fd-pde}
+where $\lambda$ is a given parameter and $u$ is a function of $x$.
+This is a widely used model problem for studying numerical
+methods for nonlinear differential equations.
+The problem (@eq-nonlin-exer-1D-fu-discretize-fd-pde) has an
+exact solution
+$$
+\uex(x) = -2\ln\left(\frac{\cosh((x-\half)\theta/2)}{\cosh(\theta/4)}\right),
+$$
+where $\theta$ solves
+$$
+\theta = \sqrt{2\lambda}\cosh(\theta/4)\tp
+$$
+There are two solutions of (@eq-nonlin-exer-1D-fu-discretize-fd-pde) for
+$0<\lambda <\lambda_c$ and no solution for $\lambda >\lambda_c$.
+For $\lambda = \lambda_c$ there is one unique solution. The critical
+value $\lambda_c$ solves
+$$
+1 = \sqrt{2\lambda_c}\frac{1}{4}\sinh(\theta(\lambda_c)/4)\tp
+$$
+A numerical value is $\lambda_c = 3.513830719$.
+
+**a)**
+
+Discretize (@eq-nonlin-exer-1D-fu-discretize-fd-pde) by a
+centered finite difference method.
+
+
+**b)**
+
+Set up the nonlinear equations $F_i(u_0,u_1,\ldots,u_{N_x})=0$
+from a). Calculate the associated Jacobian.
+
+
+**c)**
+
+Implement a solver that can compute $u(x)$ using Newton's method.
+Plot the error as a function of $x$ in each iteration.
+
+
+**d)**
+
+Investigate whether Newton's method gives second-order convergence
+by computing
+$|| \uex - u||/||\uex - u^{-}||^2$
+in each iteration, where $u$ is solution in the current iteration and
+$u^{-}$ is the solution in the previous iteration.
+
+
+## Problem: Discretize a nonlinear 1D heat conduction PDE by finite differences {#sec-nonlin-exer-1D-heat-nonlinear-fdm}
+
+We address the 1D heat conduction PDE
+$$
+\varrho c(T) T_t = (k(T)T_x)_x,
+$$
+for $x\in [0,L]$,
+where $\varrho$ is the density of the solid material, $c(T)$ is
+the heat capacity, $T$ is the temperature, and $k(T)$ is the
+heat conduction coefficient. $T(x,0)=I(x)$, and ends are
+subject to a cooling law:
+$$
+k(T)T_x|_{x=0} = h(T)(T-T_s),\quad -k(T)T_x|_{x=L}=h(T)(T-T_s),
+$$
+where $h(T)$ is a heat transfer coefficient and $T_s$ is the
+given surrounding temperature.
+
+**a)**
+
+Discretize this PDE in time using either a
+Backward Euler or Crank-Nicolson scheme.
+
+
+**b)**
+
+Formulate a Picard iteration method for the time-discrete problem
+(i.e., an iteration method before discretizing in space).
+
+
+**c)**
+
+Formulate a Newton method for the time-discrete problem in b).
+
+
+**d)**
+
+Discretize the PDE by a finite difference method in space.
+Derive the matrix and right-hand side of a Picard iteration method applied
+to the space-time discretized PDE.
+
+
+**e)**
+
+Derive the matrix and right-hand side of a Newton method applied
+to the discretized PDE in d).
+
+
+## Problem: Differentiate a highly nonlinear term {#sec-nonlin-exer-grad-pow-term}
+
+The operator $\nabla\cdot(\dfc(u)\nabla u)$ with
+$\dfc(u) = |\nabla u|^q$ appears in several physical problems,
+especially flow of Non-Newtonian fluids. The expression $|\nabla u|$
+is defined as the Euclidean norm of a vector:
+$|\nabla u|^2 = \nabla u \cdot \nabla u$.
+In a Newton method one
+has to carry out the differentiation $\partial\dfc(u)/\partial c_j$,
+for $u=\sum_kc_k\baspsi_k$. Show that
+$$
+{\partial\over\partial u_j} |\nabla u|^q =
+q|\nabla  u|^{q-2}\nabla u\cdot
+\nabla\baspsi_j\tp
+$$
+
+::: {.callout-tip collapse="true" title="Solution"}
+\begin{align*}
+\frac{\partial }{\partial c_j}|\nabla u |^q &=
+\frac{\partial }{\partial c_j}(\nabla u\cdot \nabla u )^{\tfrac{q}{2}}
+= \frac{q}{2} (\nabla u\cdot \nabla u )^{\tfrac{q}{2}-1}
+\frac{\partial }{\partial c_j}(\nabla u\cdot \nabla u )\\
+&=\frac{q}{2} |\nabla u |^{q-2}(\frac{\partial }{\partial c_j}(\nabla u)
+\cdot \nabla u + \nabla u \cdot\frac{\partial }{\partial c_j}(\nabla u))\\
+&=q|\nabla u |^{q-2}(\nabla u \cdot \nabla \frac{\partial u}{\partial c_j})
+=q|\nabla u |^{q-2}(\nabla u \cdot \nabla\psi_j)
+\end{align*}
+:::
+
+
+## Exercise: Crank-Nicolson for a nonlinear 3D diffusion equation {#sec-nonlin-exer-2D-heat-nonlinear-fd}
+
+Redo Section @sec-nonlin-alglevel-dD-fd when a Crank-Nicolson scheme
+is used to discretize the equations in time and the problem is
+formulated for three spatial dimensions.
+
+:::{.callout-tip title="Express the Jacobian as $J_{i,j,k,r,s,t} = \partial F_{i,j,k}/\partial u_{r,s,t}$ and observe, as in the 2D case, that $J_{i,j,k,r,s,t}$ is very sparse:"}
+$J_{i,j,k,r,s,t}\neq 0$ only for $r=i\pm i$, $s=j\pm 1$, and $t=k\pm 1$
+as well as $r=i$, $s=j$, and $t=k$.
+:::
+
+## Problem: Find the sparsity of the Jacobian {#sec-nonlin-exer-sparsity-Jacobian}
+
+Consider a typical nonlinear Laplace term like
+$\nabla\cdot\dfc(u)\nabla u$ discretized by centered finite differences.
+Explain why the Jacobian corresponding to this term has the same
+sparsity pattern as the matrix associated with the corresponding linear
+term $\dfc\nabla^2 u$.
+
+:::{.callout-tip title="Set up the unknowns that enter the difference equation at a"}
+point $(i,j)$ in 2D or $(i,j,k)$ in 3D, and identify the
+nonzero entries of the Jacobian that can arise from such a type
+of difference equation.
+:::
+
+## Problem: Investigate a 1D problem with a continuation method {#sec-nonlin-exer-continuation-1DnNflow}
+
+Flow of a pseudo-plastic power-law fluid between two flat plates can be
+modeled by
+$$
+\frac{d}{dx}\left(\mu_0\left\vert\frac{du}{dx}\right\vert^{n-1}
+\frac{du}{dx}\right) = -\beta,\quad u^{\prime}(0)=0,\ u(H) = 0,
+$$
+where $\beta>0$ and $\mu_0>0$ are constants.
+A target value of $n$ may be $n=0.2$.
+
+**a)**
+
+Formulate a Picard iteration method directly for the differential
+equation problem.
+
+
+**b)**
+
+Perform a finite difference discretization of the problem in
+each Picard iteration. Implement a solver that can compute $u$
+on a mesh. Verify that the solver gives an exact solution for $n=1$
+on a uniform mesh regardless of the cell size.
+
+
+**c)**
+
+Given a sequence of decreasing $n$ values, solve the problem for each
+$n$ using the solution for the previous $n$ as initial guess for
+the Picard iteration. This is called a continuation method.
+Experiment with $n=(1,0.6,0.2)$ and $n=(1,0.9,0.8,\ldots,0.2)$
+and make a table of the number of Picard iterations versus $n$.
+
+
+**d)**
+
+Derive a Newton method at the differential equation level and
+discretize the resulting linear equations in each Newton iteration
+with the finite difference method.
+
+
+**e)**
+
+Investigate if Newton's method has better convergence properties than
+Picard iteration, both in combination with a continuation method.

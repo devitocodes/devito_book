@@ -1,0 +1,15 @@
+# Diffusion Equations {#sec-ch-diffu}
+
+{{< include diffu_fd1.qmd >}}
+
+{{< include diffu_analysis.qmd >}}
+
+{{< include diffu_fd2.qmd >}}
+
+{{< include diffu_fd3.qmd >}}
+
+{{< include diffu_rw.qmd >}}
+
+{{< include diffu_app.qmd >}}
+
+{{< include diffu_exer.qmd >}}

@@ -3,33 +3,41 @@ Solve u' = f(u, t). Test if a trick in linearization in a Picard
 iteration is done like f(u_,t)*u_/u, if u_ is the most recent
 approximation to u (called Picard2 in the Odespy software).
 """
+
+from numpy import linspace, sin
 from odespy import BackwardEuler
 
-from numpy import cos, linspace, exp, sin
 
 def f(u, t):
-    return sin(2*(1+u))
+    return sin(2 * (1 + u))
+
 
 def f2(u, t):
-    return -u**3
+    return -(u**3)
+
 
 eps_iter = 0.001
 max_iter = 500
-solver1 = BackwardEuler(f, nonlinear_solver='Picard', verbose=2,
-                        eps_iter=eps_iter, max_iter=max_iter)
-solver2 = BackwardEuler(f, nonlinear_solver='Picard2', verbose=2,
-                        eps_iter=eps_iter, max_iter=max_iter)
+solver1 = BackwardEuler(
+    f, nonlinear_solver="Picard", verbose=2, eps_iter=eps_iter, max_iter=max_iter
+)
+solver2 = BackwardEuler(
+    f, nonlinear_solver="Picard2", verbose=2, eps_iter=eps_iter, max_iter=max_iter
+)
 solver1.set_initial_condition(1)
 solver2.set_initial_condition(1)
 tp = linspace(0, 4, 11)
 u1, t = solver1.solve(tp)
 u2, t = solver2.solve(tp)
-print 'Picard it:', solver1.num_iterations_total
-print 'Picard2 it:', solver2.num_iterations_total
+print("Picard it:", solver1.num_iterations_total)
+print("Picard2 it:", solver2.num_iterations_total)
 
-from scitools.std import plot
-plot(t, u1, t, u2, legend=('Picard', 'Picard2'))
-raw_input()
+import matplotlib.pyplot as plt
+
+plt.plot(t, u1, label="Picard")
+plt.plot(t, u2, label="Picard2")
+plt.legend()
+input()
 
 """
 f(u,t) = -u**3:

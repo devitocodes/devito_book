@@ -1,0 +1,240 @@
+#!/usr/bin/env python
+"""
+1D wave equation with u=0 at the boundary.
+Simplest possible implementation.
+
+The key function is::
+
+  u, x, t, cpu = solver(I, V, f, c, L, dt, C, T, user_action)
+
+which solves the wave equation u_tt = c**2*u_xx on (0,L) with u=0
+on x=0,L, for t in (0,T].  Initial conditions: u=I(x), u_t=V(x).
+
+T is the stop time for the simulation.
+dt is the desired time step.
+C is the Courant number (=c*dt/dx), which specifies dx.
+f(x,t) is a function for the source term (can be 0 or None).
+I and V are functions of x.
+
+user_action is a function of (u, x, t, n) where the calling
+code can add visualization, error computations, etc.
+"""
+
+import numpy as np
+
+
+def solver(I, V, f, c, L, dt, C, T, user_action=None):
+    """Solve u_tt=c^2*u_xx + f on (0,L)x(0,T]."""
+    Nt = int(round(T / dt))
+    t = np.linspace(0, Nt * dt, Nt + 1)  # Mesh points in time
+    dx = dt * c / float(C)
+    Nx = int(round(L / dx))
+    x = np.linspace(0, L, Nx + 1)  # Mesh points in space
+    C2 = C**2  # Help variable in the scheme
+    # Make sure dx and dt are compatible with x and t
+    dx = x[1] - x[0]
+    dt = t[1] - t[0]
+
+    if f is None or f == 0:
+        f = lambda x, t: 0
+    if V is None or V == 0:
+        V = lambda x: 0
+
+    u = np.zeros(Nx + 1)  # Solution array at new time level
+    u_1 = np.zeros(Nx + 1)  # Solution at 1 time level back
+    u_2 = np.zeros(Nx + 1)  # Solution at 2 time levels back
+
+    import time
+
+    t0 = time.perf_counter()  # for measuring CPU time
+    # Load initial condition into u_1
+    for i in range(0, Nx + 1):
+        u_1[i] = I(x[i])
+
+    if user_action is not None:
+        user_action(u_1, x, t, 0)
+
+    # Special formula for first time step
+    n = 0
+    for i in range(1, Nx):
+        u[i] = (
+            u_1[i]
+            + dt * V(x[i])
+            + 0.5 * C2 * (u_1[i - 1] - 2 * u_1[i] + u_1[i + 1])
+            + 0.5 * dt**2 * f(x[i], t[n])
+        )
+    u[0] = 0
+    u[Nx] = 0
+
+    if user_action is not None:
+        user_action(u, x, t, 1)
+
+    # Switch variables before next step
+    u_2[:] = u_1
+    u_1[:] = u
+
+    for n in range(1, Nt):
+        # Update all inner points at time t[n+1]
+        for i in range(1, Nx):
+            u[i] = (
+                -u_2[i]
+                + 2 * u_1[i]
+                + C2 * (u_1[i - 1] - 2 * u_1[i] + u_1[i + 1])
+                + dt**2 * f(x[i], t[n])
+            )
+
+        # Insert boundary conditions
+        u[0] = 0
+        u[Nx] = 0
+        if user_action is not None and user_action(u, x, t, n + 1):
+            break
+
+        # Switch variables before next step
+        u_2[:] = u_1
+        u_1[:] = u
+
+    cpu_time = time.perf_counter() - t0
+    return u, x, t, cpu_time
+
+
+def test_quadratic():
+    """Check that u(x,t)=x(L-x)(1+t/2) is exactly reproduced."""
+
+    def u_exact(x, t):
+        return x * (L - x) * (1 + 0.5 * t)
+
+    def I(x):
+        return u_exact(x, 0)
+
+    def V(x):
+        return 0.5 * u_exact(x, 0)
+
+    def f(x, t):
+        return 2 * (1 + 0.5 * t) * c**2
+
+    L = 2.5
+    c = 1.5
+    C = 0.75
+    Nx = 6  # Very coarse mesh for this exact test
+    dt = C * (L / Nx) / c
+    T = 18
+
+    def assert_no_error(u, x, t, n):
+        u_e = u_exact(x, t[n])
+        diff = np.abs(u - u_e).max()
+        tol = 1e-13
+        assert diff < tol
+
+    solver(I, V, f, c, L, dt, C, T, user_action=assert_no_error)
+
+
+def test_constant():
+    """Check that u(x,t)=Q=0 is exactly reproduced."""
+    u_const = 0  # Require 0 because of the boundary conditions
+    C = 0.75
+    dt = C  # Very coarse mesh
+    u, x, t, cpu = solver(I=lambda x: 0, V=0, f=0, c=1.5, L=2.5, dt=dt, C=C, T=18)
+    tol = 1e-14
+    assert np.abs(u - u_const).max() < tol
+
+
+def viz(
+    I,
+    V,
+    f,
+    c,
+    L,
+    dt,
+    C,
+    T,  # PDE parameters
+    umin,
+    umax,  # Interval for u in plots
+    animate=True,  # Simulation with animation?
+    solver_function=solver,  # Function with numerical algorithm
+):
+    """Run solver, store and visualize u at each time level."""
+    import glob
+    import os
+    import time
+
+    import matplotlib.pyplot as plt
+
+    class PlotMatplotlib:
+        def __init__(self):
+            self.all_u = []
+
+        def __call__(self, u, x, t, n):
+            """user_action function for solver."""
+            if n == 0:
+                plt.ion()
+                self.lines = plt.plot(x, u, "r-")
+                plt.xlabel("x")
+                plt.ylabel("u")
+                plt.axis([0, L, umin, umax])
+                plt.legend([f"t={t[n]:f}"], loc="lower left")
+            else:
+                self.lines[0].set_ydata(u)
+                plt.legend([f"t={t[n]:f}"], loc="lower left")
+                plt.draw()
+            time.sleep(2) if t[n] == 0 else time.sleep(0.2)
+            plt.savefig("tmp_%04d.png" % n)  # for movie making
+            self.all_u.append(u.copy())
+
+    plot_u = PlotMatplotlib()
+
+    # Clean up old movie frames
+    for filename in glob.glob("tmp_*.png"):
+        os.remove(filename)
+
+    # Call solver and do the simulaton
+    user_action = plot_u if animate else None
+    u, x, t, cpu = solver_function(I, V, f, c, L, dt, C, T, user_action)
+
+    # Make video files using ffmpeg
+    fps = 4  # frames per second
+    codec2ext = dict(flv="flv", libx264="mp4", libvpx="webm", libtheora="ogg")
+    for codec, ext in codec2ext.items():
+        cmd = f"ffmpeg -r {fps} -i tmp_%04d.png -vcodec {codec} movie.{ext}"
+        os.system(cmd)
+
+    return cpu, np.array(plot_u.all_u)
+
+
+def guitar(C):
+    """Triangular wave (pulled guitar string)."""
+    L = 0.75
+    x0 = 0.8 * L
+    a = 0.005
+    freq = 440
+    wavelength = 2 * L
+    c = freq * wavelength
+    from math import pi
+
+    w = 2 * pi * freq
+    num_periods = 1
+    T = 2 * pi / w * num_periods
+    # Choose dt the same as the stability limit for Nx=50
+    dt = L / 50.0 / c
+
+    def I(x):
+        return a * x / x0 if x < x0 else a / (L - x0) * (L - x)
+
+    umin = -1.2 * a
+    umax = -umin
+    cpu, all_u = viz(I, 0, 0, c, L, dt, C, T, umin, umax, animate=True)
+    # checking
+    # for e in all_u:
+    #    print e[int(len(all_u[1])/2)]
+
+
+if __name__ == "__main__":
+    # test_quadratic()
+    import sys
+
+    try:
+        C = float(sys.argv[1])
+        print(f"C={C:g}")
+    except IndexError:
+        C = 0.85
+    print(f"Courant number: {C:.2f}")
+    guitar(C)

@@ -1,0 +1,10 @@
+# Vendored third-party libraries
+**/node_modules/
+
+# Build outputs
+doc/pub/
+_book/
+
+# Virtual environments
+venv/
+.venv/

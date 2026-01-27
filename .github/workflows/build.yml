@@ -1,0 +1,96 @@
+name: Build Book PDF
+
+on:
+  push:
+    branches: [main, master, maximum-effort]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: '1.6.40'
+
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-science \
+            texlive-pictures \
+            texlive-bibtex-extra \
+            texlive-plain-generic \
+            lmodern \
+            biber \
+            latexmk \
+            cm-super \
+            dvipng \
+            ghostscript
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy scipy matplotlib sympy
+
+      - name: Verify installations
+        run: |
+          echo "=== Quarto version ==="
+          quarto --version
+          echo ""
+          echo "=== Python packages ==="
+          pip list | grep -E "numpy|scipy|matplotlib|sympy"
+          echo ""
+          echo "=== LaTeX version ==="
+          pdflatex --version | head -2
+
+      - name: Build book PDF with Quarto
+        run: |
+          quarto render --to pdf
+
+      - name: Verify PDF was created
+        run: |
+          if [ -f _book/Finite-Difference-Computing-with-PDEs.pdf ]; then
+            echo "PDF successfully created!"
+            ls -lh _book/Finite-Difference-Computing-with-PDEs.pdf
+          else
+            echo "ERROR: PDF was not created"
+            echo "Contents of _book directory:"
+            ls -la _book/ || echo "_book directory does not exist"
+            exit 1
+          fi
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fdm-book-pdf
+          path: _book/Finite-Difference-Computing-with-PDEs.pdf
+          retention-days: 30
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            _book/*.log
+            _book/*.tex
+          retention-days: 7

@@ -1,0 +1,81 @@
+# See https://pre-commit.com for more information
+default_stages: [pre-commit]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+  - repo: https://github.com/pycqa/isort
+    rev: 7.0.0
+    hooks:
+      # Run isort to check only (don't modify files)
+      - id: isort
+        name: "Check imports are sorted"
+        args: [--check-only, --filter-files]
+        stages: [pre-commit]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.14.14
+    hooks:
+      # Run the linter to check only (don't modify files)
+      - id: ruff-check
+        name: "Check code is linted with ruff"
+  # Disabled flake8 - ruff covers the same checks with better performance
+  # - repo: https://github.com/PyCQA/flake8
+  #   rev: 7.3.0
+  #   hooks:
+  #     - id: flake8
+  #       name: "Check code is linted with flake8"
+  #       additional_dependencies: [flake8-pyproject]
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.33.1
+    hooks:
+      - id: typos
+        name: "Check files for typos"
+        stages: [pre-commit]
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.20.0
+    hooks:
+      - id: markdownlint-cli2
+        name: "Check markdown files"
+        stages: [pre-commit]
+  #
+  # These stages modify the files applying fixes where possible
+  # Since this may be undesirable they will not run automatically
+  # These stages can be run with
+  # pre-commit run --hook-stage manual
+  #
+  - repo: https://github.com/pycqa/isort
+    rev: 7.0.0
+    hooks:
+      # Run isort to check only (don't modify files)
+      - id: isort
+        name: "Fix imports with isort"
+        args: [--filter-files]
+        stages: [manual]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.14.14
+    hooks:
+      # Run the linter to check only (don't modify files)
+      - id: ruff-check
+        name: "Fix linting errors with ruff check --fix"
+        args: [--fix]
+        stages: [manual]
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.33.1
+    hooks:
+      - id: typos
+        name: "Fix typos"
+        args: [-w]
+        stages: [manual]
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.20.0
+    hooks:
+      - id: markdownlint-cli2
+        name: "Fix markdown files"
+        args: [--fix]
+        stages: [manual]

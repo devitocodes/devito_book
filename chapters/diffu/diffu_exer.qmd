@@ -1,0 +1,1089 @@
+## Exercise: Stabilizing the Crank-Nicolson method by Rannacher time stepping {#sec-diffu-exer-CN-Rannacher}
+
+It is well known that the Crank-Nicolson method may give rise to
+non-physical oscillations in the solution of diffusion equations
+if the initial data exhibit jumps (see Section @sec-diffu-pde1-analysis-CN).
+Rannacher [@Rannacher_1984] suggested a stabilizing technique
+consisting of using the Backward Euler scheme for the first two
+time steps with step length $\half\Delta t$. One can generalize
+this idea to taking $2m$ time steps of size $\half\Delta t$ with
+the Backward Euler method and then continuing with the
+Crank-Nicolson method, which is of second-order in time.
+The idea is that the high frequencies of the initial solution are
+quickly damped out, and the Backward Euler scheme treats these
+high frequencies correctly. Thereafter, the high frequency content of
+the solution is gone and the Crank-Nicolson method will do well.
+
+Test this idea for $m=1,2,3$ on a diffusion problem with a
+discontinuous initial condition. Measure the convergence rate using
+the solution (@eq-diffu-analysis-pde1-step-erf-sol) with the boundary
+conditions
+(@eq-diffu-analysis-pde1-p1-erf-uL)-(@eq-diffu-analysis-pde1-p1-erf-uR)
+for $t$ values such that the conditions are in the vicinity of $\pm 1$.
+For example, $t< 5a 1.6\cdot 10^{-2}$ makes the solution diffusion from
+a step to almost a straight line. The
+program `diffu_erf_sol.py` shows how to compute the analytical
+solution.
+
+## Project: Energy estimates for diffusion problems {#sec-diffu-exer-energy-estimates}
+
+This project concerns so-called *energy estimates* for diffusion problems
+that can be used for qualitative analytical insight and for
+verification of implementations.
+
+**a)**
+
+We start with a 1D homogeneous diffusion equation with zero Dirichlet
+conditions:
+
+```{=latex}
+\begin{alignat}{2}
+u_t &= \alpha u_xx, & x\in \Omega =(0,L),\ t\in (0,T],
+ \\
+u(0,t) = u(L,t) &= 0, & t\in (0,T],
+\\
+u(x,0) &= I(x), & x\in [0,L]\tp
+\end{alignat}
+```
+
+The energy estimate for this problem reads
+$$
+||u||**{L^2} \leq ||I||**{L^2},
+$$ {#eq-diffu-exer-estimates-p1-result}
+where the $||\cdot ||_{L^2}$ norm is defined by
+$$
+||g||_{L^2} = \sqrt{\int_0^L g^2dx}\tp
+$$ {#eq-diffu-exer-estimates-L2}
+The quantify  $||u||**{L^2}$ or $\half ||u||**{L^2}$ is known
+as the *energy* of the solution, although it is not the physical
+energy of the system. A mathematical tradition has introduced the
+notion *energy* in this context.
+
+The estimate (@eq-diffu-exer-estimates-p1-result) says that the
+"size of $u$" never exceeds that of the initial condition,
+or more precisely, it says that the area under the $u$ curve decreases
+with time.
+
+To show (@eq-diffu-exer-estimates-p1-result), multiply the PDE
+by $u$ and integrate from $0$ to $L$. Use that $uu_t$ can be
+expressed as the time derivative of $u^2$ and that $u_xxu$ can
+integrated by parts to form an integrand $u_x^2$. Show that
+the time derivative of $||u||_{L^2}^2$ must be less than or equal
+to zero. Integrate this expression and derive
+(@eq-diffu-exer-estimates-p1-result).
+
+
+
+**b)**
+
+Now we address a slightly different problem,
+
+```{=latex}
+\begin{alignat}{2}
+u_t &= \alpha u_xx + f(x,t), & x\in \Omega =(0,L),\ t\in (0,T],
+ \\
+u(0,t) = u(L,t) &= 0, & t\in (0,T],
+\\
+u(x,0) &= 0, & x\in [0,L]\tp
+\end{alignat}
+```
+The associated energy estimate is
+$$
+||u||**{L^2} \leq ||f||**{L^2}\tp
+$$ {#eq-diffu-exer-estimates-p2-result}
+(This result is more difficult to derive.)
+
+Now consider the compound problem with an initial condition $I(x)$ and
+a right-hand side $f(x,t)$:
+
+```{=latex}
+\begin{alignat}{2}
+u_t &= \alpha u_xx + f(x,t), & x\in \Omega =(0,L),\ t\in (0,T],
+ \\
+u(0,t) = u(L,t) &= 0, & t\in (0,T],
+\\
+u(x,0) &= I(x), & x\in [0,L]\tp
+\end{alignat}
+```
+Show that if $w_1$ fulfills
+the first problem (with $I$ and $f=0$)
+and $w_2$ fulfills
+the second problem (with $f$ and $I=0$),
+then $u=w_1 + w_2$ is the solution of
+the compound problem above.
+Using the triangle inequality for norms,
+$$
+||a + b|| \leq ||a|| + ||b||,
+$$
+show that the energy estimate for
+the compound problem
+becomes
+$$
+||u||**{L^2} \leq ||I||**{L^2} + ||f||_{L^2}\tp
+$$ {#eq-diffu-exer-estimates-p3-result}
+
+
+**c)**
+
+One application of (@eq-diffu-exer-estimates-p3-result) is to prove uniqueness
+of the solution.
+Suppose $u_1$ and $u_2$ both fulfill
+the compound problem.
+Show that $u=u_1 - u_2$ then fulfills
+the compound problem
+with $f=0$ and $I=0$. Use (@eq-diffu-exer-estimates-p3-result)
+to deduce that the energy must be zero for all times and therefore
+that $u_1=u_2$, which proves that the solution is unique.
+
+
+**d)**
+
+Generalize (@eq-diffu-exer-estimates-p3-result) to a 2D/3D
+diffusion equation $u_t = \nabla\cdot (\alpha \nabla u)$ for $x\in\Omega$.
+
+:::{.callout-tip title="Use integration by parts in multi dimensions:"}
+$$
+\int_\Omega u \nabla\cdot (\alpha\nabla u)\dx =
+- \int_\Omega \alpha \nabla u\cdot\nabla u\dx
+- \int_{\partial\Omega} u \alpha\frac{\partial u}{\partial n},
+$$
+where $\frac{\partial u}{\partial n} = \bm{n}\cdot\nabla u$,
+$\bm{n}$ being the outward unit normal to the boundary $\partial\Omega$
+of the domain $\Omega$.
+:::
+
+
+**e)**
+
+Now we also consider the multi-dimensional PDE $u_t =
+\nabla\cdot (\alpha \nabla u)$. Integrate both sides over $\Omega$
+and use Gauss' divergence theorem, $\int_\Omega \nabla\cdot\bm{q}\dx
+= \int_{\partial\Omega}\bm{q}\cdot\bm{n}\ds$ for a vector field
+$\bm{q}$. Show that if we have homogeneous Neumann conditions
+on the boundary, $\partial u/\partial n=0$, area under the
+$u$ surface remains constant in time and
+$$
+\int_{\Omega} u\dx = \int_{\Omega} I\dx \tp
+$$ {#eq-diffu-exer-estimates-p4-result}
+
+
+**f)**
+
+Establish a code in 1D, 2D, or 3D that can solve a diffusion equation with a
+source term $f$, initial condition $I$, and zero Dirichlet or
+Neumann conditions on the whole boundary.
+
+We can use (@eq-diffu-exer-estimates-p3-result)
+and (@eq-diffu-exer-estimates-p4-result) as a partial verification
+of the code. Choose some functions $f$ and $I$ and
+check that (@eq-diffu-exer-estimates-p3-result) is obeyed at any
+time when zero Dirichlet conditions are used.
+Iterate over the same $I$ functions and check that
+(@eq-diffu-exer-estimates-p4-result) is fulfilled
+when using zero Neumann conditions.
+
+
+**g)**
+
+Make a list of some possible bugs in the code, such as indexing errors
+in arrays, failure to set the correct boundary conditions,
+evaluation of a term at a wrong time level, and similar.
+For each of the bugs, see if the verification tests from the previous
+subexercise pass or fail. This investigation shows how strong
+the energy estimates and the estimate (@eq-diffu-exer-estimates-p4-result)
+are for pointing out errors in the implementation.
+
+
+## Exercise: Splitting methods and preconditioning {#sec-diffu-exer-splitting-prec}
+
+In Section @sec-diffu-2D-direct-vs-iter, we outlined a class of
+iterative methods for $Au=b$ based on splitting $A$ into $A=M-N$
+and introducing the iteration
+$$
+Mu^{k} = Nu^k + b\tp
+$$
+The very simplest splitting is $M=I$, where $I$ is the identity
+matrix. Show that this choice corresponds to the iteration
+$$
+u^k = u^{k-1} + r^{k-1},\quad r^{k-1} = b - Au^{k-1},
+$$ {#eq-diffu-exer-splitting-prec-simplest}
+where $r^{k-1}$ is the residual in the linear system in iteration
+$k-1$. The formula (@eq-diffu-exer-splitting-prec-simplest) is known
+as Richardson's iteration.
+Show that if we apply the simple iteration method
+(@eq-diffu-exer-splitting-prec-simplest) to the *preconditioned*
+system $M^{-1}Au=M^{-1}b$, we arrive at the Jacobi method by choosing
+$M=D$ (the diagonal of $A$) as preconditioner and the SOR method by
+choosing $M=\omega^{-1}D + L$ ($L$ being the lower triangular part of
+$A$).  This equivalence shows that we can apply one iteration of the
+Jacobi or SOR method as preconditioner.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+Inserting $M=I$ and $N=I-A$ in the iterative method leads to
+$$
+u^{k} = (I-A)u^{k-1} + b = u^{k-1} + (b  - Au^{k-1}),
+$$
+which is (@eq-diffu-exer-splitting-prec-simplest).
+Replacing $A$ by $M^{-1}A$ and $b$ by $M^{-1}b$ in this equation
+gives
+$$
+u^k = u^{k-1} + M^{-1}r^{k-1},\quad r^{k-1}=b-Au^{k-1},
+$$
+which we after multiplication by $M$ and reordering can write
+as
+$$
+Mu^k = (M-A)u^{k-1} + b = Nu^{k-1} + b,
+$$
+which is the standard form for the Jacobi and SOR methods. Choosing $M=D$
+gives Jacobi and $M=\omega^{-1}D+L$ gives SOR. We have shown that we may
+view $M$ as a preconditioner of a simplest possible iteration method.
+:::
+
+
+## Problem: Oscillating surface temperature of the earth {#sec-diffu-exer-earthosc}
+
+Consider a day-and-night or seasonal variation in temperature at
+the surface of the earth. How deep down in the ground will the
+surface oscillations reach? For simplicity, we model only the
+vertical variation along a coordinate $x$, where $x=0$ at the
+surface, and $x$ increases as we go down in the ground.
+The temperature is governed by the heat equation
+$$
+\varrho c_v\frac{\partial T}{\partial t} = \nabla\cdot(k\nabla T),
+$$
+in some spatial domain $x\in [0,L]$, where $L$ is chosen large enough such
+that we can assume that $T$ is approximately constant, independent of the surface
+oscillations, for $x>L$. The parameters $\varrho$, $c_v$, and $k$ are the
+density, the specific heat capacity at constant volume, and the
+heat conduction coefficient, respectively.
+
+**a)**
+
+Derive the mathematical model for computing $T(x,t)$.
+Assume the surface oscillations to be sinusoidal around some mean
+temperature $T_m$. Let $T=T_m$ initially. At $x=L$, assume $T\approx T_m$.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+The surface temperature is set as
+$$
+T(0,t) = T_m + A\sin(\omega t)\tp
+$$
+With only one "active" spatial coordinate we get the initial-boundary
+value problem
+
+\begin{alignat*}{2}
+\varrho c_v \frac{\partial T}{\partial t} &= \frac{\partial}{\partial x}
+\left(k(x)\frac{\partial T}{\partial x}\right), & x\in (0,L),\ t\in (0,T],\\
+T(x,0)&= T_m, & x\in [0,L],\\
+T(0,t)&= T_m + A\sin(\omega t), & t\in (0,T],\\
+T(L,t) &= T_m, & t\in (0,T].
+\end{alignat*}
+:::
+
+
+
+**b)**
+
+Scale the model in a) assuming $k$ is constant. Use a time scale
+$t_c = \omega^{-1}$ and a length scale $x_c = \sqrt{2\dfc/\omega}$,
+where $\dfc = k/(\varrho c_v)$. The primary unknown can be scaled
+as $\frac{T-T_m}{2A}$.
+
+Show that the scaled PDE is
+$$
+\frac{\partial u}{\partial \bar t} =
+\frac{1}{2}\frac{\partial^2 u}{\partial x^2},
+$$
+with initial condition $u(\bar x,0) = 0$,
+left boundary condition
+$u(0,\bar t)  = \sin(\bar t)$,
+and right boundary condition
+$u(\bar L,\bar t)  = 0$. The bar indicates a dimensionless quantity.
+
+Show that $u(\bar x, \bar t)=e^{-\bar x}\sin (\bar x - \bar t)$ is a
+solution that fulfills the PDE and the boundary condition at $\bar x
+=0$ (this is the solution we will experience as $\bar
+t\rightarrow\infty$ and $L\rightarrow\infty$).  Conclude that an
+appropriate domain for $x$ is $[0,4]$ if a damping $e^{-4}\approx
+0.18$ is appropriate for implementing $\bar u\approx\hbox{const}$;
+increasing to $[0,6]$ damps $\bar u$ to 0.0025.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+Chapter 3.2.4 in the book [@Langtangen_scaling] describes the
+scaling of this problem in detail.
+Inserting dimensionless variables $\bar t = \omega t$, $\bar x =
+\sqrt{\omega/(2\dfc)} x$, and
+$$
+u = \frac{T-T_m}{2A},
+$$
+leads to
+
+\begin{alignat*}{2}
+\frac{\partial u}{\partial \bar t} &=
+\frac{1}{2}\frac{\partial^2 u}{\partial x^2},
+\quad & \bar x\in (0,\bar L),\ \bar t\in (0,\bar T],
+\\
+u(\bar x,0) &= 0,
+\quad &\bar x\in [0,1],
+\\
+u(0,\bar t) & = \sin(\bar t),
+\quad  &\bar t\in (0,\bar T],
+\\
+u(\bar L,\bar t) & = 0,
+\quad &\bar t\in (0,\bar T].
+\end{alignat*}
+The domain lengths $\bar L$ and $\bar T$ follows from straightforward
+scaling of $L$ and $T$.
+
+Inserting $u(\bar x, \bar t)=e^{-\bar x}\sin (\bar t - \bar x)$ in the
+PDE shows that this is a solution. It also obeys
+the boundary condition $\bar u(0,\bar t)=sin(\bar t)$. As
+$\bar t\rightarrow\infty$, the initial condition has no longer impact
+on the solution and is "forgotten" and of no interest.
+The boundary condition at $\bar x=\bar L$ is never compatible with the
+given solution unless $\bar u$ is damped to zero, which happens
+mathematically as $\bar L\rightarrow\infty$. For a numerical solution,
+however, we may use a small finite value such as $\bar L=4$.
+:::
+
+
+
+**c)**
+
+Compute the scaled temperature and make animations comparing two solutions
+with $\bar L=4$ and $\bar L=8$, respectively (keep $\Delta x$ the same).
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+We can use the `viz` function in `diff1D_vc.py` to do the number
+crunching. Appropriate calls and visualization go here:
+
+```python
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.pardir, "src-diffu"))
+from diffu1D_vc import viz
+
+sol = []  # store solutions
+for Nx, L in [[20, 4], [40, 8]]:
+    dt = 0.1
+    dx = float(L) / Nx
+    D = dt / dx**2
+    from math import pi, sin
+
+    T = 2 * pi * 6
+    from numpy import zeros
+
+    a = zeros(Nx + 1) + 0.5
+    cpu, u_ = viz(
+        I=lambda x: 0,
+        a=a,
+        L=L,
+        Nx=Nx,
+        D=D,
+        T=T,
+        umin=-1.1,
+        umax=1.1,
+        theta=0.5,
+        u_L=lambda t: sin(t),
+        u_R=0,
+        animate=False,
+        store_u=True,
+    )
+    sol.append(u_)
+    print("computed solution for Nx=%d in [0,%g]" % (Nx, L))
+
+print(sol[0].shape)
+print(sol[1].shape)
+import matplotlib.pyplot as plt
+
+counter = 0
+for u0, u1 in zip(sol[0][2:], sol[1][2:], strict=False):
+    x0 = sol[0][0]
+    x1 = sol[1][0]
+    plt.clf()
+    plt.plot(x0, u0, "r-", label="short")
+    plt.plot(x1, u1, "b-", label="long")
+    plt.legend()
+    plt.axis([x1[0], x1[-1], -1.1, 1.1])
+    plt.savefig("tmp_%04d.png" % counter)
+    counter += 1
+```
+
+MOVIE: [https://github.com/hplgit/fdm-book/raw/master/doc/pub/book/html/mov-diffu/surface_osc/movie.mp4]
+
+:::
+
+
+
+## Problem: Oscillating and pulsating flow in tubes {#sec-diffu-exer-bloodflow}
+
+We consider flow in a straight tube with radius $R$ and straight walls.
+The flow is driven by a pressure gradient $\beta(t)$. The effect of
+gravity can be neglected. The mathematical problem reads
+
+```{=latex}
+\begin{alignat}{2}
+\varrho\frac{\partial u}{\partial t} &=
+\mu\frac{1}{r}\frac{\partial}{\partial r}\left(
+r\frac{\partial u}{\partial r}\right) + \beta(t),\quad
+& r\in [0,R],\ t\in (0,T],\\
+u(r,0) &= I(r),\quad & r\in [0,R],\\
+u(R,t) &= 0,\quad & t\in (0,T],\\
+\frac{\partial u}{\partial r}(0,t) &= 0,\quad & t\in (0,T].
+\end{alignat}
+```
+We consider two models for $\beta(t)$. One plain, sinusoidal oscillation:
+$$
+\beta = A\sin(\omega t),
+$$
+and one with periodic pulses,
+$$
+\beta = A\sin^{16}(\omega t),
+$$
+Note that both models can be written as $\beta = A\sin^m(\omega t)$, with
+$m=1$ and $m=16$, respectively.
+
+**a)**
+
+Scale the mathematical model, using the viscous time scale $\varrho R^2/\mu$.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+We can introduce
+$$
+\bar r = \frac{r}{R}, \quad \bar t = \frac{t}{\varrho R^2/\mu},\quad u = \frac{u}{u_c}\tp
+$$
+Inserted in the PDE, we get
+$$
+\frac{\partial\bar u}{\partial\bar t} =
+\frac{1}{\bar r}\frac{\partial}{\partial\bar r}\left(
+\bar r\frac{\partial\bar u}{\partial\bar r}\right) +
+\frac{R^2 A}{u_c \mu}\sin^m (\alpha\bar t)
+$$
+where $\alpha$ is a dimensionless number
+$$
+\alpha = \frac{\omega\varrho R^2}{\mu} = \frac{\varrho R^2/\mu}{1/\omega},
+$$
+reflecting the ratio of the viscous diffusion time scale and the
+time scale of the oscillating pressure gradient.
+We may choose $u_c$ such that the coefficient in the pressure gradient
+term equals unity:
+$$
+u_c = \frac{R^2 A}{\mu}\tp
+$$
+The governing PDE, dropping the bars, then reads
+$$
+\frac{\partial u}{\partial t} =
+\frac{1}{r}\frac{\partial}{\partial r}\left(
+r\frac{\partial u}{\partial r}\right) +
+\sin^m (\alpha\bar t),\quad r\in (0,1),\ t\in (0,T]\tp
+$$
+:::
+
+
+
+**b)**
+
+Implement the scaled model from a), using the unifying $\theta$ scheme
+in time and centered differences in space.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+We need to take into account extensions below: a coefficient in front of
+the viscous term, and an extra source term.
+
+A preliminary and unfinished code:
+
+```python
+import time
+
+import scipy.sparse
+import scipy.sparse.linalg
+import sympy as sym
+from numpy import linspace, log, ones, sqrt, sum, zeros
+
+
+def solver_theta(I, a, R, Nr, D, T, theta=0.5, u_L=None, u_R=0, user_action=None, f=0):
+    """
+    Solve the diffusion equation for axi-symmetric case:
+        u_t = 1/r * (r*a(r)*u_r)_r + f(r,t)
+    on (0,R) with boundary conditions u(0,t)_r = 0 and u(R,t) = 0.
+
+    Method: (implicit) theta-rule in time.
+    D = dt/dr**2 and implicitly specifies the time step.
+    u_L = None implies du/dr = 0, i.e. a symmetry condition.
+    """
+    t0 = time.perf_counter()
+
+    r = linspace(0, R, Nr + 1)  # mesh points in space
+    dr = r[1] - r[0]
+    dt = D * dr**2
+    Nt = int(round(T / float(dt)))
+    t = linspace(0, T, Nt + 1)  # mesh points in time
+
+    if isinstance(u_L, (float, int)):
+        u_L_ = float(u_L)
+        u_L = lambda t: u_L_
+    if isinstance(u_R, (float, int)):
+        u_R_ = float(u_R)
+        u_R = lambda t: u_R_
+    if isinstance(f, (float, int)):
+        f_ = float(f)
+        f = lambda r, t: f_
+
+    ra = r * a  # help array in scheme
+
+    inv_r = zeros(len(r) - 2)
+    inv_r = 1.0 / r[1:-1]
+
+    u = zeros(Nr + 1)  # solution array at t[n+1]
+    u_1 = zeros(Nr + 1)  # solution at t[n]
+
+    Dl = 0.5 * D * theta
+    Dr = 0.5 * D * (1 - theta)
+
+    # Representation of sparse matrix and right-hand side
+    diagonal = zeros(Nr + 1)
+    lower = zeros(Nr)
+    upper = zeros(Nr)
+    b = zeros(Nr + 1)
+
+    # Precompute sparse matrix (scipy format)
+    diagonal[1:-1] = 1 + Dl * (ra[2:] + 2 * ra[1:-1] + ra[:-2]) * inv_r
+    lower[:-1] = -Dl * (ra[1:-1] + ra[:-2]) * inv_r
+    upper[1:] = -Dl * (ra[2:] + ra[1:-1]) * inv_r
+    # Insert boundary conditions
+    if u_L is None:  # symmetry axis, du/dr = 0
+        diagonal[0] = 1 + 8 * a[0] * Dl
+        upper[0] = -8 * a[0] * Dl
+    else:
+        diagonal[0] = 1
+        upper[0] = 0
+    diagonal[Nr] = 1
+    lower[-1] = 0
+
+    A = scipy.sparse.diags(
+        diagonals=[diagonal, lower, upper],
+        offsets=[0, -1, 1],
+        shape=(Nr + 1, Nr + 1),
+        format="csr",
+    )
+
+    # Set initial condition
+    for i in range(0, Nr + 1):
+        u_1[i] = I(r[i])
+
+    if user_action is not None:
+        user_action(u_1, r, t, 0)
+
+    # Time loop
+    for n in range(0, Nt):
+        b[1:-1] = (
+            u_1[1:-1]
+            + Dr
+            * (
+                (ra[2:] + ra[1:-1]) * (u_1[2:] - u_1[1:-1])
+                - (ra[1:-1] + ra[0:-2]) * (u_1[1:-1] - u_1[:-2])
+            )
+            * inv_r
+            + dt * theta * f(r[1:-1], t[n + 1])
+            + dt * (1 - theta) * f(r[1:-1], t[n])
+        )
+
+        # Boundary conditions
+        if u_L is None:  # symmetry axis, du/dr = 0
+            b[0] = (
+                u_1[0]
+                + 8 * a[0] * Dr * (u_1[1] - u_1[0])
+                + dt * theta * f(0, (n + 1) * dt)
+                + dt * (1 - theta) * f(0, n * dt)
+            )
+        else:
+            b[0] = u_L(t[n + 1])
+        b[-1] = u_R(t[n + 1])
+
+        # Solve
+        u[:] = scipy.sparse.linalg.spsolve(A, b)
+
+        if user_action is not None:
+            user_action(u, r, t, n + 1)
+
+        # Switch variables before next step
+        u_1, u = u, u_1
+
+    t1 = time.perf_counter()
+    return u_1, t, t1 - t0
+```
+
+:::
+
+
+
+**c)**
+
+Verify the implementation in b) using a manufactured solution that is
+quadratic in $r$ and linear in $t$. Make a corresponding test function.
+
+:::{.callout-tip title="You need to include an extra source term"}
+in the equation to allow for such tests. Let the spatial variation be
+$1-r^2$ such that the boundary condition is fulfilled.
+:::
+
+
+**d)**
+
+Make animations for $m=1,16$ and $\alpha=1,0.1$. Choose $T$ such that
+the motion has reached a steady state (non-visible changes from period to
+period in $u$).
+
+
+**e)**
+
+For $\alpha\gg 1$, the scaling in a) is not good, because the
+characteristic time for changes (due to the pressure) is much smaller
+than the viscous diffusion time scale ($\alpha$ becomes large).
+We should in this case base
+the short time scale on $1/\omega$. Scale the model again, and
+make an animation for $m=1,16$ and $\alpha = 10$.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+Now the governing PDE becomes
+$$
+\frac{\partial u}{\partial t} =
+\alpha^{-1}\frac{1}{r}\frac{\partial}{\partial r}\left(
+r\frac{\partial u}{\partial r}\right) +
+\sin^m t,\quad r\in (0,1),\ t\in (0,T]\tp
+$$
+In this case,
+$$
+u_c = \frac{A}{\varrho\omega}\tp
+$$
+We see that for $\alpha\gg 1$, we can neglect the viscous term, and we
+basically have a balance between the acceleration and the driving pressure
+gradient:
+$$
+\frac{\partial u}{\partial t} = \sin^m t\tp
+$$
+:::
+
+
+
+
+## Problem: Scaling a welding problem {#sec-diffu-exer-welding}
+
+Welding equipment makes a very localized heat source that moves in
+time. We shall investigate the heating due to welding and choose, for
+maximum simplicity, a one-dimensional heat equation with a fixed
+temperature at the ends, and we neglect melting.  We shall scale the
+problem, and besides solving such a problem numerically, the aim is to
+investigate the appropriateness of alternative scalings.
+
+The governing PDE problem reads
+
+\begin{alignat*}{2}
+\varrho c\frac{\partial u}{\partial t} &= k\frac{\partial^2 u}{\partial x^2}
++ f, & x\in (0,L),\ t\in (0,T),\\
+u(x,0) &= U_s, & x\in [0,L],\\
+u(0,t) = u(L,t) &= 0, & t\in (0,T].
+\end{alignat*}
+Here, $u$ is the temperature, $\varrho$ the density of the material,
+$c$ a heat capacity, $k$ the heat conduction coefficient, $f$ is
+the heat source from the welding equipment, and $U_s$ is the
+initial constant (room) temperature in the material.
+
+A possible model for the heat source is a moving Gaussian function:
+$$
+f = A\exp{\left(-\frac{1}{2}\left(\frac{x-vt}{\sigma}\right)^2\right)},
+$$
+where $A$ is the strength, $\sigma$ is a parameter governing how
+peak-shaped (or localized in space) the heat source is, and
+$v$ is the velocity (in positive $x$ direction) of the source.
+
+**a)**
+
+Let $x_c$, $t_c$, $u_c$, and $f_c$ be scales, i.e., characteristic
+sizes, of $x$, $t$, $u$, and $f$, respectively. The natural choice of
+$x_c$ and $f_c$ is $L$ and $A$, since these make the scaled $x$ and
+$f$ in the interval $[0,1]$.  If each of the three terms in the PDE
+are equally important, we can find $t_c$ and $u_c$ by demanding that
+the coefficients in the scaled PDE are all equal to unity.  Perform
+this scaling. Use scaled quantities in the arguments for the
+exponential function in $f$ too and show that
+$$
+\bar f= e^{-\frac{1}{2}\beta^2(\bar x -\gamma \bar t)^2},
+$$
+where $\beta$ and $\gamma$ are dimensionless numbers. Give an
+interpretation of $\beta$ and $\gamma$.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+We introduce
+$$
+\bar x=\frac{x}{L},\quad \bar t = \frac{t}{t_c},\quad \bar u = \frac{u-U_s}{u_c},
+\quad \bar f=\frac{f}{A}\tp
+$$
+Inserted in the PDE and dividing by $\varrho c u_c/t_c$ such that the
+coefficient in front of $\partial\bar u/\partial\bar t$ becomes unity,
+and thereby all terms become dimensionless, we get
+$$
+\frac{\partial\bar u}{\partial\bar t} =
+\frac{k t_c}{\varrho c L^2}\frac{\partial^2\bar u}{\partial\bar x^2}
+- \frac{A t_c}{\varrho c u_c}\bar f\tp
+$$
+Demanding that all three terms are equally important, it follows that
+$$
+\frac{k t_c}{\varrho c L^2} = 1,\quad \frac{A t_c}{\varrho c u_c}=1\tp
+$$
+These constraints imply the *diffusion time scale*
+$$
+t_c = \frac{\varrho cL^2}{k},
+$$
+and a scale for $u_c$,
+$$
+u_c = \frac{AL^2}{k}\tp
+$$
+The scaled PDE reads
+$$
+\frac{\partial\bar u}{\partial\bar t} =
+\frac{\partial^2\bar u}{\partial\bar x^2}
+- \bar f\tp
+$$
+Scaling $f$ results in
+
+\begin{align*}
+\bar f &= \exp{\left(-\frac{1}{2}\left(\frac{x-vt}{\sigma}\right)^2\right)}\\
+&= \exp{\left(-\frac{1}{2}\frac{L^2}{\sigma^2}
+\left(\bar x- \frac{vt_c}{L}t\right)^2\right)}\\
+&= \exp{\left(-\frac{1}{2}\beta^2\left(\bar x-\gamma \bar t\right)^2\right)},
+\end{align*}
+where $\beta$ and $\gamma$ are dimensionless numbers:
+$$
+\beta = \frac{L}{\sigma},\quad
+\gamma = \frac{vt_c}{L} = \frac{v\varrho cL}{k}\tp
+$$
+The $\sigma$ parameter measures the width of the Gaussian peak, so
+$\beta$ is the ratio of the domain and the width of the heat source (large
+$\beta$ implies a very peak-formed heat source).  The $\gamma$
+parameter arises from $t_c/(L/v)$, which is the ratio of the diffusion
+time scale and the time it takes for the heat source to travel through
+the domain. Equivalently, we can multiply by $t_c/t_c$ to get $\gamma
+= v/(t_cL)$ as the ratio between the velocity of the heat source and
+the diffusion velocity.
+:::
+
+
+
+**b)**
+
+Argue that for large $\gamma$ we should base the time scale on the
+movement of the heat source. Show that this gives rise to the scaled
+PDE
+$$
+\frac{\partial\bar u}{\partial\bar t} =
+\gamma^{-1}\frac{\partial^2\bar u}{\partial\bar x^2}
+- \bar f,
+$$
+and
+$$
+\bar f = \exp{(-\frac{1}{2}\beta^2(\bar x - \bar t)^2)}\tp
+$$
+Discuss when the scalings in a) and b) are appropriate.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+We perform the scaling as in a), but this time we determine $t_c$ such
+that the heat source moves with unit velocity. This means that
+$$
+\frac{vt_c}{L} = 1\quad\Rightarrow\quad t_c = \frac{L}{v}\tp
+$$
+Scaling of the PDE gives, as before,
+$$
+\frac{\partial\bar u}{\partial\bar t} =
+\frac{k t_c}{\varrho c L^2}\frac{\partial^2\bar u}{\partial\bar x^2}
+- \frac{A t_c}{\varrho c u_c}\bar f\tp
+$$
+Inserting the expression for $t_c$, we have
+$$
+\frac{\partial\bar u}{\partial\bar t} =
+\frac{k L}{\varrho c L^2v}\frac{\partial^2\bar u}{\partial\bar x^2}
+- \frac{A L}{v\varrho c u_c}\bar f\tp
+$$
+We recognize the first coefficient as $\gamma^{-1}$, while $u_c$ can
+be determined from demanding the second coefficient to be unity:
+$$
+u_c = \frac{AL}{v\varrho c}\tp
+$$
+The scaled PDE is therefore
+$$
+\frac{\partial\bar u}{\partial\bar t} =
+\gamma^{-1}\frac{\partial^2\bar u}{\partial\bar x^2}
+- \bar f\tp
+$$
+If the heat source moves very fast, there is little time for the
+diffusion to transport the heat away from the source, and the heat
+conduction term becomes insignificant. This is reflected in the
+coefficient $\gamma^{-1}$, which is small when $\gamma$, the ratio of
+the heat source velocity and the diffusion velocity, is large.
+
+The scaling in a) is therefore appropriate if diffusion is a
+significant process, i.e., the welding equipment moves at a slow speed
+so heat can efficiently spread out by diffusion. For large $\gamma$,
+the scaling in b) is appropriate, and $t=1$ corresponds to having the
+heat source traveled through the domain (with the scaling in a), the
+heat source will leave the domain in short time).
+
+:::
+
+
+
+**c)**
+
+One aim with scaling is to get a solution that lies in the interval
+$[-1,1]$. This is not always the case when $u_c$ is based on a scale
+involving a source term, as we do in a) and b).  However, from the
+scaled PDE we realize that if we replace $\bar f$ with $\delta\bar f$,
+where $\delta$ is a dimensionless factor, this corresponds to
+replacing $u_c$ by $u_c/\delta$. So, if we observe that $\bar
+u\sim1/\delta$ in simulations, we can just replace $\bar f$ by $\delta
+\bar f$ in the scaled PDE.
+
+Use this trick and implement the two scaled models. Reuse software for
+the diffusion equation (e.g., the `solver` function in
+`diffu1D_vc.py`).  Make a function `run(gamma, beta=10, delta=40,
+scaling=1, animate=False)` that runs the model with the given
+$\gamma$, $\beta$, and $\delta$ parameters as well as an indicator
+`scaling` that is 1 for the scaling in a) and 2 for the scaling in
+b). The last argument can be used to turn screen animations on or off.
+
+Experiments show that with $\gamma=1$ and $\beta=10$, $\delta =20$
+is appropriate. Then $\max |\bar u|$ will be larger than 4 for $\gamma
+=40$, but that is acceptable.
+
+Equip the `run` function with visualization, both animation of $\bar u$
+and $\bar f$, and plots with $\bar u$ and $\bar f$ for $t=0.2$ and $t=0.5$.
+
+:::{.callout-tip title="Since the amplitudes of $\bar u$ and $\bar f$ differs by a factor $\delta$,"}
+it is attractive to plot $\bar f/\delta$ together with $\bar u$.
+:::
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+Here is a possible `run` function:
+
+```python
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.pardir, "src-diffu"))
+import numpy as np
+from diffu1D_vc import solver
+
+
+def run(gamma, beta=10, delta=40, scaling=1, animate=False):
+    """Run the scaled model for welding."""
+    if scaling == 1:
+        v = gamma
+        a = 1
+    elif scaling == 2:
+        v = 1
+        a = 1.0 / gamma
+
+    b = 0.5 * beta**2
+    L = 1.0
+    ymin = 0
+    global ymax
+    ymax = 1.2
+
+    I = lambda x: 0
+    f = lambda x, t: delta * np.exp(-b * (x - v * t) ** 2)
+
+    import time
+
+    import matplotlib.pyplot as plt
+
+    plot_arrays = []
+
+    def process_u(u, x, t, n):
+        global ymax
+        if animate:
+            plt.clf()
+            plt.plot(x, u, "r-", x, f(x, t[n]) / delta, "b-")
+            plt.axis([0, L, ymin, ymax])
+            plt.title(f"t={t[n]:f}")
+            plt.xlabel("x")
+            plt.ylabel(f"u and f/{delta:g}")
+            plt.draw()
+            plt.pause(0.001)
+        if t[n] == 0:
+            time.sleep(1)
+            plot_arrays.append(x)
+        dt = t[1] - t[0]
+        tol = dt / 10.0
+        if abs(t[n] - 0.2) < tol or abs(t[n] - 0.5) < tol:
+            plot_arrays.append((u.copy(), f(x, t[n]) / delta))
+            if u.max() > ymax:
+                ymax = u.max()
+
+    Nx = 100
+    D = 10
+    T = 0.5
+    u_L = u_R = 0
+    theta = 1.0
+    cpu = solver(I, a, f, L, Nx, D, T, theta, u_L, u_R, user_action=process_u)
+    x = plot_arrays[0]
+    plt.figure()
+    for u, f in plot_arrays[1:]:
+        plt.plot(x, u, "r-", x, f, "b--")
+    plt.axis([x[0], x[-1], 0, ymax])
+    plt.xlabel("$x$")
+    plt.ylabel(rf"$u, \ f/{delta:g}$")
+    plt.legend(
+        [
+            "$u,\\ t=0.2$",
+            f"$f/{delta:g},\\ t=0.2$",
+            "$u,\\ t=0.5$",
+            f"$f/{delta:g},\\ t=0.5$",
+        ]
+    )
+    filename = "tmp1_gamma%g_s%d" % (gamma, scaling)
+    s = "diffusion" if scaling == 1 else "source"
+    plt.title(rf"$\beta = {beta:g},\ \gamma = {gamma:g},\ $" + f"scaling={s}")
+    plt.savefig(filename + ".pdf")
+    plt.savefig(filename + ".png")
+    return cpu
+```
+Note that we have dropped the bar notation in the plots. It is common
+to drop the bars as soon as the scaled problem is established.
+:::
+
+
+
+**d)**
+
+Use the software in c) to investigate $\gamma=0.2,1,5,40$ for the
+two scalings. Discuss the results.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+For these investigations, we compare the two scalings for each of
+the different $\gamma$ values. An appropriate function for automating
+the tasks is
+
+```python
+def investigate():
+    """Do scientific experiments with the run function above."""
+    import glob
+
+    # Clean up old files
+    for filename in glob.glob("tmp1_gamma*") + glob.glob("welding_gamma*"):
+        os.remove(filename)
+
+    gamma_values = 1, 40, 5, 0.2, 0.025
+    for gamma in gamma_values:
+        for scaling in 1, 2:
+            run(gamma=gamma, beta=10, delta=20, scaling=scaling)
+
+    # Combine images
+    for gamma in gamma_values:
+        for ext in "pdf", "png":
+            cmd = (
+                "doconce combine_images -2 "
+                "tmp1_gamma{gamma:g}_s1.{ext} "
+                "tmp1_gamma{gamma:g}_s2.{ext} "
+                "welding_gamma{gamma:g}.{ext}".format(**vars())
+            )
+            os.system(cmd)
+            # pdflatex doesn't like 0.2 in filenames...
+            if "." in str(gamma):
+                os.rename(
+                    "welding_gamma{gamma:g}.{ext}".format(**vars()),
+                    ("welding_gamma{gamma:g}".format(**vars())).replace(".", "_")
+                    + "."
+                    + ext,
+                )
+```
+We run here a Backward Euler scheme with $N_x=100$ and quite long
+time steps.
+
+Running the `investigate` function, we get the following plots:
+
+![FIGURE: [fig-diffu/welding_gamma0_2, width=800 frac=1]](fig/welding_gamma0_025){width="100%"}
+
+![FIGURE: [fig-diffu/welding_gamma5, width=800 frac=1]](fig/welding_gamma1){width="100%"}
+
+![For $\gamma\ll 1$ as in $\gamma = 0.025$, the heat source moves very
+slowly on the diffusion time scale and has hardly entered the medium,
+while the scaling in b) is not inappropriate, but a larger $\delta$ is
+needed to bring $\bar u$ around unity.  We see that for $\gamma=0.2$,
+each of the scalings work, but with the diffusion time scale, the heat
+source has not moved much into the domain. For $\gamma=1$, the
+mathematical problems are identical and hence the plots too. For
+$\gamma=5$, the time scale based on the source is clearly the best
+choice, and for $\gamma=40$, only this scale is appropriate.](fig/welding_gamma40){width="100%"}
+
+A conclusion is that the scaling in b) works well for a range of $\gamma$
+values, also in the case $\gamma\ll 1$.
+:::
+
+
+
+## Exercise: Implement a Forward Euler scheme for axi-symmetric diffusion {#sec-diffu-exer-axisymm}
+
+Based on the discussion in Section @sec-diffu-fd2-radial, derive in detail
+the discrete equations for a Forward Euler in time, centered in space,
+finite difference method for axi-symmetric diffusion. The
+diffusion coefficient may be a function of the radial coordinate.
+At the outer boundary $r=R$, we may have either a Dirichlet or Robin
+condition.
+Implement this scheme. Construct appropriate test problems.
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+We start with the equation at $r=0$. According to Section @sec-diffu-fd2-radial,
+we get
+$$
+\frac{u^{n+1}_0-u^n_0}{\Delta t} = 4\dfc(0)\frac{u_1^n - u^n_0}{\Delta r^2}
+- f_0^n\tp
+$$
+For $i>0$, we have
+
+\begin{align*}
+\frac{u^{n+1}_i-u^n_i}{\Delta t} &= \frac{1}{r_i\Delta r^2}(
+\half(r_i + r_{i+1})\half(\dfc_i + \dfc_{i+1})(u^n_{i+1} - u^n_i) -\\
+&\qquad\half(r_{i-1} + r_{i})\half(\dfc_{i-1} + \dfc_{i})(u^n_{i} - u^n_{i-1}))
++ f_i^n
+\end{align*}
+Solving with respect to $u^{n+1}_i$ and introducing $D=\Delta t/\Delta r^2$
+results in
+
+\begin{align*}
+u^{n+1}_0 &= u^n_0 + 4D\dfc(0)(u_1^n - u^n_0)
++ f_0^n,\\
+u^{n+1}_i &= u^n_i + D\frac{1}{r_i}(
+\half(r_i + r_{i+1})\half(\dfc_i + \dfc_{i+1})(u^n_{i+1} - u^n_i) -\\
+&\qquad\half(r_{i-1} + r_{i})\half(\dfc_{i-1} + \dfc_{i})(u^n_{i} - u^n_{i-1}))
++ \Delta t f_i^n,\\
+&\qquad i = 1,\ldots,N_r-1,
+\end{align*}
+and $u^{n+1}_i$ at the end point $i=N_r$ is assumed known in case of
+a Dirichlet condition. A Robin condition
+$$
+-\dfc\frac{\partial u}{\partial n} = h_T(u-U_s),
+$$
+can be discretized at $i=N_r$ by
+$$
+-\alpha_i\frac{u_{i+1}^n-u_{i-1}^n}{2\Delta r} = h_T(u_i^n - U_s)\tp
+$$
+Solving with respect to the value at the fictitious point $i+1$ gives
+$$
+u_{i+1}^n = u_{i-1}^n - 2\Delta r \frac{h_T}{\alpha_i}(u_i^n - U_s)\tp
+$$
+This value is then inserted for $u_{i+1}^n$ in the discrete PDE at $i=N_r$.
+
+:::

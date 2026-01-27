@@ -1,0 +1,164 @@
+The fundamental ideas in the
+derivation of $F_i$ and $J_{i,j}$ in the 1D model problem
+are easily generalized to multi-dimensional problems.
+Nevertheless, the expressions involved are slightly different, with
+derivatives in $x$ replaced by $\nabla$, so we present some
+examples below in detail.
+
+## Finite difference discretization {#sec-nonlin-alglevel-dD-fd}
+
+A typical diffusion equation
+$$
+u_t = \nabla\cdot(\dfc(u)\nabla u) + f(u),
+$$
+can be discretized by (e.g.) a Backward Euler scheme,
+which in 2D can be written
+$$
+[D_t^- u = D_x\overline{\dfc(u)}^xD_x u
++ D_y\overline{\dfc(u)}^yD_y u + f(u)]_{i,j}^n\tp
+$$
+We do not dive into the details of handling boundary conditions now.
+Dirichlet and Neumann conditions are handled as in
+corresponding linear, variable-coefficient diffusion problems.
+
+Writing the scheme out, putting the unknown values on the
+left-hand side and known values on the right-hand side, and
+introducing $\Delta x=\Delta y=h$ to save some writing, one gets
+
+\begin{align*}
+u^n_{i,j} &- \frac{\Delta t}{h^2}(
+ \half(\dfc(u_{i,j}^n)   + \dfc(u_{i+1,j}^n))(u_{i+1,j}^n-u_{i,j}^n)\\
+&\quad -
+\half(\dfc(u_{i-1,j}^n) + \dfc(u_{i,j}^n))(u_{i,j}^n-u_{i-1,j}^n) \\
+&\quad +
+ \half(\dfc(u_{i,j}^n)   + \dfc(u_{i,j+1}^n))(u_{i,j+1}^n-u_{i,j}^n)\\
+&\quad -
+ \half(\dfc(u_{i,j-1}^n) + \dfc(u_{i,j}^n))(u_{i,j}^n-u_{i-1,j-1}^n))
+- \Delta tf(u_{i,j}^n) = u^{n-1}_{i,j}
+\end{align*}
+This defines a nonlinear algebraic system on the form $A(u)u=b(u)$.
+
+### Picard iteration
+
+The most recently computed values $u^{-}$ of $u^n$ can be
+used in $\dfc$ and $f$ for a Picard iteration,
+or equivalently, we solve $A(u^{-})u=b(u^{-})$.
+The result is a linear system of the same type as arising
+from $u_t = \nabla\cdot (\dfc(\x)\nabla u) + f(\x,t)$.
+
+The Picard iteration scheme can also be expressed in operator notation:
+$$
+[D_t^- u = D_x\overline{\dfc(u^{-})}^xD_x u
++ D_y\overline{\dfc(u^{-})}^yD_y u + f(u^{-})]_{i,j}^n\tp
+$$
+### Newton's method
+
+As always, Newton's method is technically more involved than
+Picard iteration. We first define
+the nonlinear algebraic equations to be solved, drop the
+superscript $n$ (use $u$ for $u^n$), and introduce $u^{(1)}$ for $u^{n-1}$:
+
+\begin{align*}
+F_{i,j} &= u_{i,j} - \frac{\Delta t}{h^2}(\\
+&\qquad \half(\dfc(u_{i,j})   + \dfc(u_{i+1,j}))(u_{i+1,j}-u_{i,j}) -\\
+&\qquad \half(\dfc(u_{i-1,j}) + \dfc(u_{i,j}))(u_{i,j}-u_{i-1,j}) + \\
+&\qquad \half(\dfc(u_{i,j})   + \dfc(u_{i,j+1}))(u_{i,j+1}-u_{i,j}) -\\
+&\qquad \half(\dfc(u_{i,j-1}) + \dfc(u_{i,j}))(u_{i,j}-u_{i-1,j-1})) -
+\Delta t\, f(u_{i,j}) - u^{(1)}_{i,j} = 0\tp
+\end{align*}
+It is convenient to work with two indices $i$ and $j$ in 2D
+finite difference discretizations, but it complicates
+the derivation of the Jacobian, which then gets four indices.
+(Make sure you really understand the 1D version of this problem
+as treated in Section @sec-nonlin-alglevel-1D-fd.)
+The left-hand expression of an equation $F_{i,j}=0$ is to be
+differentiated with respect to each of the unknowns $u_{r,s}$
+(recall that this is short notation for $u_{r,s}^n$), $r\in\Ix$, $s\in\Iy$:
+$$
+J_{i,j,r,s} = \frac{\partial F_{i,j}}{\partial u_{r,s}}\tp
+$$
+The Newton system to be solved in each iteration can be written as
+$$
+\sum_{r\in\Ix}\sum_{s\in\Iy}J_{i,j,r,s}\delta u_{r,s} = -F_{i,j},
+\quad i\in\Ix,\ j\in\Iy\tp
+$$
+Given $i$ and $j$, only a few $r$ and $s$ indices give nonzero
+contribution to the Jacobian since $F_{i,j}$ contains $u_{i\pm 1,j}$,
+$u_{i,j\pm 1}$, and $u_{i,j}$. This means that $J_{i,j,r,s}$ has
+nonzero contributions only if $r=i\pm 1$, $s=j\pm 1$, as well as $r=i$
+and $s=j$.  The corresponding terms in $J_{i,j,r,s}$ are
+$J_{i,j,i-1,j}$, $J_{i,j,i+1,j}$, $J_{i,j,i,j-1}$, $J_{i,j,i,j+1}$
+and $J_{i,j,i,j}$.  Therefore, the left-hand side of the Newton
+system, $\sum_r\sum_s J_{i,j,r,s}\delta u_{r,s}$ collapses to
+
+\begin{align*}
+ J_{i,j,r,s}\delta u_{r,s} =
+J_{i,j,i,j}\delta u_{i,j} & +
+J_{i,j,i-1,j}\delta u_{i-1,j} +
+J_{i,j,i+1,j}\delta u_{i+1,j} +
+J_{i,j,i,j-1}\delta u_{i,j-1}\\
+& +
+J_{i,j,i,j+1}\delta u_{i,j+1}
+\end{align*}
+The specific derivatives become
+
+\begin{align*}
+J_{i,j,i-1,j} &= \frac{\partial F_{i,j}}{\partial u_{i-1,j}}\\
+&= \frac{\Delta t}{h^2}(\dfc^{\prime}(u_{i-1,j})(u_{i,j}-u_{i-1,j})
+- \dfc(u_{i-1,j})(-1)),\\
+J_{i,j,i+1,j} &= \frac{\partial F_{i,j}}{\partial u_{i+1,j}}\\
+&= \frac{\Delta t}{h^2}(-\dfc^{\prime}(u_{i+1,j})(u_{i+1,j}-u_{i,j})
+- \dfc(u_{i-1,j})),\\
+J_{i,j,i,j-1} &= \frac{\partial F_{i,j}}{\partial u_{i,j-1}}\\
+&= \frac{\Delta t}{h^2}(\dfc^{\prime}(u_{i,j-1})(u_{i,j}-u_{i,j-1})
+- \dfc(u_{i,j-1})(-1)),\\
+J_{i,j,i,j+1} &= \frac{\partial F_{i,j}}{\partial u_{i,j+1}}\\
+&= \frac{\Delta t}{h^2}(-\dfc^{\prime}(u_{i,j+1})(u_{i,j+1}-u_{i,j})
+- \dfc(u_{i,j-1}))\tp
+\end{align*}
+The $J_{i,j,i,j}$ entry has a few more terms and is left as an
+exercise.
+Inserting the most recent approximation
+$u^{-}$ for $u$ in the $J$ and $F$ formulas and then
+forming $J\delta u=-F$ gives the linear system to be solved
+in each Newton iteration. Boundary conditions will affect the
+formulas when any of the indices coincide with a boundary value
+of an index.
+
+## Continuation methods
+
+Picard iteration or Newton's method may diverge when solving PDEs with
+severe nonlinearities. Relaxation with $\omega <1$
+may help, but in highly nonlinear problems it can be
+necessary to introduce a *continuation parameter* $\Lambda$ in
+the problem: $\Lambda =0$ gives a version of the
+problem that is easy to solve, while
+$\Lambda =1$ is the target problem. The idea is then
+to increase $\Lambda$ in steps, $\Lambda_0=0 ,\Lambda_1 <\cdots <\Lambda_n=1$,
+and use the solution from the problem with $\Lambda_{i-1}$ as
+initial guess for the iterations in the problem corresponding
+to $\Lambda_i$.
+
+The continuation method is easiest to understand through an example.
+Suppose we intend to solve
+$$
+-\nabla\cdot\left( ||\nabla u||^q\nabla u\right) = f,
+$$
+which is an equation modeling the flow of a non-Newtonian fluid through
+a channel or pipe. For $q=0$ we have the Poisson equation (corresponding
+to a Newtonian fluid) and the problem is linear. A typical
+value for pseudo-plastic fluids may be $q_n=-0.8$. We can introduce
+the continuation parameter $\Lambda\in [0,1]$ such that
+$q=q_n\Lambda$. Let $\{\Lambda_\ell\}_{\ell=0}^n$ be the sequence of
+$\Lambda$ values in $[0,1]$, with corresponding $q$ values
+$\{q_\ell\}_{\ell=0}^n$. We can then solve a sequence of problems
+$$
+-\nabla\cdot\left( ||\nabla u^\ell||^q_\ell\nabla u^\ell\right) = f,\quad
+\ell = 0,\ldots,n,
+$$
+where the initial guess for iterating on $u^{\ell}$ is the
+previously computed solution $u^{\ell-1}$. If a particular $\Lambda_\ell$
+leads to convergence problems, one may try a smaller
+increase in $\Lambda$:
+$\Lambda_* = \half (\Lambda_{\ell-1}+\Lambda_\ell)$,
+and repeat halving the step in $\Lambda$ until convergence is reestablished.

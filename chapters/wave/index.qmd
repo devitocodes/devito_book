@@ -1,0 +1,17 @@
+# Wave Equations {#sec-ch-wave}
+
+{{< include wave1D_fd1.qmd >}}
+
+{{< include wave1D_prog.qmd >}}
+
+{{< include wave1D_fd2.qmd >}}
+
+{{< include wave_analysis.qmd >}}
+
+{{< include wave2D_fd.qmd >}}
+
+{{< include wave2D_prog.qmd >}}
+
+{{< include wave_app.qmd >}}
+
+{{< include wave_app_exer.qmd >}}
