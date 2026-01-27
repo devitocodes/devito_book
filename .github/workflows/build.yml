@@ -21,6 +21,11 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
+      - name: Install Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: '1.6.40'
+
       - name: Install TeX Live
         run: |
           sudo apt-get update
@@ -44,44 +49,32 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
+          pip install numpy scipy matplotlib sympy
 
       - name: Verify installations
         run: |
-          echo "=== Python packages ==="
-          pip list | grep -E "doconce|mako|pygments"
+          echo "=== Quarto version ==="
+          quarto --version
           echo ""
-          echo "=== DocOnce version ==="
-          doconce --version
+          echo "=== Python packages ==="
+          pip list | grep -E "numpy|scipy|matplotlib|sympy"
           echo ""
           echo "=== LaTeX version ==="
           pdflatex --version | head -2
-          echo ""
-          echo "=== Available LaTeX packages (sample) ==="
-          kpsewhich mdframed.sty listings.sty hyperref.sty || true
 
-      - name: Build book PDF
+      - name: Build book PDF with Quarto
         run: |
-          cd doc/.src/book
-          # Set HOME to a writable directory to avoid DocOnce config issues
-          export HOME=$(mktemp -d)
-          bash make.sh nospell
-
-      - name: Run pdflatex (second pass for references)
-        run: |
-          cd doc/.src/book
-          pdflatex -interaction=nonstopmode book.tex || true
-          pdflatex -interaction=nonstopmode book.tex || true
-          bibtex book || true
-          pdflatex -interaction=nonstopmode book.tex || true
+          quarto render --to pdf
 
       - name: Verify PDF was created
         run: |
-          if [ -f doc/.src/book/book.pdf ]; then
+          if [ -f _book/Finite-Difference-Computing-with-PDEs.pdf ]; then
             echo "PDF successfully created!"
-            ls -lh doc/.src/book/book.pdf
+            ls -lh _book/Finite-Difference-Computing-with-PDEs.pdf
           else
             echo "ERROR: PDF was not created"
+            echo "Contents of _book directory:"
+            ls -la _book/ || echo "_book directory does not exist"
             exit 1
           fi
 
@@ -89,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fdm-book-pdf
-          path: doc/.src/book/book.pdf
+          path: _book/Finite-Difference-Computing-with-PDEs.pdf
           retention-days: 30
 
       - name: Upload build logs on failure
@@ -98,6 +91,6 @@ jobs:
         with:
           name: build-logs
           path: |
-            doc/.src/book/*.log
-            doc/.src/book/*.dlog
+            _book/*.log
+            _book/*.tex
           retention-days: 7
