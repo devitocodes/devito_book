@@ -50,6 +50,7 @@ format:
     colorlinks: true
     default-image-extension: png
     pdf-engine: pdflatex
+    keep-tex: true
     geometry:
       - margin=1in
     include-in-header:
