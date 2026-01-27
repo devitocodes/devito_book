@@ -270,8 +270,7 @@ shows the result.
 
 ![Solution of the stationary diffusion equation corresponding to a *smoothed* piecewise constant diffusion coefficient.](fig/flow_in_layers_case1_eps){#fig-diffu-fd2-pde-st-sol-pc-fig2 width="400px"}
 
-## Axi-symmetric diffusion
-## http://www.ewp.rpi.edu/hartford/~ernesto/S2004/CHT/Notes/s06.pdf {#sec-diffu-fd2-radial}
+## Axi-symmetric diffusion {#sec-diffu-fd2-radial}
 
 Suppose we have a diffusion process taking place in a straight tube
 with radius $R$. We assume axi-symmetry such that $u$ is just a
@@ -453,7 +452,7 @@ $$
 $$
 For $\alpha$ constant we immediately realize that we can reuse a
 solver in Cartesian coordinates to compute $v$. With variable $\alpha$,
-a ``reaction'' term $v/r$ needs to be added to the Cartesian solver.
+a "reaction" term $v/r$ needs to be added to the Cartesian solver.
 The boundary condition $\partial u/\partial r=0$ at $r=0$, implied
 by symmetry, forces $v(0,t)=0$, because
 $$

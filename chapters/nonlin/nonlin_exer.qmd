@@ -183,7 +183,7 @@ numerical answers should be identical.
 Implement unit tests that check the asymptotic limit of the solutions:
 $u\rightarrow M$ as $t\rightarrow\infty$.
 
-:::{.callout-tip title="You need to experiment to find what ``infinite time'' is"}
+:::{.callout-tip title="You need to experiment to find what "infinite time" is"}
 (increases substantially with $p$) and what the
 appropriate tolerance is for testing the asymptotic limit.
 :::

@@ -2174,11 +2174,11 @@ Simulate for $C=1, 0.9, 0.75$ and make an animation comparing the
 three curves (use the `animate_archives.py` program to combine the
 curves and make animations on the screen and video files).  Perform
 the investigations for different types of initial profiles: a Gaussian
-pulse, a ``cosine hat'' pulse, half a``cosine hat'' pulse, and a plug
+pulse, a "cosine hat" pulse, half a"cosine hat" pulse, and a plug
 pulse.
 
 !bsol
-We make a little Python script for running one ``pulse'' simulation:
+We make a little Python script for running one "pulse" simulation:
 
 ```python
 ```

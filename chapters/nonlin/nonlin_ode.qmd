@@ -368,7 +368,7 @@ approach in science and technology, but with some limitations if
 $\Delta t$ is not sufficiently small (as will be illustrated later).
 
 :::{.callout-note title="Equation (@eq-nonlin-timediscrete-logistic-BE-Picard-1it) does not"}
-correspond to a ``pure'' finite difference method where the equation
+correspond to a "pure" finite difference method where the equation
 is sampled at a point and derivatives replaced by differences (because
 the $u^{n-1}$ term on the right-hand side must then be $u^n$). The
 best interpretation of the scheme
@@ -535,7 +535,7 @@ notation used in the literature.
 One iteration in Newton's method or
 Picard iteration consists of solving a linear problem $\hat F(u)=0$.
 Sometimes convergence problems arise because the new solution $u$
-of $\hat F(u)=0$ is ``too far away'' from the previously computed
+of $\hat F(u)=0$ is "too far away" from the previously computed
 solution $u^{-}$. A remedy is to introduce a relaxation, meaning that
 we first solve $\hat F(u^*)=0$ for a suggested value $u^*$ and
 then we take $u$ as a weighted mean of what we had, $u^{-}$, and
@@ -772,8 +772,8 @@ until a stopping criterion is fulfilled.
 Evaluating $f$ for a known $u^{-}$ is referred to as *explicit* treatment of
 $f$, while if $f(u,t)$ has some structure, say $f(u,t) = u^3$, parts of
 $f$ can involve the unknown $u$, as in the manual linearization
-$(u^{-})^2u$, and then the treatment of $f$ is ``more implicit''
-and ``less explicit''. This terminology is inspired by time discretization
+$(u^{-})^2u$, and then the treatment of $f$ is "more implicit"
+and "less explicit". This terminology is inspired by time discretization
 of $u^{\prime}=f(u,t)$, where evaluating $f$ for known $u$ values gives
 explicit schemes, while treating $f$ or parts of $f$ implicitly,
 makes $f$ contribute to the unknown terms in the equation at the new
@@ -781,7 +781,7 @@ time level.
 
 Explicit treatment of $f$ usually means stricter conditions on
 $\Delta t$ to achieve stability of time discretization schemes. The same
-applies to iteration techniques for nonlinear algebraic equations: the ``less''
+applies to iteration techniques for nonlinear algebraic equations: the "less"
 we linearize $f$ (i.e., the more we keep of $u$ in the original formula),
 the faster the convergence may be.
 
@@ -1002,7 +1002,7 @@ Given $A(u)u=b(u)$ and an initial guess $u^{-}$, iterate until convergence:
  1. $u^{-}\ \leftarrow\ u$
 :::
 
-``Until convergence'' means that the iteration is stopped when the
+"Until convergence" means that the iteration is stopped when the
 change in the unknown, $||u - u^{-}||$, or the residual $||A(u)u-b||$,
 is sufficiently small, see Section @sec-nonlin-systems-alg-terminate for
 more details.

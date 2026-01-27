@@ -790,7 +790,7 @@ the $u_x=0$ condition from the previous subexercise that is
 qualitatively wrong for large $t$.)
 Develop a diffusion problem for the error in the solution using
 (@eq-diffu-pde1-Gaussian-xL-cooling) as boundary condition.
-Assume one can take $u_S=0$ ``outside the domain'' since
+Assume one can take $u_S=0$ "outside the domain" since
 $\uex\rightarrow 0$ as $x\rightarrow\infty$.
 Find a function $q=q(t)$ such that the exact solution
 obeys the condition (@eq-diffu-pde1-Gaussian-xL-cooling).

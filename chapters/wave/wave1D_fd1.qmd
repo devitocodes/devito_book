@@ -389,7 +389,7 @@ by mathematical approximations or programming errors.
 In particular, if plots of the computed solution $u^n_i$ and
 the exact one (@eq-wave-pde2-test-ue) look similar, many
 are tempted to claim that the implementation works. However,
-even if color plots look nice and the accuracy is ``deemed good'',
+even if color plots look nice and the accuracy is "deemed good",
 there can still be serious programming errors present!
 
 The only way to use exact physical solutions like

@@ -904,7 +904,7 @@ u2 = u[:-2] - 2*u[1:-1] + u[2:]
 u2 = u[0:n-2] - 2*u[1:n-1] + u[2:n]   # alternative
 ```
 Note that the length of `u2` becomes `n-2`. If `u2` is already an array of
-length `n` and we want to use the formula to update all the ``inner''
+length `n` and we want to use the formula to update all the "inner"
 elements of `u2`, as we will when solving a 1D wave equation, we can write
 ```python
 u2[1:-1]  = u[:-2] - 2*u[1:-1] + u[2:]
@@ -1246,7 +1246,7 @@ def f(a, b, c=2):
     return a + b + c
 ```
 We want to ensure that `f` is always called with `c=3`, i.e., `f`
-has only two ``free'' arguments `a` and `b`.
+has only two "free" arguments `a` and `b`.
 This functionality is obtained by
 
 ```python

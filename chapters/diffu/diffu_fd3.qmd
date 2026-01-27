@@ -141,7 +141,7 @@ to $p$:
 (2,3)\rightarrow 11\tp
 \end{align*}
 That is, we number the points along the $x$ axis, starting with $y=0$,
-and then progress one ``horizontal'' mesh line at a time.
+and then progress one "horizontal" mesh line at a time.
 In Figure @fig-diffu-2D-fig-mesh3x2 you can see that the $(i,j)$ and the
 corresponding single index ($p$) are listed for each mesh point.
 
@@ -912,7 +912,7 @@ for n in It[0:-1]:
 The most tricky part of this code snippet is the loading of values from
 the one-dimensional array `c`
 into the two-dimensional array `u`. With our numbering of unknowns
-from left to right along ``horizontal'' mesh lines, the correct
+from left to right along "horizontal" mesh lines, the correct
 reordering of the one-dimensional array `c` as a two-dimensional array
 requires first a reshaping to an `(Ny+1,Nx+1)` two-dimensional
 array and then taking the transpose. The result is an `(Nx+1,Ny+1)`
@@ -1597,7 +1597,7 @@ i = slice(1, None, 2);  j = slice(2, None, 2)
 That is, we need four sets of slices. The simplest way of implementing
 the algorithm is to make a function with variables for the slices
 representing $i$, $i-1$, $i+1$, $j$, $j-1$, and $j+1$, here called
-`ic` (``i center''), `im1` (``i minus 1'', `ip1` (``i plus 1''), `jc`, `jm1`,
+`ic` ("i center"), `im1` ("i minus 1", `ip1` ("i plus 1"), `jc`, `jm1`,
 and `jp1`, respectively.
 
 ```python

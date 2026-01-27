@@ -60,7 +60,7 @@ energy of the system. A mathematical tradition has introduced the
 notion *energy* in this context.
 
 The estimate (@eq-diffu-exer-estimates-p1-result) says that the
-``size of $u$'' never exceeds that of the initial condition,
+"size of $u$" never exceeds that of the initial condition,
 or more precisely, it says that the area under the $u$ curve decreases
 with time.
 
@@ -260,7 +260,7 @@ The surface temperature is set as
 $$
 T(0,t) = T_m + A\sin(\omega t)\tp
 $$
-With only one ``active'' spatial coordinate we get the initial-boundary
+With only one "active" spatial coordinate we get the initial-boundary
 value problem
 
 \begin{alignat*}{2}
@@ -329,7 +329,7 @@ Inserting $u(\bar x, \bar t)=e^{-\bar x}\sin (\bar t - \bar x)$ in the
 PDE shows that this is a solution. It also obeys
 the boundary condition $\bar u(0,\bar t)=sin(\bar t)$. As
 $\bar t\rightarrow\infty$, the initial condition has no longer impact
-on the solution and is ``forgotten'' and of no interest.
+on the solution and is "forgotten" and of no interest.
 The boundary condition at $\bar x=\bar L$ is never compatible with the
 given solution unless $\bar u$ is damped to zero, which happens
 mathematically as $\bar L\rightarrow\infty$. For a numerical solution,

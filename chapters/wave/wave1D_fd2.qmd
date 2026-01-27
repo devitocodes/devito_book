@@ -4,10 +4,6 @@ The boundary condition $u=0$ in a wave equation reflects the wave, but
 $u$ changes sign at the boundary, while the condition $u_x=0$ reflects
 the wave as a mirror and preserves the sign.
 
-## This was not so successful. Could not argue well for Neumann cond
-
-## and reflection
-
 Why is it so?
 Consider the boundary $x=0$ and the condition $u=0$. How will two
 values $u(0, t)$ and $u(\Delta x, t$ change from time $t$ to
@@ -364,7 +360,7 @@ Another test may utilize the fact that the approximation error vanishes
 when the Courant number is unity. We can, for example, start with a
 plug profile as initial condition, let this wave split into two plug waves,
 one in each direction, and check that the two plug waves come back and
-form the initial condition again after ``one period'' of the solution
+form the initial condition again after "one period" of the solution
 process. Neumann conditions can be applied at both ends. A proper
 test function reads
 
@@ -1002,7 +998,7 @@ a variable wave velocity. The different code segments needed
 to make these extensions have been shown and commented upon in the
 preceding text. We refer to the `solver` function in the
 `wave1D_dn_vc.py` file for all the details. Note in that
- `solver` function, however, that the technique of ``hashing'' is
+ `solver` function, however, that the technique of "hashing" is
 used to check whether a certain simulation has been run before, or not.
 This technique is further explained in Section @sec-softeng2-wave1D-filestorage-hash.
 
@@ -1142,9 +1138,9 @@ Four types of initial conditions are available:
 
  1. a rectangular pulse (`plug`),
  1. a Gaussian function (`gaussian`),
- 1. a ``cosine hat'' consisting of one period of the cosine function
+ 1. a "cosine hat" consisting of one period of the cosine function
    (`cosinehat`),
- 1. half a period of a ``cosine hat'' (`half-cosinehat`)
+ 1. half a period of a "cosine hat" (`half-cosinehat`)
 
 These peak-shaped initial conditions can be placed in the middle
 (`loc='center'`) or at the left end (`loc='left'`) of the domain.
@@ -1610,8 +1606,8 @@ Use the `pulse` function in `wave1D_dn_vc.py` to investigate
 sending a pulse, located with its peak at $x=0$, through two
 media with different wave velocities. The (scaled) velocity in
 the left medium is 1 while it is $\frac{1}{s_f}$ in the right medium.
-Report what happens with a Gaussian pulse, a ``cosine hat'' pulse,
-half a ``cosine hat'' pulse, and a plug pulse for resolutions
+Report what happens with a Gaussian pulse, a "cosine hat" pulse,
+half a "cosine hat" pulse, and a plug pulse for resolutions
 $N_x=40,80,160$, and $s_f=2,4$. Simulate until $T=2$.
 
 !bsol
@@ -1629,9 +1625,9 @@ file=pulse1D_analysis
 
 The experiments performed in Exercise @sec-wave-app-exer-pulse1D shows
 considerable numerical noise in the form of non-physical waves,
-especially for $s_f=4$ and the plug pulse or the half a ``cosinehat''
+especially for $s_f=4$ and the plug pulse or the half a "cosinehat"
 pulse. The noise is much less visible for a Gaussian pulse. Run the
-case with the plug and half a ``cosinehat'' pulse for $s_f=1$, $C=0.9,
+case with the plug and half a "cosinehat" pulse for $s_f=1$, $C=0.9,
 0.25$, and $N_x=40,80,160$. Use the numerical dispersion relation to
 explain the observations.
 

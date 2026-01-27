@@ -155,7 +155,7 @@ Allow for a flexible choice of bottom shape:
 
 The purpose of this problem is to explore the quality of the numerical
 solution $\eta^n_i$ for different shapes of the bottom obstruction.
-The ``cosine hat'' and the box-shaped hills have abrupt changes in the
+The "cosine hat" and the box-shaped hills have abrupt changes in the
 derivative of $H(x)$ and are more likely to generate numerical noise
 than the smooth Gaussian shape of the hill. Investigate if this is true.
 
@@ -173,7 +173,7 @@ as $I(x)$ in Problem @sec-wave-app-exer-tsunami1D-hill. That is, a
 plane wave is propagating to the right, but will experience bending
 because of the bottom.
 
-The bottom shape is now a function of $x$ and $y$.  An ``elliptic''
+The bottom shape is now a function of $x$ and $y$.  An "elliptic"
 Gaussian function in two dimensions, with its peak at $(B_{mx},
 B_{my})$, generalizes (@eq-wave-app-exer-tsunami1D-hill-Gauss):
 $$
@@ -188,7 +188,7 @@ model, we may write
 $$
 B = B(x;B_0,B_a,B_{mx}, B_{my} ,B_s, b)\tp
 $$
-The ``cosine hat'' (@eq-wave-app-exer-tsunami1D-hill-cohat) can also be
+The "cosine hat" (@eq-wave-app-exer-tsunami1D-hill-cohat) can also be
 generalized to
 $$
 B =
@@ -309,7 +309,7 @@ p_tt = c^2\nabla^p + c^2\tau_s\nabla^2 p_t + f,
 $$
 where $f(x,y,z,t)$ is the source term.
 
-The walls can absorb some sound. A possible model is to have a ``wall layer''
+The walls can absorb some sound. A possible model is to have a "wall layer"
 (thicker than the physical wall)
 outside the room where $c$ is changed such that some of the wave energy
 is reflected and some is absorbed in the wall. The absorption of

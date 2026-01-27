@@ -764,7 +764,7 @@ numerical solutions.
 ## Leapfrog in time, centered differences in space
 ### Method {#sec-advec-1D-leapfrog}
 
-Another explicit scheme is to do a ``leapfrog'' jump over $2\Delta t$ in
+Another explicit scheme is to do a "leapfrog" jump over $2\Delta t$ in
 time and combine it with central differences in space:
 $$
 [D_{2t} u + vD_{2x} u = 0]_i^n,
@@ -1458,7 +1458,7 @@ signals to the left and the right. The value $u(0)=0$ is transported
 through the domain if $\epsilon$ is small, and $u\approx 0$ except in
 the vicinity of $x=1$, where $u(1)=1$ and the diffusion transports
 some information about $u(1)=1$ to the left. For large $\epsilon$,
-diffusion dominates and the $u$ takes on the ``average'' value, i.e.,
+diffusion dominates and the $u$ takes on the "average" value, i.e.,
 $u$ gets a linear variation from 0 to 1 throughout the domain.
 
 It turns out that we can find an exact solution to the differential

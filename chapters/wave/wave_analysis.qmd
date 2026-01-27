@@ -19,7 +19,7 @@ moving to the right in time with constant velocity $c$.
 This feature can be explained as follows.
 At time $t=0$ the signal looks like $g_R(x)$. Introducing a
 moving horizontal coordinate $\xi = x-ct$, we see the function
-$g_R(\xi)$ is ``at rest''
+$g_R(\xi)$ is "at rest"
 in the $\xi$ coordinate system, and the shape is always
 the same. Say the $g_R(\xi)$ function has a peak at $\xi=0$. This peak
 is located at $x=ct$, which means that it moves with the velocity
@@ -148,7 +148,7 @@ components $e^{ikx}$ for very large $k$, because the shortest possible
 sine or cosine wave that can be represented uniquely
 on a mesh with spacing $\Delta x$
 is the wave with wavelength $2\Delta x$. This wave has its peaks
-and throughs at every two mesh points. That is, the wave ``jumps up and down''
+and throughs at every two mesh points. That is, the wave "jumps up and down"
 between the mesh points.
 
 The corresponding $k$ value for the shortest possible wave in the mesh is
@@ -221,9 +221,6 @@ questions:
 The following analysis will answer these questions. We shall
 continue using $q$ as an identifier for a certain mesh point in
 the $x$ direction.
-
-## We use $p$ because we can then naturally continue with $q$ and $r$ as indices
-## in the $y$ and $z$ directions.
 
 ### Preliminary results
 A key result needed in the investigations is the finite difference

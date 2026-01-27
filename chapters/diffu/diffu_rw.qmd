@@ -13,9 +13,9 @@ point in a small time interval and small spatial volume.
 
 Random walk is a principally different kind of modeling procedure
 compared to the reasoning behind partial differential equations.  The
-idea in random walk is to have a large number of ``particles'' that
+idea in random walk is to have a large number of "particles" that
 undergo random movements. Averaging can then be used afterwards to
-compute macroscopic quantities like concentration. The``particles''
+compute macroscopic quantities like concentration. The"particles"
 and their random movement represent a very simplified microscopic
 behavior of molecules, much simpler and computationally much more
 efficient than direct [molecular simulation](https://en.wikipedia.org/wiki/Molecular_dynamics), yet the random
@@ -98,7 +98,7 @@ $$
 \left(\frac{1}{W}\sum_{j=0}^{W-1} \bar x_{j,k}\right)^2\tp
 $$
 That is, we take the statistics for a given $K$ across the ensemble
-of random walks (``vertically'' in
+of random walks ("vertically" in
 Figure @fig-diffu-randomwalk-1D-fig-ensemble). The key quantities
 to record are $\sum_i \bar x_{i,k}$ and $\sum_i \bar x_{i,k}^2$.
 

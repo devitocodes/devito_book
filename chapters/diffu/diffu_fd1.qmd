@@ -1170,7 +1170,7 @@ which written out reads
 $$
 \frac{u^{n}_i-u^{n-1}**i}{\Delta t} = \dfc\frac{u^{n}**{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} + f_i^n\tp
 $$ {#eq-diffu-pde1-step3bBE}
-Now we assume $u^{n-1}_i$ is already computed, but that all quantities at the ``new''
+Now we assume $u^{n-1}_i$ is already computed, but that all quantities at the "new"
 time level $n$ are unknown. This time it is not possible to solve
 with respect to $u_i^{n}$ because this value couples to its neighbors
 in space, $u^n_{i-1}$ and $u^n_{i+1}$, which are also unknown.

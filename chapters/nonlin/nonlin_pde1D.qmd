@@ -19,7 +19,7 @@ u &= u_0,\quad &\x\in\partial\Omega_D,\ t\in (0,T]\tp
 
 In the present section, our aim is to discretize this problem in time
 and then present techniques for linearizing the time-discrete PDE
-problem ``at the PDE level'' such that we transform the nonlinear
+problem "at the PDE level" such that we transform the nonlinear
 stationary PDE problem at each time level into a sequence of linear
 PDE problems, which can be solved using any method for linear
 PDEs. This strategy avoids the solution of systems of nonlinear
@@ -718,7 +718,3 @@ in the system that arises in the Picard iteration method.
 The extra terms in Newton's method can be multiplied by a factor
 such that it is easy to program one linear system and set this
 factor to 0 or 1 to generate the Picard or Newton system.
-
-## Must make a program that solves this problem with Picard and Newton
-
-## 2D finite difference example, take from TCSE1

@@ -214,7 +214,7 @@ We have imported `numpy` and `matplotlib` under the names `np` and `plt`,
 respectively, as this is very common in the Python scientific
 computing community and a good programming habit (since we explicitly
 see where the different functions come from).  An alternative is to do
-`from numpy import *` and a similar ``import all'' for Matplotlib to
+`from numpy import *` and a similar "import all" for Matplotlib to
 avoid the `np` and `plt` prefixes and make the code as close as
 possible to MATLAB. (See Section 5.1.4 in
 [@Langtangen_decay] for a discussion of the two
@@ -450,15 +450,9 @@ def convergence_rates(m, solver_function, num_periods=8):
 ```
 
 The error analysis in Section @sec-vib-ode1-analysis is quite
-detailed and suggests that $r=2$.
-## but other methods like truncation error
-## analysis
-## % if BOOK == "book":
-## (see Appendix @sec-trunc-vib-undamped)
-## % endif
-## also points to $r=2$,
-## as well as the related quick reasoning that we have used a
-It is also a intuitively reasonable result, since we used a
+detailed and suggests that $r=2$. Other methods like truncation error
+analysis (see Appendix @sec-trunc-vib-undamped) also point to $r=2$.
+It is also an intuitively reasonable result, since we used a
 second-order accurate finite difference approximation $[D_tD_tu]^n$ to
 the ODE and a second-order accurate finite difference formula for the
 initial condition for $u^{\prime}$.
@@ -2110,7 +2104,7 @@ first-order ODEs.
 We may try to find exact solutions of the discrete equations
 (@eq-vib-undamped-FE1)-(@eq-vib-undamped-FE2) in the Forward Euler
 method to better understand why this otherwise useful method has so
-bad performance for vibration ODEs. An ``ansatz'' for the solution of
+bad performance for vibration ODEs. An "ansatz" for the solution of
 the discrete equations is
 
 \begin{align*}
@@ -3554,7 +3548,7 @@ The output confirms that the overall convergence rate is 2.
 file=vib_largest_wdt
 
 Sketch the function on a given mesh which has the highest possible
-frequency. That is, this oscillatory ``cos-like'' function has its
+frequency. That is, this oscillatory "cos-like" function has its
 maxima and minima at every two grid points.  Find an expression for
 the frequency of this function, and use the result to find the largest
 relevant value of $\omega\Delta t$ when $\omega$ is the frequency
@@ -4025,7 +4019,7 @@ $u^{\prime\prime} + \omega^2 u =0$, $u(0)=I$, $u^{\prime}(0)=0$, is given in
 Find the exact discrete solutions of this scheme and show that the solution
 for $u^n$ coincides with that found in Section @sec-vib-ode1-analysis.
 
-:::{.callout-tip title="Use an ``ansatz'' $u^n=I\exp{(i\tilde\omega\Delta t\,n)}$ and"}
+:::{.callout-tip title="Use an "ansatz" $u^n=I\exp{(i\tilde\omega\Delta t\,n)}$ and"}
 $v^n=qu^n$, where $\tilde\omega$ and $q$ are unknown parameters. The
 following formula is handy:
 $$
