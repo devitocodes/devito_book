@@ -155,15 +155,15 @@ format:
 
 # Quarto variables
 # These can be referenced as {{< var name >}} in documents
-src: "https://github.com/hplgit/fdm-book/tree/master/src"
-src_vib: "https://github.com/hplgit/fdm-book/tree/master/src/vib"
-src_wave: "https://github.com/hplgit/fdm-book/tree/master/src/wave"
-src_diffu: "https://github.com/hplgit/fdm-book/tree/master/src/diffu"
-src_nonlin: "https://github.com/hplgit/fdm-book/tree/master/src/nonlin"
-src_trunc: "https://github.com/hplgit/fdm-book/tree/master/src/trunc"
-src_advec: "https://github.com/hplgit/fdm-book/tree/master/src/advec"
-src_formulas: "https://github.com/hplgit/fdm-book/tree/master/src/formulas"
-src_softeng2: "https://github.com/hplgit/fdm-book/tree/master/src/softeng2"
+src: "https://github.com/devitocodes/devito_book/tree/devito/src"
+src_vib: "https://github.com/devitocodes/devito_book/tree/devito/src/vib"
+src_wave: "https://github.com/devitocodes/devito_book/tree/devito/src/wave"
+src_diffu: "https://github.com/devitocodes/devito_book/tree/devito/src/diffu"
+src_nonlin: "https://github.com/devitocodes/devito_book/tree/devito/src/nonlin"
+src_trunc: "https://github.com/devitocodes/devito_book/tree/devito/src/trunc"
+src_advec: "https://github.com/devitocodes/devito_book/tree/devito/src/advec"
+src_formulas: "https://github.com/devitocodes/devito_book/tree/devito/src/formulas"
+src_softeng2: "https://github.com/devitocodes/devito_book/tree/devito/src/softeng2"
 
 crossref:
   eq-prefix: ""
