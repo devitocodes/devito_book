@@ -37,8 +37,11 @@
 - `tests/test_wave_devito.py` - Devito wave solver tests (skipped if Devito not installed)
 - `.github/workflows/ci.yml` - GitHub Actions CI with Codecov integration
 
-**Phase 2 - Wave Equations (Started):**
+**Phase 2 - Wave Equations (In Progress):**
 - `src/wave/wave1D_devito.py` - 1D wave equation solver using Devito DSL
+- `src/wave/wave2D_devito.py` - 2D wave equation solver using `.laplace`
+- `src/wave/sources.py` - Source wavelets (Ricker, Gaussian, spectrum analysis)
+- 29 wave solver tests (1D, 2D, sources)
 
 ---
 
