@@ -1,0 +1,14 @@
+/* Draft watermark for HTML output */
+body::before {
+  content: "DRAFT";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-size: 10rem;
+  font-weight: bold;
+  color: rgba(200, 200, 200, 0.3);
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+}
