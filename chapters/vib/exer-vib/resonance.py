@@ -27,8 +27,8 @@ for i, beta in enumerate(beta_values):
         visualize(u, t, title=f"gamma={gamma:g}", filename=f"tmp_{gamma}")
         print(gamma, "max u amplitude:", np.abs(u).max())
     for ext in "png", "pdf":
-        cmd = "doconce combine_images "
-        cmd += " ".join([f"tmp_{gamma}." + ext for gamma in gamma_values])
-        cmd += " resonance%d." % (i + 1) + ext
+        files = " ".join([f"tmp_{gamma}." + ext for gamma in gamma_values])
+        output = "resonance%d.%s" % (i + 1, ext)
+        cmd = "montage %s -tile 2x2 -geometry +0+0 %s" % (files, output)
         os.system(cmd)
 raw_input()

@@ -1,0 +1,28 @@
+# License
+
+## This Adapted Work
+
+"Finite Difference Computing with PDEs: A Devito Approach" is licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+https://creativecommons.org/licenses/by/4.0/
+
+## Original Work
+
+This work is adapted from:
+
+**Finite Difference Computing with PDEs: A Modern Software Approach**
+by Hans Petter Langtangen and Svein Linge
+
+- Publisher: Springer International Publishing (2017)
+- DOI: https://doi.org/10.1007/978-3-319-55456-3
+- License: CC BY 4.0
+- Source: https://github.com/hplgit/fdm-book
+
+## Attribution
+
+When reusing this work, please credit:
+1. Original authors: Hans Petter Langtangen and Svein Linge
+2. Adapter: Gerard J. Gorman
+3. Link to original DOI
+4. Link to CC BY 4.0 license
+5. Note that changes were made

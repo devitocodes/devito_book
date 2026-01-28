@@ -1,0 +1,518 @@
+## Exercises: Wave Equations with Devito {#sec-wave-exercises}
+
+These exercises explore wave equation solutions using the Devito
+DSL. They progress from basic usage through verification techniques
+to more advanced applications.
+
+### Exercise 1: Standing Wave Simulation {#sec-wave-exer-standing}
+
+Use the `solve_wave_1d` function to simulate a standing wave with:
+
+- Domain: $L = 1$, wave speed $c = 1$
+- Initial condition: $I(x) = \sin(2\pi x)$ (two half-wavelengths)
+- Initial velocity: $V = 0$
+- Boundary conditions: $u(0, t) = u(1, t) = 0$
+
+**a)** Compute and plot the solution at $t = 0, 0.25, 0.5, 0.75, 1.0$.
+How does the pattern differ from the fundamental mode?
+
+**b)** Derive the exact solution for this initial condition and
+compare with the numerical solution. Compute the maximum error
+at $t = 1$ for $N_x = 50, 100, 200$.
+
+::: {.callout-tip collapse="true" title="Solution"}
+```python
+from src.wave import solve_wave_1d, exact_standing_wave
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Part (a)
+def I(x):
+    return np.sin(2 * np.pi * x)
+
+times = [0, 0.25, 0.5, 0.75, 1.0]
+fig, axes = plt.subplots(1, 5, figsize=(15, 3))
+
+for ax, T in zip(axes, times):
+    result = solve_wave_1d(L=1.0, c=1.0, Nx=100, T=T, C=0.9, I=I)
+    ax.plot(result.x, result.u)
+    ax.set_title(f't = {T}')
+    ax.set_ylim(-1.2, 1.2)
+
+plt.tight_layout()
+
+# Part (b) - The exact solution for m=2 mode
+# u(x,t) = sin(2*pi*x) * cos(2*pi*t)
+def u_exact(x, t):
+    return np.sin(2 * np.pi * x) * np.cos(2 * np.pi * t)
+
+for Nx in [50, 100, 200]:
+    result = solve_wave_1d(L=1.0, c=1.0, Nx=Nx, T=1.0, C=0.9, I=I)
+    error = np.abs(result.u - u_exact(result.x, 1.0)).max()
+    print(f"Nx = {Nx:3d}: max error = {error:.2e}")
+```
+:::
+
+### Exercise 2: Convergence Rate Verification {#sec-wave-exer-convergence}
+
+The theoretical convergence rate for the wave equation solver is
+$O(\Delta t^2 + \Delta x^2) = O(h^2)$ when $\Delta t \propto \Delta x$.
+
+**a)** Use `convergence_test_wave_1d` with grid sizes
+$N_x = 20, 40, 80, 160, 320$ and verify the observed rate is close to 2.
+
+**b)** Repeat with Courant number $C = 1$. What happens to the errors?
+Explain why.
+
+::: {.callout-tip collapse="true" title="Solution"}
+```python
+from src.wave import convergence_test_wave_1d
+import numpy as np
+
+# Part (a)
+grid_sizes, errors, rate = convergence_test_wave_1d(
+    grid_sizes=[20, 40, 80, 160, 320],
+    T=0.5,
+    C=0.9,
+)
+print(f"C = 0.9: Observed rate = {rate:.3f}")
+
+# Compute individual rates
+for i in range(1, len(errors)):
+    r = np.log(errors[i-1] / errors[i]) / np.log(2)
+    print(f"  Nx {grid_sizes[i-1]} -> {grid_sizes[i]}: rate = {r:.3f}")
+
+# Part (b)
+grid_sizes, errors, rate = convergence_test_wave_1d(
+    grid_sizes=[20, 40, 80, 160, 320],
+    T=0.5,
+    C=1.0,
+)
+print(f"\nC = 1.0: Observed rate = {rate:.3f}")
+print(f"Errors: {errors}")
+
+# At C=1, the numerical method is exact for the standing wave!
+# Errors should be near machine precision.
+```
+:::
+
+### Exercise 3: Guitar String {#sec-wave-exer-guitar}
+
+Simulate a plucked guitar string with a triangular initial shape:
+$$
+I(x) = \begin{cases}
+ax/x_0 & x < x_0 \\
+a(L-x)/(L-x_0) & x \ge x_0
+\end{cases}
+$$
+
+where $L = 0.75$ m, $x_0 = 0.8L$, and $a = 0.005$ m.
+
+**a)** For a guitar with fundamental frequency 440 Hz, compute the
+wave speed $c$ given that $\lambda = 2L$.
+
+**b)** Simulate one complete period and create an animation. Does
+the triangular shape remain sharp as time progresses?
+
+**c)** Run with $C = 1$ and observe the difference. Explain why
+the result is different.
+
+::: {.callout-tip collapse="true" title="Solution"}
+```python
+from src.wave import solve_wave_1d
+import numpy as np
+
+# Parameters
+L = 0.75
+x0 = 0.8 * L
+a = 0.005
+freq = 440  # Hz
+
+# Part (a)
+wavelength = 2 * L
+c = freq * wavelength
+print(f"Wave speed c = {c} m/s")
+
+# Period
+period = 1 / freq
+print(f"Period = {period*1000:.3f} ms")
+
+# Part (b)
+def I(x):
+    return np.where(x < x0, a * x / x0, a * (L - x) / (L - x0))
+
+result = solve_wave_1d(
+    L=L, c=c, Nx=150, T=period,
+    C=0.9, I=I, save_history=True
+)
+
+# The triangular shape becomes "wavy" due to numerical dispersion
+# Different Fourier components travel at slightly different speeds
+
+# Part (c)
+result_exact = solve_wave_1d(
+    L=L, c=c, Nx=150, T=period,
+    C=1.0, I=I, save_history=True
+)
+
+# At C=1, D'Alembert's solution is exactly reproduced:
+# The triangular pulse splits into two, bounces off walls, and
+# recombines after one period to give the original shape.
+```
+:::
+
+### Exercise 4: Source Wavelets {#sec-wave-exer-wavelets}
+
+**a)** Use `ricker_wavelet` to create wavelets with peak frequencies
+$f_0 = 10, 25, 50$ Hz. Plot them and their frequency spectra.
+
+**b)** What is the relationship between $f_0$ and the dominant
+wavelength $\lambda$ in a medium with $c = 1500$ m/s?
+
+**c)** For seismic imaging, we typically want the wavelet to have
+negligible amplitude at $t = 0$. What constraint does this place
+on $t_0$ relative to $f_0$?
+
+::: {.callout-tip collapse="true" title="Solution"}
+```python
+from src.wave import ricker_wavelet, get_source_spectrum
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Part (a)
+t = np.linspace(0, 0.5, 1001)
+dt = t[1] - t[0]
+
+fig, axes = plt.subplots(2, 3, figsize=(12, 6))
+
+for i, f0 in enumerate([10, 25, 50]):
+    wavelet = ricker_wavelet(t, f0=f0)
+    freq, amp = get_source_spectrum(wavelet, dt)
+
+    axes[0, i].plot(t, wavelet)
+    axes[0, i].set_title(f'f0 = {f0} Hz')
+    axes[0, i].set_xlabel('Time (s)')
+
+    axes[1, i].plot(freq[:100], amp[:100])
+    axes[1, i].axvline(f0, color='r', linestyle='--')
+    axes[1, i].set_xlabel('Frequency (Hz)')
+
+# Part (b)
+c = 1500  # m/s
+for f0 in [10, 25, 50]:
+    wavelength = c / f0
+    print(f"f0 = {f0} Hz: wavelength = {wavelength} m")
+
+# Part (c)
+# The Ricker wavelet is centered at t0, and has amplitude ~0 when
+# |t - t0| > 1/f0. For the wavelet to be ~0 at t=0, we need:
+# t0 > 1/f0, typically t0 = 1.5/f0 is used as default
+```
+:::
+
+### Exercise 5: 2D Wave Propagation {#sec-wave-exer-2d}
+
+**a)** Solve the 2D wave equation with an initial Gaussian pulse
+centered at $(0.5, 0.5)$:
+$$
+I(x, y) = e^{-100((x-0.5)^2 + (y-0.5)^2)}
+$$
+
+Plot the solution at $t = 0, 0.1, 0.2, 0.3$ using contour plots.
+
+**b)** How does the wave pattern differ from the 1D case? Explain
+the amplitude decay you observe.
+
+::: {.callout-tip collapse="true" title="Solution"}
+```python
+from src.wave import solve_wave_2d
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Part (a)
+def I(X, Y):
+    return np.exp(-100 * ((X - 0.5)**2 + (Y - 0.5)**2))
+
+fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+
+for ax, T in zip(axes, [0, 0.1, 0.2, 0.3]):
+    result = solve_wave_2d(
+        Lx=1.0, Ly=1.0, Nx=100, Ny=100,
+        T=T, C=0.5, I=I
+    )
+
+    X, Y = np.meshgrid(result.x, result.y, indexing='ij')
+    c = ax.contourf(X, Y, result.u, levels=20, cmap='RdBu_r')
+    ax.set_title(f't = {T}')
+    ax.set_aspect('equal')
+
+# Part (b)
+# In 2D, the wave spreads as a circular wavefront. The amplitude
+# decays as 1/sqrt(r) due to geometric spreading - the energy is
+# distributed over an expanding circle rather than staying constant
+# as in 1D.
+```
+:::
+
+### Exercise 6: Reflection from Interface {#sec-wave-exer-reflection}
+
+Consider a 1D domain $[0, 2]$ with a velocity interface at $x = 1$:
+$c(x) = 1$ for $x < 1$ and $c(x) = 2$ for $x \ge 1$.
+
+**a)** Starting with a Gaussian pulse centered at $x = 0.3$, simulate
+the wave propagation until $t = 2.0$.
+
+**b)** Identify the reflected and transmitted waves. Do the amplitudes
+match the theoretical reflection ($R = 1/3$) and transmission ($T = 4/3$)
+coefficients?
+
+**c)** What happens at the boundaries $x = 0$ and $x = 2$? Are there
+additional reflections?
+
+::: {.callout-tip collapse="true" title="Solution"}
+```python
+# This requires implementing variable velocity, which is
+# demonstrated in the wave1D_features.qmd chapter.
+# A simplified approach using manual stencil computation:
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+L = 2.0
+Nx = 400
+dx = L / Nx
+x = np.linspace(0, L, Nx + 1)
+
+# Velocity profile
+c = np.where(x < 1.0, 1.0, 2.0)
+c_max = 2.0
+
+# Time stepping
+C = 0.5
+dt = C * dx / c_max
+T = 2.0
+Nt = int(T / dt)
+
+# Initial condition
+sigma = 0.1
+x0 = 0.3
+u_nm1 = np.exp(-((x - x0) / sigma)**2)
+u_n = u_nm1.copy()
+u = np.zeros_like(u_n)
+
+# Store snapshots
+snapshots = []
+times = []
+
+for n in range(Nt):
+    # Update interior
+    for i in range(1, Nx):
+        C_local = c[i] * dt / dx
+        u[i] = 2*u_n[i] - u_nm1[i] + C_local**2 * (u_n[i+1] - 2*u_n[i] + u_n[i-1])
+
+    # Dirichlet BCs
+    u[0] = 0
+    u[Nx] = 0
+
+    # Swap
+    u_nm1, u_n, u = u_n, u, u_nm1
+
+    # Store snapshots
+    if n % 50 == 0:
+        snapshots.append(u_n.copy())
+        times.append(n * dt)
+
+# Plot snapshots
+fig, axes = plt.subplots(2, 4, figsize=(16, 6))
+for ax, snap, t in zip(axes.flat, snapshots, times):
+    ax.plot(x, snap)
+    ax.axvline(1.0, color='gray', linestyle='--', label='interface')
+    ax.set_ylim(-1, 1)
+    ax.set_title(f't = {t:.2f}')
+```
+:::
+
+### Exercise 7: Manufactured Solution {#sec-wave-exer-mms}
+
+Use the method of manufactured solutions to verify the solver.
+Choose $u(x, t) = x(L-x)(1 + t/2)$ which satisfies zero Dirichlet
+boundary conditions.
+
+**a)** Compute the required source term $f(x, t)$ and initial
+conditions $I(x)$, $V(x)$.
+
+**b)** Modify the solver (or use the source term capability) to
+solve with this $f(x, t)$. Verify the numerical solution matches
+the exact solution to machine precision.
+
+::: {.callout-tip collapse="true" title="Solution"}
+```python
+# Manufactured solution: u = x(L-x)(1 + t/2)
+# u_t = x(L-x) * (1/2)
+# u_tt = 0
+# u_x = (L - 2x)(1 + t/2)
+# u_xx = -2(1 + t/2)
+#
+# PDE: u_tt = c^2 * u_xx + f
+# 0 = c^2 * (-2)(1 + t/2) + f
+# f = 2*c^2*(1 + t/2)
+
+L = 2.5
+c = 1.5
+
+def u_exact(x, t):
+    return x * (L - x) * (1 + 0.5 * t)
+
+def I(x):
+    return u_exact(x, 0)
+
+def V(x):
+    return 0.5 * x * (L - x)
+
+def f(x, t):
+    return 2 * c**2 * (1 + 0.5 * t)
+
+# The solution should be exact to machine precision because
+# the discretization error is zero for quadratic solutions
+```
+:::
+
+### Exercise 8: Wave Energy Conservation {#sec-wave-exer-energy}
+
+The total energy of the wave system is:
+$$
+E = \frac{1}{2} \int_0^L \left[ u_t^2 + c^2 u_x^2 \right] dx
+$$
+
+**a)** Implement a function to compute the discrete energy at each
+time step.
+
+**b)** Run a simulation with zero Dirichlet BCs and plot the energy
+versus time. Is energy conserved?
+
+**c)** What happens to energy conservation if $C > 1$?
+
+::: {.callout-tip collapse="true" title="Solution"}
+```python
+from src.wave import solve_wave_1d
+import numpy as np
+
+def compute_energy(u_history, x, dt, c):
+    """Compute discrete energy at each time step."""
+    dx = x[1] - x[0]
+    Nt = u_history.shape[0]
+    energy = np.zeros(Nt)
+
+    for n in range(1, Nt-1):
+        # u_t approximation (central difference)
+        u_t = (u_history[n+1] - u_history[n-1]) / (2 * dt)
+
+        # u_x approximation
+        u_x = np.zeros_like(u_history[n])
+        u_x[1:-1] = (u_history[n, 2:] - u_history[n, :-2]) / (2 * dx)
+
+        # Energy integral
+        energy[n] = 0.5 * dx * np.sum(u_t**2 + c**2 * u_x**2)
+
+    return energy
+
+# Part (b)
+result = solve_wave_1d(
+    L=1.0, c=1.0, Nx=100, T=5.0, C=0.9,
+    save_history=True
+)
+
+E = compute_energy(result.u_history, result.x, result.dt, 1.0)
+
+import matplotlib.pyplot as plt
+plt.plot(result.t_history[1:-1], E[1:-1])
+plt.xlabel('Time')
+plt.ylabel('Energy')
+plt.title('Energy Conservation')
+# Energy should be nearly constant for stable schemes
+
+# Part (c)
+# For C > 1, the scheme is unstable and energy grows exponentially
+```
+:::
+
+### Exercise 9: Numerical Dispersion {#sec-wave-exer-dispersion}
+
+The numerical scheme introduces dispersion: different frequencies
+travel at different speeds.
+
+**a)** Create an initial condition with multiple frequencies:
+$$
+I(x) = \sin(2\pi x) + 0.5 \sin(6\pi x)
+$$
+
+Simulate for several periods and observe how the shape changes.
+
+**b)** Run the same simulation with $C = 1$. Is dispersion present?
+
+::: {.callout-tip collapse="true" title="Solution"}
+```python
+from src.wave import solve_wave_1d
+import numpy as np
+import matplotlib.pyplot as plt
+
+def I(x):
+    return np.sin(2 * np.pi * x) + 0.5 * np.sin(6 * np.pi * x)
+
+# Part (a) - C < 1: dispersion present
+result_a = solve_wave_1d(
+    L=1.0, c=1.0, Nx=100, T=10.0, C=0.8,
+    I=I, save_history=True
+)
+
+# Part (b) - C = 1: no dispersion
+result_b = solve_wave_1d(
+    L=1.0, c=1.0, Nx=100, T=10.0, C=1.0,
+    I=I, save_history=True
+)
+
+# Compare at final time
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+
+ax1.plot(result_a.x, I(result_a.x), 'k--', label='Initial')
+ax1.plot(result_a.x, result_a.u, 'r-', label=f't = {result_a.t}')
+ax1.set_title('C = 0.8 (dispersion present)')
+ax1.legend()
+
+ax2.plot(result_b.x, I(result_b.x), 'k--', label='Initial')
+ax2.plot(result_b.x, result_b.u, 'r-', label=f't = {result_b.t}')
+ax2.set_title('C = 1.0 (dispersion-free)')
+ax2.legend()
+
+# At C = 1, the solution returns exactly to the initial shape
+# after one period, while at C < 1, the shape is distorted.
+```
+:::
+
+### Exercise 10: Extension to Higher Order {#sec-wave-exer-highorder}
+
+Devito supports higher-order spatial discretization through the
+`space_order` parameter.
+
+**a)** Compare the errors at $t = 1$ for `space_order = 2, 4, 6, 8`
+with $N_x = 50$.
+
+**b)** For which problems might higher spatial order be beneficial?
+
+::: {.callout-tip collapse="true" title="Solution"}
+```python
+# Note: This requires modifying the solver to accept space_order
+# as a parameter. The key change is:
+#
+# u = TimeFunction(name='u', grid=grid, time_order=2, space_order=order)
+#
+# Higher order gives more accurate spatial derivatives but
+# requires wider stencils and more boundary handling.
+#
+# Higher order is beneficial when:
+# 1. The solution is smooth
+# 2. Long propagation distances are needed
+# 3. Minimizing numerical dispersion is important
+# 4. Fewer grid points are desired for a given accuracy
+```
+:::

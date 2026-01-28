@@ -7,5 +7,3 @@ Cf2py intent(in, out) u
 Cf2py intent(c) u, u_1, u_2, f, Cx2, Cy2, dt2, Nx, Ny
       return
       end
-
-

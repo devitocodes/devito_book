@@ -1,3 +1,47 @@
+## About This Adaptation {.unnumbered}
+
+This book is an adaptation of *Finite Difference Computing with PDEs: A Modern Software Approach* by Hans Petter Langtangen and Svein Linge, originally published by Springer in 2017 under a [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
+
+**Original Work:**
+
+> Langtangen, H.P., Linge, S. (2017). *Finite Difference Computing with PDEs: A Modern Software Approach*. Texts in Computational Science and Engineering, vol 16. Springer, Cham. [https://doi.org/10.1007/978-3-319-55456-3](https://doi.org/10.1007/978-3-319-55456-3)
+
+### What Has Changed
+
+This edition has been substantially adapted to feature [Devito](https://www.devitoproject.org/), a domain-specific language for symbolic PDE specification and automatic code generation.
+
+**New Content:**
+
+- Introduction to Devito chapter covering Grid, Function, TimeFunction, and Operator
+- Devito solver implementations for wave, diffusion, advection, and nonlinear equations
+- Comprehensive exercises using Devito
+- Test suite with verification of all numerical methods
+
+**Technical Updates:**
+
+- Conversion from DocOnce to [Quarto](https://quarto.org/) publishing format
+- Modern Python practices
+- Continuous integration and testing infrastructure
+- Updated external links and references
+
+**Preserved Content:**
+
+- Mathematical derivations and theoretical foundations
+- Pedagogical structure and learning philosophy
+- Appendices on truncation errors and finite difference formulas
+
+### Acknowledgment
+
+This adaptation was prepared by Gerard J. Gorman (Imperial College London) in collaboration with the Devito development team.
+
+Professor Hans Petter Langtangen passed away in October 2016. His profound contributions to computational science education continue to benefit students and practitioners worldwide. This adaptation aims to honor his legacy by bringing his pedagogical approach to modern tools.
+
+---
+
+## Original Preface
+
+*The following preface is from the original work by Langtangen and Linge.*
+
 There are so many excellent books on finite difference methods for
 ordinary and partial differential equations that writing yet another
 one requires a different view on the topic. The present book is not
@@ -209,7 +253,7 @@ mathematics, numerics, computer science, and physics.
 
 Most books on finite difference methods, or books on theory with
 computer examples, have their emphasis on diffusion phenomena.  Half
-of this book (Chapters @sec-ch-vib, @sec-ch-wave, and Appendix
+of this book (Chapters @sec-ch-devito-intro, @sec-ch-wave, and Appendix
 @sec-ch-softeng2) is devoted to wave phenomena. Extended material on
 this topic is not so easy find in the literature, so the book should
 be a valuable contribution in this respect.  Wave phenomena is also a
@@ -241,7 +285,7 @@ stated, even if it was already met in another chapter.
 
 All program and data files referred to in this book are available
 from the book's primary web site:
-URL: <https://github.com/hplgit/fdm-book/>.
+URL: <https://github.com/devitocodes/devito_book/>.
 
 ### Acknowledgments
 

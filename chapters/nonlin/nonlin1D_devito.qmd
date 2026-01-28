@@ -1,0 +1,283 @@
+## Solving Nonlinear PDEs with Devito {#sec-nonlin-devito}
+
+Having established the finite difference discretization of nonlinear PDEs,
+we now implement several solvers using Devito. The symbolic approach allows
+us to express nonlinear equations and handle the time-lagged coefficients
+naturally.
+
+### Nonlinear Diffusion: The Explicit Scheme
+
+The nonlinear diffusion equation
+$$
+u_t = \nabla \cdot (D(u) \nabla u)
+$$
+with solution-dependent diffusivity $D(u)$ requires special treatment.
+In 1D, the equation becomes:
+$$
+u_t = \frac{\partial}{\partial x}\left(D(u) \frac{\partial u}{\partial x}\right)
+$$
+
+For explicit time stepping, we evaluate $D$ at the previous time level:
+$$
+u^{n+1}_i = u^n_i + \frac{\Delta t}{\Delta x^2}
+\left[D^n_{i+1/2}(u^n_{i+1} - u^n_i) - D^n_{i-1/2}(u^n_i - u^n_{i-1})\right]
+$$
+
+where $D^n_{i+1/2} = \frac{1}{2}(D(u^n_i) + D(u^n_{i+1}))$.
+
+### The Devito Implementation
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator, Constant
+import numpy as np
+
+# Domain and discretization
+L = 1.0           # Domain length
+Nx = 100          # Grid points
+T = 0.1           # Final time
+F = 0.4           # Target Fourier number
+
+dx = L / Nx
+D_max = 1.0       # Maximum diffusion coefficient
+dt = F * dx**2 / D_max  # Time step from stability
+
+# Create Devito grid
+grid = Grid(shape=(Nx + 1,), extent=(L,))
+
+# Time-varying field with space_order=2 for halo access
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+```
+
+### Handling the Nonlinear Diffusion Coefficient
+
+For nonlinear diffusion, the diffusivity depends on the solution. Common
+forms include:
+
+| Type | $D(u)$ | Application |
+|------|--------|-------------|
+| Constant | $D_0$ | Linear heat conduction |
+| Linear | $D_0(1 + \alpha u)$ | Temperature-dependent conductivity |
+| Porous medium | $D_0 m u^{m-1}$ | Flow in porous media |
+
+The `src.nonlin` module provides several diffusion coefficient functions:
+
+```python
+from src.nonlin import (
+    constant_diffusion,
+    linear_diffusion,
+    porous_medium_diffusion,
+)
+
+# Constant D(u) = 1.0
+D_const = lambda u: constant_diffusion(u, D0=1.0)
+
+# Linear D(u) = 1 + 0.5*u
+D_linear = lambda u: linear_diffusion(u, D0=1.0, alpha=0.5)
+
+# Porous medium D(u) = 2*u (m=2)
+D_porous = lambda u: porous_medium_diffusion(u, m=2.0, D0=1.0)
+```
+
+### Complete Nonlinear Diffusion Solver
+
+The `src.nonlin` module provides `solve_nonlinear_diffusion_explicit`:
+
+```python
+from src.nonlin import solve_nonlinear_diffusion_explicit
+import numpy as np
+
+# Initial condition: smooth bump
+def I(x):
+    return np.sin(np.pi * x)
+
+result = solve_nonlinear_diffusion_explicit(
+    L=1.0,           # Domain length
+    Nx=100,          # Grid points
+    T=0.1,           # Final time
+    F=0.4,           # Fourier number
+    I=I,             # Initial condition
+    D_func=lambda u: linear_diffusion(u, D0=1.0, alpha=0.5),
+)
+
+print(f"Final time: {result.t:.4f}")
+print(f"Max solution: {result.u.max():.6f}")
+```
+
+### Reaction-Diffusion with Operator Splitting
+
+The reaction-diffusion equation
+$$
+u_t = a u_{xx} + R(u)
+$$
+combines diffusion with a nonlinear reaction term. Operator splitting
+separates these effects:
+
+**Lie Splitting (first-order):**
+1. Solve $u_t = a u_{xx}$ for time $\Delta t$
+2. Solve $u_t = R(u)$ for time $\Delta t$
+
+**Strang Splitting (second-order):**
+1. Solve $u_t = R(u)$ for time $\Delta t/2$
+2. Solve $u_t = a u_{xx}$ for time $\Delta t$
+3. Solve $u_t = R(u)$ for time $\Delta t/2$
+
+### Reaction Terms
+
+The module provides common reaction terms:
+
+```python
+from src.nonlin import (
+    logistic_reaction,
+    fisher_reaction,
+    allen_cahn_reaction,
+)
+
+# Logistic growth: R(u) = r*u*(1 - u/K)
+R_logistic = lambda u: logistic_reaction(u, r=1.0, K=1.0)
+
+# Fisher-KPP: R(u) = r*u*(1 - u)
+R_fisher = lambda u: fisher_reaction(u, r=1.0)
+
+# Allen-Cahn: R(u) = u - u^3
+R_allen_cahn = lambda u: allen_cahn_reaction(u, epsilon=1.0)
+```
+
+### Reaction-Diffusion Solver
+
+```python
+from src.nonlin import solve_reaction_diffusion_splitting
+
+# Initial condition with small perturbation
+def I(x):
+    return 0.5 * np.sin(np.pi * x)
+
+# Strang splitting (second-order)
+result = solve_reaction_diffusion_splitting(
+    L=1.0,
+    a=0.1,           # Diffusion coefficient
+    Nx=100,
+    T=0.5,
+    F=0.4,
+    I=I,
+    R_func=lambda u: fisher_reaction(u, r=1.0),
+    splitting="strang",
+)
+```
+
+The Strang splitting achieves second-order accuracy in time, while Lie
+splitting is only first-order. For problems with fast reactions or
+long simulation times, the higher accuracy of Strang splitting is
+beneficial.
+
+### Burgers' Equation
+
+The viscous Burgers' equation
+$$
+u_t + u u_x = \nu u_{xx}
+$$
+is a prototype for nonlinear advection with viscous dissipation. The
+nonlinear term $u u_x$ can cause shock formation for small $\nu$.
+
+We use the conservative form $(u^2/2)_x$ with centered differences:
+
+```python
+from src.nonlin import solve_burgers_equation
+
+result = solve_burgers_equation(
+    L=2.0,           # Domain length
+    nu=0.01,         # Viscosity
+    Nx=100,          # Grid points
+    T=0.5,           # Final time
+    C=0.5,           # Target CFL number
+)
+```
+
+### Stability for Burgers' Equation
+
+The time step must satisfy both the CFL condition for advection:
+$$
+C = \frac{|u|_{\max} \Delta t}{\Delta x} \le 1
+$$
+
+and the diffusion stability condition:
+$$
+F = \frac{\nu \Delta t}{\Delta x^2} \le 0.5
+$$
+
+The solver automatically chooses $\Delta t$ to satisfy both conditions
+with a safety factor.
+
+### The Effect of Viscosity
+
+```python
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+for ax, nu in zip(axes, [0.1, 0.01]):
+    result = solve_burgers_equation(
+        L=2.0, nu=nu, Nx=100, T=0.5, C=0.3,
+        I=lambda x: np.sin(np.pi * x),
+        save_history=True,
+    )
+
+    for i in range(0, len(result.t_history), len(result.t_history)//5):
+        ax.plot(result.x, result.u_history[i],
+                label=f't = {result.t_history[i]:.2f}')
+
+    ax.set_xlabel('x')
+    ax.set_ylabel('u')
+    ax.set_title(f'Burgers, nu = {nu}')
+    ax.legend()
+```
+
+Higher viscosity ($\nu = 0.1$) smooths the solution, while lower
+viscosity ($\nu = 0.01$) allows steeper gradients to develop.
+
+### Picard Iteration for Implicit Schemes
+
+For stiff nonlinear problems, implicit time stepping may be necessary.
+Picard iteration solves the nonlinear system by repeated linearization:
+
+1. Guess $u^{n+1, (0)} = u^n$
+2. For $k = 0, 1, 2, \ldots$:
+   - Evaluate $D^{(k)} = D(u^{n+1, (k)})$
+   - Solve the linear system for $u^{n+1, (k+1)}$
+   - Check convergence: $\|u^{n+1, (k+1)} - u^{n+1, (k)}\| < \epsilon$
+
+```python
+from src.nonlin import solve_nonlinear_diffusion_picard
+
+result = solve_nonlinear_diffusion_picard(
+    L=1.0,
+    Nx=50,
+    T=0.05,
+    dt=0.001,        # Can use larger dt than explicit
+)
+```
+
+The implicit scheme removes the time step restriction but requires
+solving a linear system at each iteration.
+
+### Summary
+
+Key points for nonlinear PDEs with Devito:
+
+1. **Nonlinear diffusion**: Use explicit scheme with lagged coefficient
+   evaluation and Fourier number $F \le 0.5$
+2. **Operator splitting**: Separates diffusion and reaction for
+   reaction-diffusion equations; Strang is second-order
+3. **Burgers' equation**: Requires both CFL and diffusion stability
+   conditions; viscosity controls smoothness
+4. **Picard iteration**: Enables implicit schemes for stiff problems
+   at the cost of solving linear systems
+
+The `src.nonlin` module provides:
+- `solve_nonlinear_diffusion_explicit`
+- `solve_reaction_diffusion_splitting`
+- `solve_burgers_equation`
+- `solve_nonlinear_diffusion_picard`
+- Diffusion coefficients: `constant_diffusion`, `linear_diffusion`,
+  `porous_medium_diffusion`
+- Reaction terms: `logistic_reaction`, `fisher_reaction`,
+  `allen_cahn_reaction`

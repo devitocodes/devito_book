@@ -402,7 +402,7 @@ empirical convergence rate of the method.
 An introduction to the computing of convergence rates is given in Section 3.1.6
  in [@Langtangen_decay].
 There is also a detailed example on computing convergence rates in
-Section @sec-vib-ode1-verify.
+@sec-devito-intro-verification.
 
 In the present problem, one expects the method to have a convergence rate
 of 2 (see Section @sec-wave-pde1-analysis), so if the computed rates

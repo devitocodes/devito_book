@@ -3,3 +3,13 @@
 globs:
   - "**/*.md"
   - "**/*.qmd"
+
+# Exclude external and generated directories
+ignores:
+  - "devito_repo/**"
+  - "venv/**"
+  - ".venv/**"
+  - "node_modules/**"
+  - "_book/**"
+  - "doc/pub/**"
+  - "devito-plan.md"

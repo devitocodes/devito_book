@@ -20,4 +20,3 @@ void advance(double* u, double* u_1, double* u_2, double* f,
   i = 0;  for (j=0; j<=Ny; j++) u[idx(i,j)] = 0;
   i = Nx; for (j=0; j<=Ny; j++) u[idx(i,j)] = 0;
 }
-

@@ -1,0 +1,254 @@
+## Boundary Conditions in Devito {#sec-devito-intro-bcs}
+
+Properly implementing boundary conditions is crucial for accurate PDE
+solutions. Devito provides several approaches, each suited to different
+situations.
+
+### Dirichlet Boundary Conditions
+
+Dirichlet conditions specify the solution value at the boundary:
+$$
+u(0, t) = g_0(t), \quad u(L, t) = g_L(t)
+$$
+
+**Method 1: Explicit equations**
+
+The most direct approach adds equations that set boundary values:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator
+
+grid = Grid(shape=(101,), extent=(1.0,))
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+
+# Get the time dimension for indexing
+t = grid.stepping_dim
+
+# Interior update (wave equation)
+update = Eq(u.forward, 2*u - u.backward + dt**2 * c**2 * u.dx2)
+
+# Boundary conditions: u = 0 at both ends
+bc_left = Eq(u[t+1, 0], 0)
+bc_right = Eq(u[t+1, 100], 0)
+
+# Include all equations in the operator
+op = Operator([update, bc_left, bc_right])
+```
+
+**Method 2: Using subdomain**
+
+For interior-only updates, use `subdomain=grid.interior`:
+
+```python
+# Update only interior points (automatically excludes boundaries)
+update = Eq(u.forward, 2*u - u.backward + dt**2 * c**2 * u.dx2,
+            subdomain=grid.interior)
+
+# Set boundaries explicitly
+bc_left = Eq(u[t+1, 0], 0)
+bc_right = Eq(u[t+1, 100], 0)
+
+op = Operator([update, bc_left, bc_right])
+```
+
+The `subdomain=grid.interior` approach is often cleaner because it
+explicitly separates the physics (interior PDE) from the boundary treatment.
+
+### Neumann Boundary Conditions
+
+Neumann conditions specify the derivative at the boundary:
+$$
+\frac{\partial u}{\partial x}(0, t) = h_0(t), \quad
+\frac{\partial u}{\partial x}(L, t) = h_L(t)
+$$
+
+For a zero-flux condition ($\partial u/\partial x = 0$), we use the
+ghost point method. The central difference at the boundary requires
+a point outside the domain:
+$$
+\frac{\partial u}{\partial x}\bigg|_{i=0} \approx \frac{u_1 - u_{-1}}{2\Delta x} = 0
+$$
+
+This gives $u_{-1} = u_1$, which we substitute into the interior equation:
+
+```python
+grid = Grid(shape=(101,), extent=(1.0,))
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+x = grid.dimensions[0]
+t = grid.stepping_dim
+
+# Interior update (diffusion equation)
+update = Eq(u.forward, u + alpha * dt * u.dx2, subdomain=grid.interior)
+
+# Neumann BC at left (du/dx = 0): use one-sided update
+# u_new[0] = u[0] + alpha*dt * 2*(u[1] - u[0])/dx^2
+dx = grid.spacing[0]
+bc_left = Eq(u[t+1, 0], u[t, 0] + alpha * dt * 2 * (u[t, 1] - u[t, 0]) / dx**2)
+
+# Neumann BC at right (du/dx = 0)
+bc_right = Eq(u[t+1, 100], u[t, 100] + alpha * dt * 2 * (u[t, 99] - u[t, 100]) / dx**2)
+
+op = Operator([update, bc_left, bc_right])
+```
+
+### Mixed Boundary Conditions
+
+Often we have different conditions on different boundaries:
+
+```python
+# Dirichlet on left, Neumann on right
+bc_left = Eq(u[t+1, 0], 0)  # u(0,t) = 0
+bc_right = Eq(u[t+1, 100], u[t+1, 99])  # du/dx(L,t) = 0 (copy from interior)
+
+op = Operator([update, bc_left, bc_right])
+```
+
+### 2D Boundary Conditions
+
+For 2D problems, boundary conditions apply to all four edges:
+
+```python
+grid = Grid(shape=(101, 101), extent=(1.0, 1.0))
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+
+x, y = grid.dimensions
+t = grid.stepping_dim
+Nx, Ny = 100, 100
+
+# Interior update
+update = Eq(u.forward, 2*u - u.backward + dt**2 * c**2 * u.laplace,
+            subdomain=grid.interior)
+
+# Dirichlet BCs on all four edges
+bc_left = Eq(u[t+1, 0, y], 0)
+bc_right = Eq(u[t+1, Nx, y], 0)
+bc_bottom = Eq(u[t+1, x, 0], 0)
+bc_top = Eq(u[t+1, x, Ny], 0)
+
+op = Operator([update, bc_left, bc_right, bc_bottom, bc_top])
+```
+
+### Time-Dependent Boundary Conditions
+
+For boundaries that vary in time, use the time index:
+
+```python
+from devito import Constant
+
+# Time-varying amplitude
+A = Constant(name='A')
+
+# Sinusoidal forcing at left boundary
+# u(0, t) = A * sin(omega * t)
+import sympy as sp
+omega = 2 * sp.pi  # Angular frequency
+
+# The time value at step n
+t_val = t * dt  # Symbolic time value
+
+bc_left = Eq(u[t+1, 0], A * sp.sin(omega * t_val))
+
+# Set the amplitude before running
+op = Operator([update, bc_left, bc_right])
+op(time=Nt, dt=dt, A=1.0)  # Pass A as keyword argument
+```
+
+### Absorbing Boundary Conditions
+
+For wave equations, we often want waves to exit the domain without
+reflection. A simple first-order absorbing condition is:
+$$
+\frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0 \quad \text{at } x = L
+$$
+
+This can be discretized as:
+
+```python
+# Absorbing BC at right boundary (waves traveling right)
+dx = grid.spacing[0]
+bc_right_absorbing = Eq(
+    u[t+1, Nx],
+    u[t, Nx] - c * dt / dx * (u[t, Nx] - u[t, Nx-1])
+)
+```
+
+More sophisticated absorbing conditions use damping layers (sponges)
+near the boundaries. This is covered in detail in @sec-wave-1d-absorbing.
+
+### Periodic Boundary Conditions
+
+For periodic domains, the solution wraps around:
+$$
+u(0, t) = u(L, t)
+$$
+
+Devito doesn't directly support periodic BCs, but they can be implemented
+by copying values:
+
+```python
+# Periodic BCs: u[0] = u[Nx-1], u[Nx] = u[1]
+bc_periodic_left = Eq(u[t+1, 0], u[t+1, Nx-1])
+bc_periodic_right = Eq(u[t+1, Nx], u[t+1, 1])
+```
+
+Note: The order of equations matters. Update the interior first, then
+copy for periodicity.
+
+### Best Practices
+
+1. **Use `subdomain=grid.interior`** for interior updates to clearly
+   separate physics from boundary treatment
+
+2. **Check boundary equation order**: Boundary equations should typically
+   come after interior updates in the operator
+
+3. **Verify boundary values**: After running, check that boundaries have
+   the expected values
+
+4. **Test with known solutions**: Use problems with analytical solutions
+   to verify boundary condition implementation
+
+### Example: Complete Wave Equation Solver
+
+Here's a complete example combining interior updates with boundary conditions:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator
+import numpy as np
+
+# Setup
+L, c, T = 1.0, 1.0, 2.0
+Nx = 100
+C = 0.9  # Courant number
+dx = L / Nx
+dt = C * dx / c
+Nt = int(T / dt)
+
+# Grid and field
+grid = Grid(shape=(Nx + 1,), extent=(L,))
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+t = grid.stepping_dim
+
+# Initial condition: plucked string
+x_vals = np.linspace(0, L, Nx + 1)
+u.data[0, :] = np.sin(np.pi * x_vals)
+u.data[1, :] = u.data[0, :]  # Zero initial velocity
+
+# Equations
+update = Eq(u.forward, 2*u - u.backward + (c*dt)**2 * u.dx2,
+            subdomain=grid.interior)
+bc_left = Eq(u[t+1, 0], 0)
+bc_right = Eq(u[t+1, Nx], 0)
+
+# Solve
+op = Operator([update, bc_left, bc_right])
+op(time=Nt, dt=dt)
+
+# Verify: solution should return to initial shape at t = 2L/c
+print(f"Initial max: {np.max(u.data[1, :]):.6f}")
+print(f"Final max: {np.max(u.data[0, :]):.6f}")
+```
+
+For a string with fixed ends and initial shape $\sin(\pi x)$, the solution
+oscillates with period $2L/c$. After one period, it should return to the
+initial configuration.

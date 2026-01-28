@@ -1,0 +1,252 @@
+## 2D Diffusion with Devito {#sec-diffu-2d}
+
+Extending the diffusion solver to two dimensions illustrates Devito's
+dimension-agnostic approach. The same symbolic patterns apply, and
+the `.laplace` attribute automatically generates the correct 2D stencil.
+
+### The 2D Diffusion Equation
+
+The two-dimensional diffusion equation on $[0, L_x] \times [0, L_y]$ is:
+$$
+\frac{\partial u}{\partial t} = \dfc \left(
+\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2}
+\right) = \dfc \nabla^2 u
+$$ {#eq-diffu-2d-pde}
+
+where $\nabla^2 u = u_{xx} + u_{yy}$ is the Laplacian.
+
+### Devito's Dimension-Agnostic Laplacian
+
+The `.laplace` attribute works identically in 1D, 2D, and 3D:
+
+```python
+from devito import Grid, TimeFunction
+
+# 2D grid
+grid = Grid(shape=(Nx + 1, Ny + 1), extent=(Lx, Ly))
+
+# 2D temperature field
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+
+# The Laplacian automatically includes both u_xx and u_yy
+laplacian = u.laplace  # Returns u_xx + u_yy
+```
+
+### Stability Condition in 2D
+
+The Forward Euler stability condition in 2D is more restrictive:
+$$
+F = \dfc \cdot \Delta t \cdot \left(\frac{1}{\Delta x^2} + \frac{1}{\Delta y^2}\right) \le \frac{1}{2}
+$$
+
+For equal grid spacing $\Delta x = \Delta y = h$:
+$$
+\Delta t \le \frac{h^2}{4\dfc}
+$$
+
+This means $F \le 0.25$ with equal spacing, compared to $F \le 0.5$ in 1D.
+
+### The 2D Solver
+
+The `src.diffu` module provides `solve_diffusion_2d`:
+
+```python
+from src.diffu import solve_diffusion_2d
+import numpy as np
+
+# Initial condition: 2D sinusoidal mode
+def I(X, Y):
+    return np.sin(np.pi * X) * np.sin(np.pi * Y)
+
+result = solve_diffusion_2d(
+    Lx=1.0, Ly=1.0,    # Domain size
+    a=1.0,              # Diffusion coefficient
+    Nx=50, Ny=50,       # Grid points
+    T=0.1,              # Final time
+    F=0.25,             # Fourier number (2D stability limit)
+    I=I,                # Initial temperature
+)
+
+# Result is a 2D array
+print(result.u.shape)  # (51, 51)
+```
+
+### 2D Boundary Conditions
+
+Dirichlet conditions must be applied on all four boundaries:
+
+```python
+from devito import Eq
+
+t_dim = grid.stepping_dim
+x_dim, y_dim = grid.dimensions
+
+# Boundary conditions (u = 0 on all boundaries)
+bc_x0 = Eq(u[t_dim + 1, 0, y_dim], 0)      # Left
+bc_xN = Eq(u[t_dim + 1, Nx, y_dim], 0)     # Right
+bc_y0 = Eq(u[t_dim + 1, x_dim, 0], 0)      # Bottom
+bc_yN = Eq(u[t_dim + 1, x_dim, Ny], 0)     # Top
+```
+
+### Exact Solution for Verification
+
+The exact solution for the initial condition
+$I(x, y) = \sin(\pi x/L_x) \sin(\pi y/L_y)$ is:
+$$
+u(x, y, t) = e^{-\dfc \kappa t} \sin\left(\frac{\pi x}{L_x}\right)
+\sin\left(\frac{\pi y}{L_y}\right)
+$$
+
+where the decay rate is:
+$$
+\kappa = \pi^2 \left(\frac{1}{L_x^2} + \frac{1}{L_y^2}\right)
+$$
+
+This can be used for verification:
+
+```python
+from src.diffu import convergence_test_diffusion_2d
+
+grid_sizes, errors, rate = convergence_test_diffusion_2d(
+    grid_sizes=[10, 20, 40, 80],
+    T=0.05,
+    F=0.25,
+)
+
+print(f"Observed convergence rate: {rate:.2f}")  # Should be ~2.0
+```
+
+### Visualizing 2D Solutions
+
+For 2D problems, contour plots and surface plots are useful:
+
+```python
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+result = solve_diffusion_2d(Lx=1.0, Ly=1.0, Nx=50, Ny=50, T=0.1, F=0.25)
+
+X, Y = np.meshgrid(result.x, result.y, indexing='ij')
+
+fig = plt.figure(figsize=(12, 5))
+
+# Surface plot
+ax1 = fig.add_subplot(121, projection='3d')
+ax1.plot_surface(X, Y, result.u, cmap='hot')
+ax1.set_xlabel('x')
+ax1.set_ylabel('y')
+ax1.set_zlabel('Temperature')
+ax1.set_title(f't = {result.t:.3f}')
+
+# Contour plot
+ax2 = fig.add_subplot(122)
+c = ax2.contourf(X, Y, result.u, levels=20, cmap='hot')
+plt.colorbar(c, ax=ax2)
+ax2.set_xlabel('x')
+ax2.set_ylabel('y')
+ax2.set_title('Temperature distribution')
+ax2.set_aspect('equal')
+```
+
+### Heat Diffusion from a Point Source
+
+A classic problem is the diffusion of heat from a localized hot spot:
+
+```python
+from src.diffu import gaussian_2d_initial_condition
+
+# Gaussian "hot spot" in the center
+result = solve_diffusion_2d(
+    Lx=1.0, Ly=1.0, Nx=50, Ny=50, T=0.2, F=0.25,
+    I=lambda X, Y: gaussian_2d_initial_condition(X, Y, 1.0, 1.0, sigma=0.1),
+    save_history=True,
+)
+```
+
+The Gaussian spreads out and decays over time, eventually approaching
+zero as heat is lost through the boundaries.
+
+### Animation of 2D Diffusion
+
+```python
+from matplotlib.animation import FuncAnimation
+
+result = solve_diffusion_2d(
+    Lx=1.0, Ly=1.0, Nx=50, Ny=50, T=0.5, F=0.25,
+    save_history=True,
+)
+
+fig, ax = plt.subplots()
+X, Y = np.meshgrid(result.x, result.y, indexing='ij')
+
+vmax = result.u_history[0].max()
+im = ax.contourf(X, Y, result.u_history[0], levels=20,
+                 cmap='hot', vmin=0, vmax=vmax)
+
+def update(frame):
+    ax.clear()
+    ax.contourf(X, Y, result.u_history[frame], levels=20,
+                cmap='hot', vmin=0, vmax=vmax)
+    ax.set_title(f't = {result.t_history[frame]:.3f}')
+    ax.set_aspect('equal')
+    return []
+
+anim = FuncAnimation(fig, update, frames=len(result.t_history),
+                     interval=50)
+```
+
+### From 2D to 3D
+
+The pattern extends naturally to three dimensions:
+
+```python
+# 3D grid
+grid = Grid(shape=(Nx+1, Ny+1, Nz+1), extent=(Lx, Ly, Lz))
+
+# 3D temperature field
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+
+# The PDE is unchanged - .laplace now includes u_zz
+pde = u.dt - a * u.laplace
+```
+
+The stability condition in 3D becomes:
+$$
+F \le \frac{1}{6} \approx 0.167
+$$
+
+for equal grid spacing in all directions.
+
+### Computational Efficiency
+
+2D and 3D diffusion simulations can become computationally expensive
+as the number of grid points grows. Devito helps through:
+
+- **Automatic parallelization**: Set `OMP_NUM_THREADS` for OpenMP
+- **Cache optimization**: Loop tiling is applied automatically
+- **GPU support**: Use `platform='nvidiaX'` for CUDA execution
+
+The explicit Forward Euler scheme is embarrassingly parallel since
+each new value depends only on neighbors at the previous time level.
+
+### Comparison: Diffusion vs Wave Equation
+
+| Property | Diffusion | Wave |
+|----------|-----------|------|
+| Time derivative | First order | Second order |
+| Stability (2D) | $F \le 0.25$ | $C \le 1/\sqrt{2}$ |
+| Solution character | Smoothing, decaying | Propagating, oscillating |
+| Physical process | Heat conduction | Vibrations, acoustics |
+
+### Summary
+
+Key points for 2D diffusion with Devito:
+
+1. The `.laplace` attribute handles dimension automatically
+2. Stability conditions are more restrictive in higher dimensions
+3. Equal spacing gives $F \le 0.25$ in 2D, $F \le 1/6$ in 3D
+4. The same code patterns extend from 1D to 2D to 3D
+5. Visualization requires contour/surface plots and animations
+
+Devito's abstraction means we write the physics symbolically and let
+the framework handle the computational complexity across dimensions.

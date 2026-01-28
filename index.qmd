@@ -1,19 +1,66 @@
 # Welcome {.unnumbered}
 
-This book teaches finite difference methods for solving partial differential equations through Python implementations.
+This book teaches finite difference methods for solving partial differential equations, featuring [Devito](https://www.devitoproject.org/) for high-performance PDE solvers.
+
+::: {.content-visible when-format="html"}
+[**Download PDF version**](book.pdf){.btn .btn-primary}
+:::
 
 ## About this Edition {.unnumbered}
 
-This is the Quarto edition of *Finite Difference Computing with PDEs - A Modern Software Approach*, originally authored by Hans Petter Langtangen and Svein Linge. The content has been converted to Quarto format to enable modern web-based publishing.
+This is an adaptation of *[Finite Difference Computing with PDEs: A Modern Software Approach](https://doi.org/10.1007/978-3-319-55456-3)* by Hans Petter Langtangen and Svein Linge (Springer, 2017). This Devito edition features:
+
+- **[Devito](https://www.devitoproject.org/)** - A domain-specific language for symbolic PDE specification and automatic code generation
+- **[Quarto](https://quarto.org/)** - Modern scientific publishing for web and PDF output
+- **Modern Python** - Type hints, testing, and CI/CD practices
+
+Adapted by Gerard J. Gorman (Imperial College London).
+
+## License {.unnumbered}
+
+::: {.content-visible when-format="html"}
+[![CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+:::
+
+This work is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), the same license as the original work.
+
+## What is Devito? {.unnumbered}
+
+Devito allows you to write PDEs symbolically and automatically generates optimized finite difference code:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator
+
+grid = Grid(shape=(101,), extent=(1.0,))
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+c = 1.0  # wave speed
+
+# Write the wave equation symbolically
+eq = Eq(u.dt2, c**2 * u.dx2)
+
+# Devito generates optimized C code
+op = Operator([eq])
+op.apply(time_M=100, dt=0.001)
+```
 
 ## Book Structure {.unnumbered}
 
 The book covers:
 
-1. **Vibration ODEs** - Finite difference discretization for oscillatory systems
-2. **Wave Equations** - Methods for wave propagation in multiple dimensions
-3. **Diffusion Equations** - Heat transfer and related diffusion processes
-4. **Advection-Dominated Equations** - Convection and transport phenomena
-5. **Nonlinear Problems** - Techniques for nonlinear differential equations
+1. **Introduction to Devito** - Grid, Function, TimeFunction, Operator, and boundary conditions
+2. **Wave Equations** - 1D/2D wave propagation, sources, absorbing boundaries
+3. **Diffusion Equations** - Heat equation, stability analysis, 2D extension
+4. **Advection Equations** - Upwind schemes, Lax-Wendroff, CFL condition
+5. **Nonlinear Problems** - Operator splitting, Burgers' equation, Picard iteration
 
-Plus appendices on formulas, truncation error analysis, and software engineering.
+Plus appendices on finite difference formulas, truncation error analysis, and software engineering.
+
+## Getting Started {.unnumbered}
+
+```bash
+git clone https://github.com/devitocodes/devito_book.git
+cd devito_book
+pip install -e ".[devito]"
+```
+
+See the [GitHub repository](https://github.com/devitocodes/devito_book) for full installation instructions.

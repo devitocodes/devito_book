@@ -993,9 +993,10 @@ def investigate():
     for gamma in gamma_values:
         for ext in "pdf", "png":
             cmd = (
-                "doconce combine_images -2 "
+                "montage "
                 "tmp1_gamma{gamma:g}_s1.{ext} "
                 "tmp1_gamma{gamma:g}_s2.{ext} "
+                "-tile 2x1 -geometry +0+0 "
                 "welding_gamma{gamma:g}.{ext}".format(**vars())
             )
             os.system(cmd)

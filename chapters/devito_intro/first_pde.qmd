@@ -1,0 +1,188 @@
+## Your First PDE: The 1D Wave Equation {#sec-devito-intro-first-pde}
+
+We begin our exploration of Devito with the one-dimensional wave equation,
+a fundamental PDE that describes vibrations in strings, sound waves in tubes,
+and many other physical phenomena.
+
+### The Mathematical Model
+
+The 1D wave equation is:
+$$
+\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
+$$ {#eq-wave-1d-intro}
+
+where:
+
+- $u(x, t)$ is the displacement at position $x$ and time $t$
+- $c$ is the wave speed (a constant)
+
+We solve this on a domain $x \in [0, L]$ for $t \in [0, T]$ with:
+
+- **Initial conditions**: $u(x, 0) = I(x)$ and $\frac{\partial u}{\partial t}(x, 0) = 0$
+- **Boundary conditions**: $u(0, t) = u(L, t) = 0$ (fixed ends)
+
+### Finite Difference Discretization
+
+Using central differences in both space and time, we approximate:
+$$
+\frac{\partial^2 u}{\partial t^2} \approx \frac{u_i^{n+1} - 2u_i^n + u_i^{n-1}}{\Delta t^2}
+$$
+$$
+\frac{\partial^2 u}{\partial x^2} \approx \frac{u_{i+1}^n - 2u_i^n + u_{i-1}^n}{\Delta x^2}
+$$
+
+Substituting into @eq-wave-1d-intro and solving for $u_i^{n+1}$:
+$$
+u_i^{n+1} = 2u_i^n - u_i^{n-1} + C^2(u_{i+1}^n - 2u_i^n + u_{i-1}^n)
+$$ {#eq-wave-update-intro}
+
+where $C = c\Delta t/\Delta x$ is the Courant number. The scheme is stable
+for $C \le 1$.
+
+### The Devito Implementation
+
+Let's implement this step by step:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator
+import numpy as np
+
+# Problem parameters
+L = 1.0       # Domain length
+c = 1.0       # Wave speed
+T = 1.0       # Final time
+Nx = 100      # Number of grid points
+C = 0.5       # Courant number (for stability)
+
+# Derived parameters
+dx = L / Nx
+dt = C * dx / c
+Nt = int(T / dt)
+
+# Create the computational grid
+grid = Grid(shape=(Nx + 1,), extent=(L,))
+
+# Create a time-varying field
+# time_order=2 because we have second derivative in time
+# space_order=2 for standard second-order accuracy
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+
+# Set initial condition: a Gaussian pulse
+x = grid.dimensions[0]
+x_coord = 0.5 * L  # Center of domain
+sigma = 0.1        # Width of pulse
+u.data[0, :] = np.exp(-((np.linspace(0, L, Nx+1) - x_coord)**2) / (2*sigma**2))
+u.data[1, :] = u.data[0, :]  # Zero initial velocity
+
+# Define the update equation
+# u.forward is u at time n+1, u is at time n, u.backward is at time n-1
+# u.dx2 is the second spatial derivative
+eq = Eq(u.forward, 2*u - u.backward + (c*dt)**2 * u.dx2)
+
+# Create the operator
+op = Operator([eq])
+
+# Run the simulation
+op(time=Nt, dt=dt)
+
+# The solution is now in u.data
+print(f"Simulation complete: {Nt} time steps")
+print(f"Max amplitude at t={T}: {np.max(np.abs(u.data[0, :])):.6f}")
+```
+
+### Understanding the Code
+
+Let's examine each component:
+
+**Grid creation:**
+```python
+grid = Grid(shape=(Nx + 1,), extent=(L,))
+```
+This creates a 1D grid with `Nx + 1` points spanning a domain of length `L`.
+The grid spacing is automatically computed as `dx = L / Nx`.
+
+**TimeFunction:**
+```python
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+```
+
+- `name='u'`: The symbolic name for this field
+- `time_order=2`: We need values at three time levels ($n-1$, $n$, $n+1$)
+  for the second time derivative
+- `space_order=2`: Use second-order accurate spatial stencils
+
+**Initial conditions:**
+```python
+u.data[0, :] = ...  # u at t=0
+u.data[1, :] = ...  # u at t=dt (for zero initial velocity, same as t=0)
+```
+The `data` attribute provides direct access to the underlying NumPy arrays.
+Index 0 and 1 represent the two most recent time levels.
+
+**Update equation:**
+```python
+eq = Eq(u.forward, 2*u - u.backward + (c*dt)**2 * u.dx2)
+```
+
+- `u.forward`: The solution at the next time step ($u^{n+1}$)
+- `u`: The solution at the current time step ($u^n$)
+- `u.backward`: The solution at the previous time step ($u^{n-1}$)
+- `u.dx2`: The second spatial derivative, computed using finite differences
+
+**Operator and execution:**
+```python
+op = Operator([eq])
+op(time=Nt, dt=dt)
+```
+The `Operator` compiles the equations into optimized C code. Calling it
+runs the time-stepping loop for `Nt` steps with time increment `dt`.
+
+### Visualizing the Solution
+
+```python
+import matplotlib.pyplot as plt
+
+# Get spatial coordinates
+x_vals = np.linspace(0, L, Nx + 1)
+
+# Plot the solution at the final time
+plt.figure(figsize=(10, 4))
+plt.plot(x_vals, u.data[0, :], 'b-', linewidth=2)
+plt.xlabel('x')
+plt.ylabel('u')
+plt.title(f'Wave equation solution at t = {T}')
+plt.grid(True)
+plt.show()
+```
+
+### The CFL Condition
+
+The Courant-Friedrichs-Lewy (CFL) condition states that for stability:
+$$
+C = \frac{c \Delta t}{\Delta x} \le 1
+$$
+
+Physically, this means information cannot travel more than one grid cell
+per time step. If $C > 1$, the numerical solution will grow without bound.
+
+**Exercise**: Try running the code with `C = 1.5` and observe what happens.
+
+### What Devito Does Behind the Scenes
+
+When you create the `Operator`, Devito:
+
+1. Analyzes the symbolic equations
+2. Determines the stencil pattern and data dependencies
+3. Generates optimized C code with:
+   - Proper loop ordering for cache efficiency
+   - SIMD vectorization where possible
+   - OpenMP parallelization for multi-core execution
+4. Compiles the code and caches the result
+
+You can inspect the generated code:
+
+```python
+print(op.ccode)
+```
+
+This reveals the low-level implementation that Devito creates automatically.

@@ -1,0 +1,237 @@
+## Solving the Wave Equation with Devito {#sec-wave-devito}
+
+In this section we demonstrate how to solve the wave equation using the
+Devito domain-specific language (DSL). Devito allows us to write the
+PDE symbolically and generates optimized C code automatically.
+
+### From Mathematics to Devito Code
+
+Recall the 1D wave equation from @sec-wave-string:
+$$
+\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2},
+\quad x \in (0, L),\ t \in (0, T]
+$$ {#eq-wave-devito-pde}
+with initial conditions $u(x, 0) = I(x)$ and $\partial u/\partial t|_{t=0} = V(x)$,
+and boundary conditions $u(0, t) = u(L, t) = 0$.
+
+In Devito, we express this PDE directly using symbolic derivatives.
+The key abstractions are:
+
+- **Grid**: Defines the discrete domain
+- **TimeFunction**: A field that varies in both space and time
+- **Eq**: An equation relating symbolic expressions
+- **Operator**: Compiles equations to optimized C code
+
+### The Devito Grid
+
+A Devito `Grid` defines the discrete spatial domain:
+
+```python
+from devito import Grid
+
+L = 1.0      # Domain length
+Nx = 100     # Number of grid intervals
+
+grid = Grid(shape=(Nx + 1,), extent=(L,))
+```
+
+The `shape` is the number of grid points (including boundaries),
+and `extent` is the physical size of the domain.
+
+### TimeFunction for the Wave Field
+
+The solution $u(x, t)$ is represented by a `TimeFunction`:
+
+```python
+from devito import TimeFunction
+
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+```
+
+The key parameters are:
+
+- `time_order=2`: We need $u^{n+1}$, $u^n$, $u^{n-1}$ for the wave equation
+- `space_order=2`: Central difference with second-order accuracy
+
+### Symbolic Derivatives
+
+Devito provides symbolic access to derivatives through attribute notation:
+
+| Derivative | Devito syntax | Mathematical meaning |
+|------------|---------------|---------------------|
+| First time | `u.dt` | $\partial u/\partial t$ |
+| Second time | `u.dt2` | $\partial^2 u/\partial t^2$ |
+| First space | `u.dx` | $\partial u/\partial x$ |
+| Second space | `u.dx2` | $\partial^2 u/\partial x^2$ |
+
+### Formulating the PDE
+
+We express the wave equation as a residual that should be zero:
+
+```python
+from devito import Eq, solve, Constant
+
+c_sq = Constant(name='c_sq')  # Wave speed squared
+
+# PDE: u_tt - c^2 * u_xx = 0
+pde = u.dt2 - c_sq * u.dx2
+```
+
+The `solve` function isolates the unknown $u^{n+1}$:
+
+```python
+stencil = Eq(u.forward, solve(pde, u.forward))
+```
+
+Here `u.forward` represents $u^{n+1}$, the solution at the next time level.
+
+### Boundary Conditions
+
+For Dirichlet conditions $u(0, t) = u(L, t) = 0$, we add explicit equations:
+
+```python
+t_dim = grid.stepping_dim  # Time index dimension
+
+bc_left = Eq(u[t_dim + 1, 0], 0)
+bc_right = Eq(u[t_dim + 1, Nx], 0)
+```
+
+### Creating and Running the Operator
+
+The `Operator` compiles all equations into optimized code:
+
+```python
+from devito import Operator
+
+op = Operator([stencil, bc_left, bc_right])
+```
+
+To execute a time step, we call:
+
+```python
+op.apply(time_m=1, time_M=1, dt=dt, c_sq=c**2)
+```
+
+### Complete Solver Implementation
+
+The module `src.wave` provides a complete solver that handles:
+
+- Initial conditions with velocity ($u_t(x, 0) = V(x)$)
+- CFL stability checking
+- Optional history storage
+
+```python
+from src.wave import solve_wave_1d
+import numpy as np
+
+# Define initial condition: plucked string
+def I(x):
+    return np.sin(np.pi * x)
+
+# Solve
+result = solve_wave_1d(
+    L=1.0,           # Domain length
+    c=1.0,           # Wave speed
+    Nx=100,          # Grid points
+    T=1.0,           # Final time
+    C=0.9,           # Courant number
+    I=I,             # Initial displacement
+)
+
+# Access results
+u_final = result.u   # Solution at final time
+x = result.x         # Spatial grid
+```
+
+### The Courant Number and Stability
+
+The Courant number $C = c \Delta t / \Delta x$ determines stability.
+For the explicit wave equation solver, we require $C \le 1$.
+
+When $C = 1$ (the magic value), the numerical solution is **exact**
+for waves traveling in either direction. This is because the
+domain of dependence of the numerical scheme exactly matches
+the physical domain of dependence.
+
+### Handling Initial Velocity
+
+The first time step requires special treatment when $V(x) \ne 0$.
+Using the Taylor expansion:
+$$
+u^1 = u^0 + \Delta t \cdot V(x) + \frac{1}{2} \Delta t^2 c^2 u_{xx}^0
+$$
+
+The solver implements this as:
+
+```python
+u0 = I(x_coords)
+v0 = V(x_coords)
+u_xx_0 = np.zeros_like(u0)
+u_xx_0[1:-1] = (u0[2:] - 2*u0[1:-1] + u0[:-2]) / dx**2
+
+u1 = u0 + dt * v0 + 0.5 * dt**2 * c**2 * u_xx_0
+```
+
+### Verification: Standing Wave Solution
+
+The standing wave with $I(x) = A \sin(\pi x / L)$ and $V = 0$ has
+the exact solution:
+$$
+u(x, t) = A \sin\left(\frac{\pi x}{L}\right) \cos\left(\frac{\pi c t}{L}\right)
+$$
+
+We can verify our implementation converges at the expected rate:
+
+```python
+from src.wave import convergence_test_wave_1d
+
+grid_sizes, errors, rate = convergence_test_wave_1d(
+    grid_sizes=[20, 40, 80, 160],
+    T=0.5,
+    C=0.9,
+)
+
+print(f"Observed convergence rate: {rate:.2f}")  # Should be ~2.0
+```
+
+### Visualization
+
+For time-dependent problems, animation is essential. With the
+history saved, we can create animations:
+
+```python
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
+result = solve_wave_1d(
+    L=1.0, c=1.0, Nx=100, T=2.0, C=0.9,
+    save_history=True,
+)
+
+fig, ax = plt.subplots()
+line, = ax.plot(result.x, result.u_history[0])
+ax.set_ylim(-1.2, 1.2)
+ax.set_xlabel('x')
+ax.set_ylabel('u')
+
+def update(frame):
+    line.set_ydata(result.u_history[frame])
+    ax.set_title(f't = {result.t_history[frame]:.3f}')
+    return line,
+
+anim = FuncAnimation(fig, update, frames=len(result.t_history),
+                     interval=50, blit=True)
+```
+
+### Summary: Devito vs. NumPy
+
+The key advantages of using Devito for wave equations:
+
+1. **Symbolic PDEs**: Write the math, not the stencils
+2. **Automatic optimization**: Cache-efficient loops generated automatically
+3. **Parallelization**: OpenMP/MPI/GPU support without code changes
+4. **Dimension-agnostic**: Same code pattern works for 1D, 2D, 3D
+
+The explicit time-stepping loop remains visible to the user for
+educational purposes, but Devito handles the spatial discretization
+and can generate highly optimized code for the inner loop.

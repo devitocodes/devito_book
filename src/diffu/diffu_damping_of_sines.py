@@ -33,11 +33,11 @@ import os
 
 times = times[:1] + times[2:]
 os.system(
-    "doconce combine_images tmp_%.2E.pdf tmp_%.2E.pdf tmp_%.2E.pdf tmp_%.2E.pdf diffusion_damping.pdf"
+    "montage tmp_%.2E.pdf tmp_%.2E.pdf tmp_%.2E.pdf tmp_%.2E.pdf -tile 2x2 -geometry +0+0 diffusion_damping.pdf"
     % tuple(times)
 )
 os.system(
-    "doconce combine_images tmp_%.2E.png tmp_%.2E.png tmp_%.2E.png tmp_%.2E.png diffusion_damping.png"
+    "montage tmp_%.2E.png tmp_%.2E.png tmp_%.2E.png tmp_%.2E.png -tile 2x2 -geometry +0+0 diffusion_damping.png"
     % tuple(times)
 )
 show()

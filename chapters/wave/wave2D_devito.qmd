@@ -1,0 +1,233 @@
+## The 2D Wave Equation with Devito {#sec-wave-2d-devito}
+
+Extending the wave solver to two dimensions illustrates the power
+of Devito's dimension-agnostic approach. The same symbolic patterns
+apply, and Devito automatically generates optimized 2D stencils.
+
+### The 2D Wave Equation
+
+The two-dimensional wave equation on $[0, L_x] \times [0, L_y]$ is:
+$$
+\frac{\partial^2 u}{\partial t^2} = c^2 \left(
+\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2}
+\right) = c^2 \nabla^2 u
+$$ {#eq-wave-2d-pde}
+
+where $\nabla^2 u = u_{xx} + u_{yy}$ is the Laplacian.
+
+### Devito's Dimension-Agnostic Laplacian
+
+Devito provides the `.laplace` attribute that works in any dimension:
+
+```python
+from devito import Grid, TimeFunction
+
+# 2D grid
+grid = Grid(shape=(Nx + 1, Ny + 1), extent=(Lx, Ly))
+
+# 2D wave field
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+
+# The Laplacian works the same as in 1D!
+laplacian = u.laplace  # Returns u_xx + u_yy automatically
+```
+
+This is one of Devito's key strengths: the same code pattern scales
+from 1D to 2D to 3D without changes.
+
+### CFL Stability Condition in 2D
+
+The stability condition in 2D is more restrictive than in 1D:
+$$
+C = c \cdot \Delta t \cdot \sqrt{\frac{1}{\Delta x^2} + \frac{1}{\Delta y^2}} \le 1
+$$
+
+For equal grid spacing $\Delta x = \Delta y = h$:
+$$
+\Delta t \le \frac{h}{c\sqrt{2}}
+$$
+
+Compared to the 1D condition $\Delta t \le h/c$, the 2D condition
+allows smaller time steps by a factor of $1/\sqrt{2} \approx 0.707$.
+
+### The 2D Solver
+
+The `src.wave` module provides `solve_wave_2d`:
+
+```python
+from src.wave import solve_wave_2d
+import numpy as np
+
+# Initial condition: 2D standing wave
+def I(X, Y):
+    return np.sin(np.pi * X) * np.sin(np.pi * Y)
+
+result = solve_wave_2d(
+    Lx=1.0, Ly=1.0,    # Domain size
+    c=1.0,              # Wave speed
+    Nx=50, Ny=50,       # Grid points
+    T=1.0,              # Final time
+    C=0.5,              # Courant number
+    I=I,                # Initial displacement
+)
+
+# Result is a 2D array
+print(result.u.shape)  # (51, 51)
+```
+
+### 2D Boundary Conditions
+
+Dirichlet conditions must be applied on all four boundaries:
+
+```python
+from devito import Eq
+
+t_dim = grid.stepping_dim
+x_dim, y_dim = grid.dimensions
+
+# Boundary conditions (u = 0 on all boundaries)
+bc_x0 = Eq(u[t_dim + 1, 0, y_dim], 0)      # Left
+bc_xN = Eq(u[t_dim + 1, Nx, y_dim], 0)     # Right
+bc_y0 = Eq(u[t_dim + 1, x_dim, 0], 0)      # Bottom
+bc_yN = Eq(u[t_dim + 1, x_dim, Ny], 0)     # Top
+```
+
+### Standing Waves in 2D
+
+The exact solution for the initial condition
+$I(x, y) = \sin(\pi x/L_x) \sin(\pi y/L_y)$ with $V = 0$ is:
+$$
+u(x, y, t) = \sin\left(\frac{\pi x}{L_x}\right)
+\sin\left(\frac{\pi y}{L_y}\right) \cos(\omega t)
+$$
+
+where the angular frequency is:
+$$
+\omega = c \pi \sqrt{\frac{1}{L_x^2} + \frac{1}{L_y^2}}
+$$
+
+This can be used for verification:
+
+```python
+from src.wave import convergence_test_wave_2d
+
+grid_sizes, errors, rate = convergence_test_wave_2d(
+    grid_sizes=[10, 20, 40, 80],
+    T=0.25,
+    C=0.5,
+)
+
+print(f"Observed convergence rate: {rate:.2f}")  # Should be ~2.0
+```
+
+### Visualizing 2D Solutions
+
+For 2D problems, surface plots and contour plots are useful:
+
+```python
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+result = solve_wave_2d(Lx=1.0, Ly=1.0, Nx=50, Ny=50, T=0.5, C=0.5)
+
+X, Y = np.meshgrid(result.x, result.y, indexing='ij')
+
+fig = plt.figure(figsize=(12, 5))
+
+# Surface plot
+ax1 = fig.add_subplot(121, projection='3d')
+ax1.plot_surface(X, Y, result.u, cmap='viridis')
+ax1.set_xlabel('x')
+ax1.set_ylabel('y')
+ax1.set_zlabel('u')
+ax1.set_title(f't = {result.t:.3f}')
+
+# Contour plot
+ax2 = fig.add_subplot(122)
+c = ax2.contourf(X, Y, result.u, levels=20, cmap='RdBu_r')
+plt.colorbar(c, ax=ax2)
+ax2.set_xlabel('x')
+ax2.set_ylabel('y')
+ax2.set_title('Contour plot')
+ax2.set_aspect('equal')
+```
+
+### Animation of 2D Waves
+
+```python
+from matplotlib.animation import FuncAnimation
+
+result = solve_wave_2d(
+    Lx=1.0, Ly=1.0, Nx=50, Ny=50, T=2.0, C=0.5,
+    save_history=True,
+)
+
+fig, ax = plt.subplots()
+X, Y = np.meshgrid(result.x, result.y, indexing='ij')
+
+vmax = np.abs(result.u_history).max()
+im = ax.contourf(X, Y, result.u_history[0], levels=20,
+                 cmap='RdBu_r', vmin=-vmax, vmax=vmax)
+
+def update(frame):
+    ax.clear()
+    ax.contourf(X, Y, result.u_history[frame], levels=20,
+                cmap='RdBu_r', vmin=-vmax, vmax=vmax)
+    ax.set_title(f't = {result.t_history[frame]:.3f}')
+    ax.set_aspect('equal')
+    return []
+
+anim = FuncAnimation(fig, update, frames=len(result.t_history),
+                     interval=50)
+```
+
+### From 2D to 3D
+
+The pattern extends naturally to three dimensions. In Devito,
+the main changes are:
+
+1. Add a third dimension to the grid
+2. The `.laplace` attribute automatically includes $u_{zz}$
+
+```python
+# 3D grid
+grid = Grid(shape=(Nx+1, Ny+1, Nz+1), extent=(Lx, Ly, Lz))
+
+# 3D wave field
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+
+# The PDE is unchanged!
+pde = u.dt2 - c**2 * u.laplace
+```
+
+The CFL condition in 3D becomes:
+$$
+\Delta t \le \frac{h}{c\sqrt{3}}
+$$
+
+for equal grid spacing in all directions.
+
+### Computational Considerations
+
+2D and 3D wave simulations can become computationally expensive.
+Devito helps through:
+
+- **Automatic parallelization**: Set `OMP_NUM_THREADS` for OpenMP
+- **Cache optimization**: Loop tiling is applied automatically
+- **GPU support**: Use `platform='nvidiaX'` for CUDA execution
+
+For large-scale simulations, the generated C code is highly
+optimized and can match hand-tuned implementations.
+
+### Summary
+
+Key points for 2D wave equations with Devito:
+
+1. The `.laplace` attribute handles the dimension automatically
+2. CFL conditions are more restrictive (factor of $1/\sqrt{d}$ in $d$ dimensions)
+3. Boundary conditions must be applied on all boundaries
+4. Visualization requires surface/contour plots and animations
+5. The same code patterns extend to 3D with minimal changes
+
+Devito's abstraction means we write the physics once and let the
+framework handle the computational complexity across dimensions.

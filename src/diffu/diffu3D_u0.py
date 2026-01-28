@@ -121,7 +121,7 @@ def solver_sparse_CG(
     u_n = np.zeros((Nx + 1, Ny + 1, Nz + 1))
 
     Ix = range(0, Nx + 1)
-    Iy = range(0, Ny + 1)
+    It = range(0, Ny + 1)
     Iz = range(0, Nz + 1)
     It = range(0, Nt + 1)
 
@@ -148,7 +148,7 @@ def solver_sparse_CG(
 
     # Load initial condition into u_n
     for i in Ix:
-        for j in Iy:
+        for j in It:
             for k in Iz:
                 u_n[i, j, k] = I(x[i], y[j], z[k])
 
@@ -181,7 +181,7 @@ def solver_sparse_CG(
     for k in Iz[1:-1]:  # interior mesh layers k=1,...,Nz-1
         j = 0
         main[m(0, j, k) : m(Nx + 1, j, k)] = 1  # j=0 boundary line
-        for j in Iy[1:-1]:  # interior mesh lines j=1,...,Ny-1
+        for j in It[1:-1]:  # interior mesh lines j=1,...,Ny-1
             i = 0
             main[m(i, j, k)] = 1  # boundary node
             i = Nx
@@ -225,7 +225,7 @@ def solver_sparse_CG(
         # Compute b, scalar version
         """
         k = 0                 # k=0 boundary layer
-        for j in Iy:
+        for j in It:
             for i in Ix:
                 p = m(i,j,k);  b[p] = U_0z(t[n+1])
 
@@ -234,7 +234,7 @@ def solver_sparse_CG(
             for i in Ix:
                 p = m(i,j,k);  b[p] = U_0y(t[n+1])
 
-            for j in Iy[1:-1]:   # interior mesh lines j=1,...,Ny-1
+            for j in It[1:-1]:   # interior mesh lines j=1,...,Ny-1
                 i = 0;  p = m(i,j,k);  b[p] = U_0x(t[n+1])  # boundary node
 
                 for i in Ix[1:-1]:           # interior nodes
@@ -253,7 +253,7 @@ def solver_sparse_CG(
                 p = m(i,j,k);  b[p] = U_Ly(t[n+1])
 
         k = Nz                 # k=Nz boundary layer
-        for j in Iy:
+        for j in It:
             for i in Ix:
                 p = m(i,j,k);  b[p] = U_Lz(t[n+1])
 
@@ -270,7 +270,7 @@ def solver_sparse_CG(
         for k in Iz[1:-1]:  # interior mesh layers k=1,...,Nz-1
             j = 0
             b[m(0, j, k) : m(Nx + 1, j, k)] = U_0y(t[n + 1])  # j=0, boundary mesh line
-            for j in Iy[1:-1]:  # interior mesh lines j=1,...,Ny-1
+            for j in It[1:-1]:  # interior mesh lines j=1,...,Ny-1
                 i = 0
                 p = m(i, j, k)
                 b[p] = U_0x(t[n + 1])  # boundary node
@@ -321,7 +321,7 @@ def solver_sparse_CG(
 
         # Fill u with vector c
         # for k in Iz:
-        # for j in Iy:
+        # for j in It:
         #    u[0:Nx+1,j,k] = c[m(0,j,k):m(Nx+1,j,k)]
         u[:, :, :] = c.reshape(Nz + 1, Ny + 1, Nx + 1).T
 

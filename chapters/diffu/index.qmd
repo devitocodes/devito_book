@@ -2,6 +2,8 @@
 
 {{< include diffu_fd1.qmd >}}
 
+{{< include diffu1D_devito.qmd >}}
+
 {{< include diffu_analysis.qmd >}}
 
 {{< include diffu_fd2.qmd >}}
@@ -12,4 +14,8 @@
 
 {{< include diffu_app.qmd >}}
 
+{{< include diffu2D_devito.qmd >}}
+
 {{< include diffu_exer.qmd >}}
+
+{{< include diffu_devito_exercises.qmd >}}

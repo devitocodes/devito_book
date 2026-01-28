@@ -1,15 +1,36 @@
 # Finite Difference Computing with PDEs
 
-[![Build Book PDF](https://github.com/devitocodes/devito_book/actions/workflows/build.yml/badge.svg)](https://github.com/devitocodes/devito_book/actions/workflows/build.yml)
+[![CI](https://github.com/devitocodes/devito_book/actions/workflows/ci.yml/badge.svg)](https://github.com/devitocodes/devito_book/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/devitocodes/devito_book/branch/devito/graph/badge.svg)](https://codecov.io/gh/devitocodes/devito_book)
 
-Resources for the book *Finite Difference Computing with Partial Differential Equations - A Modern Software Approach* by Hans Petter Langtangen and Svein Linge.
+A modern approach to learning finite difference methods for partial differential equations, featuring [Devito](https://www.devitoproject.org/) for high-performance PDE solvers.
 
-> This easy-to-read book introduces the basics of solving partial differential
-> equations by finite difference methods. The emphasis is on constructing
-> finite difference schemes, formulating algorithms, implementing
-> algorithms, verifying implementations, analyzing the physical behavior
-> of the numerical solutions, and applying the methods and software
-> to solve problems from physics and biology.
+Based on *Finite Difference Computing with Partial Differential Equations* by Hans Petter Langtangen and Svein Linge, this edition has been modernized with:
+
+- **[Quarto](https://quarto.org/)** for document generation (replacing DocOnce)
+- **[Devito](https://www.devitoproject.org/)** DSL for symbolic PDE specification and automatic code generation
+- **Modern Python** practices with type hints, testing, and CI/CD
+
+## What is Devito?
+
+Devito is a domain-specific language (DSL) embedded in Python for solving PDEs using finite differences. Instead of manually implementing stencil operations, you write mathematical expressions symbolically and Devito generates optimized C code:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator
+
+# Define computational grid
+grid = Grid(shape=(101,), extent=(1.0,))
+
+# Create field with time derivative capability
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+
+# Write the wave equation symbolically
+eq = Eq(u.dt2, c**2 * u.dx2)
+
+# Devito generates optimized C code automatically
+op = Operator([eq])
+op.apply(time_M=100, dt=0.001)
+```
 
 ## Quick Start
 
@@ -21,196 +42,144 @@ cd devito_book
 # Create virtual environment and install dependencies
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -e .
+pip install -e ".[devito]"
 
-# Build the book PDF
-cd doc/.src/book
-bash make.sh nospell
+# Build the book
+quarto render --to pdf
 ```
 
 ## Prerequisites
 
-### Python (3.10+)
-
-The book uses [DocOnce](https://github.com/doconce/doconce) for document generation. Install Python dependencies with:
+### Python 3.10+
 
 ```bash
-# Create and activate virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install all dependencies (editable mode)
-pip install -e .
-
-# Or install from requirements.txt
-pip install -r requirements.txt
+pip install -e ".[devito]"      # With Devito support
+pip install -e ".[devito-petsc]" # With PETSc for implicit schemes
+pip install -e ".[dev]"          # Development tools
 ```
 
-### LaTeX (TeX Live)
+### Quarto
 
-A full TeX Live installation is recommended. The book requires many LaTeX packages.
-
-#### macOS
+Install [Quarto](https://quarto.org/docs/get-started/):
 
 ```bash
-# Install BasicTeX (minimal) or full MacTeX
-brew install --cask mactex  # Full installation (~4GB)
-# OR
-brew install --cask basictex  # Minimal (~100MB, then install packages below)
+# macOS
+brew install quarto
 
-# If using BasicTeX, install required packages:
-sudo tlmgr update --self
-sudo tlmgr install \
-    collection-latexrecommended \
-    collection-fontsrecommended \
-    collection-latexextra \
-    collection-mathscience \
-    mdframed needspace tcolorbox environ trimspaces \
-    listings fancyvrb moreverb \
-    microtype setspace relsize \
-    titlesec appendix \
-    caption subfig wrapfig \
-    booktabs longtable ltablex tabularx multirow \
-    hyperref bookmark \
-    xcolor colortbl \
-    tikz-cd pgf \
-    bm soul \
-    footmisc idxlayout tocbibind \
-    chngcntr placeins \
-    listingsutf8 \
-    marvosym textcomp \
-    cm-super lm
+# Ubuntu/Debian - see https://quarto.org/docs/get-started/ for current version
+# Download the .deb from https://github.com/quarto-dev/quarto-cli/releases/latest
+sudo dpkg -i quarto-*.deb
 ```
 
-#### Ubuntu/Debian
+### LaTeX (for PDF output)
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y \
-    texlive-latex-base \
-    texlive-latex-recommended \
-    texlive-latex-extra \
-    texlive-fonts-recommended \
-    texlive-fonts-extra \
-    texlive-science \
-    texlive-pictures \
-    texlive-bibtex-extra \
-    biber \
-    latexmk \
-    cm-super \
-    dvipng \
-    ghostscript
+# macOS
+brew install --cask mactex
+
+# Ubuntu/Debian
+sudo apt-get install texlive-full
 ```
-
-#### Windows
-
-Install [MiKTeX](https://miktex.org/download) or [TeX Live for Windows](https://tug.org/texlive/windows.html). MiKTeX can automatically install missing packages on first use.
 
 ## Building the Book
 
-### Full Book PDF
-
 ```bash
-cd doc/.src/book
-bash make.sh nospell  # Skip spellcheck for faster builds
+quarto render --to pdf    # PDF only
+quarto render             # All formats (HTML + PDF)
+quarto preview            # Live preview with hot reload
 ```
 
-The PDF will be generated as `doc/.src/book/book.pdf`.
+Output: `_book/Finite-Difference-Computing-with-PDEs.pdf`
 
-### With Spellcheck
-
-```bash
-cd doc/.src/book
-bash make.sh  # Runs spellcheck before building
-```
-
-### Individual Chapters
-
-Each chapter can be built independently:
+## Running Tests
 
 ```bash
-cd doc/.src/chapters/vib  # or wave, diffu, etc.
-bash make.sh
+pytest tests/ -v                    # All tests
+pytest tests/ -v -m "not devito"    # Skip Devito tests
+pytest tests/ -v -m devito          # Devito tests only
 ```
+
+## Book Structure
+
+### Main Chapters
+
+1. **Introduction to Devito** - DSL concepts, Grid, Function, TimeFunction, Operator
+2. **Wave Equations** - 1D/2D wave propagation, absorbing boundaries, sources
+3. **Diffusion Equations** - Heat equation, stability analysis, 2D extension
+4. **Advection Equations** - Upwind schemes, Lax-Wendroff, CFL condition
+5. **Nonlinear Problems** - Operator splitting, Burgers' equation, Picard iteration
+
+### Appendices
+
+- Finite difference formulas and derivations
+- Truncation error analysis
+- Software engineering practices
 
 ## Directory Structure
 
-```text
+```
 devito_book/
-├── src/                      # Source code for book examples
-│   └── X/                    # Source code from chapter X
-├── doc/
-│   ├── pub/                  # Published documents
-│   │   ├── book/            # Complete published book
-│   │   └── X/               # Published chapter X
-│   └── .src/                # DocOnce source
-│       ├── book/            # Source for complete book
-│       │   ├── make.sh      # Build script
-│       │   ├── book.do.txt  # Main DocOnce file
-│       │   └── preface.do.txt
-│       └── chapters/
-│           └── X/           # Source for chapter X
-├── pyproject.toml           # Python package configuration
-├── requirements.txt         # Python dependencies (alternative)
-└── README.md               # This file
+├── src/                      # Python solvers and utilities
+│   ├── wave/                # Wave equation solvers (Devito)
+│   ├── diffu/               # Diffusion solvers (Devito)
+│   ├── advec/               # Advection solvers (Devito)
+│   ├── nonlin/              # Nonlinear solvers (Devito)
+│   ├── operators.py         # FD operators with symbolic derivation
+│   └── verification.py      # Symbolic verification utilities
+├── tests/                    # Pytest test suite
+├── chapters/                 # Quarto book chapters
+│   ├── devito_intro/        # Introduction to Devito
+│   ├── wave/                # Wave equations
+│   ├── diffu/               # Diffusion equations
+│   ├── advec/               # Advection equations
+│   ├── nonlin/              # Nonlinear problems
+│   └── appendices/          # Reference material
+├── _quarto.yml              # Book configuration
+└── pyproject.toml           # Python package configuration
 ```
-
-## Troubleshooting
-
-### DocOnce Configuration Errors
-
-If you see permission errors related to DocOnce config:
-
-```bash
-export HOME=$(mktemp -d)  # Use temporary home directory
-bash make.sh nospell
-```
-
-### Missing LaTeX Packages
-
-If pdflatex fails with "File not found" errors:
-
-```bash
-# Find the missing package
-tlmgr search --global --file "missing-file.sty"
-
-# Install it
-sudo tlmgr install package-name
-```
-
-### Encoding Errors
-
-The build script automatically fixes encoding issues by converting from `utf8x` to standard `utf8`. If you see encoding errors, ensure you're using the latest `make.sh`.
-
-### Build Logs
-
-Check these files for detailed error information:
-
-- `book.log` - LaTeX compilation log
-- `book.dlog` - DocOnce processing log
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/improvement`)
-3. Make your changes
-4. Run the build to verify (`bash make.sh nospell`)
-5. Commit your changes (`git commit -am 'Add improvement'`)
-6. Push to the branch (`git push origin feature/improvement`)
-7. Create a Pull Request
+2. Create a feature branch: `git checkout -b feature/improvement`
+3. Install dev dependencies: `pip install -e ".[dev]"`
+4. Install pre-commit hooks: `pre-commit install`
+5. Make changes and run tests: `pytest tests/ -v`
+6. Verify the build: `quarto render`
+7. Submit a Pull Request
+
+### Code Style
+
+Pre-commit hooks enforce:
+- **ruff** - Linting
+- **isort** - Import sorting
+- **typos** - Spell checking
+- **markdownlint** - Markdown formatting
 
 ## License
 
-This work is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+[![CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+
+This work is adapted from:
+
+> Langtangen, H.P., Linge, S. (2017). *Finite Difference Computing with PDEs: A Modern Software Approach*. Springer, Cham. [DOI: 10.1007/978-3-319-55456-3](https://doi.org/10.1007/978-3-319-55456-3)
+
+Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Authors
+
+**Original Authors:**
 
 - Hans Petter Langtangen (1962-2016)
 - Svein Linge
 
-## Acknowledgments
+**Adapted by:**
 
-This book is part of a series on computational science. See also:
+- Gerard J. Gorman, Imperial College London
 
-- [A Primer on Scientific Programming with Python](https://github.com/hplgit/primer)
-- [Scaling of Differential Equations](https://github.com/hplgit/scaling-book)
+## Links
+
+- [Devito Project](https://www.devitoproject.org/)
+- [Devito API Reference](https://www.devitoproject.org/api/)
+- [Devito GitHub](https://github.com/devitocodes/devito)
+- [Original Book (PDF)](https://hplgit.github.io/fdm-book/doc/pub/book/pdf/fdm-book-4print.pdf)

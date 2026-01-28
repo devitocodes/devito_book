@@ -2065,6 +2065,283 @@ classes are used. The arrays coming from Python, and looking like
 plain C/C++ arrays, can be efficiently wrapped in more user-friendly
 C++ array classes in the C++ code, if desired.
 
+## Software Engineering with Devito {#sec-softeng2-devito}
+
+The previous sections described traditional approaches to migrating
+Python loops to compiled languages. Devito provides an alternative
+paradigm: write the mathematics symbolically in Python, and let the
+framework generate optimized C code automatically.
+
+### The Devito Approach
+
+Instead of manually writing C, Cython, or Fortran code, Devito:
+
+1. Accepts symbolic PDE specifications in Python
+2. Automatically generates optimized C/C++ code
+3. Compiles and caches the generated code
+4. Provides OpenMP parallelization and optional GPU support
+
+This eliminates the need for manual low-level coding while achieving
+competitive performance with hand-tuned implementations.
+
+### Project Structure for Devito Applications
+
+A well-organized Devito project follows standard Python package conventions:
+
+```
+my_pde_solver/
++-- src/
+|   +-- __init__.py
+|   +-- solvers/
+|   |   +-- __init__.py
+|   |   +-- wave.py          # Wave equation solvers
+|   |   +-- diffusion.py     # Diffusion equation solvers
+|   +-- utils/
+|       +-- __init__.py
+|       +-- visualization.py  # Plotting utilities
+|       +-- convergence.py    # Convergence testing
++-- tests/
+|   +-- conftest.py          # Pytest fixtures
+|   +-- test_wave.py
+|   +-- test_diffusion.py
++-- examples/
+|   +-- run_simulation.py
++-- pyproject.toml
++-- README.md
+```
+
+### Pytest Fixtures for Devito Testing
+
+Devito's Grid and Function objects can be reused across tests using
+pytest fixtures:
+
+```python
+# tests/conftest.py
+import pytest
+import numpy as np
+from devito import Grid, TimeFunction, Function
+
+
+@pytest.fixture
+def grid_1d():
+    """Create a standard 1D grid for testing."""
+    return Grid(shape=(101,), extent=(1.0,))
+
+
+@pytest.fixture
+def grid_2d():
+    """Create a standard 2D grid for testing."""
+    return Grid(shape=(101, 101), extent=(1.0, 1.0))
+
+
+@pytest.fixture
+def wave_field(grid_2d):
+    """Create a TimeFunction for wave equation testing."""
+    return TimeFunction(name='u', grid=grid_2d,
+                        time_order=2, space_order=4)
+
+
+@pytest.fixture
+def velocity_model(grid_2d):
+    """Create a velocity model with constant value."""
+    c = Function(name='c', grid=grid_2d)
+    c.data[:] = 1500.0  # m/s
+    return c
+```
+
+Usage in tests:
+
+```python
+# tests/test_wave.py
+def test_wave_propagation(grid_2d, wave_field, velocity_model):
+    """Test that wave equation solver runs without error."""
+    from src.solvers.wave import solve_acoustic_wave
+
+    result = solve_acoustic_wave(
+        grid=grid_2d,
+        u=wave_field,
+        c=velocity_model,
+        T=0.1,
+    )
+
+    assert result is not None
+    assert not np.isnan(result.u.data).any()
+```
+
+### Convergence Testing Pattern
+
+Verifying numerical schemes against manufactured solutions is essential.
+Here's a reusable pattern:
+
+```python
+def convergence_test(solver_func, exact_solution, grid_sizes, **solver_kwargs):
+    """
+    Run a convergence test for a Devito solver.
+
+    Parameters
+    ----------
+    solver_func : callable
+        Solver function that returns a result with .u attribute
+    exact_solution : callable
+        Function(x, t) returning exact solution
+    grid_sizes : list
+        List of N values to test
+    **solver_kwargs : dict
+        Additional arguments passed to solver
+
+    Returns
+    -------
+    rates : list
+        Computed convergence rates between successive refinements
+    """
+    import numpy as np
+
+    errors = []
+    dx_values = []
+
+    for N in grid_sizes:
+        result = solver_func(Nx=N, **solver_kwargs)
+
+        # Compute error at final time
+        x = np.linspace(0, result.L, N + 1)
+        u_exact = exact_solution(x, result.t)
+        error = np.max(np.abs(result.u - u_exact))
+
+        errors.append(error)
+        dx_values.append(result.L / N)
+
+    # Compute convergence rates
+    rates = []
+    for i in range(len(errors) - 1):
+        rate = np.log(errors[i] / errors[i + 1]) / np.log(2)
+        rates.append(rate)
+
+    return rates
+
+
+# Usage in test
+def test_diffusion_convergence():
+    from src.solvers.diffusion import solve_diffusion
+
+    rates = convergence_test(
+        solver_func=solve_diffusion,
+        exact_solution=lambda x, t: np.exp(-np.pi**2 * t) * np.sin(np.pi * x),
+        grid_sizes=[20, 40, 80, 160],
+        T=0.01,
+        a=1.0,
+    )
+
+    # Expect second-order convergence
+    assert all(r > 1.9 for r in rates), f"Convergence rates {rates} < 2"
+```
+
+### Performance Profiling with Devito
+
+Devito provides built-in profiling through environment variables:
+
+```python
+import os
+
+# Enable performance logging
+os.environ['DEVITO_LOGGING'] = 'PERF'
+
+# Run your simulation
+from src.solvers.wave import solve_acoustic_wave
+result = solve_acoustic_wave(...)
+
+# Output will include timing information for each operator
+```
+
+For more detailed analysis:
+
+```python
+from devito import configuration
+
+# Enable detailed profiling
+configuration['profiling'] = 'advanced'
+
+# Create and run operator
+op = Operator([update_eq])
+summary = op.apply(time=nt, dt=dt)
+
+# Access timing information
+print(f"Total time: {summary.globals['fdlike'].time:.3f} s")
+print(f"GFLOPS: {summary.globals['fdlike'].gflopss:.2f}")
+```
+
+### Caching and Compilation
+
+Devito caches compiled operators to avoid recompilation:
+
+```python
+from devito import configuration
+
+# View cache location
+print(configuration['cachedir'])
+
+# Force recompilation (useful during development)
+configuration['jit-backdoor'] = True
+```
+
+For production runs, ensure the cache is preserved between runs to
+avoid recompilation overhead.
+
+### Result Classes for Solver Output
+
+Using dataclasses provides clean interfaces for solver results:
+
+```python
+from dataclasses import dataclass, field
+import numpy as np
+
+
+@dataclass
+class SolverResult:
+    """Container for solver output."""
+    u: np.ndarray              # Solution at final time
+    x: np.ndarray              # Spatial grid
+    t: float                   # Final time
+    L: float                   # Domain length
+    dx: float                  # Grid spacing
+    dt: float                  # Time step used
+    nsteps: int                # Number of time steps
+    u_history: list = field(default_factory=list)  # Optional history
+    t_history: list = field(default_factory=list)  # Time points
+
+
+def solve_with_result(...):
+    """Solver that returns a SolverResult."""
+    # ... solver code ...
+
+    return SolverResult(
+        u=np.array(u.data[0, :]),
+        x=x_values,
+        t=t_final,
+        L=L,
+        dx=dx,
+        dt=dt,
+        nsteps=nt,
+    )
+```
+
+### Comparison with Manual Optimization
+
+The following table compares Devito with manual optimization approaches:
+
+| Approach | Development Time | Performance | Portability | Maintainability |
+|----------|-----------------|-------------|-------------|-----------------|
+| Pure Python | Low | Poor | High | High |
+| NumPy vectorized | Medium | Medium | High | Medium |
+| Cython | High | Good | Medium | Low |
+| Fortran/f2py | High | Excellent | Low | Low |
+| C/C++ | Very High | Excellent | Low | Low |
+| **Devito** | Low | Excellent | High | High |
+
+Devito achieves performance comparable to hand-tuned code while
+maintaining the simplicity and portability of Python. This makes it
+an excellent choice for scientific computing projects where both
+productivity and performance matter.
+
 ## Exercise: Explore computational efficiency of numpy.sum versus built-in sum {#sec-softeng2-exer-sum}
 
 Using the task of computing the sum of the first `n` integers, we want to

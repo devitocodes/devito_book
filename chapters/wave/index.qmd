@@ -2,6 +2,10 @@
 
 {{< include wave1D_fd1.qmd >}}
 
+{{< include wave1D_devito.qmd >}}
+
+{{< include wave1D_features.qmd >}}
+
 {{< include wave1D_prog.qmd >}}
 
 {{< include wave1D_fd2.qmd >}}
@@ -10,8 +14,12 @@
 
 {{< include wave2D_fd.qmd >}}
 
+{{< include wave2D_devito.qmd >}}
+
 {{< include wave2D_prog.qmd >}}
 
 {{< include wave_app.qmd >}}
 
 {{< include wave_app_exer.qmd >}}
+
+{{< include wave_exercises.qmd >}}
