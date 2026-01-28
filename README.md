@@ -66,9 +66,9 @@ Install [Quarto](https://quarto.org/docs/get-started/):
 # macOS
 brew install quarto
 
-# Ubuntu/Debian
-wget https://github.com/quarto-dev/quarto-cli/releases/latest/download/quarto-linux-amd64.deb
-sudo dpkg -i quarto-linux-amd64.deb
+# Ubuntu/Debian - see https://quarto.org/docs/get-started/ for current version
+# Download the .deb from https://github.com/quarto-dev/quarto-cli/releases/latest
+sudo dpkg -i quarto-*.deb
 ```
 
 ### LaTeX (for PDF output)
@@ -158,16 +158,28 @@ Pre-commit hooks enforce:
 
 ## License
 
-Content: [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
+[![CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+
+This work is adapted from:
+
+> Langtangen, H.P., Linge, S. (2017). *Finite Difference Computing with PDEs: A Modern Software Approach*. Springer, Cham. [DOI: 10.1007/978-3-319-55456-3](https://doi.org/10.1007/978-3-319-55456-3)
+
+Licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Authors
+
+**Original Authors:**
 
 - Hans Petter Langtangen (1962-2016)
 - Svein Linge
 
+**Adapted by:**
+
+- Gerard J. Gorman, Imperial College London
+
 ## Links
 
 - [Devito Project](https://www.devitoproject.org/)
-- [Devito Documentation](https://www.devitoproject.org/devito/index.html)
+- [Devito API Reference](https://www.devitoproject.org/api/)
 - [Devito GitHub](https://github.com/devitocodes/devito)
 - [Original Book (PDF)](https://hplgit.github.io/fdm-book/doc/pub/book/pdf/fdm-book-4print.pdf)
