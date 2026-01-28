@@ -4,8 +4,12 @@
 
 {{< include nonlin_pde1D.qmd >}}
 
+{{< include nonlin1D_devito.qmd >}}
+
 {{< include nonlin_pde_gen.qmd >}}
 
 {{< include nonlin_split.qmd >}}
 
 {{< include nonlin_exer.qmd >}}
+
+{{< include nonlin_devito_exercises.qmd >}}

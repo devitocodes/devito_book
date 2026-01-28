@@ -3,3 +3,6 @@
 Thi = "Thi"
 # Equation label suffix (exact solution "u_e")
 ue = "ue"
+# Strang splitting (named after mathematician Gilbert Strang)
+strang = "strang"
+Strang = "Strang"

@@ -10,7 +10,7 @@
 | 2 | ✅ Complete | Wave Equations Chapter |
 | 3 | ✅ Complete | Diffusion Equations Chapter |
 | 4 | ✅ Complete | Advection Equations Chapter |
-| 5 | ⬜ Not Started | Nonlinear Problems Chapter |
+| 5 | ✅ Complete | Nonlinear Problems Chapter |
 | 6 | ⬜ Not Started | Appendices |
 | 7 | ✅ Complete | Testing & CI Infrastructure |
 | 8 | ⬜ Not Started | Final Integration & Review |
@@ -81,6 +81,24 @@
 - `chapters/advec/advec1D_devito.qmd` - Advection schemes with Devito (upwind differencing, CFL condition, scheme comparison)
 - `chapters/advec/advec_devito_exercises.qmd` - 10 Devito-based exercises with solutions
 - Updated `chapters/advec/index.qmd` to include new Devito sections
+
+**Phase 5 - Nonlinear Problems (Complete):**
+
+*Python Solvers:*
+- `src/nonlin/nonlin1D_devito.py` - Nonlinear PDE solvers using Devito DSL:
+  - `solve_nonlinear_diffusion_explicit` - Explicit scheme with lagged coefficient evaluation
+  - `solve_reaction_diffusion_splitting` - Lie and Strange operator splitting
+  - `solve_burgers_equation` - Viscous Burgers' equation with conservative form
+  - `solve_nonlinear_diffusion_picard` - Picard iteration for implicit schemes
+- Helper functions: `constant_diffusion`, `linear_diffusion`, `porous_medium_diffusion`
+- Reaction terms: `logistic_reaction`, `fisher_reaction`, `allen_cahn_reaction`
+- `src/nonlin/__init__.py` - Module exports
+- 29 nonlinear solver tests (explicit, splitting, Burgers, Picard, diffusion coefficients, reaction terms)
+
+*Quarto Chapters:*
+- `chapters/nonlin/nonlin1D_devito.qmd` - Nonlinear diffusion, reaction-diffusion splitting, Burgers' equation with Devito
+- `chapters/nonlin/nonlin_devito_exercises.qmd` - 10 Devito-based exercises with solutions
+- Updated `chapters/nonlin/index.qmd` to include new Devito sections
 
 ---
 

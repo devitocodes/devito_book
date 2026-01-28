@@ -1,0 +1,588 @@
+## Exercises: Nonlinear PDEs with Devito {#sec-nonlin-exercises-devito}
+
+These exercises explore nonlinear PDEs using Devito's symbolic
+finite difference framework.
+
+### Exercise 1: Nonlinear Diffusion Stability {#exer-nonlin-stability}
+
+The explicit scheme for nonlinear diffusion requires $F \le 0.5$ where
+$F = D_{\max} \Delta t / \Delta x^2$.
+
+a) Use `solve_nonlinear_diffusion_explicit` with $F = 0.4$ and verify
+   stability.
+b) Observe the solution behavior as $F$ approaches 0.5.
+c) Compare the decay rate for constant $D(u) = 1$ vs linear $D(u) = 1 + u$.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.nonlin import (
+    solve_nonlinear_diffusion_explicit,
+    constant_diffusion,
+    linear_diffusion,
+)
+import numpy as np
+import matplotlib.pyplot as plt
+
+def I(x):
+    return np.sin(np.pi * x)
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+# Constant diffusion
+result_const = solve_nonlinear_diffusion_explicit(
+    L=1.0, Nx=50, T=0.2, F=0.4, I=I,
+    D_func=lambda u: constant_diffusion(u, D0=1.0),
+    save_history=True,
+)
+
+# Linear diffusion
+result_linear = solve_nonlinear_diffusion_explicit(
+    L=1.0, Nx=50, T=0.2, F=0.4, I=I,
+    D_func=lambda u: linear_diffusion(u, D0=1.0, alpha=0.5),
+    save_history=True,
+)
+
+# Plot
+for ax, result, title in [
+    (axes[0], result_const, 'Constant D(u) = 1'),
+    (axes[1], result_linear, 'Linear D(u) = 1 + 0.5u')
+]:
+    for i in range(0, len(result.t_history), len(result.t_history)//5):
+        ax.plot(result.x, result.u_history[i],
+                label=f't = {result.t_history[i]:.3f}')
+    ax.set_xlabel('x')
+    ax.set_ylabel('u')
+    ax.set_title(title)
+    ax.legend()
+
+plt.tight_layout()
+
+# The linear diffusion case diffuses faster because D increases with u
+print(f"Constant D: final max = {result_const.u.max():.4f}")
+print(f"Linear D: final max = {result_linear.u.max():.4f}")
+```
+:::
+
+### Exercise 2: Porous Medium Equation {#exer-nonlin-porous}
+
+The porous medium equation has $D(u) = m u^{m-1}$, giving:
+$$
+u_t = \nabla \cdot (m u^{m-1} \nabla u) = \nabla \cdot \nabla(u^m)
+$$
+
+a) Simulate with $m = 2$ (nonlinear diffusion).
+b) Compare with $m = 1$ (linear diffusion).
+c) Observe the "finite speed of propagation" for $m > 1$.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.nonlin import solve_nonlinear_diffusion_explicit, porous_medium_diffusion
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Compactly supported initial condition
+def I(x):
+    return np.maximum(0, 1 - 4*(x - 0.5)**2)
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+for ax, m, title in [
+    (axes[0], 1.0, 'm = 1 (linear)'),
+    (axes[1], 2.0, 'm = 2 (porous medium)')
+]:
+    result = solve_nonlinear_diffusion_explicit(
+        L=1.0, Nx=100, T=0.1, F=0.3, I=I,
+        D_func=lambda u, m=m: porous_medium_diffusion(u, m=m, D0=1.0),
+        save_history=True,
+    )
+
+    for i in range(0, len(result.t_history), max(1, len(result.t_history)//5)):
+        ax.plot(result.x, result.u_history[i],
+                label=f't = {result.t_history[i]:.3f}')
+    ax.set_xlabel('x')
+    ax.set_ylabel('u')
+    ax.set_title(title)
+    ax.legend()
+
+plt.tight_layout()
+```
+
+For $m > 1$, the solution maintains compact support (finite speed of
+propagation), unlike linear diffusion which spreads instantly.
+:::
+
+### Exercise 3: Fisher-KPP Equation {#exer-nonlin-fisher}
+
+The Fisher-KPP equation $u_t = D u_{xx} + r u(1-u)$ models population
+dynamics with logistic growth.
+
+a) Simulate with a localized initial condition.
+b) Observe the traveling wave behavior.
+c) Measure the wave speed and compare with theory: $c = 2\sqrt{Dr}$.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.nonlin import solve_reaction_diffusion_splitting, fisher_reaction
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Initial condition: localized population
+def I(x):
+    return np.where(x < 0.2, 1.0, 0.0)
+
+D = 0.1
+r = 1.0
+
+result = solve_reaction_diffusion_splitting(
+    L=5.0, a=D, Nx=200, T=5.0, F=0.3, I=I,
+    R_func=lambda u: fisher_reaction(u, r=r),
+    splitting="strang",
+    save_history=True,
+)
+
+# Plot traveling wave
+plt.figure(figsize=(10, 6))
+for i in range(0, len(result.t_history), len(result.t_history)//10):
+    plt.plot(result.x, result.u_history[i],
+             label=f't = {result.t_history[i]:.1f}')
+plt.xlabel('x')
+plt.ylabel('u')
+plt.title('Fisher-KPP Traveling Wave')
+plt.legend()
+
+# Theoretical wave speed
+c_theory = 2 * np.sqrt(D * r)
+print(f"Theoretical wave speed: {c_theory:.3f}")
+
+# Estimate numerical wave speed from front position
+threshold = 0.5
+front_positions = []
+for i, u in enumerate(result.u_history):
+    idx = np.argmax(u < threshold)
+    if idx > 0:
+        front_positions.append((result.t_history[i], result.x[idx]))
+
+if len(front_positions) > 2:
+    t_vals = [p[0] for p in front_positions]
+    x_vals = [p[1] for p in front_positions]
+    c_numerical = np.polyfit(t_vals, x_vals, 1)[0]
+    print(f"Numerical wave speed: {c_numerical:.3f}")
+```
+:::
+
+### Exercise 4: Strang vs Lie Splitting {#exer-nonlin-splitting}
+
+Compare the accuracy of Strang and Lie splitting.
+
+a) Solve the reaction-diffusion equation with both methods.
+b) Use a fine time step as reference solution.
+c) Plot error vs time step size on a log-log scale.
+d) Verify that Strang is second-order and Lie is first-order.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.nonlin import solve_reaction_diffusion_splitting, logistic_reaction
+import numpy as np
+import matplotlib.pyplot as plt
+
+def I(x):
+    return 0.5 * np.sin(np.pi * x)
+
+# Reference solution with very fine time step
+ref = solve_reaction_diffusion_splitting(
+    L=1.0, a=0.1, Nx=100, T=0.1, F=0.1, I=I,
+    R_func=lambda u: logistic_reaction(u, r=1.0, K=1.0),
+    splitting="strang",
+)
+
+# Test different Fourier numbers (time step sizes)
+F_values = [0.4, 0.3, 0.2, 0.1]
+errors_lie = []
+errors_strang = []
+
+for F in F_values:
+    for splitting, errors in [("lie", errors_lie), ("strang", errors_strang)]:
+        result = solve_reaction_diffusion_splitting(
+            L=1.0, a=0.1, Nx=100, T=0.1, F=F, I=I,
+            R_func=lambda u: logistic_reaction(u, r=1.0, K=1.0),
+            splitting=splitting,
+        )
+        error = np.max(np.abs(result.u - ref.u))
+        errors.append(error)
+
+# Plot
+dt_values = [F * (1.0/100)**2 / 0.1 for F in F_values]
+plt.figure(figsize=(8, 6))
+plt.loglog(dt_values, errors_lie, 'bo-', label='Lie (O(dt))')
+plt.loglog(dt_values, errors_strang, 'rs-', label='Strang (O(dt^2))')
+plt.loglog(dt_values, [errors_lie[0]*(dt/dt_values[0]) for dt in dt_values],
+           'b--', alpha=0.5)
+plt.loglog(dt_values, [errors_strang[0]*(dt/dt_values[0])**2 for dt in dt_values],
+           'r--', alpha=0.5)
+plt.xlabel('Time step')
+plt.ylabel('Error')
+plt.legend()
+plt.title('Splitting Method Comparison')
+plt.grid(True)
+```
+
+Lie splitting shows first-order convergence ($O(\Delta t)$) while Strang
+splitting achieves second-order ($O(\Delta t^2)$).
+:::
+
+### Exercise 5: Burgers Shock Formation {#exer-nonlin-burgers-shock}
+
+Burgers' equation can develop steep gradients (shocks) for small viscosity.
+
+a) Simulate with $\nu = 0.1, 0.01, 0.001$.
+b) Observe the shock steepening for small $\nu$.
+c) Plot the maximum gradient vs time.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.nonlin import solve_burgers_equation
+import numpy as np
+import matplotlib.pyplot as plt
+
+def I(x):
+    return np.sin(np.pi * x)
+
+fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+
+for col, nu in enumerate([0.1, 0.01, 0.001]):
+    result = solve_burgers_equation(
+        L=2.0, nu=nu, Nx=200, T=0.5, C=0.3, I=I,
+        save_history=True,
+    )
+
+    # Plot solution at several times
+    ax = axes[0, col]
+    for i in range(0, len(result.t_history), max(1, len(result.t_history)//5)):
+        ax.plot(result.x, result.u_history[i],
+                label=f't = {result.t_history[i]:.2f}')
+    ax.set_xlabel('x')
+    ax.set_ylabel('u')
+    ax.set_title(f'nu = {nu}')
+    ax.legend(fontsize=8)
+
+    # Plot maximum gradient vs time
+    ax = axes[1, col]
+    max_grads = []
+    for u in result.u_history:
+        grad = np.abs(np.diff(u) / (result.x[1] - result.x[0]))
+        max_grads.append(grad.max())
+    ax.plot(result.t_history, max_grads)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Max |du/dx|')
+    ax.set_title(f'Gradient evolution, nu = {nu}')
+
+plt.tight_layout()
+```
+
+As viscosity decreases, the solution develops steeper gradients.
+For very small $\nu$, the gradient can become large, approaching
+shock behavior.
+:::
+
+### Exercise 6: Allen-Cahn Equation {#exer-nonlin-allen-cahn}
+
+The Allen-Cahn equation $u_t = \epsilon^2 u_{xx} + u - u^3$ models
+phase transitions.
+
+a) Start with random initial data in $[-1, 1]$.
+b) Observe how the solution evolves toward $\pm 1$.
+c) Study the effect of $\epsilon$ on interface width.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.nonlin import solve_reaction_diffusion_splitting, allen_cahn_reaction
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Random initial condition
+np.random.seed(42)
+x_init = np.linspace(0, 2.0, 101)
+u_init = 0.2 * np.sin(3 * np.pi * x_init) + 0.1 * np.random.randn(101)
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+for ax, epsilon in zip(axes, [0.1, 0.05, 0.02]):
+    result = solve_reaction_diffusion_splitting(
+        L=2.0, a=epsilon**2, Nx=100, T=1.0, F=0.3,
+        I=lambda x, u_init=u_init: np.interp(x, x_init, u_init),
+        R_func=lambda u: allen_cahn_reaction(u, epsilon=1.0),
+        splitting="strang",
+        save_history=True,
+    )
+
+    for i in range(0, len(result.t_history), max(1, len(result.t_history)//5)):
+        ax.plot(result.x, result.u_history[i], alpha=0.7,
+                label=f't = {result.t_history[i]:.2f}')
+    ax.set_xlabel('x')
+    ax.set_ylabel('u')
+    ax.set_title(f'epsilon = {epsilon}')
+    ax.axhline(1, color='k', linestyle='--', alpha=0.3)
+    ax.axhline(-1, color='k', linestyle='--', alpha=0.3)
+    ax.legend(fontsize=8)
+
+plt.tight_layout()
+```
+
+The solution evolves toward $\pm 1$ with sharp interfaces. Smaller
+$\epsilon$ gives sharper interfaces but requires finer resolution.
+:::
+
+### Exercise 7: Energy Decay in Nonlinear Diffusion {#exer-nonlin-energy}
+
+For nonlinear diffusion with homogeneous Dirichlet BCs, the "energy"
+$$
+E(t) = \frac{1}{2} \int_0^L u^2 \, dx
+$$
+should decrease.
+
+a) Compute $E(t)$ for nonlinear diffusion.
+b) Verify monotonic decrease.
+c) Compare decay rates for different $D(u)$.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.nonlin import (
+    solve_nonlinear_diffusion_explicit,
+    constant_diffusion,
+    linear_diffusion,
+)
+import numpy as np
+import matplotlib.pyplot as plt
+
+def I(x):
+    return np.sin(np.pi * x)
+
+plt.figure(figsize=(10, 6))
+
+for D_func, label in [
+    (lambda u: constant_diffusion(u, D0=1.0), 'Constant D=1'),
+    (lambda u: linear_diffusion(u, D0=1.0, alpha=0.5), 'D=1+0.5u'),
+    (lambda u: linear_diffusion(u, D0=1.0, alpha=1.0), 'D=1+u'),
+]:
+    result = solve_nonlinear_diffusion_explicit(
+        L=1.0, Nx=100, T=0.5, F=0.4, I=I, D_func=D_func,
+        save_history=True,
+    )
+
+    # Compute energy
+    energies = []
+    for u in result.u_history:
+        E = 0.5 * np.trapz(u**2, result.x)
+        energies.append(E)
+
+    plt.semilogy(result.t_history, energies, label=label)
+
+plt.xlabel('Time')
+plt.ylabel('Energy E(t)')
+plt.legend()
+plt.title('Energy Decay in Nonlinear Diffusion')
+plt.grid(True)
+
+# Verify monotonic decrease
+dE = np.diff(energies)
+print(f"Energy monotonically decreasing: {np.all(dE <= 0)}")
+```
+
+The energy decreases monotonically. Nonlinear diffusion with
+$D(u)$ increasing with $u$ can lead to faster decay.
+:::
+
+### Exercise 8: Convergence of Burgers Solver {#exer-nonlin-burgers-conv}
+
+Verify the spatial convergence of the Burgers equation solver.
+
+a) Use grid sizes $N_x = 25, 50, 100, 200$.
+b) Compare with a fine-grid reference solution.
+c) Compute the observed convergence rate.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.nonlin import solve_burgers_equation
+import numpy as np
+import matplotlib.pyplot as plt
+
+def I(x):
+    return np.sin(np.pi * x)
+
+# Reference solution
+ref = solve_burgers_equation(
+    L=2.0, nu=0.1, Nx=400, T=0.2, C=0.3, I=I,
+)
+
+grid_sizes = [25, 50, 100, 200]
+errors = []
+
+for Nx in grid_sizes:
+    result = solve_burgers_equation(
+        L=2.0, nu=0.1, Nx=Nx, T=0.2, C=0.3, I=I,
+    )
+    # Interpolate to reference grid for comparison
+    u_interp = np.interp(ref.x, result.x, result.u)
+    error = np.sqrt(np.mean((u_interp - ref.u)**2))
+    errors.append(error)
+    print(f"Nx = {Nx:3d}, error = {error:.4e}")
+
+# Compute convergence rate
+errors = np.array(errors)
+dx = 2.0 / np.array(grid_sizes)
+log_dx = np.log(dx)
+log_err = np.log(errors)
+rate = np.polyfit(log_dx, log_err, 1)[0]
+
+print(f"\nObserved convergence rate: {rate:.2f}")
+
+plt.figure(figsize=(8, 6))
+plt.loglog(dx, errors, 'bo-', label=f'Observed (rate={rate:.2f})')
+plt.loglog(dx, errors[0]*(dx/dx[0])**2, 'r--', label='O(dx^2)')
+plt.xlabel('Grid spacing dx')
+plt.ylabel('L2 error')
+plt.legend()
+plt.title('Convergence of Burgers Solver')
+plt.grid(True)
+```
+:::
+
+### Exercise 9: Picard Iteration Convergence {#exer-nonlin-picard}
+
+Study the convergence of Picard iteration for implicit nonlinear
+diffusion.
+
+a) Track the number of iterations needed at each time step.
+b) Study how the tolerance affects accuracy.
+c) Compare with the explicit scheme for the same problem.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.nonlin import (
+    solve_nonlinear_diffusion_picard,
+    solve_nonlinear_diffusion_explicit,
+)
+import numpy as np
+import matplotlib.pyplot as plt
+
+def I(x):
+    return np.sin(np.pi * x)
+
+# Picard solver
+result_picard = solve_nonlinear_diffusion_picard(
+    L=1.0, Nx=50, T=0.05, dt=0.005,
+    I=I,
+)
+
+# Explicit solver for comparison
+result_explicit = solve_nonlinear_diffusion_explicit(
+    L=1.0, Nx=50, T=0.05, F=0.4,
+    I=I,
+)
+
+plt.figure(figsize=(10, 5))
+plt.plot(result_picard.x, result_picard.u, 'b-', label='Picard (implicit)')
+plt.plot(result_explicit.x, result_explicit.u, 'r--', label='Explicit')
+plt.xlabel('x')
+plt.ylabel('u')
+plt.legend()
+plt.title('Comparison: Picard vs Explicit')
+
+diff = np.max(np.abs(result_picard.u - np.interp(result_picard.x,
+                                                  result_explicit.x,
+                                                  result_explicit.u)))
+print(f"Maximum difference: {diff:.4e}")
+```
+
+The Picard method allows larger time steps but requires iteration.
+Both methods should give similar results for the same problem.
+:::
+
+### Exercise 10: Traveling Wave in Burgers {#exer-nonlin-burgers-wave}
+
+Study the traveling wave solution of the viscous Burgers equation.
+
+a) Use initial condition $u(x,0) = -\tanh((x-L/2)/\delta)$ with
+   boundary values $u(0) = 1$, $u(L) = -1$.
+b) Observe the wave propagation.
+c) Estimate the wave speed numerically.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from devito import Grid, TimeFunction, Eq, Operator, Constant
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Setup
+L = 10.0
+Nx = 200
+nu = 0.1
+T = 5.0
+delta = 1.0  # Initial width
+
+grid = Grid(shape=(Nx + 1,), extent=(L,))
+x_dim = grid.dimensions[0]
+t_dim = grid.stepping_dim
+
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+x_coords = np.linspace(0, L, Nx + 1)
+
+# Initial condition: tanh profile
+u.data[0, :] = -np.tanh((x_coords - L/2) / delta)
+u.data[1, :] = u.data[0, :].copy()
+
+dx = L / Nx
+dt = 0.25 * min(0.5 * dx, 0.25 * dx**2 / nu)
+Nt = int(T / dt)
+
+dt_const = Constant(name='dt', value=np.float32(dt))
+nu_const = Constant(name='nu', value=np.float32(nu))
+
+u_plus = u.subs(x_dim, x_dim + x_dim.spacing)
+u_minus = u.subs(x_dim, x_dim - x_dim.spacing)
+
+advection = 0.25 * dt_const / dx * (u_plus**2 - u_minus**2)
+diffusion = nu_const * dt_const / (dx**2) * (u_plus - 2*u + u_minus)
+stencil = u - advection + diffusion
+
+update = Eq(u.forward, stencil, subdomain=grid.interior)
+bc_left = Eq(u[t_dim + 1, 0], 1.0)
+bc_right = Eq(u[t_dim + 1, Nx], -1.0)
+
+op = Operator([update, bc_left, bc_right])
+
+# Run and save history
+history = [u.data[0, :].copy()]
+times = [0.0]
+
+for n in range(Nt):
+    op.apply(time_m=n, time_M=n, dt=np.float32(dt))
+    if (n + 1) % (Nt // 10) == 0:
+        history.append(u.data[(n+1) % 2, :].copy())
+        times.append((n + 1) * dt)
+
+# Plot
+plt.figure(figsize=(10, 6))
+for i, t in enumerate(times):
+    plt.plot(x_coords, history[i], label=f't = {t:.1f}')
+plt.xlabel('x')
+plt.ylabel('u')
+plt.legend()
+plt.title('Burgers Traveling Wave')
+
+# Estimate wave speed from zero crossing
+zero_crossings = []
+for i, u_arr in enumerate(history):
+    idx = np.argmin(np.abs(u_arr))
+    zero_crossings.append((times[i], x_coords[idx]))
+
+if len(zero_crossings) > 2:
+    t_vals = [z[0] for z in zero_crossings]
+    x_vals = [z[1] for z in zero_crossings]
+    speed = np.polyfit(t_vals, x_vals, 1)[0]
+    print(f"Estimated wave speed: {speed:.3f}")
+```
+
+The wave propagates with a speed related to the average of the
+boundary values. For small viscosity, the wave develops a sharp front.
+:::
