@@ -601,25 +601,20 @@ frame in the animation to file. We then need a filename where the
 frame number is padded with zeros, here `tmp_0000.png`,
 `tmp_0001.png`, and so on.  The proper printf construction is then
 `tmp_%04d.png`.
-Section @sec-vib-ode1-anim contains more basic
-information on making animations.
 
 ### Making movie files
 
 From the
 `frame_*.png` files containing the frames in the animation we can
-make video files.
-Section @sec-vib-ode1-anim presents basic information on how to
-use the `ffmpeg` (or `avconv`) program for producing video files
-in different modern formats: Flash, MP4, Webm, and Ogg.
+make video files using the `ffmpeg` (or `avconv`) program to produce
+videos in modern formats: Flash, MP4, Webm, and Ogg.
 
 The `viz` function creates an `ffmpeg` or `avconv` command
 with the proper arguments for each of the formats Flash, MP4, WebM,
 and Ogg. The task is greatly simplified by having a
 `codec2ext` dictionary for mapping
 video codec names to filename extensions.
-As mentioned in Section @sec-vib-ode1-anim, only
-two formats are actually needed to ensure that all browsers can
+In practice, only two formats are needed to ensure that all browsers can
 successfully play the video: MP4 and WebM.
 
 Some animations having a large number of plot files may not

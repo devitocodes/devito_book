@@ -209,7 +209,7 @@ mathematics, numerics, computer science, and physics.
 
 Most books on finite difference methods, or books on theory with
 computer examples, have their emphasis on diffusion phenomena.  Half
-of this book (Chapters @sec-ch-vib, @sec-ch-wave, and Appendix
+of this book (Chapters @sec-ch-devito-intro, @sec-ch-wave, and Appendix
 @sec-ch-softeng2) is devoted to wave phenomena. Extended material on
 this topic is not so easy find in the literature, so the book should
 be a valuable contribution in this respect.  Wave phenomena is also a

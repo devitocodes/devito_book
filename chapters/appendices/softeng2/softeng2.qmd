@@ -2090,24 +2090,24 @@ A well-organized Devito project follows standard Python package conventions:
 
 ```
 my_pde_solver/
-├── src/
-│   ├── __init__.py
-│   ├── solvers/
-│   │   ├── __init__.py
-│   │   ├── wave.py          # Wave equation solvers
-│   │   └── diffusion.py     # Diffusion equation solvers
-│   └── utils/
-│       ├── __init__.py
-│       ├── visualization.py  # Plotting utilities
-│       └── convergence.py    # Convergence testing
-├── tests/
-│   ├── conftest.py          # Pytest fixtures
-│   ├── test_wave.py
-│   └── test_diffusion.py
-├── examples/
-│   └── run_simulation.py
-├── pyproject.toml
-└── README.md
++-- src/
+|   +-- __init__.py
+|   +-- solvers/
+|   |   +-- __init__.py
+|   |   +-- wave.py          # Wave equation solvers
+|   |   +-- diffusion.py     # Diffusion equation solvers
+|   +-- utils/
+|       +-- __init__.py
+|       +-- visualization.py  # Plotting utilities
+|       +-- convergence.py    # Convergence testing
++-- tests/
+|   +-- conftest.py          # Pytest fixtures
+|   +-- test_wave.py
+|   +-- test_diffusion.py
++-- examples/
+|   +-- run_simulation.py
++-- pyproject.toml
++-- README.md
 ```
 
 ### Pytest Fixtures for Devito Testing

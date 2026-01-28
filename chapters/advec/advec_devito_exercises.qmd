@@ -426,7 +426,7 @@ plt.plot(x, u_final, 'b-', label='Final (T=1)')
 plt.xlabel('x')
 plt.ylabel('u')
 plt.legend()
-plt.title('Advection with variable velocity c(x) = 1 + 0.5sin(2πx)')
+plt.title('Advection with variable velocity c(x) = 1 + 0.5*sin(2*pi*x)')
 plt.savefig('variable_velocity.pdf')
 ```
 :::
@@ -504,7 +504,7 @@ plt.figure(figsize=(10, 6))
 
 for nu, style in [(0.0, 'b-'), (0.01, 'r--'), (0.1, 'g-.')]:
     u, x = solve_advec_diff(L, c, nu, Nx, T, C, I)
-    plt.plot(x, u, style, label=f'ν={nu}')
+    plt.plot(x, u, style, label=f'nu={nu}')
 
 plt.plot(x, I(x), 'k:', lw=2, label='Initial')
 plt.legend()

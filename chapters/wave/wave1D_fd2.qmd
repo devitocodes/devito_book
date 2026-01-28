@@ -720,8 +720,7 @@ for smooth $q(x)$ functions.
 The harmonic mean is often preferred when $q(x)$ exhibits large
 jumps (which is typical for geological media).
 The geometric mean is less used, but popular in
-discretizations to linearize quadratic
-nonlinearities (see the vibrations chapter, Section @sec-vib-exer-verify-gen-linear for an example).
+discretizations to linearize quadratic nonlinearities.
 
 With the operator notation for the arithmetic mean
 we can specify the discretization of the complete variable-coefficient

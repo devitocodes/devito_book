@@ -207,7 +207,7 @@ For our example with $c_1 = 1$ and $c_2 = 2$:
 The transmitted wave has larger amplitude but carries the same energy
 (accounting for the velocity change).
 
-### Absorbing Boundary Conditions
+### Absorbing Boundary Conditions {#sec-wave-1d-absorbing}
 
 For open-domain problems, we want waves to leave without reflecting
 from artificial boundaries. A simple approach is a **sponge layer**

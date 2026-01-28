@@ -201,7 +201,7 @@ for i, f0 in enumerate([10, 25, 50]):
 c = 1500  # m/s
 for f0 in [10, 25, 50]:
     wavelength = c / f0
-    print(f"f0 = {f0} Hz: λ = {wavelength} m")
+    print(f"f0 = {f0} Hz: wavelength = {wavelength} m")
 
 # Part (c)
 # The Ricker wavelet is centered at t0, and has amplitude ~0 when

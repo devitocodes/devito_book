@@ -2102,7 +2102,7 @@ def test_laplacian_accuracy(space_order):
              for i in range(len(errors)-1)]
     return np.mean(rates)
 
-# Expected: rate ≈ 2 for space_order=2, rate ≈ 4 for space_order=4
+# Expected: rate ~ 2 for space_order=2, rate ~ 4 for space_order=4
 ```
 
 The measured rates should match the theoretical orders from truncation
