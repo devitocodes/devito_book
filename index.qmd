@@ -2,6 +2,10 @@
 
 This book teaches finite difference methods for solving partial differential equations, featuring [Devito](https://www.devitoproject.org/) for high-performance PDE solvers.
 
+::: {.content-visible when-format="html"}
+[**Download PDF version**](book.pdf){.btn .btn-primary}
+:::
+
 ## About this Edition {.unnumbered}
 
 This is an adaptation of *[Finite Difference Computing with PDEs: A Modern Software Approach](https://doi.org/10.1007/978-3-319-55456-3)* by Hans Petter Langtangen and Svein Linge (Springer, 2017). This Devito edition features:
