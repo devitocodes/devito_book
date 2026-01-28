@@ -1,0 +1,583 @@
+## Exercises: Diffusion with Devito {#sec-diffu-exercises-devito}
+
+These exercises explore the diffusion equation using Devito's symbolic
+finite difference framework.
+
+### Exercise 1: Verify the Fourier Stability Limit {#exer-diffu-stability}
+
+The Forward Euler scheme for the diffusion equation requires $F \le 0.5$
+for stability.
+
+a) Use `solve_diffusion_1d` with $F = 0.5$ and verify that the solution
+   decays smoothly.
+b) Try $F = 0.51$ and observe what happens.
+c) Plot the solution at several time steps for both cases.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.diffu import solve_diffusion_1d
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Stable case: F = 0.5
+result_stable = solve_diffusion_1d(
+    L=1.0, a=1.0, Nx=50, T=0.1, F=0.5,
+    save_history=True,
+)
+
+# Unstable case: F = 0.51
+# Note: The solver will raise a ValueError for F > 0.5
+# To demonstrate instability, we would need to bypass the check
+# or use the legacy NumPy implementation
+
+plt.figure(figsize=(10, 4))
+
+plt.subplot(1, 2, 1)
+for i in [0, 5, 10, 20]:
+    if i < len(result_stable.t_history):
+        plt.plot(result_stable.x, result_stable.u_history[i],
+                 label=f't = {result_stable.t_history[i]:.3f}')
+plt.xlabel('x')
+plt.ylabel('u')
+plt.title('Stable: F = 0.5')
+plt.legend()
+
+# The F > 0.5 case shows exponential growth with oscillations
+plt.subplot(1, 2, 2)
+plt.text(0.5, 0.5, 'F > 0.5 causes instability:\n'
+         'Solution grows exponentially\nwith oscillations',
+         ha='center', va='center', fontsize=12)
+plt.title('Unstable: F > 0.5')
+plt.tight_layout()
+```
+:::
+
+### Exercise 2: Convergence Rate Verification {#exer-diffu-convergence}
+
+Verify that the Forward Euler scheme achieves second-order spatial
+convergence when the Fourier number $F$ is held fixed.
+
+a) Use grid sizes $N_x = 10, 20, 40, 80, 160$.
+b) Compute the $L^2$ error against the exact sinusoidal solution.
+c) Plot the error vs. grid spacing on a log-log scale.
+d) Compute the observed convergence rate.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.diffu import solve_diffusion_1d, exact_diffusion_sine
+import numpy as np
+import matplotlib.pyplot as plt
+
+grid_sizes = [10, 20, 40, 80, 160]
+errors = []
+L = 1.0
+a = 1.0
+T = 0.1
+F = 0.5
+
+for Nx in grid_sizes:
+    result = solve_diffusion_1d(L=L, a=a, Nx=Nx, T=T, F=F)
+    u_exact = exact_diffusion_sine(result.x, result.t, L, a)
+    error = np.sqrt(np.mean((result.u - u_exact)**2))
+    errors.append(error)
+    print(f"Nx = {Nx:3d}, error = {error:.4e}")
+
+# Compute convergence rate
+errors = np.array(errors)
+dx = L / np.array(grid_sizes)
+log_dx = np.log(dx)
+log_err = np.log(errors)
+rate = np.polyfit(log_dx, log_err, 1)[0]
+
+print(f"\nObserved convergence rate: {rate:.2f}")
+print(f"Expected rate: 2.0")
+
+# Plot
+plt.figure(figsize=(8, 6))
+plt.loglog(dx, errors, 'bo-', label=f'Observed (rate={rate:.2f})')
+plt.loglog(dx, errors[0]*(dx/dx[0])**2, 'r--', label='O(dx^2)')
+plt.xlabel('Grid spacing dx')
+plt.ylabel('L2 error')
+plt.legend()
+plt.title('Convergence of Forward Euler for Diffusion')
+plt.grid(True)
+```
+:::
+
+### Exercise 3: Gaussian Initial Condition {#exer-diffu-gaussian}
+
+Study the diffusion of a Gaussian temperature profile.
+
+a) Set up a Gaussian initial condition centered at $x = L/2$
+   with width $\sigma = 0.05$.
+b) Simulate for $T = 0.5$ and visualize the spreading.
+c) Show that the total "heat content" (integral of $u$) is conserved
+   over time (with homogeneous Neumann BCs) or decreases (with
+   Dirichlet BCs).
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.diffu import solve_diffusion_1d, gaussian_initial_condition
+import numpy as np
+import matplotlib.pyplot as plt
+
+result = solve_diffusion_1d(
+    L=1.0, a=1.0, Nx=100, T=0.5, F=0.5,
+    I=lambda x: gaussian_initial_condition(x, L=1.0, sigma=0.05),
+    save_history=True,
+)
+
+# Plot evolution
+plt.figure(figsize=(10, 5))
+
+plt.subplot(1, 2, 1)
+times = [0, 0.05, 0.1, 0.2, 0.5]
+for t in times:
+    idx = int(t / result.dt)
+    if idx < len(result.t_history):
+        plt.plot(result.x, result.u_history[idx],
+                 label=f't = {result.t_history[idx]:.2f}')
+plt.xlabel('x')
+plt.ylabel('u')
+plt.title('Gaussian Diffusion')
+plt.legend()
+
+# Heat content over time (with Dirichlet BCs, heat is lost at boundaries)
+plt.subplot(1, 2, 2)
+dx = result.x[1] - result.x[0]
+heat_content = [np.trapz(result.u_history[i], result.x)
+                for i in range(len(result.t_history))]
+plt.plot(result.t_history, heat_content)
+plt.xlabel('Time')
+plt.ylabel('Total heat content')
+plt.title('Heat Loss Through Boundaries')
+plt.tight_layout()
+```
+
+With Dirichlet BCs ($u=0$ at boundaries), heat flows out and the total
+decreases. With Neumann BCs (insulated boundaries), total heat would
+be conserved.
+:::
+
+### Exercise 4: Discontinuous Initial Condition {#exer-diffu-plug}
+
+The diffusion equation smooths out discontinuities over time.
+
+a) Use a "plug" initial condition (1 for $|x - L/2| < 0.1$, 0 otherwise).
+b) Compare the solution for $F = 0.5$ and $F = 0.25$.
+c) Observe the oscillations (Gibbs phenomenon) for $F = 0.5$.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.diffu import solve_diffusion_1d, plug_initial_condition
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+for ax, F in zip(axes, [0.5, 0.25]):
+    result = solve_diffusion_1d(
+        L=1.0, a=1.0, Nx=100, T=0.1, F=F,
+        I=lambda x: plug_initial_condition(x, L=1.0, width=0.1),
+        save_history=True,
+    )
+
+    times = [0, 0.01, 0.02, 0.05, 0.1]
+    for t in times:
+        idx = int(t / result.dt)
+        if idx < len(result.t_history):
+            ax.plot(result.x, result.u_history[idx],
+                    label=f't = {result.t_history[idx]:.3f}')
+
+    ax.set_xlabel('x')
+    ax.set_ylabel('u')
+    ax.set_title(f'Plug Diffusion (F = {F})')
+    ax.legend()
+
+plt.tight_layout()
+```
+
+At $F = 0.5$, oscillations appear near the discontinuity (numerical
+Gibbs phenomenon). At $F = 0.25$, the solution is smoother but the
+simulation takes more time steps.
+:::
+
+### Exercise 5: 2D Heat Diffusion {#exer-diffu-2d-heat}
+
+Simulate heat diffusion in a 2D square domain.
+
+a) Set up a Gaussian "hot spot" centered at $(0.5, 0.5)$.
+b) Apply $u = 0$ on all boundaries (heat sink).
+c) Visualize the temperature distribution at several times.
+d) Compute the decay rate of the maximum temperature.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.diffu import solve_diffusion_2d, gaussian_2d_initial_condition
+import numpy as np
+import matplotlib.pyplot as plt
+
+result = solve_diffusion_2d(
+    Lx=1.0, Ly=1.0, a=1.0, Nx=50, Ny=50, T=0.2, F=0.25,
+    I=lambda X, Y: gaussian_2d_initial_condition(X, Y, 1.0, 1.0, sigma=0.1),
+    save_history=True,
+)
+
+# Plot at several times
+fig, axes = plt.subplots(2, 3, figsize=(12, 8))
+X, Y = np.meshgrid(result.x, result.y, indexing='ij')
+
+times = [0, 0.04, 0.08, 0.12, 0.16, 0.2]
+for ax, t in zip(axes.flat, times):
+    idx = int(t / result.dt)
+    if idx >= len(result.t_history):
+        idx = -1
+    c = ax.contourf(X, Y, result.u_history[idx], levels=20, cmap='hot')
+    ax.set_title(f't = {result.t_history[idx]:.3f}')
+    ax.set_aspect('equal')
+
+plt.tight_layout()
+
+# Maximum temperature decay
+max_temps = [result.u_history[i].max() for i in range(len(result.t_history))]
+plt.figure()
+plt.semilogy(result.t_history, max_temps)
+plt.xlabel('Time')
+plt.ylabel('Maximum temperature')
+plt.title('Exponential Decay of Peak Temperature')
+plt.grid(True)
+```
+:::
+
+### Exercise 6: Variable Diffusion Coefficient {#exer-diffu-variable}
+
+In heterogeneous materials, the diffusion coefficient varies in space.
+
+a) Modify the solver to accept a spatially varying $\dfc(x)$.
+b) Set up a two-layer problem: $\dfc = 1$ for $x < L/2$, $\dfc = 0.1$ for $x > L/2$.
+c) Observe how heat diffuses differently in the two regions.
+
+Hint: In Devito, use a `Function` instead of a `Constant` for the
+diffusion coefficient.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from devito import Grid, TimeFunction, Function, Eq, solve, Operator
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Setup
+L = 2.0
+Nx = 200
+T = 0.5
+grid = Grid(shape=(Nx + 1,), extent=(L,))
+
+# Variable diffusion coefficient
+a = Function(name='a', grid=grid)
+x_coords = np.linspace(0, L, Nx + 1)
+a.data[:] = np.where(x_coords < L/2, 1.0, 0.1)
+
+# Temperature field
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+
+# Initial condition: Gaussian in left region
+sigma = 0.1
+x0 = 0.5
+u.data[0, :] = np.exp(-((x_coords - x0) / sigma)**2)
+
+# PDE: u_t = a(x) * u_xx
+# Note: Using variable coefficient
+pde = u.dt - a * u.dx2
+stencil = Eq(u.forward, solve(pde, u.forward))
+
+# Stability: use max(a) for dt calculation
+dx = L / Nx
+F = 0.5
+dt = F * dx**2 / a.data.max()
+Nt = int(T / dt)
+
+# Boundary conditions
+bc_left = Eq(u[grid.stepping_dim + 1, 0], 0)
+bc_right = Eq(u[grid.stepping_dim + 1, Nx], 0)
+
+op = Operator([stencil, bc_left, bc_right])
+
+# Time stepping with history
+history = [u.data[0, :].copy()]
+times = [0]
+
+for n in range(Nt):
+    op.apply(time_m=0, time_M=0, dt=dt)
+    u.data[0, :] = u.data[1, :]
+    if n % 100 == 0:
+        history.append(u.data[0, :].copy())
+        times.append((n + 1) * dt)
+
+# Plot
+plt.figure(figsize=(10, 6))
+for i, t in enumerate(times[::2]):
+    plt.plot(x_coords, history[::2][i], label=f't = {t:.2f}')
+plt.axvline(L/2, color='k', linestyle='--', label='Interface')
+plt.xlabel('x')
+plt.ylabel('u')
+plt.legend()
+plt.title('Diffusion in Two-Layer Medium')
+```
+
+Heat diffuses quickly in the left region ($\dfc = 1$) but slowly in
+the right region ($\dfc = 0.1$). The solution shows a discontinuity
+in the temperature gradient at the interface.
+:::
+
+### Exercise 7: Manufactured Solution {#exer-diffu-mms}
+
+Verify the implementation using the Method of Manufactured Solutions.
+
+a) Choose a solution $u(x,t) = x(L-x) \cdot t$.
+b) Compute the source term $f(x,t)$ needed to make this satisfy
+   $u_t = \dfc u_{xx} + f$.
+c) Verify that the numerical solution matches the manufactured
+   solution to machine precision.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+import sympy as sp
+
+# Define symbolic variables
+x_sym, t_sym, a_sym, L_sym = sp.symbols('x t a L')
+
+# Manufactured solution
+u_mms = x_sym * (L_sym - x_sym) * t_sym
+
+# Compute required source term
+u_t = sp.diff(u_mms, t_sym)
+u_xx = sp.diff(u_mms, x_sym, 2)
+f_sym = u_t - a_sym * u_xx
+
+print(f"Manufactured solution: u = {u_mms}")
+print(f"Source term: f = {sp.simplify(f_sym)}")
+
+# f = x*(L-x) - a*(-2)*t = x*(L-x) + 2*a*t
+
+# Numerical verification
+from devito import Grid, TimeFunction, Eq, solve, Operator, Constant
+import numpy as np
+
+L = 1.5
+Nx = 20
+a = 0.5
+T = 0.2
+
+dx = L / Nx
+F = 0.5
+dt = F * dx**2 / a
+Nt = int(T / dt)
+
+grid = Grid(shape=(Nx + 1,), extent=(L,))
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+
+x_coords = np.linspace(0, L, Nx + 1)
+
+# Source term as a function
+def f_source(x, t):
+    return x * (L - x) + 2 * a * t
+
+# Exact solution
+def u_exact(x, t):
+    return x * (L - x) * t
+
+# Initial condition (t=0 gives u=0)
+u.data[0, :] = u_exact(x_coords, 0)
+
+# Include source term in the PDE (simplified for Forward Euler)
+# Manual time stepping with source
+for n in range(Nt):
+    t_n = n * dt
+    u_new = (u.data[0, 1:-1] +
+             F * (u.data[0, :-2] - 2*u.data[0, 1:-1] + u.data[0, 2:]) +
+             dt * f_source(x_coords[1:-1], t_n))
+    u.data[0, 1:-1] = u_new
+    u.data[0, 0] = 0
+    u.data[0, -1] = 0
+
+# Compare
+u_num = u.data[0, :]
+u_ex = u_exact(x_coords, Nt * dt)
+error = np.max(np.abs(u_num - u_ex))
+print(f"\nMax error: {error:.2e}")
+print("Expected: machine precision (~1e-14) for linear-in-t, quadratic-in-x solution")
+```
+
+The Forward Euler scheme is exact for solutions linear in time and
+quadratic in space, so the error should be near machine precision.
+:::
+
+### Exercise 8: Energy Decay {#exer-diffu-energy}
+
+The "energy" of the diffusion equation, defined as:
+$$
+E(t) = \frac{1}{2} \int_0^L u^2 \, dx
+$$
+
+always decreases for the diffusion equation (with homogeneous BCs).
+
+a) Compute $E(t)$ numerically at each time step.
+b) Verify that $E(t)$ is monotonically decreasing.
+c) Compare the decay rate to the theoretical prediction for the
+   fundamental mode: $E(t) \propto e^{-2\dfc(\pi/L)^2 t}$.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.diffu import solve_diffusion_1d
+import numpy as np
+import matplotlib.pyplot as plt
+
+result = solve_diffusion_1d(
+    L=1.0, a=1.0, Nx=100, T=1.0, F=0.5,
+    I=lambda x: np.sin(np.pi * x),  # Fundamental mode
+    save_history=True,
+)
+
+# Compute energy at each time step
+dx = result.x[1] - result.x[0]
+energies = []
+for u_n in result.u_history:
+    E = 0.5 * np.trapz(u_n**2, result.x)
+    energies.append(E)
+
+energies = np.array(energies)
+
+# Theoretical decay: E(t) = E(0) * exp(-2*a*(pi/L)^2 * t)
+L = 1.0
+a = 1.0
+decay_rate = 2 * a * (np.pi / L)**2
+E_theory = energies[0] * np.exp(-decay_rate * result.t_history)
+
+# Plot
+plt.figure(figsize=(10, 5))
+
+plt.subplot(1, 2, 1)
+plt.semilogy(result.t_history, energies, 'b-', label='Numerical')
+plt.semilogy(result.t_history, E_theory, 'r--', label='Theory')
+plt.xlabel('Time')
+plt.ylabel('Energy E(t)')
+plt.legend()
+plt.title('Energy Decay')
+
+plt.subplot(1, 2, 2)
+# Verify monotonic decrease
+dE = np.diff(energies)
+plt.plot(result.t_history[1:], dE)
+plt.axhline(0, color='k', linestyle='--')
+plt.xlabel('Time')
+plt.ylabel('dE/dt')
+plt.title('Energy Change (should be < 0)')
+plt.tight_layout()
+
+# Compute observed decay rate
+log_E = np.log(energies[energies > 0])
+t_fit = result.t_history[:len(log_E)]
+rate_obs = -np.polyfit(t_fit, log_E, 1)[0]
+print(f"Observed decay rate: {rate_obs:.4f}")
+print(f"Theoretical rate: {decay_rate:.4f}")
+```
+:::
+
+### Exercise 9: 2D Convergence Test {#exer-diffu-2d-convergence}
+
+Verify second-order convergence for the 2D diffusion solver.
+
+a) Use the exact 2D sinusoidal solution.
+b) Run with $N_x = N_y = 10, 20, 40, 80$.
+c) Compute the observed convergence rate.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.diffu import convergence_test_diffusion_2d
+import numpy as np
+import matplotlib.pyplot as plt
+
+grid_sizes, errors, rate = convergence_test_diffusion_2d(
+    grid_sizes=[10, 20, 40, 80],
+    T=0.05,
+    F=0.25,
+)
+
+print(f"Observed convergence rate: {rate:.2f}")
+
+# Plot
+plt.figure(figsize=(8, 6))
+dx = 1.0 / np.array(grid_sizes)
+plt.loglog(dx, errors, 'bo-', label=f'Observed (rate={rate:.2f})')
+plt.loglog(dx, errors[0]*(dx/dx[0])**2, 'r--', label='O(dx^2)')
+plt.xlabel('Grid spacing')
+plt.ylabel('L2 error')
+plt.legend()
+plt.title('2D Diffusion Convergence')
+plt.grid(True)
+```
+
+The 2D solver should also achieve second-order spatial convergence
+when the Fourier number is held fixed.
+:::
+
+### Exercise 10: Comparison with Legacy Code {#exer-diffu-legacy}
+
+Compare the Devito solver with the legacy NumPy implementation.
+
+a) Run both solvers with the same parameters.
+b) Verify they produce the same results.
+c) Compare execution times.
+
+::: {.callout-note collapse="true" title="Solution"}
+```python
+from src.diffu import solve_diffusion_1d
+from src.diffu.diffu1D_u0 import solver_FE_simple
+import numpy as np
+import time
+
+# Parameters
+L = 1.0
+a = 1.0
+Nx = 200
+F = 0.5
+T = 0.1
+
+dx = L / Nx
+dt = F * dx**2 / a
+
+# Devito solver
+t0 = time.perf_counter()
+result_devito = solve_diffusion_1d(
+    L=L, a=a, Nx=Nx, T=T, F=F,
+    I=lambda x: np.sin(np.pi * x),
+)
+t_devito = time.perf_counter() - t0
+
+# Legacy NumPy solver
+t0 = time.perf_counter()
+u_legacy, x_legacy, t_legacy, cpu_legacy = solver_FE_simple(
+    I=lambda x: np.sin(np.pi * x),
+    a=a,
+    f=lambda x, t: 0,
+    L=L,
+    dt=dt,
+    F=F,
+    T=T,
+)
+t_numpy = time.perf_counter() - t0
+
+# Compare results
+diff = np.max(np.abs(result_devito.u - u_legacy))
+print(f"Maximum difference: {diff:.2e}")
+print(f"Devito time: {t_devito:.4f} s")
+print(f"NumPy time: {t_numpy:.4f} s")
+
+# Note: For small problems, NumPy may be faster due to compilation
+# overhead. For large problems, Devito's optimized C code wins.
+```
+
+For large grids, Devito's automatically generated and optimized C code
+typically outperforms pure Python/NumPy implementations. The advantage
+grows with problem size.
+:::

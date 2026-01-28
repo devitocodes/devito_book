@@ -8,7 +8,7 @@
 | 0.5 | ✅ Complete | SymPy Integration for Reproducible Mathematics |
 | 1 | ⬜ Not Started | Restructure Book Organization |
 | 2 | ✅ Complete | Wave Equations Chapter |
-| 3 | ⬜ Not Started | Diffusion Equations Chapter |
+| 3 | ✅ Complete | Diffusion Equations Chapter |
 | 4 | ⬜ Not Started | Advection Equations Chapter |
 | 5 | ⬜ Not Started | Nonlinear Problems Chapter |
 | 6 | ⬜ Not Started | Appendices |
@@ -51,6 +51,20 @@
 - `chapters/wave/wave2D_devito.qmd` - 2D extension with `.laplace`, visualization
 - `chapters/wave/wave_exercises.qmd` - 10 Devito-based exercises with solutions
 - Updated `chapters/wave/index.qmd` to include new Devito sections
+
+**Phase 3 - Diffusion Equations (Complete):**
+
+*Python Solvers:*
+- `src/diffu/diffu1D_devito.py` - 1D diffusion equation solver (Forward Euler explicit)
+- `src/diffu/diffu2D_devito.py` - 2D diffusion solver using `.laplace`
+- `src/diffu/__init__.py` - Module exports
+- 23 diffusion solver tests (1D, 2D, initial conditions)
+
+*Quarto Chapters:*
+- `chapters/diffu/diffu1D_devito.qmd` - Forward Euler with Devito (time_order=1, .dt, Fourier number)
+- `chapters/diffu/diffu2D_devito.qmd` - 2D extension with stability analysis
+- `chapters/diffu/diffu_devito_exercises.qmd` - 10 Devito-based exercises with solutions
+- Updated `chapters/diffu/index.qmd` to include new Devito sections
 
 ---
 

@@ -1,0 +1,232 @@
+## Solving the Diffusion Equation with Devito {#sec-diffu-devito}
+
+Having established the finite difference discretization of the diffusion
+equation, we now implement the Forward Euler scheme using Devito. The
+symbolic approach allows us to express the PDE directly and let Devito
+generate optimized code.
+
+### From Discretization to Devito
+
+Recall the Forward Euler scheme for the diffusion equation:
+$$
+u^{n+1}_i = u^n_i + F\left(u^{n}_{i+1} - 2u^n_i + u^n_{i-1}\right)
+$$
+
+where the Fourier number $F = \dfc \Delta t / \Delta x^2$ must satisfy
+$F \le 0.5$ for stability.
+
+In Devito, we express this as the PDE $u_t = \dfc u_{xx}$ and let
+the framework derive the update formula automatically.
+
+### The Devito Implementation
+
+```python
+from devito import Grid, TimeFunction, Eq, solve, Operator, Constant
+import numpy as np
+
+# Domain and discretization
+L = 1.0           # Domain length
+Nx = 100          # Grid points
+a = 1.0           # Diffusion coefficient
+F = 0.5           # Fourier number
+
+dx = L / Nx
+dt = F * dx**2 / a  # Time step from stability condition
+
+# Create Devito grid
+grid = Grid(shape=(Nx + 1,), extent=(L,))
+
+# Time-varying temperature field
+# time_order=1 for first-order time derivative
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+```
+
+### Key Differences from the Wave Equation
+
+Compare this to the wave equation setup:
+
+| Parameter | Wave Equation | Diffusion Equation |
+|-----------|---------------|-------------------|
+| `time_order` | 2 (for $u_{tt}$) | 1 (for $u_t$) |
+| Time derivative | `.dt2` | `.dt` |
+| Time levels | 3 ($u^{n-1}, u^n, u^{n+1}$) | 2 ($u^n, u^{n+1}$) |
+| Stability number | Courant: $C = c\Delta t/\Delta x \le 1$ | Fourier: $F = \dfc\Delta t/\Delta x^2 \le 0.5$ |
+
+### Symbolic PDE Definition
+
+With `time_order=1`, Devito provides the `.dt` derivative:
+
+```python
+# Diffusion coefficient as a Devito constant
+a_const = Constant(name='a_const')
+
+# PDE: u_t = a * u_xx  =>  u_t - a * u_xx = 0
+pde = u.dt - a_const * u.dx2
+
+# Solve for u at the forward time level
+stencil = Eq(u.forward, solve(pde, u.forward))
+```
+
+When we print the stencil, we see:
+```python
+print(stencil)
+# Eq(u(t + dt, x), dt*a_const*u(t, x).dx2 + u(t, x))
+```
+
+This is exactly the Forward Euler update: $u^{n+1} = u^n + \Delta t \cdot \dfc \cdot u_{xx}^n$.
+
+### Boundary Conditions
+
+For homogeneous Dirichlet conditions $u(0,t) = u(L,t) = 0$:
+
+```python
+t_dim = grid.stepping_dim
+bc_left = Eq(u[t_dim + 1, 0], 0)
+bc_right = Eq(u[t_dim + 1, Nx], 0)
+```
+
+### Complete Solver
+
+The `src.diffu` module provides `solve_diffusion_1d`:
+
+```python
+from src.diffu import solve_diffusion_1d
+import numpy as np
+
+# Initial condition: sinusoidal temperature profile
+def I(x):
+    return np.sin(np.pi * x)
+
+result = solve_diffusion_1d(
+    L=1.0,           # Domain length
+    a=1.0,           # Diffusion coefficient
+    Nx=100,          # Grid points
+    T=0.1,           # Final time
+    F=0.5,           # Fourier number (at stability limit)
+    I=I,             # Initial condition
+)
+
+print(f"Final time: {result.t:.4f}")
+print(f"Max temperature: {result.u.max():.6f}")
+```
+
+### Verification with Exact Solution
+
+For the initial condition $I(x) = \sin(\pi x/L)$, the exact solution is:
+$$
+u(x,t) = e^{-\dfc (\pi/L)^2 t} \sin(\pi x/L)
+$$
+
+This exponentially decaying sinusoid can verify our implementation:
+
+```python
+from src.diffu import exact_diffusion_sine
+
+# Compare numerical and exact solutions
+u_exact = exact_diffusion_sine(result.x, result.t, L=1.0, a=1.0)
+error = np.max(np.abs(result.u - u_exact))
+print(f"Maximum error: {error:.2e}")
+```
+
+### Convergence Testing
+
+We verify second-order spatial accuracy:
+
+```python
+from src.diffu import convergence_test_diffusion_1d
+
+grid_sizes, errors, rate = convergence_test_diffusion_1d(
+    grid_sizes=[10, 20, 40, 80],
+    T=0.1,
+    F=0.5,
+)
+
+print(f"Observed convergence rate: {rate:.2f}")  # Should approach 2.0
+```
+
+With $F$ fixed, refining the grid means $\Delta x \to \Delta x/2$ and
+$\Delta t \to \Delta t/4$ (since $F = \dfc\Delta t/\Delta x^2$). The
+spatial error $O(\Delta x^2)$ dominates, giving second-order convergence.
+
+### Visualizing the Solution Evolution
+
+```python
+import matplotlib.pyplot as plt
+
+result = solve_diffusion_1d(
+    L=1.0, a=1.0, Nx=100, T=0.5, F=0.5,
+    save_history=True,
+)
+
+# Plot at several times
+times_to_plot = [0, 0.1, 0.2, 0.3, 0.5]
+plt.figure(figsize=(10, 6))
+
+for t in times_to_plot:
+    idx = int(t / result.dt)
+    if idx < len(result.t_history):
+        plt.plot(result.x, result.u_history[idx],
+                 label=f't = {result.t_history[idx]:.2f}')
+
+plt.xlabel('x')
+plt.ylabel('u(x, t)')
+plt.title('Diffusion of a Sinusoidal Profile')
+plt.legend()
+plt.grid(True)
+```
+
+The solution shows the characteristic behavior of the heat equation:
+the sinusoidal profile decays exponentially in time while maintaining
+its shape.
+
+### The Fourier Number and Physical Interpretation
+
+The Fourier number $F = \dfc \Delta t / \Delta x^2$ has a physical
+interpretation. It represents the ratio of the diffusion time scale
+to the computational time step:
+
+- **Large $F$**: Heat diffuses quickly relative to the time step
+- **Small $F$**: Slow diffusion, finer time resolution
+
+The stability limit $F \le 0.5$ means we cannot take time steps larger
+than half the time for heat to diffuse across one grid cell.
+
+### Handling Different Initial Conditions
+
+The diffusion equation smooths out discontinuities over time. Let's
+compare a smooth Gaussian and a discontinuous "plug":
+
+```python
+from src.diffu import gaussian_initial_condition, plug_initial_condition
+
+# Gaussian: smooth initial condition
+result_gaussian = solve_diffusion_1d(
+    L=1.0, Nx=100, T=0.1, F=0.5,
+    I=lambda x: gaussian_initial_condition(x, L=1.0, sigma=0.05),
+)
+
+# Plug: discontinuous initial condition
+result_plug = solve_diffusion_1d(
+    L=1.0, Nx=100, T=0.1, F=0.5,
+    I=lambda x: plug_initial_condition(x, L=1.0, width=0.1),
+)
+```
+
+For smooth initial conditions, the Forward Euler scheme with $F = 0.5$
+works well. For discontinuous initial conditions, a smaller Fourier
+number ($F \le 0.25$) may be needed to avoid oscillations.
+
+### Summary
+
+Key points for the diffusion equation with Devito:
+
+1. Use `time_order=1` for the first-order time derivative
+2. The `.dt` attribute provides the time derivative
+3. The Fourier number $F = \dfc\Delta t/\Delta x^2$ must satisfy $F \le 0.5$
+4. The exact sinusoidal solution provides excellent verification
+5. Smooth initial conditions work well at $F = 0.5$; discontinuous
+   conditions may need smaller $F$
+
+The Forward Euler scheme is simple and explicit, but the time step
+restriction can be severe for accuracy. In the next section, we
+discuss implicit methods that remove this restriction.
