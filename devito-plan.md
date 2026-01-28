@@ -9,7 +9,7 @@
 | 1 | ⬜ Not Started | Restructure Book Organization |
 | 2 | ✅ Complete | Wave Equations Chapter |
 | 3 | ✅ Complete | Diffusion Equations Chapter |
-| 4 | ⬜ Not Started | Advection Equations Chapter |
+| 4 | ✅ Complete | Advection Equations Chapter |
 | 5 | ⬜ Not Started | Nonlinear Problems Chapter |
 | 6 | ⬜ Not Started | Appendices |
 | 7 | ✅ Complete | Testing & CI Infrastructure |
@@ -65,6 +65,22 @@
 - `chapters/diffu/diffu2D_devito.qmd` - 2D extension with stability analysis
 - `chapters/diffu/diffu_devito_exercises.qmd` - 10 Devito-based exercises with solutions
 - Updated `chapters/diffu/index.qmd` to include new Devito sections
+
+**Phase 4 - Advection Equations (Complete):**
+
+*Python Solvers:*
+- `src/advec/advec1D_devito.py` - 1D advection solvers using Devito DSL:
+  - Upwind scheme (first-order, uses `.subs()` for shifted indexing)
+  - Lax-Wendroff scheme (second-order, centered + diffusion correction)
+  - Lax-Friedrichs scheme (first-order, very stable)
+- `src/advec/__init__.py` - Module exports
+- Helper functions: `exact_advection`, `exact_advection_periodic`, `gaussian_initial_condition`, `step_initial_condition`, `convergence_test_advection`
+- 25 advection solver tests (upwind, Lax-Wendroff, Lax-Friedrichs, convergence, boundary conditions)
+
+*Quarto Chapters:*
+- `chapters/advec/advec1D_devito.qmd` - Advection schemes with Devito (upwind differencing, CFL condition, scheme comparison)
+- `chapters/advec/advec_devito_exercises.qmd` - 10 Devito-based exercises with solutions
+- Updated `chapters/advec/index.qmd` to include new Devito sections
 
 ---
 

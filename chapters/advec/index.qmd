@@ -1,3 +1,7 @@
 # Advection-Dominated Equations {#sec-ch-advec}
 
 {{< include advec.qmd >}}
+
+{{< include advec1D_devito.qmd >}}
+
+{{< include advec_devito_exercises.qmd >}}

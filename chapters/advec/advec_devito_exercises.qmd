@@ -1,0 +1,669 @@
+## Exercises: Advection with Devito {#sec-advec-devito-exercises}
+
+### Exercise 1: Verify CFL Stability Condition {#sec-advec-exer-cfl}
+
+The upwind scheme requires $C \leq 1$ for stability.
+
+**a)** Run the upwind solver with $C = 0.5$, $C = 0.9$, and $C = 1.0$ for
+$T = 1.0$ with a Gaussian initial condition. Verify that all solutions
+remain bounded.
+
+**b)** Try $C = 1.01$ and observe what happens. How quickly does the
+instability grow?
+
+**c)** For $C = 1.0$ exactly, the upwind scheme should reproduce the exact
+solution (up to machine precision). Verify this numerically.
+
+:::{.callout-tip title="Solution" collapse="true"}
+```python
+from src.advec import solve_advection_upwind, exact_advection_periodic
+import numpy as np
+
+def I(x):
+    return np.exp(-0.5*((x - 0.25)/0.05)**2)
+
+# Part a: Stable Courant numbers
+for C in [0.5, 0.9, 1.0]:
+    result = solve_advection_upwind(
+        L=1.0, c=1.0, Nx=100, T=1.0, C=C, I=I
+    )
+    print(f"C={C}: u in [{result.u.min():.4f}, {result.u.max():.4f}]")
+
+# Part b: Slightly unstable
+# This will raise ValueError since C > 1 violates stability
+try:
+    result = solve_advection_upwind(
+        L=1.0, c=1.0, Nx=100, T=1.0, C=1.01, I=I
+    )
+except ValueError as e:
+    print(f"Error: {e}")
+
+# Part c: Exact at C=1
+result = solve_advection_upwind(
+    L=1.0, c=1.0, Nx=100, T=0.5, C=1.0, I=I, periodic_bc=True
+)
+u_exact = exact_advection_periodic(result.x, result.t, 1.0, 1.0, I)
+error = np.max(np.abs(result.u - u_exact))
+print(f"Error at C=1: {error:.2e}")  # Should be ~machine precision
+```
+:::
+
+
+### Exercise 2: Compare Numerical Diffusion {#sec-advec-exer-diffusion}
+
+The upwind scheme introduces numerical diffusion that causes the wave
+amplitude to decrease over time.
+
+**a)** Run all three schemes (upwind, Lax-Wendroff, Lax-Friedrichs) with
+$C = 0.8$ for $T = 2.0$ and track the maximum value of $u$ over time.
+
+**b)** Plot the amplitude decay for each scheme. Which scheme preserves
+the amplitude best?
+
+**c)** For the Gaussian initial condition, measure the "width" of the pulse
+(e.g., the distance between points where $u = 0.5 \max(u)$) at $T = 0$
+and $T = 2$. How much has each scheme spread the pulse?
+
+:::{.callout-tip title="Solution" collapse="true"}
+```python
+from src.advec import (
+    solve_advection_upwind,
+    solve_advection_lax_wendroff,
+    solve_advection_lax_friedrichs
+)
+import numpy as np
+import matplotlib.pyplot as plt
+
+def I(x):
+    return np.exp(-0.5*((x - 0.25)/0.05)**2)
+
+# Run all schemes with history
+L, c, Nx, T, C = 1.0, 1.0, 100, 2.0, 0.8
+
+r_up = solve_advection_upwind(L, c, Nx, T, C, I, save_history=True)
+r_lw = solve_advection_lax_wendroff(L, c, Nx, T, C, I, save_history=True)
+r_lf = solve_advection_lax_friedrichs(L, c, Nx, T, C, I, save_history=True)
+
+# Part b: Track amplitude decay
+max_up = [np.max(u) for u in r_up.u_history]
+max_lw = [np.max(u) for u in r_lw.u_history]
+max_lf = [np.max(u) for u in r_lf.u_history]
+
+plt.figure()
+plt.plot(r_up.t_history, max_up, 'b-', label='Upwind')
+plt.plot(r_lw.t_history, max_lw, 'r--', label='Lax-Wendroff')
+plt.plot(r_lf.t_history, max_lf, 'g-.', label='Lax-Friedrichs')
+plt.axhline(1.0, color='k', linestyle=':', label='Exact')
+plt.xlabel('Time')
+plt.ylabel('Max amplitude')
+plt.legend()
+plt.title('Amplitude decay comparison')
+plt.savefig('amplitude_decay.pdf')
+
+# Part c: Measure pulse width at half-maximum
+def half_width(u, x):
+    u_max = np.max(u)
+    half_max = 0.5 * u_max
+    above = np.where(u >= half_max)[0]
+    if len(above) > 0:
+        return x[above[-1]] - x[above[0]]
+    return 0
+
+print("Initial width:", half_width(I(r_up.x), r_up.x))
+print("Upwind width:", half_width(r_up.u, r_up.x))
+print("Lax-Wendroff width:", half_width(r_lw.u, r_lw.x))
+print("Lax-Friedrichs width:", half_width(r_lf.u, r_lf.x))
+```
+:::
+
+
+### Exercise 3: Convergence Rate Verification {#sec-advec-exer-convergence}
+
+Verify the theoretical convergence rates:
+- Upwind: 1st order
+- Lax-Wendroff: 2nd order
+- Lax-Friedrichs: 1st order
+
+**a)** Use the `convergence_test_advection` function with grid sizes
+[25, 50, 100, 200, 400] and verify the rates.
+
+**b)** Create a log-log plot of error vs grid size for all three schemes.
+
+**c)** What happens to the convergence rate if you use a discontinuous
+initial condition (step function) instead of the smooth Gaussian?
+
+:::{.callout-tip title="Solution" collapse="true"}
+```python
+from src.advec import (
+    solve_advection_upwind,
+    solve_advection_lax_wendroff,
+    solve_advection_lax_friedrichs,
+    convergence_test_advection
+)
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Part a: Verify rates
+grid_sizes = [25, 50, 100, 200, 400]
+
+sizes_up, err_up, rate_up = convergence_test_advection(
+    solve_advection_upwind, grid_sizes, T=0.25, C=0.8
+)
+print(f"Upwind rate: {rate_up:.2f}")
+
+sizes_lw, err_lw, rate_lw = convergence_test_advection(
+    solve_advection_lax_wendroff, grid_sizes, T=0.25, C=0.8
+)
+print(f"Lax-Wendroff rate: {rate_lw:.2f}")
+
+sizes_lf, err_lf, rate_lf = convergence_test_advection(
+    solve_advection_lax_friedrichs, grid_sizes, T=0.25, C=0.8
+)
+print(f"Lax-Friedrichs rate: {rate_lf:.2f}")
+
+# Part b: Log-log plot
+plt.figure()
+plt.loglog(sizes_up, err_up, 'b-o', label=f'Upwind (rate={rate_up:.2f})')
+plt.loglog(sizes_lw, err_lw, 'r-s', label=f'Lax-Wendroff (rate={rate_lw:.2f})')
+plt.loglog(sizes_lf, err_lf, 'g-^', label=f'Lax-Friedrichs (rate={rate_lf:.2f})')
+
+# Reference slopes
+h = np.array(sizes_up)
+plt.loglog(h, err_up[0]*(h[0]/h), 'k--', alpha=0.5, label='O(h)')
+plt.loglog(h, err_lw[0]*(h[0]/h)**2, 'k:', alpha=0.5, label='O(h²)')
+
+plt.xlabel('Grid points')
+plt.ylabel('L2 Error')
+plt.legend()
+plt.title('Convergence comparison')
+plt.gca().invert_xaxis()
+plt.savefig('convergence_advec.pdf')
+```
+:::
+
+
+### Exercise 4: Step Function Advection {#sec-advec-exer-step}
+
+A step (Heaviside) function is a challenging test case for advection schemes
+because of the discontinuity.
+
+**a)** Advect a step function from $x = 0.25$ using all three schemes
+with $C = 0.8$ and $\Delta x = 0.01$. Compare the results at $T = 0.5$.
+
+**b)** The Lax-Wendroff scheme may show oscillations near the discontinuity
+(Gibbs phenomenon). Observe and document this behavior.
+
+**c)** How does the upwind scheme handle the step? Does it preserve the
+sharp transition?
+
+:::{.callout-tip title="Solution" collapse="true"}
+```python
+from src.advec import (
+    solve_advection_upwind,
+    solve_advection_lax_wendroff,
+    solve_advection_lax_friedrichs,
+    step_initial_condition,
+    exact_advection_periodic
+)
+import numpy as np
+import matplotlib.pyplot as plt
+
+def I(x):
+    return np.where(x < 0.25, 1.0, 0.0)
+
+L, c, Nx, T, C = 1.0, 1.0, 100, 0.5, 0.8
+
+r_up = solve_advection_upwind(L, c, Nx, T, C, I, periodic_bc=True)
+r_lw = solve_advection_lax_wendroff(L, c, Nx, T, C, I, periodic_bc=True)
+r_lf = solve_advection_lax_friedrichs(L, c, Nx, T, C, I, periodic_bc=True)
+
+u_exact = exact_advection_periodic(r_up.x, r_up.t, c, L, I)
+
+plt.figure(figsize=(10, 6))
+plt.plot(r_up.x, u_exact, 'k-', lw=2, label='Exact')
+plt.plot(r_up.x, r_up.u, 'b--', label='Upwind')
+plt.plot(r_lw.x, r_lw.u, 'r-.', label='Lax-Wendroff')
+plt.plot(r_lf.x, r_lf.u, 'g:', label='Lax-Friedrichs')
+plt.legend()
+plt.xlabel('x')
+plt.ylabel('u')
+plt.title('Step function advection')
+plt.ylim(-0.2, 1.3)
+plt.savefig('step_advection.pdf')
+
+# Note Lax-Wendroff oscillations near discontinuity
+```
+:::
+
+
+### Exercise 5: Long-Time Integration {#sec-advec-exer-longtime}
+
+With periodic boundary conditions, a wave should return to its starting
+position after traveling one domain length.
+
+**a)** Advect a Gaussian pulse for $T = 1.0$ (one complete cycle with $c = 1$,
+$L = 1$) and compare the final solution to the initial condition.
+
+**b)** Run for $T = 10.0$ (10 cycles) and measure how much the amplitude
+has decayed for each scheme.
+
+**c)** For each scheme, estimate after how many cycles the peak amplitude
+drops to 50% of its initial value.
+
+:::{.callout-tip title="Solution" collapse="true"}
+```python
+from src.advec import (
+    solve_advection_upwind,
+    solve_advection_lax_wendroff,
+    solve_advection_lax_friedrichs
+)
+import numpy as np
+
+def I(x):
+    return np.exp(-0.5*((x - 0.25)/0.05)**2)
+
+L, c, Nx, C = 1.0, 1.0, 100, 0.8
+
+# Part a: One cycle
+for T in [1.0, 10.0]:
+    r_up = solve_advection_upwind(L, c, Nx, T, C, I, periodic_bc=True)
+    r_lw = solve_advection_lax_wendroff(L, c, Nx, T, C, I, periodic_bc=True)
+    r_lf = solve_advection_lax_friedrichs(L, c, Nx, T, C, I, periodic_bc=True)
+
+    print(f"\nT = {T} ({int(T)} cycles):")
+    print(f"  Upwind: max = {r_up.u.max():.4f}")
+    print(f"  Lax-Wendroff: max = {r_lw.u.max():.4f}")
+    print(f"  Lax-Friedrichs: max = {r_lf.u.max():.4f}")
+
+# Part c: Find half-life
+def find_halflife(solver_func, L, c, Nx, C, I, max_cycles=100):
+    for n in range(1, max_cycles + 1):
+        T = float(n)
+        result = solver_func(L, c, Nx, T, C, I, periodic_bc=True)
+        if result.u.max() < 0.5:
+            return n
+    return max_cycles
+
+print("\nCycles to 50% amplitude:")
+print(f"  Upwind: {find_halflife(solve_advection_upwind, L, c, Nx, C, I)}")
+print(f"  Lax-Wendroff: {find_halflife(solve_advection_lax_wendroff, L, c, Nx, C, I)}")
+print(f"  Lax-Friedrichs: {find_halflife(solve_advection_lax_friedrichs, L, c, Nx, C, I)}")
+```
+:::
+
+
+### Exercise 6: Effect of Courant Number {#sec-advec-exer-courant}
+
+The Courant number $C$ affects both stability and accuracy.
+
+**a)** For the upwind scheme, run with $C = 0.2$, $0.5$, $0.8$, and $1.0$
+for $T = 1.0$. Plot the final solutions on the same figure.
+
+**b)** Which value of $C$ gives the best accuracy? Why?
+
+**c)** Measure the L2 error for each $C$ value and create a plot of
+error vs. $C$.
+
+:::{.callout-tip title="Solution" collapse="true"}
+```python
+from src.advec import solve_advection_upwind, exact_advection_periodic
+import numpy as np
+import matplotlib.pyplot as plt
+
+def I(x):
+    return np.exp(-0.5*((x - 0.25)/0.05)**2)
+
+L, c, Nx, T = 1.0, 1.0, 100, 1.0
+C_values = [0.2, 0.5, 0.8, 1.0]
+
+plt.figure(figsize=(10, 6))
+
+errors = []
+for C in C_values:
+    result = solve_advection_upwind(L, c, Nx, T, C, I, periodic_bc=True)
+    plt.plot(result.x, result.u, label=f'C={C}')
+
+    u_exact = exact_advection_periodic(result.x, result.t, c, L, I)
+    dx = L / Nx
+    error = np.sqrt(dx * np.sum((result.u - u_exact)**2))
+    errors.append(error)
+
+# Add exact solution
+u_exact = exact_advection_periodic(result.x, T, c, L, I)
+plt.plot(result.x, u_exact, 'k--', lw=2, label='Exact')
+
+plt.legend()
+plt.xlabel('x')
+plt.ylabel('u')
+plt.title('Effect of Courant number on upwind scheme')
+plt.savefig('courant_effect.pdf')
+
+# Error vs C
+plt.figure()
+plt.plot(C_values, errors, 'bo-')
+plt.xlabel('Courant number C')
+plt.ylabel('L2 Error')
+plt.title('Error vs Courant number (Upwind)')
+plt.savefig('error_vs_courant.pdf')
+
+# C=1 gives exact solution for upwind
+print("Errors:", dict(zip(C_values, errors)))
+```
+:::
+
+
+### Exercise 7: Variable Velocity Field {#sec-advec-exer-variable-c}
+
+Modify the upwind solver to handle a spatially varying velocity $c(x)$.
+
+**a)** Implement an upwind scheme for:
+$$
+\frac{\partial u}{\partial t} + c(x)\frac{\partial u}{\partial x} = 0
+$$
+where the local Courant number varies: $C_i = c(x_i)\Delta t/\Delta x$.
+
+**b)** Test with $c(x) = 1 + 0.5\sin(2\pi x)$ and observe how the wave
+stretches and compresses as it moves through regions of different velocity.
+
+:::{.callout-tip title="Solution" collapse="true"}
+```python
+from devito import Grid, TimeFunction, Function, Eq, Operator, Constant
+import numpy as np
+import matplotlib.pyplot as plt
+
+def solve_advection_variable_c(L, c_func, Nx, T, dt, I):
+    """Upwind scheme with spatially varying velocity."""
+    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    x_dim, = grid.dimensions
+    t_dim = grid.stepping_dim
+
+    u = TimeFunction(name='u', grid=grid, time_order=1, space_order=1)
+    c = Function(name='c', grid=grid)
+
+    x_coords = np.linspace(0, L, Nx + 1)
+    u.data[0, :] = I(x_coords)
+    c.data[:] = c_func(x_coords)
+
+    dx = L / Nx
+    dt_const = Constant(name='dt', value=dt)
+    dx_const = Constant(name='dx', value=dx)
+
+    # Local Courant number: C_i = c_i * dt / dx
+    # Upwind: u^{n+1} = u - (c*dt/dx)*(u - u[x-dx])
+    u_minus = u.subs(x_dim, x_dim - x_dim.spacing)
+    stencil = u - (c * dt_const / dx_const) * (u - u_minus)
+    update = Eq(u.forward, stencil)
+
+    # Periodic BCs
+    bc_left = Eq(u[t_dim + 1, 0], u[t_dim, Nx])
+    bc_right = Eq(u[t_dim + 1, Nx], u[t_dim + 1, 0])
+
+    op = Operator([update, bc_left, bc_right])
+
+    Nt = int(round(T / dt))
+    for n in range(Nt):
+        op.apply(time_m=n, time_M=n, dt=dt)
+
+    return u.data[Nt % 2, :].copy(), x_coords
+
+# Test with variable velocity
+def I(x):
+    return np.exp(-0.5*((x - 0.25)/0.05)**2)
+
+def c_var(x):
+    return 1.0 + 0.5*np.sin(2*np.pi*x)
+
+L, Nx = 1.0, 200
+dx = L / Nx
+c_max = 1.5  # max of c(x)
+dt = 0.5 * dx / c_max  # ensure CFL < 1 everywhere
+
+u_final, x = solve_advection_variable_c(L, c_var, Nx, T=1.0, dt=dt, I=I)
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, I(x), 'k--', label='Initial')
+plt.plot(x, u_final, 'b-', label='Final (T=1)')
+plt.xlabel('x')
+plt.ylabel('u')
+plt.legend()
+plt.title('Advection with variable velocity c(x) = 1 + 0.5sin(2πx)')
+plt.savefig('variable_velocity.pdf')
+```
+:::
+
+
+### Exercise 8: Advection-Diffusion Equation {#sec-advec-exer-advec-diff}
+
+Combine advection and diffusion:
+$$
+\frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = \nu\frac{\partial^2 u}{\partial x^2}
+$$
+
+**a)** Implement a solver using upwind for advection and centered differences
+for diffusion.
+
+**b)** Compare the behavior for $\nu = 0$ (pure advection), $\nu = 0.01$
+(advection-dominated), and $\nu = 0.1$ (diffusion-dominated).
+
+**c)** What is the stability condition when both advection and diffusion
+are present?
+
+:::{.callout-tip title="Solution" collapse="true"}
+```python
+from devito import Grid, TimeFunction, Eq, Operator, Constant
+import numpy as np
+import matplotlib.pyplot as plt
+
+def solve_advec_diff(L, c, nu, Nx, T, C, I):
+    """Advection-diffusion with upwind advection + centered diffusion."""
+    dx = L / Nx
+
+    # Stability requires both CFL and diffusion conditions
+    dt_adv = C * dx / c if c > 0 else np.inf
+    dt_diff = 0.4 * dx**2 / nu if nu > 0 else np.inf
+    dt = min(dt_adv, dt_diff)
+
+    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    x_dim, = grid.dimensions
+    t_dim = grid.stepping_dim
+
+    u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+
+    x_coords = np.linspace(0, L, Nx + 1)
+    u.data[0, :] = I(x_coords)
+
+    C_const = Constant(name='C', value=c * dt / dx)
+    F_const = Constant(name='F', value=nu * dt / dx**2)
+
+    # Upwind advection + centered diffusion
+    u_minus = u.subs(x_dim, x_dim - x_dim.spacing)
+    advection = C_const * (u - u_minus)
+    diffusion = F_const * dx**2 * u.dx2
+
+    stencil = u - advection + diffusion
+    update = Eq(u.forward, stencil)
+
+    # Periodic BCs
+    bc_left = Eq(u[t_dim + 1, 0], u[t_dim, Nx])
+    bc_right = Eq(u[t_dim + 1, Nx], u[t_dim + 1, 0])
+
+    op = Operator([update, bc_left, bc_right])
+
+    Nt = int(round(T / dt))
+    for n in range(Nt):
+        op.apply(time_m=n, time_M=n, dt=dt)
+
+    return u.data[Nt % 2, :].copy(), x_coords
+
+def I(x):
+    return np.exp(-0.5*((x - 0.25)/0.05)**2)
+
+L, c, Nx, T, C = 1.0, 1.0, 100, 0.5, 0.8
+
+plt.figure(figsize=(10, 6))
+
+for nu, style in [(0.0, 'b-'), (0.01, 'r--'), (0.1, 'g-.')]:
+    u, x = solve_advec_diff(L, c, nu, Nx, T, C, I)
+    plt.plot(x, u, style, label=f'ν={nu}')
+
+plt.plot(x, I(x), 'k:', lw=2, label='Initial')
+plt.legend()
+plt.xlabel('x')
+plt.ylabel('u')
+plt.title('Advection-diffusion equation')
+plt.savefig('advec_diff.pdf')
+```
+:::
+
+
+### Exercise 9: Cosine Hat Initial Condition {#sec-advec-exer-cosinehat}
+
+The "cosine hat" is a smoother alternative to the step function:
+$$
+I(x) = \begin{cases}
+\cos\left(\frac{5\pi}{L}(x - L/10)\right) & \text{if } x < L/5 \\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+**a)** Implement this initial condition and advect it using all three schemes.
+
+**b)** Compare the behavior at the sharp cutoff ($x = L/5$) between schemes.
+
+**c)** Does the Lax-Wendroff scheme show oscillations for this smoother
+discontinuity?
+
+:::{.callout-tip title="Solution" collapse="true"}
+```python
+from src.advec import (
+    solve_advection_upwind,
+    solve_advection_lax_wendroff,
+    solve_advection_lax_friedrichs
+)
+import numpy as np
+import matplotlib.pyplot as plt
+
+def cosine_hat(x, L=1.0):
+    """Cosine hat initial condition."""
+    result = np.zeros_like(x)
+    mask = x < L/5
+    result[mask] = np.cos(5*np.pi/L * (x[mask] - L/10))
+    return result
+
+def I(x):
+    return cosine_hat(x, L=1.0)
+
+L, c, Nx, T, C = 1.0, 1.0, 100, 0.5, 0.8
+
+r_up = solve_advection_upwind(L, c, Nx, T, C, I, periodic_bc=True)
+r_lw = solve_advection_lax_wendroff(L, c, Nx, T, C, I, periodic_bc=True)
+r_lf = solve_advection_lax_friedrichs(L, c, Nx, T, C, I, periodic_bc=True)
+
+plt.figure(figsize=(10, 6))
+plt.plot(r_up.x, I(r_up.x - c*T), 'k-', lw=2, label='Exact')
+plt.plot(r_up.x, r_up.u, 'b--', label='Upwind')
+plt.plot(r_lw.x, r_lw.u, 'r-.', label='Lax-Wendroff')
+plt.plot(r_lf.x, r_lf.u, 'g:', label='Lax-Friedrichs')
+plt.legend()
+plt.xlabel('x')
+plt.ylabel('u')
+plt.title('Cosine hat advection')
+plt.savefig('cosinehat.pdf')
+```
+:::
+
+
+### Exercise 10: Implement Leapfrog Scheme {#sec-advec-exer-leapfrog}
+
+The leapfrog scheme uses a two-level time difference:
+$$
+\frac{u^{n+1}_i - u^{n-1}_i}{2\Delta t} + c\frac{u^n_{i+1} - u^n_{i-1}}{2\Delta x} = 0
+$$
+
+This is a three-time-level scheme requiring special initialization for $u^1$.
+
+**a)** Implement the leapfrog scheme using Devito with `time_order=2`.
+
+**b)** Use the upwind scheme to compute $u^1$ from $u^0$, then switch to leapfrog.
+
+**c)** Compare the leapfrog scheme's dispersion properties with Lax-Wendroff.
+Does leapfrog preserve amplitude better?
+
+:::{.callout-tip title="Solution" collapse="true"}
+```python
+from devito import Grid, TimeFunction, Eq, Operator, Constant
+import numpy as np
+import matplotlib.pyplot as plt
+
+def solve_advection_leapfrog(L, c, Nx, T, C, I):
+    """Leapfrog scheme with upwind initialization."""
+    dx = L / Nx
+    dt = C * dx / c
+
+    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    x_dim, = grid.dimensions
+    t_dim = grid.stepping_dim
+
+    # time_order=2 gives access to u, u.forward, u.backward
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=1)
+
+    x_coords = np.linspace(0, L, Nx + 1)
+
+    # Set u^0
+    u.data[0, :] = I(x_coords)
+
+    # First step: use upwind to get u^1
+    courant = Constant(name='C', value=C)
+    u_minus = u.subs(x_dim, x_dim - x_dim.spacing)
+    upwind_stencil = u - courant * (u - u_minus)
+
+    # For leapfrog: u^{n+1} = u^{n-1} - C*(u^n_{i+1} - u^n_{i-1})
+    u_plus_x = u.subs(x_dim, x_dim + x_dim.spacing)
+    u_minus_x = u.subs(x_dim, x_dim - x_dim.spacing)
+    leapfrog_stencil = u.backward - courant * (u_plus_x - u_minus_x)
+
+    # Periodic BCs
+    bc_left = Eq(u[t_dim + 1, 0], u[t_dim, Nx])
+    bc_right = Eq(u[t_dim + 1, Nx], u[t_dim + 1, 0])
+
+    # First step with upwind
+    update_first = Eq(u.forward, upwind_stencil)
+    op_first = Operator([update_first, bc_left, bc_right])
+    op_first.apply(time_m=0, time_M=0, dt=dt)
+
+    # Leapfrog for remaining steps
+    update_lf = Eq(u.forward, leapfrog_stencil)
+    op_lf = Operator([update_lf, bc_left, bc_right])
+
+    Nt = int(round(T / dt))
+    for n in range(1, Nt):
+        op_lf.apply(time_m=n, time_M=n, dt=dt)
+
+    return u.data[Nt % 3, :].copy(), x_coords
+
+def I(x):
+    return np.exp(-0.5*((x - 0.25)/0.05)**2)
+
+L, c, Nx, T, C = 1.0, 1.0, 100, 1.0, 0.8
+
+u_lf, x = solve_advection_leapfrog(L, c, Nx, T, C, I)
+
+# Compare with Lax-Wendroff
+from src.advec import solve_advection_lax_wendroff, exact_advection_periodic
+r_lw = solve_advection_lax_wendroff(L, c, Nx, T, C, I, periodic_bc=True)
+u_exact = exact_advection_periodic(x, T, c, L, I)
+
+plt.figure()
+plt.plot(x, u_exact, 'k-', lw=2, label='Exact')
+plt.plot(x, u_lf, 'b--', label='Leapfrog')
+plt.plot(x, r_lw.u, 'r-.', label='Lax-Wendroff')
+plt.legend()
+plt.xlabel('x')
+plt.ylabel('u')
+plt.title('Leapfrog vs Lax-Wendroff')
+plt.savefig('leapfrog.pdf')
+
+print(f"Leapfrog max: {u_lf.max():.4f}")
+print(f"Lax-Wendroff max: {r_lw.u.max():.4f}")
+```
+:::

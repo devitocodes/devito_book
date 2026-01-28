@@ -1,0 +1,323 @@
+## Advection Schemes with Devito {#sec-advec-devito}
+
+Having understood the mathematical properties and challenges of advection
+schemes in the previous sections, we now implement these methods using
+Devito's symbolic framework. Devito allows us to write the discrete
+equations in a form close to the mathematical notation while generating
+optimized code automatically.
+
+### The Advection Equation
+
+The 1D linear advection equation is:
+
+$$
+\frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0
+$$ {#eq-advec-devito-pde}
+
+where $c$ is the advection velocity (assumed constant and positive).
+The exact solution is:
+
+$$
+u(x, t) = I(x - ct)
+$$
+
+which represents the initial condition $I(x)$ traveling to the right
+at velocity $c$ without change in shape.
+
+### Devito Implementation Patterns
+
+Unlike diffusion and wave equations, the advection equation requires
+careful treatment of the spatial derivative. Centered differences lead
+to instability (as we saw with the FTCS scheme), so we need alternative
+approaches:
+
+| Scheme | Spatial Discretization | Order | Key Property |
+|--------|----------------------|-------|--------------|
+| Upwind | Backward difference | 1st | Stable, diffusive |
+| Lax-Wendroff | Centered + diffusion | 2nd | Less diffusion, some dispersion |
+| Lax-Friedrichs | Averaged neighbors | 1st | Very diffusive but robust |
+
+All schemes require the CFL condition: $C = c\Delta t/\Delta x \leq 1$.
+
+### Comparison with Wave and Diffusion Equations
+
+The advection equation differs fundamentally from the diffusion and
+wave equations we've solved previously:
+
+| Property | Diffusion | Wave | Advection |
+|----------|-----------|------|-----------|
+| `time_order` | 1 | 2 | 1 |
+| Spatial deriv. | 2nd (`.dx2`) | 2nd (`.laplace`) | 1st (`.dx`) |
+| Stability | $F \leq 0.5$ | $C \leq 1$ | $C \leq 1$ |
+| Centered space | Stable | Stable | **Unstable** |
+| Information | Spreads both ways | Spreads both ways | One direction |
+
+The key difference is that advection has directional information flow,
+which requires using *upwind* differences rather than centered differences.
+
+### Upwind Scheme Implementation
+
+The upwind scheme uses a backward difference for the spatial derivative
+when $c > 0$:
+
+$$
+\frac{u^{n+1}_i - u^n_i}{\Delta t} + c\frac{u^n_i - u^n_{i-1}}{\Delta x} = 0
+$$
+
+which gives the update formula:
+
+$$
+u^{n+1}_i = u^n_i - C(u^n_i - u^n_{i-1})
+$$ {#eq-advec-upwind-update}
+
+In Devito, we express this using shifted indexing:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator, Constant
+import numpy as np
+
+def solve_advection_upwind(L, c, Nx, T, C, I):
+    """Upwind scheme for 1D advection."""
+    # Grid setup
+    dx = L / Nx
+    dt = C * dx / c
+
+    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    x_dim, = grid.dimensions
+
+    u = TimeFunction(name='u', grid=grid, time_order=1, space_order=1)
+
+    # Set initial condition
+    x_coords = np.linspace(0, L, Nx + 1)
+    u.data[0, :] = I(x_coords)
+
+    # Courant number as constant
+    courant = Constant(name='C', value=C)
+
+    # Upwind stencil: u^{n+1} = u - C*(u - u[x-dx])
+    u_minus = u.subs(x_dim, x_dim - x_dim.spacing)
+    stencil = u - courant * (u - u_minus)
+    update = Eq(u.forward, stencil)
+
+    op = Operator([update])
+    # ... time stepping loop
+```
+
+The key line is:
+```python
+u_minus = u.subs(x_dim, x_dim - x_dim.spacing)
+```
+
+This creates a reference to $u^n_{i-1}$ by substituting `x_dim - x_dim.spacing`
+for `x_dim` in the `TimeFunction` `u`.
+
+### Lax-Wendroff Scheme Implementation
+
+The Lax-Wendroff scheme achieves second-order accuracy by including both
+a centered advection term and a diffusion-like correction:
+
+$$
+u^{n+1}_i = u^n_i - \frac{C}{2}(u^n_{i+1} - u^n_{i-1}) + \frac{C^2}{2}(u^n_{i+1} - 2u^n_i + u^n_{i-1})
+$$
+
+This can be written using Devito's derivative operators:
+
+```python
+def solve_advection_lax_wendroff(L, c, Nx, T, C, I):
+    """Lax-Wendroff scheme for 1D advection."""
+    dx = L / Nx
+    dt = C * dx / c
+
+    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+
+    x_coords = np.linspace(0, L, Nx + 1)
+    u.data[0, :] = I(x_coords)
+
+    courant = Constant(name='C', value=C)
+
+    # Lax-Wendroff: u - (C/2)*dx*u.dx + (C²/2)*dx²*u.dx2
+    # u.dx  = centered first derivative
+    # u.dx2 = centered second derivative
+    stencil = u - 0.5*courant*dx*u.dx + 0.5*courant**2*dx**2*u.dx2
+    update = Eq(u.forward, stencil)
+
+    op = Operator([update])
+    # ... time stepping loop
+```
+
+Here we use Devito's built-in derivative operators:
+
+- `u.dx` computes the centered first derivative $(u_{i+1} - u_{i-1})/(2\Delta x)$
+- `u.dx2` computes the centered second derivative $(u_{i+1} - 2u_i + u_{i-1})/\Delta x^2$
+
+### Lax-Friedrichs Scheme Implementation
+
+The Lax-Friedrichs scheme is simpler but more diffusive:
+
+$$
+u^{n+1}_i = \frac{1}{2}(u^n_{i+1} + u^n_{i-1}) - \frac{C}{2}(u^n_{i+1} - u^n_{i-1})
+$$
+
+```python
+def solve_advection_lax_friedrichs(L, c, Nx, T, C, I):
+    """Lax-Friedrichs scheme for 1D advection."""
+    dx = L / Nx
+    dt = C * dx / c
+
+    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    x_dim, = grid.dimensions
+
+    u = TimeFunction(name='u', grid=grid, time_order=1, space_order=1)
+
+    x_coords = np.linspace(0, L, Nx + 1)
+    u.data[0, :] = I(x_coords)
+
+    courant = Constant(name='C', value=C)
+
+    # Neighbor values
+    u_plus = u.subs(x_dim, x_dim + x_dim.spacing)
+    u_minus = u.subs(x_dim, x_dim - x_dim.spacing)
+
+    # Lax-Friedrichs stencil
+    stencil = 0.5*(u_plus + u_minus) - 0.5*courant*(u_plus - u_minus)
+    update = Eq(u.forward, stencil)
+
+    op = Operator([update])
+    # ... time stepping loop
+```
+
+### Periodic Boundary Conditions
+
+For advection problems, periodic boundary conditions are often useful
+to study wave propagation without boundary effects:
+
+```python
+t_dim = grid.stepping_dim
+
+# Periodic BC: u[0] wraps to u[Nx], u[Nx] wraps to u[0]
+bc_left = Eq(u[t_dim + 1, 0], u[t_dim, Nx])
+bc_right = Eq(u[t_dim + 1, Nx], u[t_dim + 1, 0])
+
+op = Operator([update, bc_left, bc_right])
+```
+
+### Using the Solvers
+
+The complete solver implementation in `src/advec/advec1D_devito.py`
+provides convenient interfaces:
+
+```python
+from src.advec import (
+    solve_advection_upwind,
+    solve_advection_lax_wendroff,
+    solve_advection_lax_friedrichs,
+    exact_advection_periodic
+)
+import numpy as np
+
+# Define initial condition
+def I(x):
+    return np.exp(-0.5*((x - 0.25)/0.05)**2)
+
+# Solve with upwind scheme
+result = solve_advection_upwind(
+    L=1.0, c=1.0, Nx=100, T=0.5, C=0.8, I=I,
+    periodic_bc=True
+)
+
+# Compare with exact solution
+u_exact = exact_advection_periodic(result.x, result.t, c=1.0, L=1.0, I=I)
+error = np.max(np.abs(result.u - u_exact))
+print(f"Max error: {error:.6f}")
+```
+
+### Scheme Comparison
+
+The three schemes exhibit different numerical behaviors:
+
+```python
+import matplotlib.pyplot as plt
+from src.advec import (
+    solve_advection_upwind,
+    solve_advection_lax_wendroff,
+    solve_advection_lax_friedrichs,
+    exact_advection_periodic
+)
+import numpy as np
+
+def I(x):
+    return np.exp(-0.5*((x - 0.25)/0.05)**2)
+
+L, c, Nx, T, C = 1.0, 1.0, 50, 0.5, 0.8
+
+# Solve with all three schemes
+r_upwind = solve_advection_upwind(L, c, Nx, T, C, I, periodic_bc=True)
+r_lw = solve_advection_lax_wendroff(L, c, Nx, T, C, I, periodic_bc=True)
+r_lf = solve_advection_lax_friedrichs(L, c, Nx, T, C, I, periodic_bc=True)
+
+# Exact solution
+u_exact = exact_advection_periodic(r_upwind.x, r_upwind.t, c, L, I)
+
+plt.figure(figsize=(10, 6))
+plt.plot(r_upwind.x, u_exact, 'k-', lw=2, label='Exact')
+plt.plot(r_upwind.x, r_upwind.u, 'b--', label='Upwind')
+plt.plot(r_lw.x, r_lw.u, 'r-.', label='Lax-Wendroff')
+plt.plot(r_lf.x, r_lf.u, 'g:', label='Lax-Friedrichs')
+plt.legend()
+plt.xlabel('x')
+plt.ylabel('u')
+plt.title(f'Advection: Nx={Nx}, C={C}, T={T}')
+plt.savefig('advec_scheme_comparison.pdf')
+```
+
+The Lax-Wendroff scheme typically preserves the wave amplitude better but
+may show small oscillations. The upwind and Lax-Friedrichs schemes are
+more diffusive, causing the wave to spread and reduce in amplitude.
+
+### Convergence Testing
+
+We can verify the convergence rates of the schemes:
+
+```python
+from src.advec import (
+    solve_advection_upwind,
+    solve_advection_lax_wendroff,
+    convergence_test_advection
+)
+
+# Test upwind (expect 1st order)
+sizes, errors, rate = convergence_test_advection(
+    solve_advection_upwind,
+    grid_sizes=[25, 50, 100, 200],
+    T=0.25, C=0.8
+)
+print(f"Upwind convergence rate: {rate:.2f}")  # ~1.0
+
+# Test Lax-Wendroff (expect 2nd order)
+sizes, errors, rate = convergence_test_advection(
+    solve_advection_lax_wendroff,
+    grid_sizes=[25, 50, 100, 200],
+    T=0.25, C=0.8
+)
+print(f"Lax-Wendroff convergence rate: {rate:.2f}")  # ~2.0
+```
+
+### Key Takeaways
+
+1. **Upwind differencing** is essential for stable advection schemes—centered
+   differences in space are unconditionally unstable.
+
+2. **The Courant number** $C = c\Delta t/\Delta x$ controls stability;
+   all schemes require $C \leq 1$.
+
+3. **Trade-offs exist** between accuracy and numerical diffusion:
+   - Upwind: Stable, 1st order, diffusive
+   - Lax-Wendroff: 2nd order, less diffusion, may have small oscillations
+   - Lax-Friedrichs: Very stable, very diffusive
+
+4. **Devito's shifted indexing** via `u.subs(x_dim, x_dim - x_dim.spacing)`
+   allows expressing upwind differences naturally.
+
+5. **Periodic BCs** are implemented by explicitly setting boundary equations
+   that copy values from the opposite end of the domain.
