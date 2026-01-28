@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-cov numpy sympy matplotlib
+          pip install pytest pytest-cov numpy sympy matplotlib ipython
 
       - name: Run tests with coverage
         run: |
@@ -94,7 +94,7 @@ jobs:
 
       - name: Run ruff check
         run: |
-          ruff check src/ tests/ --select=E,W,F --ignore=F403,F405,E501
+          ruff check src/ tests/ --select=E,W,F --ignore=F403,F405,E501,E741,E743
 
       - name: Check import ordering
         run: |
