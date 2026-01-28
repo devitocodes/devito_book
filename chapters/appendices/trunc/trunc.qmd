@@ -1959,6 +1959,156 @@ We end up with
 $$
 R^n_i = -{\half}\frac{\partial^2}{\partial t^2}\uex(x_i,t_n)\Delta t + \Oof{\Delta x^2}\tp
 $$
+
+## Devito and Truncation Errors {#sec-trunc-devito}
+
+Devito's `space_order` parameter directly controls the truncation error
+of spatial derivatives. Understanding this connection is essential for
+choosing appropriate accuracy settings in your simulations.
+
+### The `space_order` Parameter
+
+When you create a `TimeFunction` or `Function` in Devito, the `space_order`
+parameter specifies the accuracy of spatial derivative approximations:
+
+```python
+from devito import Grid, TimeFunction
+
+grid = Grid(shape=(101,), extent=(1.0,))
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+```
+
+The `space_order=2` specifies that spatial derivatives should use
+stencils accurate to $O(\Delta x^2)$. Higher orders are available:
+
+| `space_order` | Stencil Points | Accuracy |
+|---------------|----------------|----------|
+| 2             | 3              | $O(\Delta x^2)$ |
+| 4             | 5              | $O(\Delta x^4)$ |
+| 6             | 7              | $O(\Delta x^6)$ |
+| 8             | 9              | $O(\Delta x^8)$ |
+
+The relationship between `space_order` and stencil width follows from
+the truncation error analysis in @sec-trunc-finite-differences. To achieve
+$O(\Delta x^{2k})$ accuracy for a second derivative, we need a stencil
+with $2k+1$ points.
+
+### Viewing Generated Stencils
+
+Devito allows you to inspect the symbolic expressions for derivatives,
+which reveals the stencil coefficients:
+
+```python
+from devito import Grid, TimeFunction
+
+grid = Grid(shape=(11,), extent=(1.0,))
+x, = grid.dimensions
+h = x.spacing  # Grid spacing symbol
+
+# Compare different space orders
+for order in [2, 4, 6]:
+    u = TimeFunction(name='u', grid=grid, space_order=order)
+    print(f"space_order={order}: {u.dx2}")
+```
+
+For `space_order=2`, this produces the familiar three-point stencil:
+$$
+[D_xD_x u]_i = \frac{u_{i-1} - 2u_i + u_{i+1}}{\Delta x^2}
+$$
+
+For `space_order=4`, Devito generates the five-point stencil with coefficients
+derived from the formulas in @sec-trunc-table:
+$$
+[D_xD_x u]_i = \frac{-u_{i-2} + 16u_{i-1} - 30u_i + 16u_{i+1} - u_{i+2}}{12\Delta x^2}
+$$
+
+### Trading Accuracy for Performance
+
+Higher `space_order` means:
+
+- **Wider stencils**: More memory bandwidth required
+- **More operations**: Additional floating-point operations per grid point
+- **Better accuracy**: Smaller truncation error per grid point
+
+For many problems, `space_order=2` is sufficient, especially when combined
+with grid refinement studies. However, wave propagation problems often
+benefit from higher orders:
+
+```python
+# Wave equation with high-order spatial accuracy
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=8)
+```
+
+In geophysics applications (seismic imaging, full waveform inversion),
+`space_order=8` is common because the accuracy gain outweighs the
+computational overhead for wave propagation over many wavelengths.
+
+### Matching Temporal and Spatial Accuracy
+
+For a scheme to achieve its full accuracy potential, the truncation errors
+from time and space discretization should be balanced. As shown in
+@sec-trunc-wave-1D, the standard leapfrog scheme for the wave equation
+has truncation error:
+$$
+R = O(\Delta t^2) + O(\Delta x^2)
+$$
+
+Using `space_order=4` with `time_order=2` means the spatial error
+$O(\Delta x^4)$ may be much smaller than the temporal error $O(\Delta t^2)$.
+This is acceptable when:
+
+1. You want higher spatial accuracy for a fixed grid
+2. The time step is limited by stability (CFL condition), not accuracy
+3. You're doing convergence studies focused on spatial refinement
+
+For problems where temporal accuracy is also critical, consider using
+higher-order time integration schemes or smaller time steps.
+
+### Verifying Convergence Rates
+
+As discussed in the empirical verification section (@sec-trunc-decay-estimate-R),
+we can verify that Devito's stencils achieve the expected convergence rates:
+
+```python
+import numpy as np
+from devito import Grid, TimeFunction, Eq, Operator
+
+def test_laplacian_accuracy(space_order):
+    """Verify convergence rate of Laplacian approximation."""
+    errors = []
+    dx_values = []
+
+    for N in [20, 40, 80, 160]:
+        grid = Grid(shape=(N+1,), extent=(1.0,))
+        x, = grid.dimensions
+
+        u = TimeFunction(name='u', grid=grid, space_order=space_order)
+        u.data[0, :] = np.sin(np.pi * np.linspace(0, 1, N+1))
+
+        # Exact second derivative: -pi^2 * sin(pi*x)
+        exact = -np.pi**2 * np.sin(np.pi * np.linspace(0, 1, N+1))
+
+        # Devito approximation
+        laplacian = u.dx2.evaluate
+        numerical = np.array(laplacian.data[0, :])
+
+        # Compute error (excluding boundary points)
+        error = np.max(np.abs(numerical[2:-2] - exact[2:-2]))
+        errors.append(error)
+        dx_values.append(1.0/N)
+
+    # Estimate convergence rate
+    rates = [np.log(errors[i]/errors[i+1])/np.log(2)
+             for i in range(len(errors)-1)]
+    return np.mean(rates)
+
+# Expected: rate ≈ 2 for space_order=2, rate ≈ 4 for space_order=4
+```
+
+The measured rates should match the theoretical orders from truncation
+error analysis, providing verification that both the theory and
+implementation are correct.
+
 ## Exercise: Truncation error of a weighted mean {#sec-trunc-exer-theta-avg}
 
 Derive the truncation error of the weighted mean in

@@ -104,12 +104,12 @@ class TestReactionDiffusionSplitting:
 
         assert solve_reaction_diffusion_splitting is not None
 
-    def test_basic_run_strange(self):
-        """Test basic solver execution with Strange splitting."""
+    def test_basic_run_strang(self):
+        """Test basic solver execution with Strang splitting."""
         from src.nonlin import solve_reaction_diffusion_splitting
 
         result = solve_reaction_diffusion_splitting(
-            L=1.0, a=1.0, Nx=50, T=0.01, F=0.4, splitting="strange"
+            L=1.0, a=1.0, Nx=50, T=0.01, F=0.4, splitting="strang"
         )
 
         assert result.u.shape == (51,)
@@ -163,8 +163,8 @@ class TestReactionDiffusionSplitting:
         # Solution should decay
         assert np.max(result.u) < 1.0
 
-    def test_strange_higher_order_than_lie(self):
-        """Test that Strange splitting gives different (typically better) result."""
+    def test_strang_higher_order_than_lie(self):
+        """Test that Strang splitting gives different (typically better) result."""
         from src.nonlin import solve_reaction_diffusion_splitting
 
         def I(x):
@@ -174,12 +174,12 @@ class TestReactionDiffusionSplitting:
             L=1.0, a=0.1, Nx=50, T=0.1, F=0.4, I=I, splitting="lie"
         )
 
-        result_strange = solve_reaction_diffusion_splitting(
-            L=1.0, a=0.1, Nx=50, T=0.1, F=0.4, I=I, splitting="strange"
+        result_strang = solve_reaction_diffusion_splitting(
+            L=1.0, a=0.1, Nx=50, T=0.1, F=0.4, I=I, splitting="strang"
         )
 
-        # Results should be different (Strange is O(dt^2), Lie is O(dt))
-        assert not np.allclose(result_lie.u, result_strange.u)
+        # Results should be different (Strang is O(dt^2), Lie is O(dt))
+        assert not np.allclose(result_lie.u, result_strang.u)
 
 
 class TestBurgersEquation:

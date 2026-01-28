@@ -11,7 +11,7 @@
 | 3 | ✅ Complete | Diffusion Equations Chapter |
 | 4 | ✅ Complete | Advection Equations Chapter |
 | 5 | ✅ Complete | Nonlinear Problems Chapter |
-| 6 | ⬜ Not Started | Appendices |
+| 6 | ✅ Complete | Appendices |
 | 7 | ✅ Complete | Testing & CI Infrastructure |
 | 8 | ⬜ Not Started | Final Integration & Review |
 
@@ -99,6 +99,26 @@
 - `chapters/nonlin/nonlin1D_devito.qmd` - Nonlinear diffusion, reaction-diffusion splitting, Burgers' equation with Devito
 - `chapters/nonlin/nonlin_devito_exercises.qmd` - 10 Devito-based exercises with solutions
 - Updated `chapters/nonlin/index.qmd` to include new Devito sections
+
+**Phase 6 - Appendices (Complete):**
+
+*Truncation Error Appendix:*
+- Added "Devito and Truncation Errors" section to `chapters/appendices/trunc/trunc.qmd`
+- Covers `space_order` parameter and stencil accuracy
+- Shows how to view generated stencils symbolically
+- Discusses trading accuracy for performance
+- Links truncation error theory to Devito's implementation
+- Includes convergence rate verification example
+
+*Software Engineering Appendix:*
+- Added "Software Engineering with Devito" section to `chapters/appendices/softeng2/softeng2.qmd`
+- Project structure for Devito applications
+- Pytest fixtures for Devito testing (Grid, TimeFunction reuse)
+- Convergence testing pattern with manufactured solutions
+- Performance profiling with DEVITO_LOGGING
+- Caching and compilation configuration
+- Result classes using dataclasses
+- Comparison table: Devito vs traditional optimization approaches
 
 ---
 
