@@ -65,18 +65,11 @@ input()
 
 plt.show()
 
-f = open("tmp.sh", "w")
-f.write("""#!/bin/sh
-doconce combine_images A_F20.pdf A_F2.pdf diffusion_A_F20_F2.pdf
-doconce combine_images A_F20.png A_F2.png diffusion_A_F20_F2.png
-
-doconce combine_images A_F05.png A_F025.png diffusion_A_F05_F025.png
-doconce combine_images A_F05.pdf A_F025.pdf diffusion_A_F05_F025.pdf
-
-doconce combine_images A_F01.pdf A_F001.pdf diffusion_A_F01_F001.pdf
-doconce combine_images A_F01.png A_F001.png diffusion_A_F01_F001.png
-""")
-f.close()
 import os
 
-os.system("sh -x tmp.sh")
+os.system("montage A_F20.pdf A_F2.pdf -tile 2x1 -geometry +0+0 diffusion_A_F20_F2.pdf")
+os.system("montage A_F20.png A_F2.png -tile 2x1 -geometry +0+0 diffusion_A_F20_F2.png")
+os.system("montage A_F05.png A_F025.png -tile 2x1 -geometry +0+0 diffusion_A_F05_F025.png")
+os.system("montage A_F05.pdf A_F025.pdf -tile 2x1 -geometry +0+0 diffusion_A_F05_F025.pdf")
+os.system("montage A_F01.pdf A_F001.pdf -tile 2x1 -geometry +0+0 diffusion_A_F01_F001.pdf")
+os.system("montage A_F01.png A_F001.png -tile 2x1 -geometry +0+0 diffusion_A_F01_F001.png")

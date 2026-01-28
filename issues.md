@@ -1,6 +1,6 @@
-# Quarto Conversion Issues
+# Quarto Build Issues
 
-This document tracks warnings and issues from the DocOnce to Quarto conversion that need to be addressed.
+This document tracks warnings and issues that need to be addressed.
 
 ## Build Status
 
@@ -9,7 +9,7 @@ This document tracks warnings and issues from the DocOnce to Quarto conversion t
 
 ## Unresolved Cross-References
 
-These cross-references from the original DocOnce source were not properly converted to Quarto format. They appear as `@sec-`, `@eq-`, or `@tbl-` references that don't resolve to existing labels.
+These cross-references appear as `@sec-`, `@eq-`, or `@tbl-` references that don't resolve to existing labels.
 
 ### Truncation Appendix (trunc)
 

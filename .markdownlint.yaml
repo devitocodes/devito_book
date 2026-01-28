@@ -59,7 +59,7 @@ MD018: false
 # MD036 - Emphasis as heading (false positive from a) b) c) exercise labels)
 MD036: false
 
-# MD004 - Unordered list style (allow both dash and plus - converted from DocOnce)
+# MD004 - Unordered list style (allow both dash and plus)
 MD004: false
 
 # MD031 - Blanks around fences (false positives in nested documentation examples)

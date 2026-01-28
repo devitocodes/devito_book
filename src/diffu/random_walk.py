@@ -298,12 +298,12 @@ def demo_fig_random_walks1D():
             files = [
                 os.path.join("tmp_%d" % n, "tmp%d.%s" % (j + 1, ext)) for n in num_walks
             ]
-            cmd = "doconce combine_images -%d %s rw1D_%s_%s.%s" % (
-                3 if len(num_walks) == 3 else 2,
+            ncols = 3 if len(num_walks) == 3 else 2
+            output = "rw1D_%s_%s.%s" % (plot, "_".join([str(n) for n in num_walks]), ext)
+            cmd = "montage %s -tile %dx1 -geometry +0+0 %s" % (
                 " ".join(files),
-                plot,
-                "_".join([str(n) for n in num_walks]),
-                ext,
+                ncols,
+                output,
             )
             print(cmd)
             os.system(cmd)

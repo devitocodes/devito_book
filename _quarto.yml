@@ -153,7 +153,7 @@ format:
         \newcommand{\Integerp}{\mathbb{N}}
         \newcommand{\Integer}{\mathbb{Z}}
 
-# Quarto variables (replacement for Mako variables)
+# Quarto variables
 # These can be referenced as {{< var name >}} in documents
 src: "https://github.com/hplgit/fdm-book/tree/master/src"
 src_vib: "https://github.com/hplgit/fdm-book/tree/master/src/vib"
