@@ -1,0 +1,141 @@
+## What is Devito? {#sec-devito-intro-what}
+
+Devito is a Python-based domain-specific language (DSL) for expressing
+and solving partial differential equations using finite difference methods.
+Rather than writing low-level loops that update arrays at each time step,
+you write the mathematical equations symbolically and let Devito generate
+optimized code automatically.
+
+### The Traditional Approach
+
+Consider solving the 1D diffusion equation:
+$$
+\frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x^2}
+$$
+
+A traditional NumPy implementation might look like:
+
+```python
+import numpy as np
+
+# Parameters
+Nx, Nt = 100, 1000
+dx, dt = 0.01, 0.0001
+alpha = 1.0
+F = alpha * dt / dx**2  # Fourier number
+
+# Initialize
+u = np.zeros(Nx + 1)
+u_new = np.zeros(Nx + 1)
+u[Nx//2] = 1.0  # Initial impulse
+
+# Time stepping loop
+for n in range(Nt):
+    for i in range(1, Nx):
+        u_new[i] = u[i] + F * (u[i+1] - 2*u[i] + u[i-1])
+    u, u_new = u_new, u  # Swap arrays
+```
+
+This approach has several limitations:
+
+1. **Error-prone**: Manual index arithmetic is easy to get wrong
+2. **Hard to optimize**: Achieving good performance requires expertise in
+   vectorization, parallelization, and cache optimization
+3. **Dimension-specific**: The code must be rewritten for 2D or 3D problems
+4. **Not portable**: Optimizations for one architecture don't transfer to others
+
+### The Devito Approach
+
+With Devito, the same problem becomes:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator
+
+# Create computational grid
+grid = Grid(shape=(101,), extent=(1.0,))
+
+# Define the unknown field
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+
+# Set initial condition
+u.data[0, 50] = 1.0
+
+# Define the PDE update equation
+eq = Eq(u.forward, u + alpha * dt * u.dx2)
+
+# Create and run the operator
+op = Operator([eq])
+op(time=1000, dt=dt)
+```
+
+This approach offers significant advantages:
+
+1. **Mathematical clarity**: The equation `u.forward = u + alpha * dt * u.dx2`
+   directly mirrors the mathematical formulation
+2. **Automatic optimization**: Devito generates C code with loop tiling,
+   SIMD vectorization, and OpenMP parallelization
+3. **Dimension-agnostic**: The same code structure works for 1D, 2D, or 3D
+4. **Portable performance**: Generated code adapts to the target architecture
+
+### How Devito Works
+
+Devito's workflow consists of three stages:
+
+```
+Python DSL → Symbolic Processing → C Code Generation → Compilation → Execution
+```
+
+1. **Symbolic representation**: Your Python code creates SymPy expressions
+   that represent the PDE and its discretization
+
+2. **Code generation**: Devito analyzes the expressions and generates
+   optimized C code with appropriate loop structures
+
+3. **Just-in-time compilation**: The C code is compiled (and cached) the
+   first time the operator runs
+
+4. **Execution**: Subsequent runs use the cached compiled code for
+   maximum performance
+
+### When to Use Devito
+
+Devito excels at:
+
+- **Explicit time-stepping schemes**: Forward Euler, leapfrog, Runge-Kutta
+- **Structured grids**: Regular Cartesian meshes in 1D, 2D, or 3D
+- **Stencil computations**: Any PDE discretized with finite differences
+- **Large-scale problems**: Where performance optimization matters
+
+Common applications include:
+
+- Wave propagation (acoustic, elastic, electromagnetic)
+- Heat conduction and diffusion
+- Computational fluid dynamics
+- Seismic imaging (reverse time migration, full waveform inversion)
+
+### Installation
+
+Devito can be installed via pip:
+
+```bash
+pip install devito
+```
+
+For this book, we recommend installing the optional dependencies as well:
+
+```bash
+pip install devito[extras]
+```
+
+This includes visualization tools and additional solvers that we'll use
+in later chapters.
+
+### What You'll Learn
+
+In this chapter, you will:
+
+1. Solve your first PDE (the 1D wave equation) using Devito
+2. Understand the core abstractions: `Grid`, `Function`, `TimeFunction`,
+   `Eq`, and `Operator`
+3. Implement boundary conditions in Devito
+4. Verify your numerical solutions using convergence testing

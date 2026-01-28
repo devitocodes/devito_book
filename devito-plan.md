@@ -6,7 +6,7 @@
 |-------|--------|-------------|
 | 0 | ✅ Complete | Infrastructure Setup |
 | 0.5 | ✅ Complete | SymPy Integration for Reproducible Mathematics |
-| 1 | ⬜ Not Started | Restructure Book Organization |
+| 1 | ✅ Complete | Restructure Book Organization |
 | 2 | ✅ Complete | Wave Equations Chapter |
 | 3 | ✅ Complete | Diffusion Equations Chapter |
 | 4 | ✅ Complete | Advection Equations Chapter |
@@ -119,6 +119,22 @@
 - Caching and compilation configuration
 - Result classes using dataclasses
 - Comparison table: Devito vs traditional optimization approaches
+
+**Phase 1 - Restructure Book Organization (Complete):**
+
+*New Devito Introduction Chapter:*
+- Created `chapters/devito_intro/` directory with five QMD files
+- `index.qmd` - Chapter entry point with includes
+- `what_is_devito.qmd` - Overview, motivation, traditional vs Devito approach
+- `first_pde.qmd` - 1D wave equation as first complete example
+- `devito_abstractions.qmd` - Core concepts: Grid, Function, TimeFunction, Eq, Operator
+- `boundary_conditions.qmd` - Dirichlet, Neumann, absorbing, periodic BCs
+- `verification.qmd` - Convergence testing, Method of Manufactured Solutions
+
+*Book Structure Update:*
+- Updated `_quarto.yml` to use `chapters/devito_intro/index.qmd` as first main chapter
+- Replaces the ODE-focused Vibration chapter with PDE-focused Devito introduction
+- Retains `chapters/vib/` for reference but excludes from book build
 
 ---
 

@@ -1,0 +1,211 @@
+## Core Devito Abstractions {#sec-devito-intro-abstractions}
+
+Devito provides a small set of powerful abstractions for expressing PDEs.
+Understanding these building blocks is essential for writing effective
+Devito code.
+
+### Grid: The Computational Domain
+
+The `Grid` defines the discrete domain on which we solve our PDE:
+
+```python
+from devito import Grid
+
+# 1D grid: 101 points over [0, 1]
+grid_1d = Grid(shape=(101,), extent=(1.0,))
+
+# 2D grid: 101x101 points over [0, 1] x [0, 1]
+grid_2d = Grid(shape=(101, 101), extent=(1.0, 1.0))
+
+# 3D grid: 51x51x51 points over [0, 2] x [0, 2] x [0, 2]
+grid_3d = Grid(shape=(51, 51, 51), extent=(2.0, 2.0, 2.0))
+```
+
+Key properties:
+
+- `shape`: Number of grid points in each dimension
+- `extent`: Physical size of the domain
+- `dimensions`: Symbolic dimension objects (x, y, z)
+- `spacing`: Grid spacing in each dimension (computed automatically)
+
+```python
+grid = Grid(shape=(101, 101), extent=(1.0, 1.0))
+x, y = grid.dimensions      # Symbolic dimensions
+dx, dy = grid.spacing       # Symbolic spacing (h_x, h_y)
+print(f"Grid spacing: dx={float(dx)}, dy={float(dy)}")
+```
+
+### Function: Static Fields
+
+A `Function` represents a field that does not change during time-stepping.
+Use it for material properties, source terms, or any spatially-varying
+coefficient:
+
+```python
+from devito import Function
+
+grid = Grid(shape=(101,), extent=(1.0,))
+
+# Wave velocity field
+c = Function(name='c', grid=grid)
+c.data[:] = 1500.0  # Constant velocity (m/s)
+
+# Spatially varying velocity
+import numpy as np
+x_vals = np.linspace(0, 1, 101)
+c.data[:] = 1500 + 500 * x_vals  # Linear velocity gradient
+```
+
+The `space_order` parameter controls the stencil width for derivatives:
+
+```python
+# Higher-order derivatives need wider stencils
+c = Function(name='c', grid=grid, space_order=4)
+```
+
+### TimeFunction: Time-Varying Fields
+
+A `TimeFunction` represents the solution field that evolves in time:
+
+```python
+from devito import TimeFunction
+
+grid = Grid(shape=(101,), extent=(1.0,))
+
+# For first-order time derivatives (diffusion equation)
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+
+# For second-order time derivatives (wave equation)
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+```
+
+Key parameters:
+
+- `time_order`: Number of time levels needed (1 for first derivative, 2 for second)
+- `space_order`: Accuracy order for spatial derivatives
+
+Time indexing shortcuts:
+
+| Syntax | Meaning | Mathematical notation |
+|--------|---------|----------------------|
+| `u` | Current time level | $u^n$ |
+| `u.forward` | Next time level | $u^{n+1}$ |
+| `u.backward` | Previous time level | $u^{n-1}$ |
+| `u.dt` | First time derivative | $\partial u/\partial t$ |
+| `u.dt2` | Second time derivative | $\partial^2 u/\partial t^2$ |
+
+### Derivative Notation
+
+Devito provides intuitive notation for spatial derivatives:
+
+| Syntax | Meaning | Stencil |
+|--------|---------|---------|
+| `u.dx` | $\partial u/\partial x$ | Centered difference |
+| `u.dy` | $\partial u/\partial y$ | Centered difference |
+| `u.dx2` | $\partial^2 u/\partial x^2$ | Second derivative |
+| `u.dy2` | $\partial^2 u/\partial y^2$ | Second derivative |
+| `u.laplace` | $\nabla^2 u$ | Laplacian (dimension-agnostic) |
+
+The `laplace` operator is particularly useful because it works in any
+number of dimensions:
+
+```python
+# These are equivalent for 2D:
+laplacian_explicit = u.dx2 + u.dy2
+laplacian_auto = u.laplace
+
+# In 3D, u.laplace automatically becomes u.dx2 + u.dy2 + u.dz2
+```
+
+### Eq: Defining Equations
+
+The `Eq` class creates symbolic equations:
+
+```python
+from devito import Eq
+
+# Explicit update: u^{n+1} = expression
+update = Eq(u.forward, 2*u - u.backward + dt**2 * c**2 * u.laplace)
+
+# Using the solve() helper for implicit forms
+from devito import solve
+
+pde = u.dt2 - c**2 * u.laplace  # The PDE residual
+update = Eq(u.forward, solve(pde, u.forward))
+```
+
+The `solve()` function is useful when the update formula is complex.
+It symbolically solves for the target variable.
+
+### Operator: Compilation and Execution
+
+The `Operator` takes a list of equations and generates executable code:
+
+```python
+from devito import Operator
+
+# Single equation
+op = Operator([update])
+
+# Multiple equations (e.g., with boundary conditions)
+op = Operator([update, bc_left, bc_right])
+
+# Run for Nt time steps
+op(time=Nt, dt=dt)
+```
+
+The operator compiles the equations into optimized C code on first
+execution. Subsequent calls reuse the cached compiled code.
+
+### Complete Example: 2D Diffusion
+
+Let's put these abstractions together for a 2D diffusion problem:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator
+import numpy as np
+
+# Create a 2D grid
+grid = Grid(shape=(101, 101), extent=(1.0, 1.0))
+
+# Time-varying field (first-order in time for diffusion)
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+
+# Parameters
+alpha = 0.1  # Diffusion coefficient
+dx = 1.0 / 100
+F = 0.25     # Fourier number (for stability)
+dt = F * dx**2 / alpha
+
+# Initial condition: hot spot in the center
+u.data[0, 45:55, 45:55] = 1.0
+
+# The diffusion equation: u_t = alpha * (u_xx + u_yy)
+# Using .laplace for dimension-agnostic code
+eq = Eq(u.forward, u + alpha * dt * u.laplace)
+
+# Create and run
+op = Operator([eq])
+op(time=500, dt=dt)
+
+# Visualize
+import matplotlib.pyplot as plt
+plt.imshow(u.data[0, :, :], origin='lower', cmap='hot')
+plt.colorbar(label='Temperature')
+plt.title('2D Diffusion')
+plt.show()
+```
+
+### Summary of Core Abstractions
+
+| Abstraction | Purpose | Key Parameters |
+|-------------|---------|----------------|
+| `Grid` | Define computational domain | `shape`, `extent` |
+| `Function` | Static fields (coefficients) | `name`, `grid`, `space_order` |
+| `TimeFunction` | Time-varying fields | `name`, `grid`, `time_order`, `space_order` |
+| `Eq` | Define equations | LHS, RHS |
+| `Operator` | Compile and execute | List of equations |
+
+These five abstractions form the foundation of all Devito programs. In the
+following sections, we'll see how to handle boundary conditions and verify
+our numerical solutions.

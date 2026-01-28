@@ -1,0 +1,16 @@
+# Introduction to Devito {#sec-ch-devito-intro}
+
+This chapter introduces Devito, a domain-specific language (DSL) for
+solving partial differential equations using finite differences. We begin
+with the motivation for symbolic PDE specification, then work through
+a complete example using the 1D wave equation.
+
+{{< include what_is_devito.qmd >}}
+
+{{< include first_pde.qmd >}}
+
+{{< include devito_abstractions.qmd >}}
+
+{{< include boundary_conditions.qmd >}}
+
+{{< include verification.qmd >}}

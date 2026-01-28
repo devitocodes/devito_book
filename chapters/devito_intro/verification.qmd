@@ -1,0 +1,291 @@
+## Verification and Convergence Testing {#sec-devito-intro-verification}
+
+How do we know our numerical solution is correct? Verification is the
+process of confirming that our code correctly solves the mathematical
+equations we intended. This section introduces key verification techniques.
+
+### The Importance of Verification
+
+Numerical codes can produce plausible-looking but incorrect results due to:
+
+- Programming errors (typos, off-by-one errors)
+- Incorrect boundary condition implementation
+- Stability violations
+- Insufficient resolution
+
+Systematic verification catches these problems before they corrupt
+scientific results.
+
+### Convergence Rate Testing
+
+The most powerful verification technique is convergence rate testing.
+For a scheme with truncation error $O(\Delta x^p)$, the error should
+decrease as:
+$$
+E(\Delta x) \approx C \Delta x^p
+$$
+
+By measuring errors at different resolutions, we can estimate $p$:
+$$
+p \approx \frac{\log(E_1/E_2)}{\log(\Delta x_1/\Delta x_2)}
+$$
+
+If the measured rate matches the theoretical order, we have strong
+evidence the implementation is correct.
+
+### Implementing a Convergence Test
+
+```python
+import numpy as np
+from devito import Grid, TimeFunction, Eq, Operator
+
+def solve_wave_equation(Nx, L=1.0, T=0.5, c=1.0, C=0.5):
+    """Solve 1D wave equation and return error vs exact solution."""
+
+    dx = L / Nx
+    dt = C * dx / c
+    Nt = int(T / dt)
+
+    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+    t_dim = grid.stepping_dim
+
+    # Initial condition: sin(pi*x)
+    x_vals = np.linspace(0, L, Nx + 1)
+    u.data[0, :] = np.sin(np.pi * x_vals)
+    u.data[1, :] = np.sin(np.pi * x_vals) * np.cos(np.pi * c * dt)
+
+    # Wave equation
+    update = Eq(u.forward, 2*u - u.backward + (c*dt)**2 * u.dx2,
+                subdomain=grid.interior)
+    bc_left = Eq(u[t_dim+1, 0], 0)
+    bc_right = Eq(u[t_dim+1, Nx], 0)
+
+    op = Operator([update, bc_left, bc_right])
+    op(time=Nt, dt=dt)
+
+    # Exact solution: u(x,t) = sin(pi*x)*cos(pi*c*t)
+    t_final = Nt * dt
+    u_exact = np.sin(np.pi * x_vals) * np.cos(np.pi * c * t_final)
+
+    # Return max error
+    error = np.max(np.abs(u.data[0, :] - u_exact))
+    return error, dx
+
+
+def convergence_test(grid_sizes):
+    """Run convergence test and compute rates."""
+
+    errors = []
+    dx_values = []
+
+    for Nx in grid_sizes:
+        error, dx = solve_wave_equation(Nx)
+        errors.append(error)
+        dx_values.append(dx)
+        print(f"Nx = {Nx:4d}, dx = {dx:.6f}, error = {error:.6e}")
+
+    # Compute convergence rates
+    rates = []
+    for i in range(len(errors) - 1):
+        rate = np.log(errors[i] / errors[i+1]) / np.log(dx_values[i] / dx_values[i+1])
+        rates.append(rate)
+
+    print("\nConvergence rates:")
+    for i, rate in enumerate(rates):
+        print(f"  {grid_sizes[i]} -> {grid_sizes[i+1]}: rate = {rate:.2f}")
+
+    return errors, dx_values, rates
+
+
+# Run the test
+grid_sizes = [20, 40, 80, 160, 320]
+errors, dx_values, rates = convergence_test(grid_sizes)
+
+# Check: rates should be close to 2 for second-order scheme
+expected_rate = 2.0
+assert all(abs(r - expected_rate) < 0.2 for r in rates), \
+    f"Convergence rates {rates} differ from expected {expected_rate}"
+```
+
+### Method of Manufactured Solutions (MMS)
+
+For problems without analytical solutions, we use the Method of
+Manufactured Solutions:
+
+1. **Choose** a solution $u_{\text{mms}}(x, t)$ (any smooth function)
+2. **Compute** the source term by substituting into the PDE
+3. **Solve** the modified PDE with the computed source
+4. **Compare** the numerical solution to $u_{\text{mms}}$
+
+**Example: Diffusion equation**
+
+Let's verify a diffusion solver using MMS:
+
+```python
+import sympy as sp
+
+# Symbolic variables
+x_sym, t_sym = sp.symbols('x t')
+alpha_sym = sp.Symbol('alpha')
+
+# Manufactured solution (arbitrary smooth function)
+u_mms = sp.sin(sp.pi * x_sym) * sp.exp(-t_sym)
+
+# Compute required source term: f = u_t - alpha * u_xx
+u_t = sp.diff(u_mms, t_sym)
+u_xx = sp.diff(u_mms, x_sym, 2)
+f_mms = u_t - alpha_sym * u_xx
+
+print("Manufactured solution:")
+print(f"  u_mms = {u_mms}")
+print(f"Required source term:")
+print(f"  f = {sp.simplify(f_mms)}")
+```
+
+Now implement the solver with this source term:
+
+```python
+from devito import Grid, TimeFunction, Function, Eq, Operator
+import numpy as np
+
+def solve_diffusion_mms(Nx, alpha=1.0, T=0.5, F=0.4):
+    """Solve diffusion with MMS source term."""
+
+    L = 1.0
+    dx = L / Nx
+    dt = F * dx**2 / alpha
+    Nt = int(T / dt)
+
+    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+    t_dim = grid.stepping_dim
+
+    # Spatial coordinates for evaluation
+    x_vals = np.linspace(0, L, Nx + 1)
+
+    # MMS: u = sin(pi*x) * exp(-t)
+    # Source: f = sin(pi*x) * exp(-t) * (alpha*pi^2 - 1)
+    def u_exact(x, t):
+        return np.sin(np.pi * x) * np.exp(-t)
+
+    def f_source(x, t):
+        return np.sin(np.pi * x) * np.exp(-t) * (alpha * np.pi**2 - 1)
+
+    # Initial condition from MMS
+    u.data[0, :] = u_exact(x_vals, 0)
+
+    # We need to add source term at each time step
+    # For simplicity, use time-lagged source
+    f = Function(name='f', grid=grid)
+
+    # Update equation with source
+    update = Eq(u.forward, u + alpha * dt * u.dx2 + dt * f,
+                subdomain=grid.interior)
+    bc_left = Eq(u[t_dim+1, 0], 0)  # u_mms(0,t) = 0
+    bc_right = Eq(u[t_dim+1, Nx], 0)  # u_mms(1,t) = 0
+
+    op = Operator([update, bc_left, bc_right])
+
+    # Time stepping with source update
+    for n in range(Nt):
+        t_current = n * dt
+        f.data[:] = f_source(x_vals, t_current)
+        op(time=1, dt=dt)
+
+    # Compare to exact solution
+    t_final = Nt * dt
+    u_exact_final = u_exact(x_vals, t_final)
+    error = np.max(np.abs(u.data[0, :] - u_exact_final))
+
+    return error, dx
+
+
+# Convergence test with MMS
+print("MMS Convergence Test for Diffusion Equation:")
+grid_sizes = [20, 40, 80, 160]
+errors = []
+dx_vals = []
+
+for Nx in grid_sizes:
+    error, dx = solve_diffusion_mms(Nx)
+    errors.append(error)
+    dx_vals.append(dx)
+    print(f"Nx = {Nx:4d}, error = {error:.6e}")
+
+# Compute rates
+for i in range(len(errors) - 1):
+    rate = np.log(errors[i] / errors[i+1]) / np.log(2)
+    print(f"Rate {grid_sizes[i]}->{grid_sizes[i+1]}: {rate:.2f}")
+```
+
+### Quick Verification Checks
+
+Before running full convergence tests, use these quick checks:
+
+**1. Conservation properties**
+
+For problems that should conserve mass or energy:
+
+```python
+# Check mass conservation for diffusion with Neumann BCs
+mass_initial = np.sum(u.data[1, :]) * dx
+mass_final = np.sum(u.data[0, :]) * dx
+print(f"Mass change: {abs(mass_final - mass_initial):.2e}")
+```
+
+**2. Symmetry**
+
+For symmetric initial conditions and domains:
+
+```python
+# Check symmetry is preserved
+u_left = u.data[0, :Nx//2]
+u_right = u.data[0, Nx//2+1:][::-1]  # Reversed
+symmetry_error = np.max(np.abs(u_left - u_right))
+print(f"Symmetry error: {symmetry_error:.2e}")
+```
+
+**3. Steady state**
+
+For problems with known steady states:
+
+```python
+# Run to steady state and check
+u_steady_numerical = u.data[0, :]
+u_steady_exact = ...  # Known analytical steady state
+error = np.max(np.abs(u_steady_numerical - u_steady_exact))
+```
+
+### Debugging Tips
+
+When convergence tests fail:
+
+1. **Check boundary conditions**: Are they correctly implemented?
+   Plot the solution near boundaries.
+
+2. **Check stability**: Is the CFL/Fourier number within limits?
+   Try smaller time steps.
+
+3. **Check initial conditions**: Are they set correctly?
+   Verify `u.data[0, :]` and `u.data[1, :]`.
+
+4. **Inspect generated code**: Use `print(op.ccode)` to see what
+   Devito actually computes.
+
+5. **Test components separately**: Verify spatial derivatives work
+   on known functions before testing full PDE.
+
+### Summary
+
+Verification is essential for trustworthy numerical results:
+
+| Technique | When to Use | What It Checks |
+|-----------|-------------|----------------|
+| Convergence testing | Always | Correct order of accuracy |
+| MMS | No analytical solution | Correct PDE implementation |
+| Conservation | Physics requires it | No spurious sources/sinks |
+| Symmetry | Symmetric problems | Consistent treatment |
+
+A well-verified code gives confidence that results represent the
+physics, not numerical artifacts.

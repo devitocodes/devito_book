@@ -14,7 +14,7 @@ book:
     - chapters/preface/index.qmd
     - part: "Main Chapters"
       chapters:
-        - chapters/vib/index.qmd
+        - chapters/devito_intro/index.qmd
         - chapters/wave/index.qmd
         - chapters/diffu/index.qmd
         - chapters/advec/index.qmd
