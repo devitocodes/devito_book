@@ -59,15 +59,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install numpy scipy matplotlib sympy jupyter
 
-      - name: Build HTML
-        run: quarto render --to html
-
       - name: Build PDF
         run: quarto render --to pdf
 
-      - name: Copy PDF to HTML output
+      - name: Save PDF
+        run: cp _book/Finite-Difference-Computing-with-PDEs.pdf /tmp/book.pdf
+
+      - name: Build HTML
+        run: quarto render --to html
+
+      - name: Add PDF to HTML output
         run: |
-          cp _book/Finite-Difference-Computing-with-PDEs.pdf _book/book.pdf
+          cp /tmp/book.pdf _book/book.pdf
+          echo "Contents of _book:"
+          ls -la _book/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
