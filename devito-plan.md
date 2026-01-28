@@ -7,7 +7,7 @@
 | 0 | ✅ Complete | Infrastructure Setup |
 | 0.5 | ✅ Complete | SymPy Integration for Reproducible Mathematics |
 | 1 | ⬜ Not Started | Restructure Book Organization |
-| 2 | 🚧 In Progress | Wave Equations Chapter |
+| 2 | ✅ Complete | Wave Equations Chapter |
 | 3 | ⬜ Not Started | Diffusion Equations Chapter |
 | 4 | ⬜ Not Started | Advection Equations Chapter |
 | 5 | ⬜ Not Started | Nonlinear Problems Chapter |
@@ -15,7 +15,7 @@
 | 7 | ✅ Complete | Testing & CI Infrastructure |
 | 8 | ⬜ Not Started | Final Integration & Review |
 
-### Recent Completions (2025-01-27)
+### Recent Completions (2025-01-28)
 
 **Phase 0 - Infrastructure:**
 - Created `src/` package structure with `__init__.py` exports
@@ -37,11 +37,20 @@
 - `tests/test_wave_devito.py` - Devito wave solver tests (skipped if Devito not installed)
 - `.github/workflows/ci.yml` - GitHub Actions CI with Codecov integration
 
-**Phase 2 - Wave Equations (In Progress):**
+**Phase 2 - Wave Equations (Complete):**
+
+*Python Solvers:*
 - `src/wave/wave1D_devito.py` - 1D wave equation solver using Devito DSL
 - `src/wave/wave2D_devito.py` - 2D wave equation solver using `.laplace`
 - `src/wave/sources.py` - Source wavelets (Ricker, Gaussian, spectrum analysis)
 - 29 wave solver tests (1D, 2D, sources)
+
+*Quarto Chapters:*
+- `chapters/wave/wave1D_devito.qmd` - Core 1D wave with Devito (Grid, TimeFunction, Operator)
+- `chapters/wave/wave1D_features.qmd` - Source terms, variable coefficients, absorbing BCs
+- `chapters/wave/wave2D_devito.qmd` - 2D extension with `.laplace`, visualization
+- `chapters/wave/wave_exercises.qmd` - 10 Devito-based exercises with solutions
+- Updated `chapters/wave/index.qmd` to include new Devito sections
 
 ---
 
