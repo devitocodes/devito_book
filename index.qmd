@@ -18,7 +18,9 @@ Adapted by Gerard J. Gorman (Imperial College London).
 
 ## License {.unnumbered}
 
+::: {.content-visible when-format="html"}
 [![CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+:::
 
 This work is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), the same license as the original work.
 
