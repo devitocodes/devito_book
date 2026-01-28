@@ -47,11 +47,11 @@ def scheme_scalar_mesh(
     u, u_n, u_nm1, k_1, k_2, k_3, k_4, f, dt2, Cx2, Cy2, x, y, t_1, Nx, Ny, bc
 ):
     Ix = range(0, u.shape[0])
-    Iy = range(0, u.shape[1])
+    It = range(0, u.shape[1])
 
     # Interior points
     for i in Ix[1:-1]:
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             im1 = i - 1
             ip1 = i + 1
             jm1 = j - 1
@@ -83,7 +83,7 @@ def scheme_scalar_mesh(
     ip1 = i + 1
     im1 = ip1
     if bc["W"] is None:
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             jm1 = j - 1
             jp1 = j + 1
             u[i, j] = scheme_ij(
@@ -109,13 +109,13 @@ def scheme_scalar_mesh(
                 jp1,
             )
     else:
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             u[i, j] = bc["W"](x[i], y[j])
     i = Ix[-1]
     im1 = i - 1
     ip1 = im1
     if bc["E"] is None:
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             jm1 = j - 1
             jp1 = j + 1
             u[i, j] = scheme_ij(
@@ -141,9 +141,9 @@ def scheme_scalar_mesh(
                 jp1,
             )
     else:
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             u[i, j] = bc["E"](x[i], y[j])
-    j = Iy[0]
+    j = It[0]
     jp1 = j + 1
     jm1 = jp1
     if bc["S"] is None:
@@ -175,7 +175,7 @@ def scheme_scalar_mesh(
     else:
         for i in Ix[1:-1]:
             u[i, j] = bc["S"](x[i], y[j])
-    j = Iy[-1]
+    j = It[-1]
     jm1 = j - 1
     jp1 = jm1
     if bc["N"] is None:
@@ -209,7 +209,7 @@ def scheme_scalar_mesh(
             u[i, j] = bc["N"](x[i], y[j])
 
     # Corner points
-    i = j = Iy[0]
+    i = j = It[0]
     ip1 = i + 1
     jp1 = j + 1
     im1 = ip1
@@ -241,7 +241,7 @@ def scheme_scalar_mesh(
         u[i, j] = bc["S"](x[i], y[j])
 
     i = Ix[-1]
-    j = Iy[0]
+    j = It[0]
     im1 = i - 1
     jp1 = j + 1
     ip1 = im1
@@ -273,7 +273,7 @@ def scheme_scalar_mesh(
         u[i, j] = bc["S"](x[i], y[j])
 
     i = Ix[-1]
-    j = Iy[-1]
+    j = It[-1]
     im1 = i - 1
     jm1 = j - 1
     ip1 = im1
@@ -305,7 +305,7 @@ def scheme_scalar_mesh(
         u[i, j] = bc["N"](x[i], y[j])
 
     i = Ix[0]
-    j = Iy[-1]
+    j = It[-1]
     ip1 = i + 1
     jm1 = j - 1
     im1 = ip1
@@ -409,7 +409,7 @@ def scheme_vectorized_mesh(
     im1 = i - 1
     ip1 = im1
     if bc["E"] is None:
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             jm1 = j - 1
             jp1 = j + 1
             u[i, j] = scheme_ij(
@@ -435,9 +435,9 @@ def scheme_vectorized_mesh(
                 jp1,
             )
     else:
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             u[i, j] = bc["E"](x[i], y[j])
-    j = Iy[0]
+    j = It[0]
     jp1 = j + 1
     jm1 = jp1
     if bc["S"] is None:
@@ -469,7 +469,7 @@ def scheme_vectorized_mesh(
     else:
         for i in Ix[1:-1]:
             u[i, j] = bc["S"](x[i], y[j])
-    j = Iy[-1]
+    j = It[-1]
     jm1 = j - 1
     jp1 = jm1
     if bc["N"] is None:
@@ -503,7 +503,7 @@ def scheme_vectorized_mesh(
             u[i, j] = bc["N"](x[i], y[j])
 
     # Corner points
-    i = j = Iy[0]
+    i = j = It[0]
     ip1 = i + 1
     jp1 = j + 1
     im1 = ip1
@@ -535,7 +535,7 @@ def scheme_vectorized_mesh(
         u[i, j] = bc["S"](x[i], y[j])
 
     i = Ix[-1]
-    j = Iy[0]
+    j = It[0]
     im1 = i - 1
     jp1 = j + 1
     ip1 = im1
@@ -567,7 +567,7 @@ def scheme_vectorized_mesh(
         u[i, j] = bc["S"](x[i], y[j])
 
     i = Ix[-1]
-    j = Iy[-1]
+    j = It[-1]
     im1 = i - 1
     jm1 = j - 1
     ip1 = im1
@@ -599,7 +599,7 @@ def scheme_vectorized_mesh(
         u[i, j] = bc["N"](x[i], y[j])
 
     i = Ix[0]
-    j = Iy[-1]
+    j = It[-1]
     ip1 = i + 1
     jm1 = j - 1
     im1 = ip1
@@ -676,12 +676,12 @@ def solver(
     u_nm1 = zeros((Nx + 1, Ny + 1))  # Solution at t-2*dt, level n-1
 
     Ix = range(0, Nx + 1)
-    Iy = range(0, Ny + 1)
+    It = range(0, Ny + 1)
     It = range(0, Nt + 1)
 
     # Load initial condition into u_n
     for i in Ix:
-        for j in Iy:
+        for j in It:
             u_n[i, j] = I(x[i], y[j])
 
     if user_action is not None:

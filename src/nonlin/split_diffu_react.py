@@ -229,7 +229,7 @@ def ordinary_splitting(I, a, b, f, L, dt, dt_Rfactor, F, t, T, user_action=None)
             user_action(u, x, t, n + 1)
 
 
-def Strang_splitting_1stOrder(I, a, b, f, L, dt, dt_Rfactor, F, t, T, user_action=None):
+def Strange_splitting_1stOrder(I, a, b, f, L, dt, dt_Rfactor, F, t, T, user_action=None):
     """Strange splitting while still using FE for the diffusion
     step and for the reaction step. Gives 1st order scheme.
     Introduce an extra time mesh t2 for the diffusion part,
@@ -293,7 +293,7 @@ def Strang_splitting_1stOrder(I, a, b, f, L, dt, dt_Rfactor, F, t, T, user_actio
             user_action(u, x, t, n + 1)
 
 
-def Strang_splitting_2ndOrder(I, a, b, f, L, dt, dt_Rfactor, F, t, T, user_action=None):
+def Strange_splitting_2andOrder(I, a, b, f, L, dt, dt_Rfactor, F, t, T, user_action=None):
     """Strange splitting using Crank-Nicolson for the diffusion
     step (theta-rule) and Adams-Bashforth 2 for the reaction step.
     Gives 2nd order scheme. Introduce an extra time mesh t2 for
@@ -436,9 +436,9 @@ def convergence_rates(scheme="diffusion"):
                 T=T,
                 user_action=action,
             )
-        elif scheme == "Strang_splitting_1stOrder":
+        elif scheme == "Strange_splitting_1stOrder":
             print("Running Strange splitting with 1st order schemes...")
-            Strang_splitting_1stOrder(
+            Strange_splitting_1stOrder(
                 I=I,
                 a=a,
                 b=b,
@@ -451,9 +451,9 @@ def convergence_rates(scheme="diffusion"):
                 T=T,
                 user_action=action,
             )
-        elif scheme == "Strang_splitting_2ndOrder":
+        elif scheme == "Strange_splitting_2andOrder":
             print("Running Strange splitting with 2nd order schemes...")
-            Strang_splitting_2ndOrder(
+            Strange_splitting_2andOrder(
                 I=I,
                 a=a,
                 b=b,
@@ -488,8 +488,8 @@ if __name__ == "__main__":
     schemes = [
         "diffusion",
         "ordinary_splitting",
-        "Strang_splitting_1stOrder",
-        "Strang_splitting_2ndOrder",
+        "Strange_splitting_1stOrder",
+        "Strange_splitting_2andOrder",
     ]
 
     for scheme in schemes:

@@ -267,3 +267,270 @@ class TestExactSolution:
 
         residual = sp.simplify(u_tt - c_sym**2 * u_xx)
         assert residual == 0
+
+
+@pytest.mark.devito
+class TestWave2DSolver:
+    """Tests for the 2D wave equation solver."""
+
+    def test_import(self):
+        """Verify solver can be imported."""
+        from src.wave.wave2D_devito import Wave2DResult, solve_wave_2d
+        assert solve_wave_2d is not None
+        assert Wave2DResult is not None
+
+    def test_basic_run(self):
+        """Verify solver runs without errors."""
+        from src.wave.wave2D_devito import solve_wave_2d
+
+        result = solve_wave_2d(
+            Lx=1.0,
+            Ly=1.0,
+            c=1.0,
+            Nx=20,
+            Ny=20,
+            T=0.1,
+            C=0.5,
+        )
+
+        assert result.u is not None
+        assert result.x is not None
+        assert result.y is not None
+        assert result.u.shape == (21, 21)
+        assert len(result.x) == 21
+        assert len(result.y) == 21
+
+    def test_initial_condition_preserved_at_t0(self):
+        """Initial condition should be exact at t=0."""
+        from src.wave.wave2D_devito import solve_wave_2d
+
+        def I(X, Y):
+            return np.sin(np.pi * X) * np.sin(np.pi * Y)
+
+        result = solve_wave_2d(
+            Lx=1.0,
+            Ly=1.0,
+            c=1.0,
+            Nx=20,
+            Ny=20,
+            T=0.0,
+            C=0.5,
+            I=I,
+            save_history=True,
+        )
+
+        # At t=0, solution should match initial condition
+        X, Y = np.meshgrid(result.x, result.y, indexing='ij')
+        expected = I(X, Y)
+        np.testing.assert_allclose(result.u_history[0], expected, rtol=1e-10)
+
+    def test_boundary_conditions(self):
+        """Verify Dirichlet boundary conditions u=0 on all boundaries."""
+        from src.wave.wave2D_devito import solve_wave_2d
+
+        result = solve_wave_2d(
+            Lx=1.0,
+            Ly=1.0,
+            c=1.0,
+            Nx=20,
+            Ny=20,
+            T=0.2,
+            C=0.5,
+            save_history=True,
+        )
+
+        # Check boundaries at all time steps
+        for n in range(len(result.t_history)):
+            u = result.u_history[n]
+            assert np.max(np.abs(u[0, :])) < 1e-10, f"Left BC (x=0) violated at t={result.t_history[n]}"
+            assert np.max(np.abs(u[-1, :])) < 1e-10, f"Right BC (x=Lx) violated at t={result.t_history[n]}"
+            assert np.max(np.abs(u[:, 0])) < 1e-10, f"Bottom BC (y=0) violated at t={result.t_history[n]}"
+            assert np.max(np.abs(u[:, -1])) < 1e-10, f"Top BC (y=Ly) violated at t={result.t_history[n]}"
+
+    def test_standing_wave_accuracy(self):
+        """Test accuracy against exact 2D standing wave solution."""
+        from src.wave.wave2D_devito import exact_standing_wave_2d, solve_wave_2d
+
+        Lx = Ly = 1.0
+        c = 1.0
+        T = 0.25
+
+        result = solve_wave_2d(
+            Lx=Lx,
+            Ly=Ly,
+            c=c,
+            Nx=40,
+            Ny=40,
+            T=T,
+            C=0.5,
+        )
+
+        X, Y = np.meshgrid(result.x, result.y, indexing='ij')
+        u_exact = exact_standing_wave_2d(X, Y, T, Lx, Ly, c)
+        error = np.sqrt(np.mean((result.u - u_exact)**2))
+
+        # Should be reasonably accurate
+        assert error < 0.05, f"Error {error} too large"
+
+    def test_convergence_second_order(self):
+        """Verify at least second-order convergence."""
+        from src.wave.wave2D_devito import convergence_test_wave_2d
+
+        grid_sizes, errors, observed_order = convergence_test_wave_2d(
+            grid_sizes=[10, 20, 40],
+            T=0.1,
+            C=0.5,
+        )
+
+        # Should be at least second order
+        assert observed_order > 1.5, f"Observed order {observed_order} < 1.5"
+
+        # Verify errors decrease
+        assert errors[1] < errors[0], "Errors should decrease with refinement"
+        assert errors[2] < errors[1], "Errors should decrease with refinement"
+
+    def test_courant_stability_violation_raises(self):
+        """CFL > 1 should raise ValueError."""
+        from src.wave.wave2D_devito import solve_wave_2d
+
+        with pytest.raises(ValueError, match="CFL stability"):
+            solve_wave_2d(
+                Lx=1.0,
+                Ly=1.0,
+                c=1.0,
+                Nx=20,
+                Ny=20,
+                T=0.1,
+                C=1.5,  # Unstable!
+            )
+
+    def test_result_dataclass(self):
+        """Verify Wave2DResult contains all expected fields."""
+        from src.wave.wave2D_devito import solve_wave_2d
+
+        result = solve_wave_2d(
+            Lx=1.0,
+            Ly=1.0,
+            c=1.0,
+            Nx=20,
+            Ny=20,
+            T=0.1,
+            C=0.5,
+            save_history=True,
+        )
+
+        assert hasattr(result, 'u')
+        assert hasattr(result, 'x')
+        assert hasattr(result, 'y')
+        assert hasattr(result, 't')
+        assert hasattr(result, 'dt')
+        assert hasattr(result, 'u_history')
+        assert hasattr(result, 't_history')
+        assert hasattr(result, 'C')
+
+        assert result.t == pytest.approx(0.1, rel=1e-2)
+        assert result.u_history.shape[0] > 1
+        assert result.u_history.shape[1] == 21
+        assert result.u_history.shape[2] == 21
+
+
+class TestSourceWavelets:
+    """Tests for source wavelet functions (no Devito required)."""
+
+    def test_ricker_wavelet_shape(self):
+        """Ricker wavelet should have correct shape."""
+        from src.wave.sources import ricker_wavelet
+
+        t = np.linspace(0, 1, 1001)
+        src = ricker_wavelet(t, f0=10.0)
+
+        assert src.shape == t.shape
+
+    def test_ricker_wavelet_peak(self):
+        """Ricker wavelet should peak near t0."""
+        from src.wave.sources import ricker_wavelet
+
+        t = np.linspace(0, 1, 1001)
+        t0 = 0.2
+        src = ricker_wavelet(t, f0=10.0, t0=t0)
+
+        # Find peak
+        idx_peak = np.argmax(np.abs(src))
+        t_peak = t[idx_peak]
+
+        # Peak should be near t0
+        assert abs(t_peak - t0) < 0.02
+
+    def test_ricker_wavelet_zero_mean(self):
+        """Ricker wavelet should have approximately zero mean."""
+        from src.wave.sources import ricker_wavelet
+
+        t = np.linspace(0, 2, 10001)  # Long enough to capture full wavelet
+        src = ricker_wavelet(t, f0=5.0, t0=1.0)
+
+        # Integral should be approximately zero
+        integral = np.trapezoid(src, t)
+        assert abs(integral) < 0.01
+
+    def test_gaussian_pulse_shape(self):
+        """Gaussian pulse should have correct shape."""
+        from src.wave.sources import gaussian_pulse
+
+        t = np.linspace(0, 1, 1001)
+        src = gaussian_pulse(t, t0=0.5, sigma=0.1)
+
+        assert src.shape == t.shape
+
+    def test_gaussian_pulse_peak(self):
+        """Gaussian pulse should peak at t0."""
+        from src.wave.sources import gaussian_pulse
+
+        t = np.linspace(0, 1, 1001)
+        t0 = 0.3
+        src = gaussian_pulse(t, t0=t0, sigma=0.05)
+
+        # Find peak
+        idx_peak = np.argmax(src)
+        t_peak = t[idx_peak]
+
+        # Peak should be at t0
+        assert abs(t_peak - t0) < 0.01
+
+    def test_gaussian_pulse_amplitude(self):
+        """Gaussian pulse amplitude at t0 should equal amp."""
+        from src.wave.sources import gaussian_pulse
+
+        t = np.linspace(0, 1, 1001)
+        amp = 2.5
+        src = gaussian_pulse(t, t0=0.5, sigma=0.1, amp=amp)
+
+        assert np.max(src) == pytest.approx(amp, rel=1e-3)
+
+    def test_gaussian_derivative_zero_crossing(self):
+        """Derivative of Gaussian should cross zero at t0."""
+        from src.wave.sources import gaussian_derivative
+
+        t = np.linspace(0, 1, 10001)
+        t0 = 0.5
+        src = gaussian_derivative(t, t0=t0, sigma=0.1)
+
+        # Find zero crossing near t0
+        sign_changes = np.where(np.diff(np.sign(src)))[0]
+        t_zeros = t[sign_changes]
+
+        # Should have a zero crossing at t0
+        assert any(abs(tz - t0) < 0.01 for tz in t_zeros)
+
+    def test_spectrum_peak_frequency(self):
+        """Ricker wavelet spectrum should peak near f0."""
+        from src.wave.sources import estimate_peak_frequency, ricker_wavelet
+
+        t = np.linspace(0, 2, 4001)
+        dt = t[1] - t[0]
+        f0 = 15.0
+        src = ricker_wavelet(t, f0=f0, t0=1.0)
+
+        f_peak = estimate_peak_frequency(src, dt)
+
+        # Peak should be near f0
+        assert abs(f_peak - f0) < 2.0  # Allow 2 Hz tolerance

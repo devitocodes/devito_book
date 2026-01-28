@@ -60,4 +60,3 @@ else
   echo "Building Cython module $module failed"
   exit 1
 fi
-

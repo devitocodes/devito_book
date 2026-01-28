@@ -89,14 +89,14 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
     f_a = zeros((Nx+1,Ny+1), order=order)   # for compiled loops
 
     Ix = range(0, u.shape[0])
-    Iy = range(0, u.shape[1])
+    It = range(0, u.shape[1])
     It = range(0, t.shape[0])
 
     import time; t0 = time.perf_counter()          # for measuring CPU time
     # Load initial condition into u_1
     if version == 'scalar':
         for i in Ix:
-            for j in Iy:
+            for j in It:
                 u_1[i,j] = I(x[i], y[j])
     else: # use vectorized version
         u_1[:,:] = I(xv, yv)
@@ -158,7 +158,7 @@ def solver(I, V, f, c, Lx, Ly, Nx, Ny, dt, T,
 
 def advance_scalar(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2,
                    V=None, step1=False):
-    Ix = range(0, u.shape[0]);  Iy = range(0, u.shape[1])
+    Ix = range(0, u.shape[0]);  It = range(0, u.shape[1])
     if step1:
         dt = sqrt(dt2)  # save
         Cx2 = 0.5*Cx2;  Cy2 = 0.5*Cy2; dt2 = 0.5*dt2  # redefine
@@ -166,7 +166,7 @@ def advance_scalar(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2,
     else:
         D1 = 2;  D2 = 1
     for i in Ix[1:-1]:
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             u_xx = u_1[i-1,j] - 2*u_1[i,j] + u_1[i+1,j]
             u_yy = u_1[i,j-1] - 2*u_1[i,j] + u_1[i,j+1]
             u[i,j] = D1*u_1[i,j] - D2*u_2[i,j] + \
@@ -174,14 +174,14 @@ def advance_scalar(u, u_1, u_2, f, x, y, t, n, Cx2, Cy2, dt2,
             if step1:
                 u[i,j] += dt*V(x[i], y[j])
     # Boundary condition u=0
-    j = Iy[0]
+    j = It[0]
     for i in Ix: u[i,j] = 0
-    j = Iy[-1]
+    j = It[-1]
     for i in Ix: u[i,j] = 0
     i = Ix[0]
-    for j in Iy: u[i,j] = 0
+    for j in It: u[i,j] = 0
     i = Ix[-1]
-    for j in Iy: u[i,j] = 0
+    for j in It: u[i,j] = 0
     return u
 
 def advance_vectorized(u, u_1, u_2, f_a, Cx2, Cy2, dt2,

@@ -82,7 +82,7 @@ def solver_dense(
     u_n = np.zeros((Nx+1, Ny+1))      # u at the previous time level
 
     Ix = range(0, Nx+1)
-    Iy = range(0, Ny+1)
+    It = range(0, Ny+1)
     It = range(0, Nt+1)
 
     # Make U_0x, U_0y, U_Lx and U_Ly functions if they are float/int
@@ -101,7 +101,7 @@ def solver_dense(
 
     # Load initial condition into u_n
     for i in Ix:
-        for j in Iy:
+        for j in It:
             u_n[i,j] = I(x[i], y[j])
 
     # Two-dim coordinate arrays for vectorized function evaluations
@@ -130,7 +130,7 @@ def solver_dense(
         p = m(i,j);  A[p, p] = 1
     # Loop over all internal mesh points in y diretion
     # and all mesh points in x direction
-    for j in Iy[1:-1]:
+    for j in It[1:-1]:
         i = 0;  p = m(i,j);  A[p, p] = 1   # boundary
         for i in Ix[1:-1]:                 # interior points
             p = m(i,j)
@@ -152,7 +152,7 @@ def solver_dense(
         j = 0
         for i in Ix:
             p = m(i,j);  b[p] = U_0y(t[n+1])  # boundary
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             i = 0;  p = p = m(i,j);  b[p] = U_0x(t[n+1])  # boundary
             for i in Ix[1:-1]:
                 p = m(i,j)                                # interior
@@ -176,7 +176,7 @@ def solver_dense(
 
         # Fill u with vector c
         for i in Ix:
-            for j in Iy:
+            for j in It:
                 u[i,j] = c[m(i,j)]
 
         if user_action is not None:
@@ -228,7 +228,7 @@ def solver_sparse(
     u_n = np.zeros((Nx+1, Ny+1))    # u at the previous time level
 
     Ix = range(0, Nx+1)
-    Iy = range(0, Ny+1)
+    It = range(0, Ny+1)
     It = range(0, Nt+1)
 
     # Make U_0x, U_0y, U_Lx and U_Ly functions if they are float/int
@@ -247,7 +247,7 @@ def solver_sparse(
 
     # Load initial condition into u_n
     for i in Ix:
-        for j in Iy:
+        for j in It:
             u_n[i,j] = I(x[i], y[j])
 
     # Two-dim coordinate arrays for vectorized function evaluations
@@ -271,7 +271,7 @@ def solver_sparse(
 
     m = lambda i, j: j*(Nx+1) + i
     j = 0; main[m(0,j):m(Nx+1,j)] = 1  # j=0 boundary line
-    for j in Iy[1:-1]:             # Interior mesh lines j=1,...,Ny-1
+    for j in It[1:-1]:             # Interior mesh lines j=1,...,Ny-1
         i = 0;   main[m(i,j)] = 1  # Boundary
         i = Nx;  main[m(i,j)] = 1  # Boundary
         # Interior i points: i=1,...,N_x-1
@@ -306,7 +306,7 @@ def solver_sparse(
         j = 0
         for i in Ix:
             p = m(i,j);  b[p] = U_0y(t[n+1])          # Boundary
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             i = 0;  p = m(i,j);  b[p] = U_0x(t[n+1])  # Boundary
             for i in Ix[1:-1]:
                 p = m(i,j)                            # Interior
@@ -329,7 +329,7 @@ def solver_sparse(
         f_a_n   = f(xv, yv, t[n])
 
         j = 0; b[m(0,j):m(Nx+1,j)] = U_0y(t[n+1])     # Boundary
-        for j in Iy[1:-1]:
+        for j in It[1:-1]:
             i = 0;   p = m(i,j);  b[p] = U_0x(t[n+1]) # Boundary
             i = Nx;  p = m(i,j);  b[p] = U_Lx(t[n+1]) # Boundary
             imin = Ix[1]
@@ -372,7 +372,7 @@ def solver_sparse(
                       % (CG_iter[-1], CG_tol))
             '''
         # Fill u with vector c
-        #for j in Iy:  # vectorize y lines
+        #for j in It:  # vectorize y lines
         #    u[0:Nx+1,j] = c[m(0,j):m(Nx+1,j)]
         u[:,:] = c.reshape(Ny+1,Nx+1).T
 
@@ -443,7 +443,7 @@ def solver_classic_iterative(
         u_new = np.zeros((Nx+1, Ny+1))  # help array
 
     Ix = range(0, Nx+1)
-    Iy = range(0, Ny+1)
+    It = range(0, Ny+1)
     It = range(0, Nt+1)
 
     # Make U_0x, U_0y, U_Lx and U_Ly functions if they are float/int
@@ -462,7 +462,7 @@ def solver_classic_iterative(
 
     # Load initial condition into u_n
     for i in Ix:
-        for j in Iy:
+        for j in It:
             u_n[i,j] = I(x[i], y[j])
 
     # Two-dim coordinate arrays for vectorized function evaluations
@@ -488,7 +488,7 @@ def solver_classic_iterative(
                 j = 0
                 for i in Ix:
                     u[i,j] = U_0y(t[n+1])  # Boundary
-                for j in Iy[1:-1]:
+                for j in It[1:-1]:
                     i = 0;   u[i,j] = U_0x(t[n+1])  # Boundary
                     i = Nx;  u[i,j] = U_Lx(t[n+1])  # Boundary
                     for i in Ix[1:-1]:

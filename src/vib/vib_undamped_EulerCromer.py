@@ -105,8 +105,8 @@ def demo():
             title="dt=%.3g" % dt,
         )
         input()
-        plt.savefig("ECvs2nd_%d" % k + ".png")
-        plt.savefig("ECvs2nd_%d" % k + ".pdf")
+        plt.savefig("ECvs2and_%d" % k + ".png")
+        plt.savefig("ECvs2and_%d" % k + ".pdf")
 
 
 def convergence_rate():
