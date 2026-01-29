@@ -108,7 +108,7 @@ def solver_theta(I, a, L, Nx, D, T, theta=0.5, u_L=1, u_R=0,
         u_n, u = u, u_n
 ```
 
-The code is found in the file [`diffu1D_vc.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu1D_vc.py).
+The code is found in the file [`diffu1D_vc.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_vc.py).
 
 ## Stationary solution {#sec-diffu-varcoeff-stationary}
 
@@ -171,7 +171,7 @@ $x$ lies, and then start evaluating a formula like
 (@eq-diffu-fd2-pde-st-sol-pc). In Python, vectorized expressions may
 help to speed up the computations.
 The convenience classes `PiecewiseConstant` and
-`IntegratedPiecewiseConstant` in the [`Heaviside`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/Heaviside.py)
+`IntegratedPiecewiseConstant` in the [`Heaviside`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/Heaviside.py)
 module were made to simplify programming with
 functions like (@eq-diffu-fd2-pde-st-pc-alpha) and expressions like
 (@eq-diffu-fd2-pde-st-sol-pc). These utilities not only represent

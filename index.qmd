@@ -29,18 +29,21 @@ This work is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/
 Devito allows you to write PDEs symbolically and automatically generates optimized finite difference code:
 
 ```python
-from devito import Grid, TimeFunction, Eq, Operator
+from devito import Grid, TimeFunction, Eq, Operator, solve, Constant
 
 grid = Grid(shape=(101,), extent=(1.0,))
 u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
-c = 1.0  # wave speed
+c = Constant(name='c')  # wave speed
 
-# Write the wave equation symbolically
-eq = Eq(u.dt2, c**2 * u.dx2)
+# Write the wave equation symbolically: u_tt = c^2 * u_xx
+pde = Eq(u.dt2, c**2 * u.dx2)
+
+# Solve for u at the next time step
+update = Eq(u.forward, solve(pde, u.forward))
 
 # Devito generates optimized C code
-op = Operator([eq])
-op.apply(time_M=100, dt=0.001)
+op = Operator([update])
+op.apply(time_M=100, dt=0.001, c=1.0)
 ```
 
 ## Book Structure {.unnumbered}

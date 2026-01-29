@@ -109,7 +109,7 @@ We solve $u'=f_0(u)$ and $u'=f_1(u)$ by a Forward Euler step.
 In addition, we add a method where we solve $u'=f_0(u)$ analytically,
 since the equation is actually $u'=u$ with solution $e^t$.
 The software that accompanies the following methods is the file
-[`split_logistic.py`](https://github.com/hplgit/fdm-book/tree/master/src/nonlin/split_logistic.py).
+[`split_logistic.py`](https://github.com/devitocodes/devito_book/tree/main/src/nonlin/split_logistic.py).
 
 ### Splitting techniques
 
@@ -314,7 +314,7 @@ while differing in the step $h$ (being either $\Delta x^2$ or $\Delta
 x$) and the convergence rate $r$ (being either 1 or 2).
 
 All code commented below is found in the file
-[`split_diffu_react.py`](https://github.com/hplgit/fdm-book/tree/master/src/nonlin/split_diffu_react.py). When executed,
+[`split_diffu_react.py`](https://github.com/devitocodes/devito_book/tree/main/src/nonlin/split_diffu_react.py). When executed,
 a function `convergence_rates` is called, from which all convergence
 rate computations are handled:
 
@@ -783,9 +783,7 @@ u = e^{-\dfc k^2 t - \beta t + ikx},
 $$
 where $i=\sqrt{-1}$ and the imaginary part is taken as the physical solution.
 
-We refer to ref[Section @sec-diffu-pde1-analysis][ in
-[@Langtangen_Linge]][the section "Analysis of schemes for
-the diffusion equation": "" in [@Langtangen_Linge]] and to
+We refer to @sec-diffu-pde1-analysis and to
 the book [@Langtangen_decay] for a discussion of exact numerical
 solutions to diffusion and decay problems, respectively.  The key idea
 is to search for solutions $A^ne^{ikx}$ and determine $A$.  For the

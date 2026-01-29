@@ -322,7 +322,7 @@ the algorithm, is to compute $u^1$, $u^2$, and $u^3$
 with the aid of a calculator
 and make a function for comparing these results with those from the `solver`
 function. The `test_three_steps` function in
-the file [`vib_undamped.py`](https://github.com/hplgit/fdm-book/tree/master/src/vib/vib_undamped.py)
+the file [`vib_undamped.py`](https://github.com/devitocodes/devito_book/tree/main/src/vib/vib_undamped.py)
 shows the details of how we use the hand calculations to test the code:
 
 ```python
@@ -484,7 +484,7 @@ The complete code appears in the file `vib_undamped.py`.
 Tony S. Yu has written a script [`plotslopes.py`](http://goo.gl/A4Utm7)
 that is very useful to indicate the slope of a graph, especially
 a graph like $\ln E = r\ln \Delta t + \ln C$ arising from the model
-$E=C\Delta t^r$. A copy of the script resides in the [`src/vib`](https://github.com/hplgit/fdm-book/tree/master/src/vib)
+$E=C\Delta t^r$. A copy of the script resides in the [`src/vib`](https://github.com/devitocodes/devito_book/tree/main/src/vib)
 directory. Let us use it to compare the original method for $u'' + \omega^2u =0$
 with the same method applied to the equation with a modified
 $\omega$. We make log-log plots of the error versus $\Delta t$.
@@ -1400,7 +1400,7 @@ def amplitudes(minima, maxima):
          for n in range(min(len(minima),len(maxima)))]
     return np.array(a)
 ```
-The code segments are found in the file [`vib_empirical_analysis.py`](https://github.com/hplgit/fdm-book/tree/master/src/vib/vib_empirical_analysis.py).
+The code segments are found in the file [`vib_empirical_analysis.py`](https://github.com/devitocodes/devito_book/tree/main/src/vib/vib_empirical_analysis.py).
 
 Since `a[i]` and `p[i]` correspond to
 the $i$-th amplitude estimate and the $i$-th period estimate, respectively,
@@ -1552,7 +1552,7 @@ left plot in Figure @fig-vib-ode1-2dt.
 Figure @fig-vib-ode1-tildeomega-plot plots the discrete frequency
 (@eq-vib-ode1-tildeomega) and its approximation
 (@eq-vib-ode1-tildeomega-series) for $\omega =1$ (based on the
-program [`vib_plot_freq.py`](https://github.com/hplgit/fdm-book/tree/master/src/vib/vib_plot_freq.py)).
+program [`vib_plot_freq.py`](https://github.com/devitocodes/devito_book/tree/main/src/vib/vib_plot_freq.py)).
 Although $\tilde\omega$ is a function of $\Delta t$ in
 (@eq-vib-ode1-tildeomega-series), it is misleading to think of
 $\Delta t$ as the important discretization parameter. It is the
@@ -1770,7 +1770,7 @@ $\Delta t$ as it predicts $\tilde\omega = 2.34/pi$, which is a 25
 percent reduction.) The corresponding period of the numerical solution
 is $\tilde P=2\pi/\tilde\omega = 2\Delta t$, which means that there is
 just one time step $\Delta t$ between a peak (maximum) and a
-[through](https://simple.wikipedia.org/wiki/Wave_(physics))
+[trough](https://simple.wikipedia.org/wiki/Wave_%28physics%29)
 (minimum) in the numerical solution. This is the shortest possible
 wave that can be represented in the mesh! In other words, it is not
 meaningful to use a larger time step than the stability limit.
@@ -2025,7 +2025,7 @@ def run_solvers_and_plot(
         u, t = solver.solve(t_mesh)
 ```
 There is quite some more code dealing with plots also, and we refer
-to the source file [`vib_undamped_odespy.py`](https://github.com/hplgit/fdm-book/tree/master/src/vib/vib_undamped_odespy.py)
+to the source file [`vib_undamped_odespy.py`](https://github.com/devitocodes/devito_book/tree/main/src/vib/vib_undamped_odespy.py)
 for details. Observe that keyword arguments in `f(u,t,w=1)` can
 be supplied through a solver parameter `f_kwargs` (dictionary of
 additional keyword arguments to `f`).
@@ -2408,7 +2408,7 @@ The convergence rates of the quantity `e_E_norm` can be used for verification.
 The value of `e_E_norm` is also useful for comparing schemes through their
 ability to preserve energy. Below is a table demonstrating the relative error
 in total energy for various schemes (computed by the
-[`vib_undamped_odespy.py`](https://github.com/hplgit/fdm-book/tree/master/src/vib/vib_undamped_odespy.py)
+[`vib_undamped_odespy.py`](https://github.com/devitocodes/devito_book/tree/main/src/vib/vib_undamped_odespy.py)
 program). The test problem is $u^{\prime\prime} + 4\pi^2 u =0$ with $u(0)=1$
 and $u'(0)=0$, so the period is 1 and $E(t)\approx 4.93$. We clearly see that
 the Crank-Nicolson and the Runge-Kutta schemes are superior to the Forward and
@@ -2671,7 +2671,7 @@ different values for $u^1$ compared to the method in Section
 ## Implementation
 ### Solver function {#sec-vib-model2x2-EulerCromer-impl}
 
-The function below, found in [`vib_undamped_EulerCromer.py`](https://github.com/hplgit/fdm-book/tree/master/src/vib/vib_undamped_EulerCromer.py), implements the Euler-Cromer scheme
+The function below, found in [`vib_undamped_EulerCromer.py`](https://github.com/devitocodes/devito_book/tree/main/src/vib/vib_undamped_EulerCromer.py), implements the Euler-Cromer scheme
 (@eq-vib-model2x2-EulerCromer-veq1b)-(@eq-vib-model2x2-EulerCromer-ueq1b):
 
 ```python
@@ -3112,7 +3112,7 @@ Verification of this code is easy as we can just compare the computed
 `vib_undamped.py` (which solves $u''+\omega^2u=0$ directly).  The
 values should coincide to machine precision since the two numerical
 methods are mathematically equivalent.  We refer to the file
-[`vib_undamped_staggered.py`](https://github.com/hplgit/fdm-book/tree/master/src/vib/vib_undamped_staggered.py)
+[`vib_undamped_staggered.py`](https://github.com/devitocodes/devito_book/tree/main/src/vib/vib_undamped_staggered.py)
 for the details of a unit test (`test_staggered`) that checks this property.
 
 ## Problem: Use linear/quadratic functions for verification {#sec-vib-exer-undamped-verify-linquad}
@@ -4809,7 +4809,7 @@ def test_solver_memsave():
 
 ## Problem: Minimize memory usage of a general vibration solver {#sec-vib-exer-memsave}
 
-The program [`vib.py`](https://github.com/hplgit/fdm-book/tree/master/src/vib/vib.py) stores the complete
+The program [`vib.py`](https://github.com/devitocodes/devito_book/tree/main/src/vib/vib.py) stores the complete
 solution $u^0,u^1,\ldots,u^{N_t}$ in memory, which is convenient for
 later plotting.  Make a memory minimizing version of this program
 where only the last three $u^{n+1}$, $u^n$, and $u^{n-1}$ values are

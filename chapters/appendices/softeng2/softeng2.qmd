@@ -36,24 +36,19 @@ $$
 [D_{2x}u]^n_i=0,
 $$
 at a boundary point $i$. The details of how the numerical scheme
-is worked out are described in ref[Sections @sec-wave-pde2-Neumann
-and @sec-wave-pde2-var-c][ in [@Langtangen_deqbook_wave]][in
-the document [Finite difference methods for wave motion](http://tinyurl.com/k3sdbuv/pub/wave)
-[@Langtangen_deqbook_wave]].
+is worked out are described in @sec-wave-pde2-Neumann
+and @sec-wave-pde2-var-c.
 
 ## A solver function
 
 The general initial-boundary value problem
 solved by finite difference methods can be implemented as shown in
 the following `solver` function (taken from the
-file [`wave1D_dn_vc.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn_vc.py)).
+file [`wave1D_dn_vc.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_dn_vc.py)).
 This function builds on
 simpler versions described in
-ref[Sections @sec-wave-pde1-impl, @sec-wave-pde1-impl-vec
-@sec-wave-pde2-Neumann, and @sec-wave-pde2-var-c][ in
-[@Langtangen_deqbook_wave]][in
-the document [Finite difference methods for wave motion](http://tinyurl.com/k3sdbuv/pub/wave)
-[@Langtangen_deqbook_wave]].
+@sec-wave-pde1-impl, @sec-wave-pde1-impl-vec,
+@sec-wave-pde2-Neumann, and @sec-wave-pde2-var-c.
 There are several quite advanced
 constructs that will be commented upon later.
 The code is lengthy, but that is because we provide a lot of
@@ -286,7 +281,7 @@ Such actions must be
 taken care of outside the `solver` function, more precisely in the
 `user_action` function that is called at every time level.
 
-We have, in the [`wave1D_dn_vc.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn_vc.py)
+We have, in the [`wave1D_dn_vc.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_dn_vc.py)
 code, implemented the `user_action`
 callback function as a class `PlotAndStoreSolution` with a
 `__call__(self, x, t, t, n)` method for the `user_action` function.
@@ -357,7 +352,7 @@ The `hashed_input` argument, used to name the
 resulting archive file with all solutions, is supposed to be a
 hash reflecting all import parameters in the problem such that this
 simulation has a unique name.
-The `hashed_input` string is made in the [`solver`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn_vc.py) function, using the `hashlib`
+The `hashed_input` string is made in the [`solver`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_dn_vc.py) function, using the `hashlib`
 and `inspect` modules, based on the arguments to `solver`:
 
 ```python
@@ -419,10 +414,7 @@ solutions to machine precision. With Dirichlet boundary conditions
 we can construct a function that is linear in $t$ and quadratic in
 $x$ that is also an exact solution of the scheme, while with Neumann
 conditions we are left with testing just a constant solution
-(see comments in ref[Section @sec-wave-pde1-verify][ in
-[@Langtangen_deqbook_wave]][in
-the document [Finite difference methods for wave motion](http://tinyurl.com/k3sdbuv/pub/wave)
-[@Langtangen_deqbook_wave]]).
+(see comments in @sec-wave-pde1-verify).
 
 ### Convergence rates
 
@@ -435,9 +427,7 @@ $$
 r = \frac{\ln(E_{i}/E_{i-1})}{\ln(h_{i}/h_{i-1})},
 $$
 where $E_i$ is the error corresponding to $h_i$ and $E_{i-1}$ corresponds to
-$h_{i-1}$. ref[Section @sec-wave-pde2-fd-standing-waves][ in [@Langtangen_deqbook_wave]][The
-section "Using an analytical solution of physical significance": ""
-in [@Langtangen_deqbook_wave]] explains the details of this type of verification and how
+$h_{i-1}$. @sec-wave-pde2-fd-standing-waves explains the details of this type of verification and how
 we introduce the single discretization parameter $h=\Delta t = \hat c\Delta t$,
 for some constant $\hat c$. To compute the error, we had to rely on
 a global variable in the user action function. Below is an implementation
@@ -449,15 +439,12 @@ error (which is always considered an advantage).
 ```
 
 The returned sequence `r` should converge to 2 since the error
-analysis in ref[Section @sec-wave-pde1-analysis][in
-[@Langtangen_deqbook_wave]][the section "Analysis of the difference
-equations": "" in [@Langtangen_deqbook_wave]] predicts various error measures to behave
+analysis in @sec-wave-pde1-analysis predicts various error measures to behave
 like $\Oof{\Delta t^2} + \Oof{\Delta x^2}$. We can easily run
 the case with standing waves and the analytical solution
 $u(x,t) = \cos(\frac{2\pi}{L}t)\sin(\frac{2\pi}{L}x)$. The call will
 be very similar to the one provided in the `test_convrate_sincos` function
-in ref[Section @sec-wave-pde1-impl-verify-rate][ in [@Langtangen_deqbook_wave]][the section "Verification: convergence rates": "" in
-[@Langtangen_deqbook_wave]], see the file [`wave1D_dn_vc.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn_vc.py) for details.
+in @sec-wave-pde1-impl-verify-rate, see the file `src/wave/wave1D/wave1D_dn_vc.py` for details.
 
 Many who know about class programming prefer to organize their software
 in terms of classes. This gives a richer application programming interface
@@ -482,7 +469,7 @@ how this may be counteracted by introducing a super class `Parameters` that allo
 code to be parameterized. In addition, it is convenient to collect the
 arrays that describe the mesh in a special `Mesh` class and make
 a class `Function` for a mesh function (mesh point values and its mesh).
-All the following code is found in [`wave1D_oo.py`](https://github.com/hplgit/fdm-book/tree/master/src/softeng2/wave1D_oo.py).
+All the following code is found in [`wave1D_oo.py`](https://github.com/devitocodes/devito_book/tree/main/src/softeng2/wave1D_oo.py).
 
 ## Class Parameters
 
@@ -1222,22 +1209,21 @@ is reproduced (within machine precision).
 
 ## Speeding up Cython code {#sec-wave2D3D-impl-Cython}
 
-We now consider the [`wave2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave2D_u0/wave2D_u0.py)
+We now consider the [`wave2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave2D_u0/wave2D_u0.py)
 code for solving the 2D linear wave equation with constant wave
 velocity and homogeneous Dirichlet boundary conditions $u=0$.
 We shall in the present chapter extend this code with computational
 modules written in other languages than Python. This extended version is
-called [`wave2D_u0_adv.py`](https://github.com/hplgit/fdm-book/tree/master/src/softeng2/wave2D_u0_adv.py).
+called [`wave2D_u0_adv.py`](https://github.com/devitocodes/devito_book/tree/main/src/softeng2/wave2D_u0_adv.py).
 
 The `wave2D_u0.py` file contains a `solver` function, which calls an
 `advance_*` function to advance the numerical scheme one level forward
 in time.  The function `advance_scalar` applies standard Python loops
 to implement the scheme, while `advance_vectorized` performs
 corresponding vectorized arithmetics with array slices. The statements
-of this solver are explained in ref[Section @sec-wave-2D3D-impl, in
-particular Sections @sec-wave2D3D-impl-scalar and
-@sec-wave2D3D-impl-vectorized][ in [@Langtangen_deqbook_wave]][in
-the document [Finite difference methods for wave motion](http://tinyurl.com/k3sdbuv/pub/wave) [@Langtangen_deqbook_wave]].
+of this solver are explained in @sec-wave-2D3D-impl, in
+particular @sec-wave2D3D-impl-scalar and
+@sec-wave2D3D-impl-vectorized.
 
 Although vectorization can bring down the CPU time dramatically
 compared with scalar code, there is still some factor 5-10 to win in
@@ -1519,7 +1505,7 @@ to a single index.
 ## The Fortran subroutine
 
 We write a Fortran subroutine `advance` in a file
-[`wave2D_u0_loop_f77.f`](https://github.com/hplgit/fdm-book/tree/master/src/softeng2/wave2D_u0_loop_f77.f)
+[`wave2D_u0_loop_f77.f`](https://github.com/devitocodes/devito_book/tree/main/src/softeng2/wave2D_u0_loop_f77.f)
 for implementing the updating formula
 (@eq-wave-2D3D-impl1-2Du0-ueq-discrete) and setting the solution to zero
 at the boundaries:
@@ -1867,13 +1853,13 @@ void advance(double* u, double* u_1, double* u_2, double* f,
 ## The Cython interface file
 
 All the code above appears in the file
-[`wave2D_u0_loop_c.c`](https://github.com/hplgit/fdm-book/tree/master/src/softeng2/wave2D_u0_loop_c.c).
+[`wave2D_u0_loop_c.c`](https://github.com/devitocodes/devito_book/tree/main/src/softeng2/wave2D_u0_loop_c.c).
 We need to compile this file together with C wrapper code such that
 `advance` can be called from Python. Cython can be used to generate
 appropriate wrapper code.
 The relevant Cython code for interfacing C is
 placed in a file with extension `.pyx`. This file, called
-[`wave2D_u0_loop_c_cy.pyx`](https://github.com/hplgit/fdm-book/tree/master/src/softeng2/wave2D_u0_loop_c_cy.pyx), looks like
+[`wave2D_u0_loop_c_cy.pyx`](https://github.com/devitocodes/devito_book/tree/main/src/softeng2/wave2D_u0_loop_c_cy.pyx), looks like
 
 ```python
 import numpy as np
@@ -1903,7 +1889,7 @@ def advance_cwrap(
 
 We first declare the C functions to be interfaced.
 These must also appear in a C header file,
-[`wave2D_u0_loop_c.h`](https://github.com/hplgit/fdm-book/tree/master/src/softeng2/wave2D_u0_loop_c.h),
+[`wave2D_u0_loop_c.h`](https://github.com/devitocodes/devito_book/tree/main/src/softeng2/wave2D_u0_loop_c.h),
 
 ```python
 extern void advance(double* u, double* u_n, double* u_nm1, double* f,
@@ -2047,8 +2033,8 @@ interfaces for a wide range of
 languages, including Python, Perl, Ruby, and Java.
 However, SWIG is a comprehensive tool with a correspondingly
 steep learning curve. Alternative tools, such as
-[Boost Python](http://www.boost.org/doc/libs/1_51_0/libs/python/doc/index.html), [SIP](http://riverbankcomputing.co.uk/software/sip/intro),
-and [Shiboken](http://qt-project.org/wiki/Category:LanguageBindings::PySide::Shiboken)
+[Boost Python](https://www.boost.org/doc/libs/release/libs/python/doc/html/index.html), [SIP](https://riverbankcomputing.com/software/sip/),
+and [Shiboken](https://wiki.qt.io/Qt_for_Python)
 are similarly comprehensive. Simpler tools include
 [PyBindGen](http://code.google.com/p/pybindgen/).
 

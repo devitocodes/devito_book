@@ -555,7 +555,7 @@ $$ {#eq-nonlin-timediscrete-logistic-relaxation-Newton-formula}
 
 ## Implementation and experiments {#sec-nonlin-timediscrete-logistic-impl}
 
-The program [`logistic.py`](https://github.com/hplgit/fdm-book/tree/master/src/nonlin/logistic.py) contains
+The program [`logistic.py`](https://github.com/devitocodes/devito_book/tree/main/src/nonlin/logistic.py) contains
 implementations of all the methods described above.
 Below is an extract of the file showing how the Picard and Newton
 methods are implemented for a Backward Euler discretization of
@@ -807,7 +807,7 @@ treatment has no effect, as with $f(u,t)=\exp(-u)$ and $f(u,t)=\ln (1+u)$,
 but with $f(u,t)=\sin(2(u+1))$, the $f(u^{-},t)u/u^{-}$ trick
 leads to 7, 9, and 11 iterations during the first three steps, while
 $f(u^{-},t)$ demands 17, 21, and 20 iterations.
-(Experiments can be done with the code [`ODE_Picard_tricks.py`](https://github.com/hplgit/fdm-book/tree/master/src/nonlin/ODE_Picard_tricks.py).)
+(Experiments can be done with the code [`ODE_Picard_tricks.py`](https://github.com/devitocodes/devito_book/tree/main/src/nonlin/ODE_Picard_tricks.py).)
 :::
 
 Newton's method applied to a Backward Euler discretization of

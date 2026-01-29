@@ -216,9 +216,7 @@ make Taylor expansions of $A/\Aex$ to see the error more analytically.
 
 As an alternative to examining the accuracy of the damping of a wave
 component, we can perform a general truncation error analysis as
-explained in ref[Appendix @sec-ch-trunc][ in
-[@Langtangen_deqbook_trunc]]["Truncation error analysis": ""
-[@Langtangen_deqbook_trunc]]. Such results are more general, but
+explained in @sec-ch-trunc. Such results are more general, but
 less detailed than what we get from the wave component analysis.  The
 truncation error can almost always be computed and represents the
 error in the numerical model when the exact solution is substituted
@@ -324,17 +322,11 @@ $$
 $$
 ### Truncation error
 We follow the theory explained in
-ref[Appendix @sec-ch-trunc][ in
-[@Langtangen_deqbook_trunc]]["Truncation error analysis": ""
-[@Langtangen_deqbook_trunc]]. The recipe is to set up the
+@sec-ch-trunc. The recipe is to set up the
 scheme in operator notation and use formulas from
-ref[Section @sec-trunc-table][ in
-[@Langtangen_deqbook_trunc]]["Overview of leading-order error terms in finite difference formulas": ""
-[@Langtangen_deqbook_trunc]] to derive an expression for
+@sec-trunc-table to derive an expression for
 the residual. The details are documented in
-ref[Section @sec-trunc-diffu-1D][ in
-[@Langtangen_deqbook_trunc]]["Linear diffusion equation in 1D": ""
-[@Langtangen_deqbook_trunc]]. We end up with a truncation error
+@sec-trunc-diffu-1D. We end up with a truncation error
 $$
 R^n_i = \Oof{\Delta t} + \Oof{\Delta x^2}\tp
 $$
@@ -423,9 +415,7 @@ $F\leq\half$.
 
 ### Truncation error
 The truncation error is derived in
-ref[Section @sec-trunc-diffu-1D][ in
-[@Langtangen_deqbook_trunc]]["Linear diffusion equation in 1D": ""
-[@Langtangen_deqbook_trunc]]:
+@sec-trunc-diffu-1D:
 $$
 R^{n+\half}_i = \Oof{\Delta x^2} + \Oof{\Delta t^2}\tp
 $$

@@ -226,7 +226,7 @@ $$ {#eq-form-Dop-tn3-fw}
 
 Application of finite difference operators to polynomials and exponential
 functions, resulting in the formulas above, can easily be computed by
-some `sympy` code (from the file [`lib.py`](https://github.com/hplgit/fdm-book/tree/master/src/formulas/lib.py)):
+some `sympy` code (from the file `src/formulas/lib.py` in this repository):
 
 ```python
 from sympy import *

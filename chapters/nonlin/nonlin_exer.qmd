@@ -159,7 +159,7 @@ $$
 **c)**
 
 Implement the numerical solution methods from a) and b).
-Use [`logistic.py`](https://github.com/hplgit/fdm-book/tree/master/src/nonlin/logistic.py) to compare the case
+Use [`logistic.py`](https://github.com/devitocodes/devito_book/tree/main/src/nonlin/logistic.py) to compare the case
 $p=1$ and the choice (@eq-nonlin-exer-logistic-gen-r1).
 
 
@@ -362,7 +362,7 @@ def demo():
 
 ## Problem: Experience the behavior of Newton's method {#sec-nonlin-exer-Newton-problems1}
 
-The program [`Newton_demo.py`](https://github.com/hplgit/fdm-book/tree/master/src/nonlin/Newton_demo.py) illustrates
+The program [`Newton_demo.py`](https://github.com/devitocodes/devito_book/tree/main/src/nonlin/Newton_demo.py) illustrates
 graphically each step in Newton's method and is run like
 
 ```bash

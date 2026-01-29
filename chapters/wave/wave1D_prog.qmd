@@ -662,7 +662,7 @@ the mod function, `n % skip_frame`, this operation is zero every time
 `n` can be divided by 13 without a remainder. That is, the `if` test
 is true when `n` equals $0, 13, 26, 39, ..., 780, 801$. The associated
 code is included in the `plot_u` function, inside the `viz` function,
-in the file [`wave1D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_u0.py).
+in the file [`wave1D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_u0.py).
 
 ## Running a case {#sec-wave-pde1-guitar-data}
 
@@ -718,7 +718,7 @@ def guitar(C):
     umax = -umin
     cpu = viz(I, 0, 0, c, L, dt, C, T, umin, umax, animate=True)
 ```
-The associated program has the name [`wave1D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_u0.py). Run
+The associated program has the name [`wave1D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_u0.py). Run
 the program and watch the [movie of the vibrating string](http://hplgit.github.io/fdm-book/doc/pub/wave/html/mov-wave/guitar_C0.8/movie.html).
 The string should ideally consist of straight segments, but these are
 somewhat wavy due to numerical approximation. Run the case with the
@@ -1000,7 +1000,7 @@ u[1:Nx] = 2*u_n[1:Nx]- u_nm1[1:Nx] + \
 ```
 
 The program
-[`wave1D_u0v.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_u0v.py)
+[`wave1D_u0v.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_u0v.py)
 contains a new version of the function `solver` where both the scalar
 and the vectorized loops are included (the argument `version` is
 set to `scalar` or `vectorized`, respectively).
