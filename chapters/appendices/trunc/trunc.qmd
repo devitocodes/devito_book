@@ -401,7 +401,7 @@ D1u + D2u*dt/2 + D3u*dt**2/6 + D4u*dt**3/24
 ```
 The truncation error consists of the terms after the first one ($u'$).
 
-The module file [`trunc/truncation_errors.py`](https://github.com/hplgit/fdm-book/tree/master/src/trunc/truncation_errors.py) contains another class `DiffOp` with symbolic expressions for
+The module file [`trunc/truncation_errors.py`](https://github.com/devitocodes/devito_book/tree/main/src/trunc/truncation_errors.py) contains another class `DiffOp` with symbolic expressions for
 most of the truncation errors listed in the previous section.
 For example:
 
@@ -777,7 +777,7 @@ we pick the rate $r_{m-2}$, which we believe is the best estimation since
 it is based on the two finest meshes.
 
 The `estimate` function is available in a module
-[`trunc_empir.py`](https://github.com/hplgit/fdm-book/tree/master/src/trunc/trunc_empir.py).
+[`trunc_empir.py`](https://github.com/devitocodes/devito_book/tree/main/src/trunc/trunc_empir.py).
 Let us apply this function to estimate the truncation
 error of the Forward Euler scheme. We need a function `decay_FE(dt, N)`
 that can compute (@eq-trunc-decay-FE-R-comp) at the
@@ -814,7 +814,7 @@ The agreement between the theoretical formula (@eq-trunc-decay-FE-R)
 and the computed quantity (ref(@eq-trunc-decay-FE-R-comp)) is
 very good, as illustrated in
 Figures @fig-trunc-fig-FE-rates and @fig-trunc-fig-FE-error.
-The program [`trunc_decay_FE.py`](https://github.com/hplgit/fdm-book/tree/master/src/trunc/trunc_decay_FE.py)
+The program [`trunc_decay_FE.py`](https://github.com/devitocodes/devito_book/tree/main/src/trunc/trunc_decay_FE.py)
 was used to perform the simulations and it can easily be modified to
 test other schemes (see also Exercise @sec-trunc-exer-decay-estimate).
 
@@ -1532,6 +1532,7 @@ in both equations:
 $$
 R_u^{n-\half}= \Oof{\Delta t^2}, \quad R_v^n = \Oof{\Delta t^2}\tp
 $$
+
 ## Linear wave equation in 1D {#sec-trunc-wave-1D}
 
 The standard, linear wave equation in 1D for a function $u(x,t)$ reads
@@ -2234,7 +2235,7 @@ Section @sec-trunc-vib-undamped describes two ways of discretizing
 the initial condition $u'(0)=V$ for a vibration model
 $u''+\omega^2u=0$: a centered difference $[D_{2t}u=V]^0$ or
 a forward difference $[D_t^+u=V]^0$.
-The program [`vib_undamped.py`](https://github.com/hplgit/fdm-book/tree/master/src/vib/vib_undamped.py)
+The program [`vib_undamped.py`](https://github.com/devitocodes/devito_book/tree/main/src/vib/vib_undamped.py)
 solves $u''+\omega^2u=0$ with $[D_{2t}u=0]^0$ and features
 a function `convergence_rates` for computing the order of the
 error in the numerical solution. Modify this program such

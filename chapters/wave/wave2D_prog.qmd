@@ -77,7 +77,7 @@ The `solver` function for a 2D case with constant wave velocity and
 boundary condition $u=0$ is analogous to the 1D case with similar parameter
 values (see `wave1D_u0.py`), apart from a few necessary
 extensions. The code is found in the program
-[`wave2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave2D_u0/wave2D_u0.py).
+[`wave2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave2D_u0/wave2D_u0.py).
 
 ### Domain and mesh
 
@@ -362,7 +362,7 @@ that the quadratic solution fits the special formula for
 $u^1_{i,j}$. The details are left as Exercise
 @sec-wave-exer-quadratic-2D.
 The `test_quadratic` function in the
-[`wave2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave2D_u0/wave2D_u0.py)
+[`wave2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave2D_u0/wave2D_u0.py)
 program implements this verification as a proper test function
 for the pytest and nose frameworks.
 
@@ -604,7 +604,7 @@ write a test function.
 
 ## Exercise: Implement Neumann conditions in 2D {#sec-wave-app-exer-wave2D-Neumann}
 
-Modify the [`wave2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave2D_u0/wave2D_u0.py)
+Modify the [`wave2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave2D_u0/wave2D_u0.py)
 program, which solves the 2D wave equation $u_{tt}=c^2(u_{xx}+u_{yy})$
 with constant wave velocity $c$ and $u=0$ on the boundary, to have
 Neumann boundary conditions: $\partial u/\partial n=0$.
@@ -616,7 +616,7 @@ $c$ arbitrary), which should be exactly reproduced with any mesh
 as long as the stability criterion is satisfied.
 Another test is to use the plug-shaped pulse
 in the `pulse` function from Section @sec-wave-pde2-software
-and the [`wave1D_dn_vc.py`](https://github.com/hplgit/fdm-book/tree/master/src/wave/wave1D/wave1D_dn_vc.py)
+and the [`wave1D_dn_vc.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_dn_vc.py)
 program. This pulse
 is exactly propagated in 1D if $c\Delta t/\Delta x=1$. Check
 that also the 2D program can propagate this pulse exactly

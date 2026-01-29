@@ -195,7 +195,7 @@ Section @sec-diffu-pde1-analysis.
 
 ## Implementation {#sec-diffu-pde1-FE-code}
 
-The file [`diffu1D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu1D_u0.py)
+The file [`diffu1D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_u0.py)
 contains a complete function `solver_FE_simple`
 for solving the 1D diffusion equation with $u=0$ on the boundary
 as specified in the algorithm above:
@@ -1015,7 +1015,7 @@ and a smooth Gaussian function,
 $$
 I(x) = e^{-\frac{1}{2\sigma^2}(x-L/2)^2}\tp
 $$
-The functions `plug` and `gaussian` in [`diffu1D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu1D_u0.py) run the two cases,
+The functions `plug` and `gaussian` in [`diffu1D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_u0.py) run the two cases,
 respectively:
 
 ```python
@@ -1409,7 +1409,7 @@ The `scipy.sparse.linalg.spsolve` function utilizes the sparse storage
 structure of `A` and performs, in this case, a very efficient Gaussian
 elimination solve.
 
-The program [`diffu1D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu1D_u0.py)
+The program [`diffu1D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_u0.py)
 contains a function `solver_BE`, which implements the Backward Euler scheme
 sketched above.
 As mentioned in Section @sec-diffu-pde1-FE,

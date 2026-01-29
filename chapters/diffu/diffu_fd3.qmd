@@ -484,7 +484,7 @@ We use `solve` from `scipy.linalg` and not from `numpy.linalg`. The difference
 is stated below.
 
 :::{.callout-note title="`scipy.linalg` versus `numpy.linalg`"}
-Quote from the [SciPy documentation](http://docs.scipy.org/doc/scipy/reference/tutorial/linalg.html):
+Quote from the [SciPy documentation](https://docs.scipy.org/doc/scipy/tutorial/linalg.html):
 
 `scipy.linalg` contains all the functions in `numpy.linalg`
 plus some other more advanced ones not contained in `numpy.linalg`.
@@ -495,7 +495,7 @@ Therefore, unless you don't want to add SciPy as a dependency to your NumPy prog
 :::
 
 The code shown above is available in the `solver_dense` function
-in the file [`diffu2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu2D_u0.py), differing only
+in the file [`diffu2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_u0.py), differing only
 in the boundary conditions, which in the code can be an arbitrary function along
 each side of the domain.
 
@@ -665,7 +665,7 @@ $$
 f = (\dfc(k_x^2 + k_y^2) - p)\uex\tp
 $$
 The function `convergence_rates` in
-[`diffu2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu2D_u0.py) implements a convergence
+[`diffu2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_u0.py) implements a convergence
 rate test. Two potential difficulties are important to be aware of:
 
  1. The error formula is assumed to be
@@ -925,7 +925,7 @@ and `spsolve` calls up a well-tested C code called [SuperLU](http://crd-legacy.l
 
 The complete code utilizing `spsolve`
 is found in the `solver_sparse` function in the file
-[`diffu2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu2D_u0.py).
+[`diffu2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_u0.py).
 
 ### Verification
 
@@ -1263,7 +1263,7 @@ two consecutive approximations, which is not exactly the error
 due to the iteration, but it is a kind of measure, and it should
 have about the same size as $E_i$.
 
-The function `demo_classic_iterative` in [`diffu2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu2D_u0.py) implements the idea above (also for the
+The function `demo_classic_iterative` in [`diffu2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_u0.py) implements the idea above (also for the
 methods in Section @sec-diffu-2D-SOR). The value of $E_i$ is in
 particular printed at each time level. By changing the tolerance in
 the convergence criterion of the Jacobi method, we can see that $E_i$
@@ -1673,7 +1673,7 @@ u[c,c] = omega*u_new[c,c] + (1-omega)*u_[c,c]
 ```
 
 The function `solver_classic_iterative` in
-[`diffu2D_u0.py`](https://github.com/hplgit/fdm-book/tree/master/src/diffu/diffu2D_u0.py)
+[`diffu2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_u0.py)
 contains a unified implementation of the relaxed Jacobi and SOR
 methods in scalar and vectorized versions using the techniques
 explained above.
