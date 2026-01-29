@@ -669,7 +669,427 @@ boundaries remain unchanged). For more accurate modeling, consider:
 2. **Characteristic boundary conditions**: Based on wave directions
 3. **Periodic boundaries**: For idealized studies
 
-## Key Takeaways {#sec-swe-summary}
+## Elastic Wave Equations {#sec-systems-elastic}
+
+The elastic wave equations describe the propagation of seismic waves
+through solid media. Unlike acoustic waves in fluids, elastic waves in
+solids support both compressional (P) and shear (S) waves, each traveling
+at different velocities. This makes elastic wave modeling essential for:
+
+- **Seismic exploration**: Oil and gas reservoir characterization
+- **Earthquake seismology**: Understanding ground motion and hazards
+- **Non-destructive testing**: Material inspection and quality control
+- **Full waveform inversion (FWI)**: High-resolution subsurface imaging
+
+### The Velocity-Stress Formulation {#sec-systems-elastic-velstress}
+
+The elastic wave equations can be written in several forms. The
+*velocity-stress formulation* is particularly suited for finite difference
+methods because it naturally leads to a staggered grid discretization
+that improves accuracy and stability.
+
+The coupled system consists of:
+
+**Momentum equation** (Newton's second law):
+
+$$
+\rho \frac{\partial \mathbf{v}}{\partial t} = \nabla \cdot \boldsymbol{\tau}
+$$ {#eq-elastic-momentum}
+
+**Stress equation** (Hooke's law for isotropic media):
+
+$$
+\frac{\partial \boldsymbol{\tau}}{\partial t} = \lambda (\nabla \cdot \mathbf{v}) \mathbf{I} + \mu \left( \nabla \mathbf{v} + (\nabla \mathbf{v})^T \right)
+$$ {#eq-elastic-stress}
+
+where:
+
+- $\mathbf{v} = (v_x, v_z)$ is the particle velocity vector
+- $\boldsymbol{\tau}$ is the stress tensor
+- $\rho$ is the density
+- $\lambda$ and $\mu$ are the Lame parameters
+- $\mathbf{I}$ is the identity tensor
+
+### Lame Parameters and Wave Velocities {#sec-systems-elastic-lame}
+
+The Lame parameters $\lambda$ and $\mu$ characterize the elastic properties
+of the medium. The shear modulus $\mu$ (also called the second Lame parameter)
+measures resistance to shear deformation. The first Lame parameter $\lambda$
+relates volumetric stress to volumetric strain.
+
+The P-wave (compressional) and S-wave (shear) velocities are related to
+these parameters by:
+
+$$
+V_p = \sqrt{\frac{\lambda + 2\mu}{\rho}}, \quad V_s = \sqrt{\frac{\mu}{\rho}}
+$$ {#eq-wave-velocities}
+
+Conversely, given wave velocities and density:
+
+$$
+\mu = \rho V_s^2, \quad \lambda = \rho V_p^2 - 2\mu
+$$ {#eq-lame-from-velocities}
+
+For realistic materials, $V_p > V_s$ (typically $V_p/V_s \approx 1.7$--2.0
+in crusite rocks). This means P-waves arrive before S-waves---the basis
+for locating earthquakes.
+
+### VectorTimeFunction and TensorTimeFunction {#sec-systems-elastic-tensors}
+
+Devito provides specialized data types for vector and tensor fields that
+greatly simplify the implementation of elastic wave equations.
+
+**VectorTimeFunction** stores a time-varying vector field:
+
+```python
+from devito import Grid, VectorTimeFunction
+
+grid = Grid(shape=(Nx, Nz), extent=(Lx, Lz))
+v = VectorTimeFunction(name='v', grid=grid, space_order=2, time_order=1)
+
+# Access components
+vx = v[0]  # x-component of velocity
+vz = v[1]  # z-component of velocity
+```
+
+**TensorTimeFunction** stores a time-varying tensor field. For the stress
+tensor in 2D, we use a symmetric tensor:
+
+```python
+from devito import TensorTimeFunction
+
+tau = TensorTimeFunction(name='t', grid=grid, space_order=2,
+                         time_order=1, symmetric=True)
+
+# Access components
+tau_xx = tau[0, 0]  # Normal stress in x
+tau_zz = tau[1, 1]  # Normal stress in z
+tau_xz = tau[0, 1]  # Shear stress (= tau[1, 0] for symmetric)
+```
+
+The `symmetric=True` option ensures that off-diagonal components are
+stored only once, exploiting the symmetry $\tau_{xz} = \tau_{zx}$.
+
+### Vector Operators: div, grad, diag {#sec-systems-elastic-operators}
+
+Devito provides symbolic vector calculus operators that work directly
+with `VectorTimeFunction` and `TensorTimeFunction`:
+
+**Divergence of a tensor** ($\nabla \cdot \boldsymbol{\tau}$):
+
+```python
+from devito import div
+
+# div(tau) returns a vector
+div_tau = div(tau)  # Vector: (d(tau_xx)/dx + d(tau_xz)/dz,
+                    #          d(tau_xz)/dx + d(tau_zz)/dz)
+```
+
+**Gradient of a vector** ($\nabla \mathbf{v}$):
+
+```python
+from devito import grad
+
+# grad(v) returns a tensor
+grad_v = grad(v)  # Tensor: [[dv_x/dx, dv_x/dz],
+                  #          [dv_z/dx, dv_z/dz]]
+```
+
+**Diagonal tensor from scalar** ($s \cdot \mathbf{I}$):
+
+```python
+from devito import diag
+
+# diag(scalar) creates diagonal tensor
+div_v = div(v)  # Scalar: dv_x/dx + dv_z/dz
+diag_tensor = diag(div_v)  # Tensor: [[div_v, 0], [0, div_v]]
+```
+
+These operators handle the staggered grid discretization automatically
+when used with staggered `VectorTimeFunction` and `TensorTimeFunction`.
+
+### Staggered Grid Discretization {#sec-systems-elastic-staggered}
+
+The velocity-stress formulation naturally leads to a staggered grid
+arrangement where different field components are stored at different
+locations within each cell. This staggering:
+
+1. Improves numerical accuracy by centering spatial derivatives
+2. Avoids spurious oscillations in the solution
+3. Is handled automatically by Devito when using vector/tensor functions
+
+In the standard Virieux staggered grid for 2D:
+
+- Normal stresses $\tau_{xx}$, $\tau_{zz}$ are at cell centers
+- Shear stress $\tau_{xz}$ is at cell corners
+- Velocity $v_x$ is at cell edges (x-direction)
+- Velocity $v_z$ is at cell edges (z-direction)
+
+When you create a `VectorTimeFunction` or `TensorTimeFunction` in Devito,
+the staggering is applied automatically, and the `div`, `grad`, and other
+operators account for the grid layout when computing derivatives.
+
+### Implementation in Devito {#sec-systems-elastic-implementation}
+
+With the tensor types and operators, the elastic wave equations can be
+written almost exactly as they appear mathematically:
+
+```python
+from devito import (
+    Grid, VectorTimeFunction, TensorTimeFunction,
+    Eq, Operator, solve, div, grad, diag
+)
+
+# Create grid
+grid = Grid(shape=(Nx, Nz), extent=(Lx, Lz))
+
+# Create fields
+v = VectorTimeFunction(name='v', grid=grid, space_order=2, time_order=1)
+tau = TensorTimeFunction(name='t', grid=grid, space_order=2, time_order=1)
+
+# Material parameters
+V_p, V_s = 2.0, 1.0  # Wave velocities [km/s]
+rho = 1.8            # Density [g/cm^3]
+
+# Compute Lame parameters
+mu = rho * V_s**2
+lam = rho * V_p**2 - 2 * mu
+ro = 1.0 / rho  # Buoyancy (inverse density)
+
+# Momentum equation: rho * dv/dt = div(tau)
+# Rewritten as: dv/dt = (1/rho) * div(tau)
+pde_v = v.dt - ro * div(tau)
+
+# Stress equation: dtau/dt = lam * div(v) * I + mu * (grad(v) + grad(v)^T)
+pde_tau = (
+    tau.dt
+    - lam * diag(div(v.forward))
+    - mu * (grad(v.forward) + grad(v.forward).transpose(inner=False))
+)
+
+# Solve for forward time values
+u_v = Eq(v.forward, solve(pde_v, v.forward))
+u_tau = Eq(tau.forward, solve(pde_tau, tau.forward))
+
+# Create operator
+op = Operator([u_v, u_tau])
+```
+
+The key points are:
+
+1. We use `v.forward` in the stress equation to ensure proper time stepping
+2. The `.transpose(inner=False)` creates $(\nabla \mathbf{v})^T$ without
+   contracting indices
+3. The `solve()` function isolates the forward time terms automatically
+
+### Example: P-wave and S-wave Propagation {#sec-systems-elastic-example}
+
+Let us simulate wave propagation from an explosive source in a homogeneous
+medium and observe the separation of P-waves and S-waves.
+
+```python
+from devito import (
+    Grid, VectorTimeFunction, TensorTimeFunction,
+    Eq, Operator, solve, div, grad, diag,
+    SpaceDimension, Constant
+)
+import numpy as np
+
+# Domain parameters
+extent = (1500., 1500.)  # Domain size [m]
+shape = (201, 201)       # Grid points
+
+# Create grid with explicit spacing
+dx = extent[0] / (shape[0] - 1)
+dz = extent[1] / (shape[1] - 1)
+x = SpaceDimension(name='x', spacing=Constant(name='h_x', value=dx))
+z = SpaceDimension(name='z', spacing=Constant(name='h_z', value=dz))
+grid = Grid(extent=extent, shape=shape, dimensions=(x, z))
+
+# Material parameters
+V_p = 2.0   # P-wave velocity [km/s]
+V_s = 1.0   # S-wave velocity [km/s]
+rho = 1.8   # Density [g/cm^3]
+
+# Lame parameters
+mu = rho * V_s**2
+lam = rho * V_p**2 - 2 * mu
+ro = 1.0 / rho
+
+# Time stepping
+dt = dx / (np.sqrt(2) * V_p) * 0.9  # CFL condition
+T = 300.0  # Total time
+Nt = int(T / dt)
+
+# Create fields (space_order=2 for basic implementation)
+so = 2
+v = VectorTimeFunction(name='v', grid=grid, space_order=so, time_order=1)
+tau = TensorTimeFunction(name='t', grid=grid, space_order=so, time_order=1)
+
+# Elastic wave equations
+pde_v = v.dt - ro * div(tau)
+pde_tau = (
+    tau.dt
+    - lam * diag(div(v.forward))
+    - mu * (grad(v.forward) + grad(v.forward).transpose(inner=False))
+)
+
+u_v = Eq(v.forward, solve(pde_v, v.forward))
+u_tau = Eq(tau.forward, solve(pde_tau, tau.forward))
+
+op = Operator([u_v, u_tau])
+
+# Ricker wavelet source
+def ricker_wavelet(t, f0, t0=None):
+    if t0 is None:
+        t0 = 1.0 / f0
+    pi_f0_t = np.pi * f0 * (t - t0)
+    return (1.0 - 2.0 * pi_f0_t**2) * np.exp(-pi_f0_t**2)
+
+t_vals = np.arange(0, T, dt)
+f0 = 0.01  # Dominant frequency
+src = ricker_wavelet(t_vals, f0)
+
+# Source location (center of domain)
+src_x, src_z = shape[0] // 2, shape[1] // 2
+
+# Run simulation with source injection
+for n in range(Nt):
+    # Inject explosive source into normal stresses
+    if n < len(src):
+        tau[0, 0].data[0, src_x, src_z] += src[n]
+        tau[1, 1].data[0, src_x, src_z] += src[n]
+
+    # Advance one time step
+    op.apply(time_m=0, time_M=0, dt=dt)
+
+# Results: v[0].data[0], v[1].data[0] contain final velocities
+# tau[0,0].data[0], tau[1,1].data[0], tau[0,1].data[0] contain final stresses
+```
+
+After running this simulation, you will observe:
+
+1. **P-wave**: A circular wavefront propagating at $V_p = 2$ km/s
+2. **S-wave**: A slower circular wavefront at $V_s = 1$ km/s
+3. **Wave separation**: The P-wave pulls ahead of the S-wave over time
+
+For an explosive source (injecting into $\tau_{xx}$ and $\tau_{zz}$),
+the P-wave is dominant. To generate stronger S-waves, you would inject
+into the shear stress component $\tau_{xz}$.
+
+### Varying Lame Parameters {#sec-systems-elastic-varying}
+
+In realistic geophysical applications, the Lame parameters vary
+spatially to represent layered or heterogeneous Earth structure. Devito
+handles this naturally by using `Function` objects for the parameters:
+
+```python
+from devito import Function
+
+# Create spatially varying parameters
+lam_field = Function(name='lam', grid=grid, space_order=so)
+mu_field = Function(name='mu', grid=grid, space_order=so)
+b_field = Function(name='b', grid=grid, space_order=so)  # Buoyancy = 1/rho
+
+# Create a layered model (5 layers with increasing velocity)
+nlayers = 5
+layer_thickness = shape[1] // nlayers
+
+for i in range(nlayers):
+    z_start = i * layer_thickness
+    z_end = (i + 1) * layer_thickness if i < nlayers - 1 else shape[1]
+
+    # Velocities increase with depth
+    V_p_layer = 1.5 + i * 0.5  # 1.5 to 3.5 km/s
+    V_s_layer = 0.5 + i * 0.4  # 0.5 to 2.1 km/s
+    rho_layer = 1.0 + i * 0.4  # 1.0 to 2.6 g/cm^3
+
+    mu_layer = rho_layer * V_s_layer**2
+    lam_layer = rho_layer * V_p_layer**2 - 2 * mu_layer
+
+    lam_field.data[:, z_start:z_end] = lam_layer
+    mu_field.data[:, z_start:z_end] = mu_layer
+    b_field.data[:, z_start:z_end] = 1.0 / rho_layer
+
+# Use Function objects in the PDEs
+pde_v = v.dt - b_field * div(tau)
+pde_tau = (
+    tau.dt
+    - lam_field * diag(div(v.forward))
+    - mu_field * (grad(v.forward) + grad(v.forward).transpose(inner=False))
+)
+```
+
+With varying parameters:
+
+- Waves refract (bend) at layer interfaces
+- Reflections occur due to impedance contrasts
+- P-to-S and S-to-P conversions happen at interfaces
+
+### Exercises {#sec-systems-elastic-exercises}
+
+::: {#exr-elastic-wave-speeds}
+**Computing wave speeds**
+
+Given a medium with $\lambda = 10$ GPa, $\mu = 5$ GPa, and
+$\rho = 2500$ kg/m$^3$:
+
+a) Calculate the P-wave velocity $V_p$
+b) Calculate the S-wave velocity $V_s$
+c) Calculate the ratio $V_p/V_s$ and compare to the theoretical
+   minimum of $\sqrt{2}$ for $\lambda = 0$
+:::
+
+::: {#exr-elastic-cfl}
+**CFL condition for elastic waves**
+
+The CFL stability condition for the elastic wave equation is:
+
+$$
+\Delta t \leq \frac{\Delta x}{\sqrt{2} V_p}
+$$
+
+For a 201 x 201 grid over a 3 km x 3 km domain with $V_p = 4$ km/s:
+
+a) Calculate the maximum stable time step
+b) How many time steps are needed to simulate 2 seconds?
+c) If you use higher-order spatial discretization (space_order=8),
+   does the CFL condition change?
+:::
+
+::: {#exr-elastic-source}
+**Source mechanisms**
+
+Modify the explosive source example to:
+
+a) Create a vertical force source by injecting into $v_z$ instead of
+   the stress tensor
+b) Create a shear source by injecting into $\tau_{xz}$
+c) Compare the radiation patterns of P-waves and S-waves for each source type
+:::
+
+::: {#exr-elastic-receiver}
+**Recording seismic data**
+
+Extend the elastic wave solver to:
+
+a) Record velocity components at a line of receivers along $z = 10$ m
+b) Plot the receiver data as a "shot gather" (time vs. receiver position)
+c) Identify the P-wave and S-wave arrivals in the data
+:::
+
+::: {#exr-elastic-layered}
+**Layered medium**
+
+Using the varying Lame parameters approach:
+
+a) Create a two-layer model with a velocity contrast at depth $z = 750$ m
+b) Place a source at the surface and observe reflections from the interface
+c) Measure the reflection coefficient and compare to the theoretical value:
+   $R = \frac{\rho_2 V_{p2} - \rho_1 V_{p1}}{\rho_2 V_{p2} + \rho_1 V_{p1}}$
+:::
+
+## Key Takeaways {#sec-systems-summary}
 
 1. **Systems of PDEs** require careful treatment of coupling between
    unknowns, both in time and space.
@@ -677,17 +1097,23 @@ boundaries remain unchanged). For more accurate modeling, consider:
 2. **The Shallow Water Equations** are a fundamental hyperbolic system
    used for tsunami, storm surge, and flood modeling.
 
-3. **Devito's solve() function** automatically isolates forward time
+3. **The Elastic Wave Equations** model seismic wave propagation in solids,
+   supporting both P-waves (compressional) and S-waves (shear).
+
+4. **Devito's solve() function** automatically isolates forward time
    terms in coupled nonlinear equations.
 
-4. **Static fields** (like bathymetry) use `Function` instead of
-   `TimeFunction` to avoid unnecessary time indexing.
+5. **VectorTimeFunction and TensorTimeFunction** provide convenient
+   abstractions for vector and tensor fields in Devito.
 
-5. **ConditionalDimension** enables efficient snapshot saving without
+6. **Vector operators** (div, grad, diag) work directly with tensor types
+   and handle staggered grid discretization automatically.
+
+7. **Static fields** (like bathymetry or Lame parameters) use `Function`
+   instead of `TimeFunction` to avoid unnecessary time indexing.
+
+8. **ConditionalDimension** enables efficient snapshot saving without
    storing every time step.
 
-6. **Bathymetry effects** (shoaling, refraction, diffraction) are
-   captured automatically through the depth-dependent terms.
-
-7. **The friction term** using Manning's roughness accounts for
-   seafloor energy dissipation.
+9. **Staggered grids** improve accuracy for first-order hyperbolic systems
+   like the velocity-stress formulation of elastic waves.

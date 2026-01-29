@@ -8,3 +8,5 @@ strang = "strang"
 Strang = "Strang"
 # Variable name for "p at iteration n" in Jacobi iteration
 pn = "pn"
+# NumPy function for creating array ranges
+arange = "arange"
