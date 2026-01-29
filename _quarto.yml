@@ -19,6 +19,8 @@ book:
         - chapters/diffu/index.qmd
         - chapters/advec/index.qmd
         - chapters/nonlin/index.qmd
+        - chapters/elliptic/index.qmd
+        - chapters/systems/index.qmd
     - part: "Appendices"
       chapters:
         - chapters/appendices/formulas/index.qmd
@@ -169,6 +171,8 @@ src_diffu: "https://github.com/devitocodes/devito_book/tree/devito/src/diffu"
 src_nonlin: "https://github.com/devitocodes/devito_book/tree/devito/src/nonlin"
 src_trunc: "https://github.com/devitocodes/devito_book/tree/devito/src/trunc"
 src_advec: "https://github.com/devitocodes/devito_book/tree/devito/src/advec"
+src_elliptic: "https://github.com/devitocodes/devito_book/tree/devito/src/elliptic"
+src_systems: "https://github.com/devitocodes/devito_book/tree/devito/src/systems"
 src_formulas: "https://github.com/devitocodes/devito_book/tree/devito/src/formulas"
 src_softeng2: "https://github.com/devitocodes/devito_book/tree/devito/src/softeng2"
 

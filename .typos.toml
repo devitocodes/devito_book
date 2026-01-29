@@ -6,3 +6,5 @@ ue = "ue"
 # Strang splitting (named after mathematician Gilbert Strang)
 strang = "strang"
 Strang = "Strang"
+# Variable name for "p at iteration n" in Jacobi iteration
+pn = "pn"

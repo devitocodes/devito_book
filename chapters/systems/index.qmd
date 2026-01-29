@@ -1,0 +1,3 @@
+# Systems of PDEs {#sec-ch-systems}
+
+{{< include systems.qmd >}}
