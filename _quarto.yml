@@ -6,8 +6,8 @@ book:
   title: "Finite Difference Computing with PDEs"
   subtitle: "A Devito Approach"
   author:
-    - name: Hans Petter Langtangen
-    - name: Svein Linge
+    - name: Gerard J. Gorman
+      affiliation: Imperial College London
   date: today
   chapters:
     - index.qmd

@@ -8,13 +8,11 @@ This book teaches finite difference methods for solving partial differential equ
 
 ## About this Edition {.unnumbered}
 
-This is an adaptation of *[Finite Difference Computing with PDEs: A Modern Software Approach](https://doi.org/10.1007/978-3-319-55456-3)* by Hans Petter Langtangen and Svein Linge (Springer, 2017). This Devito edition features:
+This edition is based on *[Finite Difference Computing with PDEs: A Modern Software Approach](https://doi.org/10.1007/978-3-319-55456-3)* by Hans Petter Langtangen and Svein Linge (Springer, 2017). This Devito edition features:
 
 - **[Devito](https://www.devitoproject.org/)** - A domain-specific language for symbolic PDE specification and automatic code generation
 - **[Quarto](https://quarto.org/)** - Modern scientific publishing for web and PDF output
 - **Modern Python** - Type hints, testing, and CI/CD practices
-
-Adapted by Gerard J. Gorman (Imperial College London).
 
 ## License {.unnumbered}
 
