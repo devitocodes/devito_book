@@ -29,6 +29,7 @@ book:
         - chapters/cfd/index.qmd
         - chapters/darcy/index.qmd
         - chapters/finance/index.qmd
+        - chapters/maxwell/index.qmd
     - part: "Appendices"
       chapters:
         - chapters/appendices/formulas/index.qmd
@@ -193,6 +194,7 @@ src_formulas: "https://github.com/devitocodes/devito_book/tree/devito/src/formul
 src_softeng2: "https://github.com/devitocodes/devito_book/tree/devito/src/softeng2"
 src_finance: "https://github.com/devitocodes/devito_book/tree/devito/src/finance"
 src_theory: "https://github.com/devitocodes/devito_book/tree/devito/src/theory"
+src_maxwell: "https://github.com/devitocodes/devito_book/tree/devito/src/maxwell"
 
 crossref:
   eq-prefix: ""

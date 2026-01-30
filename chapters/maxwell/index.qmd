@@ -1,0 +1,3 @@
+# Computational Electromagnetics {#sec-ch-maxwell}
+
+{{< include maxwell.qmd >}}

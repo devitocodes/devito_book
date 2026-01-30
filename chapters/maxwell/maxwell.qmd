@@ -1,0 +1,958 @@
+## Introduction to Computational Electromagnetics {#sec-maxwell-intro}
+
+Computational electromagnetics (CEM) is the study of electromagnetic
+wave propagation using numerical methods. The governing equations---Maxwell's
+equations---describe how electric and magnetic fields interact and
+propagate through space. These equations unify electricity, magnetism,
+and optics into a single theoretical framework.
+
+The Finite-Difference Time-Domain (FDTD) method, introduced by Kane Yee
+in 1966 [@Yee1966], has become the dominant numerical approach for
+solving Maxwell's equations. Its key innovation is the *Yee grid*,
+which staggers electric and magnetic field components in both space
+and time, resulting in a robust and efficient explicit time-stepping
+scheme.
+
+### Why Computational Electromagnetics Matters
+
+Electromagnetic simulation finds applications across technology:
+
+- **Telecommunications**: Antenna design, wireless propagation, 5G/6G systems
+- **Integrated circuits**: Signal integrity, EMC/EMI analysis, packaging
+- **Photonics**: Optical waveguides, photonic crystals, metamaterials
+- **Biomedical**: MRI design, hyperthermia treatment, biosensors
+- **Defense**: Radar cross-section, stealth technology, electronic warfare
+- **Geophysics**: Ground-penetrating radar, remote sensing
+
+### The FDTD Method
+
+The FDTD method has several attractive features:
+
+1. **Explicit time-stepping**: No matrix inversions required
+2. **Broadband**: Single simulation covers wide frequency range
+3. **Versatile geometry**: Handles complex structures naturally
+4. **Parallel-friendly**: Local stencils enable efficient parallelization
+5. **Intuitive**: Fields evolve as if watching a movie
+
+These same features that make FDTD successful for electromagnetics
+also make it an excellent match for Devito's code generation approach.
+
+### Chapter Overview
+
+This chapter develops a complete FDTD solver:
+
+1. Maxwell's equations and their curl form
+2. The Yee grid and staggered field placement
+3. Leapfrog time stepping and CFL stability
+4. Implementation in Devito
+5. Boundary conditions: PEC, PMC, and absorbing
+6. Perfectly Matched Layer (PML) for open boundaries
+7. Sources and excitation methods
+8. Verification examples with analytical solutions
+
+
+## Maxwell's Equations {#sec-maxwell-equations}
+
+James Clerk Maxwell unified electricity and magnetism in 1865 with
+four elegant equations. In their differential form (SI units):
+
+$$
+\nabla \cdot \mathbf{D} = \rho_v
+$$ {#eq-maxwell-gauss-e}
+
+$$
+\nabla \cdot \mathbf{B} = 0
+$$ {#eq-maxwell-gauss-m}
+
+$$
+\nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t}
+$$ {#eq-maxwell-faraday}
+
+$$
+\nabla \times \mathbf{H} = \mathbf{J} + \frac{\partial \mathbf{D}}{\partial t}
+$$ {#eq-maxwell-ampere}
+
+where:
+
+- $\mathbf{E}$ is the electric field intensity [V/m]
+- $\mathbf{H}$ is the magnetic field intensity [A/m]
+- $\mathbf{D} = \varepsilon \mathbf{E}$ is the electric flux density [C/m$^2$]
+- $\mathbf{B} = \mu \mathbf{H}$ is the magnetic flux density [T]
+- $\rho_v$ is the volume charge density [C/m$^3$]
+- $\mathbf{J}$ is the current density [A/m$^2$]
+- $\varepsilon$ is the permittivity [F/m]
+- $\mu$ is the permeability [H/m]
+
+### Physical Interpretation
+
+| Equation | Name | Physical Meaning |
+|----------|------|------------------|
+| @eq-maxwell-gauss-e | Gauss's law (electric) | Electric charges create electric fields |
+| @eq-maxwell-gauss-m | Gauss's law (magnetic) | No magnetic monopoles exist |
+| @eq-maxwell-faraday | Faraday's law | Changing magnetic fields induce electric fields |
+| @eq-maxwell-ampere | Ampère's law | Currents and changing electric fields create magnetic fields |
+
+### The Curl Equations
+
+For FDTD, we focus on the two curl equations (@eq-maxwell-faraday and
+@eq-maxwell-ampere). In a linear, isotropic, source-free medium:
+
+$$
+\frac{\partial \mathbf{H}}{\partial t} = -\frac{1}{\mu} \nabla \times \mathbf{E}
+$$ {#eq-maxwell-H-update}
+
+$$
+\frac{\partial \mathbf{E}}{\partial t} = \frac{1}{\varepsilon} \nabla \times \mathbf{H}
+$$ {#eq-maxwell-E-update}
+
+These coupled first-order equations are ideal for explicit time stepping.
+Unlike the wave equation (second-order in time), this first-order
+system naturally separates into interleaved updates.
+
+### Material Properties
+
+In free space:
+
+- $\varepsilon_0 = 8.854 \times 10^{-12}$ F/m (permittivity of free space)
+- $\mu_0 = 4\pi \times 10^{-7}$ H/m (permeability of free space)
+- $c_0 = 1/\sqrt{\mu_0 \varepsilon_0} \approx 3 \times 10^8$ m/s (speed of light)
+- $\eta_0 = \sqrt{\mu_0/\varepsilon_0} \approx 377$ $\Omega$ (impedance of free space)
+
+In a material with relative permittivity $\varepsilon_r$ and relative
+permeability $\mu_r$:
+
+- Wave speed: $c = c_0 / \sqrt{\varepsilon_r \mu_r}$
+- Wave impedance: $\eta = \eta_0 \sqrt{\mu_r / \varepsilon_r}$
+
+### One-Dimensional Maxwell Equations
+
+In 1D with propagation along $x$ and transverse fields $E_y$ and $H_z$:
+
+$$
+\frac{\partial H_z}{\partial t} = -\frac{1}{\mu} \frac{\partial E_y}{\partial x}
+$$ {#eq-maxwell-1d-H}
+
+$$
+\frac{\partial E_y}{\partial t} = -\frac{1}{\varepsilon} \frac{\partial H_z}{\partial x}
+$$ {#eq-maxwell-1d-E}
+
+This is the simplest FDTD case and serves as our starting point.
+
+
+## The Yee Grid {#sec-maxwell-yee}
+
+Kane Yee's fundamental insight was that electric and magnetic field
+components should be placed at *different* locations on a computational
+grid. This staggered arrangement:
+
+1. Naturally satisfies the divergence equations
+2. Enables second-order accurate central differences
+3. Avoids field decoupling instabilities
+
+### The 1D Yee Cell
+
+In 1D, place $E_y$ at integer grid points and $H_z$ at half-integer points:
+
+```
+Grid:    |-------|-------|-------|-------|
+         i       i+1     i+2     i+3
+
+E_y:     E       E       E       E
+               at i, i+1, i+2, ...
+
+H_z:         H       H       H
+           at i+½, i+3/2, ...
+```
+
+This staggering means $H_z|_{i+1/2}$ sits exactly between $E_y|_i$ and
+$E_y|_{i+1}$, enabling centered differences:
+
+$$
+\left. \frac{\partial E_y}{\partial x} \right|_{i+1/2} \approx
+\frac{E_y|_{i+1} - E_y|_i}{\Delta x}
+$$
+
+### The 2D Yee Cell (TMz Mode)
+
+For 2D problems with $E_z$, $H_x$, and $H_y$ fields (transverse magnetic
+to $z$, or TMz polarization), the Yee cell places:
+
+- $E_z$ at cell centers $(i, j)$
+- $H_x$ at face centers $(i, j+\frac{1}{2})$
+- $H_y$ at face centers $(i+\frac{1}{2}, j)$
+
+```
+              Hy|i+½,j
+               ↓
+        +------→------+
+        |             |
+        |    Ez|i,j   | Hx|i,j+½
+        |             |
+        +-------------+
+             (i,j)
+```
+
+This arrangement ensures that each curl component can be computed
+using adjacent field values.
+
+### The 3D Yee Cell
+
+In 3D, the full Yee cell places:
+
+- **E components** on cell edges
+- **H components** on cell faces
+
+The complete set of six field components forms an interleaved
+mesh that respects the structure of Maxwell's equations.
+
+### Spatial Discretization
+
+For TMz in 2D, the curl equations become:
+
+$$
+\frac{\partial H_x}{\partial t} = -\frac{1}{\mu} \frac{\partial E_z}{\partial y}
+$$
+
+$$
+\frac{\partial H_y}{\partial t} = \frac{1}{\mu} \frac{\partial E_z}{\partial x}
+$$
+
+$$
+\frac{\partial E_z}{\partial t} = \frac{1}{\varepsilon}
+\left( \frac{\partial H_y}{\partial x} - \frac{\partial H_x}{\partial y} \right)
+$$
+
+Discretizing with central differences on the Yee grid yields
+second-order accurate spatial derivatives.
+
+
+## FDTD Discretization {#sec-maxwell-fdtd}
+
+The FDTD method discretizes both space and time using centered
+finite differences. The key is *leapfrog* time stepping: E and H
+fields are updated at interleaved half time steps.
+
+### Leapfrog Time Stepping
+
+The fields advance in a "leapfrog" pattern:
+
+1. At time $n$: Know $\mathbf{E}^n$ and $\mathbf{H}^{n-1/2}$
+2. Update H: $\mathbf{H}^{n+1/2} = \mathbf{H}^{n-1/2} - \frac{\Delta t}{\mu} \nabla \times \mathbf{E}^n$
+3. Update E: $\mathbf{E}^{n+1} = \mathbf{E}^n + \frac{\Delta t}{\varepsilon} \nabla \times \mathbf{H}^{n+1/2}$
+4. Advance to time $n+1$
+
+This scheme is:
+
+- **Second-order accurate** in both space and time
+- **Explicit**: No matrix inversions needed
+- **Non-dissipative**: Energy conserving (in lossless media)
+- **Conditionally stable**: CFL condition must be satisfied
+
+### 1D Update Equations
+
+Applying central differences to @eq-maxwell-1d-H and @eq-maxwell-1d-E:
+
+$$
+H_z^{n+1/2}_{i+1/2} = H_z^{n-1/2}_{i+1/2}
+- \frac{\Delta t}{\mu \Delta x} \left( E_y^n_{i+1} - E_y^n_i \right)
+$$ {#eq-fdtd-1d-H}
+
+$$
+E_y^{n+1}_i = E_y^n_i
++ \frac{\Delta t}{\varepsilon \Delta x} \left( H_z^{n+1/2}_{i+1/2} - H_z^{n+1/2}_{i-1/2} \right)
+$$ {#eq-fdtd-1d-E}
+
+The update coefficients are:
+
+- $C_H = \Delta t / (\mu \Delta x)$ for H-field update
+- $C_E = \Delta t / (\varepsilon \Delta x)$ for E-field update
+
+### 2D Update Equations (TMz)
+
+For 2D TMz mode:
+
+$$
+H_x^{n+1/2}_{i,j+1/2} = H_x^{n-1/2}_{i,j+1/2}
+- \frac{\Delta t}{\mu \Delta y} \left( E_z^n_{i,j+1} - E_z^n_{i,j} \right)
+$$ {#eq-fdtd-2d-Hx}
+
+$$
+H_y^{n+1/2}_{i+1/2,j} = H_y^{n-1/2}_{i+1/2,j}
++ \frac{\Delta t}{\mu \Delta x} \left( E_z^n_{i+1,j} - E_z^n_{i,j} \right)
+$$ {#eq-fdtd-2d-Hy}
+
+$$
+E_z^{n+1}_{i,j} = E_z^n_{i,j}
++ \frac{\Delta t}{\varepsilon} \left(
+\frac{H_y^{n+1/2}_{i+1/2,j} - H_y^{n+1/2}_{i-1/2,j}}{\Delta x}
+- \frac{H_x^{n+1/2}_{i,j+1/2} - H_x^{n+1/2}_{i,j-1/2}}{\Delta y}
+\right)
+$$ {#eq-fdtd-2d-Ez}
+
+### CFL Stability Condition
+
+The FDTD method is conditionally stable. The Courant-Friedrichs-Lewy
+(CFL) condition requires:
+
+**1D:**
+$$
+\Delta t \leq \frac{\Delta x}{c}
+$$ {#eq-cfl-1d}
+
+**2D (equal spacing):**
+$$
+\Delta t \leq \frac{\Delta x}{c \sqrt{2}}
+$$ {#eq-cfl-2d}
+
+**3D (equal spacing):**
+$$
+\Delta t \leq \frac{\Delta x}{c \sqrt{3}}
+$$ {#eq-cfl-3d}
+
+**General form:**
+$$
+\Delta t \leq \frac{1}{c \sqrt{\frac{1}{\Delta x^2} + \frac{1}{\Delta y^2} + \frac{1}{\Delta z^2}}}
+$$
+
+The CFL number (Courant number) $S = c \Delta t / \Delta x$ should
+satisfy $S \leq 1/\sqrt{d}$ where $d$ is the number of spatial dimensions.
+
+### Numerical Dispersion
+
+Even when stable, FDTD exhibits *numerical dispersion*: the numerical
+phase velocity differs from the physical wave speed. This error depends
+on propagation direction and grid resolution. For accuracy:
+
+- Use at least 10--20 cells per wavelength
+- Higher-order schemes reduce dispersion but increase complexity
+- The Yee scheme has zero numerical dispersion along grid axes at the magic time step
+
+
+## Devito Implementation {#sec-maxwell-devito}
+
+Devito's symbolic infrastructure makes implementing FDTD
+straightforward. We express Maxwell's equations symbolically and
+let Devito generate optimized C code.
+
+### 1D FDTD in Devito
+
+The core implementation creates a grid and time functions for
+$E_y$ and $H_z$:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator, solve
+
+# Create 1D grid
+grid = Grid(shape=(Nx,), extent=(L,))
+
+# Field functions
+Ey = TimeFunction(name='Ey', grid=grid, time_order=1, space_order=2)
+Hz = TimeFunction(name='Hz', grid=grid, time_order=1, space_order=2)
+```
+
+The update equations use Devito's derivative syntax:
+
+```python
+# Material coefficients
+ce = dt / (eps * dx)  # E-field coefficient
+ch = dt / (mu * dx)   # H-field coefficient
+
+# PDEs (rearranged for leapfrog)
+pde_H = Hz.dt + ch * Ey.dxr  # Right-sided derivative
+pde_E = Ey.dt - ce * Hz.forward.dxl  # Left-sided derivative
+
+# Solve for forward time values
+update_H = Eq(Hz.forward, solve(pde_H, Hz.forward))
+update_E = Eq(Ey.forward, solve(pde_E, Ey.forward))
+
+# Create operator
+op = Operator([update_H, update_E])
+```
+
+### Running a 1D Simulation
+
+The complete workflow:
+
+```python
+from src.maxwell import solve_maxwell_1d
+
+# Plane wave in free space
+result = solve_maxwell_1d(
+    L=1.0,           # Domain length [m]
+    Nx=200,          # Grid points
+    T=3e-9,          # Final time [s]
+    source_type='gaussian',
+    f0=1e9,          # Source frequency [Hz]
+    bc_left='pec',   # Perfect electric conductor
+    bc_right='abc',  # Absorbing boundary
+    save_history=True,
+)
+
+# Access results
+Ey = result.Ey  # Final E-field
+Hz = result.Hz  # Final H-field
+x = result.x    # Coordinates
+```
+
+### 2D TMz Implementation
+
+For 2D problems, we need three field components:
+
+```python
+from src.maxwell import solve_maxwell_2d
+
+# 2D cavity simulation
+result = solve_maxwell_2d(
+    Lx=0.1, Ly=0.1,  # Domain size [m]
+    Nx=101, Ny=101,  # Grid points
+    T=1e-9,          # Final time [s]
+    source_type='gaussian',
+    f0=3e9,          # Source frequency [Hz]
+    bc_type='pec',   # Perfect electric conductor walls
+    nsnaps=50,       # Save 50 snapshots
+)
+
+# Access 2D fields
+Ez = result.Ez
+Hx = result.Hx
+Hy = result.Hy
+```
+
+### Key Implementation Patterns
+
+The FDTD implementation follows several patterns:
+
+1. **Staggered derivatives**: Use `.dxr` (right) and `.dxl` (left)
+   for proper Yee grid alignment
+2. **Interleaved updates**: H-field uses current E, E-field uses
+   updated H (`.forward`)
+3. **Boundary conditions**: Applied after field updates
+4. **Source injection**: Soft source adds to existing field value
+
+
+## Boundary Conditions {#sec-maxwell-bcs}
+
+Boundary conditions are crucial for FDTD simulations. Different
+physical situations require different treatments of domain boundaries.
+
+### Perfect Electric Conductor (PEC)
+
+A PEC boundary enforces zero tangential electric field:
+
+$$
+\hat{n} \times \mathbf{E} = 0
+$$ {#eq-bc-pec}
+
+where $\hat{n}$ is the outward normal. For TMz mode at a boundary
+normal to $x$:
+
+- $E_z = 0$ on the boundary
+
+PEC boundaries model metal walls and provide perfect reflection.
+
+### Perfect Magnetic Conductor (PMC)
+
+A PMC boundary enforces zero tangential magnetic field:
+
+$$
+\hat{n} \times \mathbf{H} = 0
+$$ {#eq-bc-pmc}
+
+For TMz at a boundary normal to $x$:
+
+- $H_y = 0$ on the boundary
+
+PMC boundaries are less common physically but useful for symmetry
+planes and magnetic walls.
+
+### Absorbing Boundary Conditions (ABC)
+
+For modeling open regions, we need absorbing boundaries that
+minimize reflections. The simplest first-order Mur ABC:
+
+$$
+\frac{\partial E}{\partial x} = \mp \frac{1}{c} \frac{\partial E}{\partial t}
+$$ {#eq-mur-abc}
+
+where $-$ applies at $x = 0$ and $+$ at $x = L$.
+
+Discretized at the left boundary:
+
+$$
+E^{n+1}_0 = E^n_1 + \frac{c \Delta t - \Delta x}{c \Delta t + \Delta x}
+\left( E^{n+1}_1 - E^n_0 \right)
+$$
+
+The Mur ABC works reasonably for normal incidence but degrades at
+oblique angles.
+
+### Implementing Boundary Conditions
+
+In our Devito solver, boundary conditions are applied after each
+time step:
+
+```python
+# After applying the operator
+if bc_type == "pec":
+    # Ez = 0 at all boundaries
+    Ez.data[1, 0, :] = 0.0
+    Ez.data[1, -1, :] = 0.0
+    Ez.data[1, :, 0] = 0.0
+    Ez.data[1, :, -1] = 0.0
+elif bc_type == "abc":
+    # Simple first-order ABC
+    Ez.data[1, 0, :] = Ez.data[0, 1, :]
+    # ... similar for other boundaries
+```
+
+
+## Perfectly Matched Layer {#sec-maxwell-pml}
+
+The Perfectly Matched Layer (PML), introduced by Berenger in 1994
+[@Berenger1994], is the most effective absorbing boundary technique
+for FDTD. It creates a layer that absorbs incident waves with
+minimal reflection, regardless of frequency or angle.
+
+### PML Concept
+
+The PML uses a coordinate transformation that introduces artificial
+loss in the boundary region:
+
+$$
+\tilde{x} = x + \frac{1}{j\omega} \int_0^x \sigma(x') \, dx'
+$$
+
+This complex coordinate stretching creates an impedance-matched
+absorbing medium. Key properties:
+
+1. **Zero reflection** at the PML interface (in continuous limit)
+2. **Broadband**: Works across all frequencies
+3. **Wide-angle**: Absorbs waves at any angle of incidence
+
+### CPML Formulation
+
+The Convolutional PML (CPML) formulation enables time-domain
+implementation. The modified curl equations become:
+
+$$
+\frac{\partial E_z}{\partial \tilde{x}} = \frac{1}{\kappa_x} \frac{\partial E_z}{\partial x}
++ \psi_{E_z}
+$$
+
+where $\psi_{E_z}$ is an auxiliary field that convolves the field
+history:
+
+$$
+\psi^{n+1} = b \psi^n + a \frac{\partial E_z}{\partial x}
+$$
+
+The coefficients $a$, $b$, and $\kappa$ depend on the PML parameters.
+
+### PML Parameters
+
+Typical parameter profiles (polynomial grading):
+
+$$
+\sigma(x) = \sigma_{\max} \left( \frac{x}{d} \right)^m
+$$
+
+where $d$ is the PML thickness and $m \approx 3$--$4$ is the grading order.
+
+For reflection coefficient $R$, the optimal $\sigma_{\max}$ is:
+
+$$
+\sigma_{\max} = -\frac{(m+1) \ln(R)}{2 \eta d}
+$$
+
+With $R \approx 10^{-6}$ and 8--10 cells, reflections are typically
+below -60 dB.
+
+### PML Implementation
+
+The PML is implemented as a separate region surrounding the
+computational domain:
+
+```python
+from src.maxwell import create_cpml_coefficients
+
+# Create PML coefficients
+cpml = create_cpml_coefficients(
+    n_pml=10,      # PML thickness in cells
+    dx=dx,         # Grid spacing
+    dt=dt,         # Time step
+    sigma_max=None,  # Auto-compute for R=1e-6
+)
+
+# Access coefficients
+b = cpml['b']    # Decay coefficient
+a = cpml['a']    # Update coefficient
+kappa = cpml['kappa']  # Stretching factor
+```
+
+
+## Sources and Excitation {#sec-maxwell-sources}
+
+Electromagnetic simulations require sources to inject energy into
+the computational domain. Several source types serve different
+purposes.
+
+### Soft vs. Hard Sources
+
+**Hard source**: Directly sets field value
+```python
+Ez[src_i, src_j] = source_value
+```
+Creates unwanted reflections when waves return to source location.
+
+**Soft source**: Adds to existing field
+```python
+Ez[src_i, src_j] += source_value
+```
+Allows waves to pass through source region without reflection.
+
+Always prefer soft sources unless modeling a driven boundary.
+
+### Gaussian Pulse
+
+The Gaussian pulse provides broadband excitation for transient
+analysis:
+
+$$
+g(t) = \exp\left( -\left( \frac{t - t_0}{\sigma} \right)^2 \right)
+$$
+
+```python
+from src.maxwell import gaussian_pulse_em
+
+t = np.linspace(0, 10e-9, 1000)
+source = gaussian_pulse_em(t, t0=3e-9, sigma=0.5e-9)
+```
+
+The bandwidth is approximately $0.265/\sigma$.
+
+### Sinusoidal (CW) Source
+
+For frequency-domain analysis, use a continuous wave source with
+soft turn-on to avoid high-frequency content:
+
+$$
+s(t) = \sin(\omega t) \cdot \text{ramp}(t)
+$$
+
+```python
+from src.maxwell import sinusoidal_source
+
+source = sinusoidal_source(t, f0=1e9, t_ramp=2e-9)
+```
+
+### Gaussian-Modulated Sinusoid
+
+For narrow-band analysis around a specific frequency:
+
+$$
+s(t) = \sin(2\pi f_0 t) \cdot \exp\left( -\left( \frac{t - t_0}{\sigma} \right)^2 \right)
+$$
+
+```python
+from src.maxwell import gaussian_modulated_source
+
+source = gaussian_modulated_source(t, f0=5e9, t0=5e-9, sigma=1e-9)
+```
+
+### Total-Field/Scattered-Field (TF/SF)
+
+For plane wave excitation, the TF/SF technique separates the
+domain into total-field and scattered-field regions. This enables:
+
+- Clean plane wave injection
+- Direct scattered field observation
+- Radar cross-section computation
+
+
+## Example: Plane Wave Propagation {#sec-maxwell-plane-wave}
+
+The simplest verification test is 1D plane wave propagation.
+The analytical solution enables exact error measurement.
+
+### Analytical Solution
+
+For a forward-traveling plane wave in a lossless medium:
+
+$$
+E_y(x, t) = E_0 \sin(\omega t - kx)
+$$
+$$
+H_z(x, t) = \frac{E_0}{\eta} \sin(\omega t - kx)
+$$
+
+where $k = \omega/c$ is the wavenumber and $\eta = \sqrt{\mu/\varepsilon}$
+is the wave impedance.
+
+### Numerical Simulation
+
+```python
+from src.maxwell import solve_maxwell_1d, exact_plane_wave_1d
+import numpy as np
+
+# Simulation parameters
+L = 1.0       # Domain length [m]
+Nx = 200      # Grid points
+f0 = 1e9      # Frequency [Hz]
+T = 3e-9      # Final time [s]
+
+# Run simulation
+result = solve_maxwell_1d(
+    L=L, Nx=Nx, T=T,
+    source_type='sinusoidal',
+    f0=f0,
+    bc_left='abc',
+    bc_right='abc',
+)
+
+# Compare with analytical solution
+Ey_exact, Hz_exact = exact_plane_wave_1d(result.x, result.t, f0)
+error = np.max(np.abs(result.Ey - Ey_exact))
+```
+
+### Verification Results
+
+Key verification points:
+
+1. **Wave speed**: Measure propagation delay, compare with $c$
+2. **Impedance**: Check $E/H = \eta$
+3. **Wavelength**: Count nodes/antinodes
+4. **Reflection**: ABC should minimize return signal
+
+
+## Example: Resonant Cavity {#sec-maxwell-cavity}
+
+A rectangular cavity with PEC walls supports resonant modes at
+discrete frequencies. This is an excellent test case because
+the resonant frequencies are known analytically.
+
+### Analytical Resonant Frequencies
+
+For a 2D rectangular cavity with dimensions $a \times b$:
+
+$$
+f_{mn} = \frac{c}{2} \sqrt{\left(\frac{m}{a}\right)^2 + \left(\frac{n}{b}\right)^2}
+$$ {#eq-cavity-freq}
+
+The lowest mode for TMz is TM$_{11}$ (m=1, n=1).
+
+### Numerical Simulation
+
+```python
+from src.maxwell import solve_maxwell_2d, cavity_resonant_frequencies
+
+# Cavity dimensions
+a, b = 0.1, 0.1  # 10 cm x 10 cm cavity
+
+# Compute expected resonant frequencies
+modes = cavity_resonant_frequencies(a, b, m_max=3, n_max=3)
+f_11 = modes[0]['f']  # Lowest resonant frequency
+
+# Run simulation with broadband excitation
+result = solve_maxwell_2d(
+    Lx=a, Ly=b,
+    Nx=101, Ny=101,
+    T=10e-9,  # Long enough for resonance to develop
+    source_type='gaussian',
+    f0=f_11,  # Center near first resonance
+    bc_type='pec',
+    nsnaps=-1,  # Save all time steps
+)
+```
+
+### FFT Analysis
+
+Extract resonant frequencies from time-domain data:
+
+```python
+import numpy as np
+
+# Take FFT of field at observation point
+dt = result.dt
+t = result.t_history
+Ez_obs = [Ez[50, 50] for Ez in result.Ez_history]
+
+# Compute spectrum
+freq = np.fft.fftfreq(len(t), dt)
+spectrum = np.abs(np.fft.fft(Ez_obs))
+
+# Find peaks
+peaks = freq[np.where(spectrum > 0.5 * spectrum.max())]
+```
+
+The spectral peaks should match the analytical frequencies
+within numerical dispersion error.
+
+### Mode Shape Verification
+
+The TM$_{mn}$ mode has spatial pattern:
+
+$$
+E_z(x, y) = E_0 \sin\left(\frac{m\pi x}{a}\right) \sin\left(\frac{n\pi y}{b}\right)
+$$
+
+Compare the numerical field pattern at resonance with this analytical form.
+
+
+## Example: Dielectric Waveguide {#sec-maxwell-waveguide}
+
+Optical waveguides confine light through total internal reflection.
+This example tests the handling of material interfaces.
+
+### Slab Waveguide
+
+Consider a dielectric slab of refractive index $n_1$ surrounded
+by material with index $n_2 < n_1$. Guided modes exist when:
+
+$$
+n_2 < n_{\text{eff}} < n_1
+$$
+
+where $n_{\text{eff}}$ is the effective index of the mode.
+
+### Cutoff Condition
+
+The fundamental mode TE$_0$ has no cutoff, but higher modes require:
+
+$$
+V = k_0 d \sqrt{n_1^2 - n_2^2} > m\pi
+$$
+
+where $V$ is the normalized frequency, $d$ is the slab thickness,
+and $m$ is the mode number.
+
+### Simulation Setup
+
+```python
+# Waveguide parameters
+n_core = 1.5    # Core refractive index
+n_clad = 1.0    # Cladding index (air)
+width = 2e-6    # Core width [m]
+
+# Create permittivity profile
+eps_r = np.ones((Nx, Ny))
+core_mask = (np.abs(x - Lx/2) < width/2)
+eps_r[core_mask, :] = n_core**2
+
+# Run simulation with guided mode excitation
+result = solve_maxwell_2d(
+    Lx=10e-6, Ly=20e-6,
+    Nx=101, Ny=201,
+    eps_r=eps_r,
+    source_position=(Lx/2, 1e-6),
+    f0=200e12,  # Optical frequency
+)
+```
+
+### Verification
+
+Check:
+
+1. Field confinement within core
+2. Evanescent decay in cladding
+3. Propagation constant from phase measurement
+
+
+## Exercises {#sec-maxwell-exercises}
+
+::: {.callout-note title="Exercise 16.1: Verify CFL Condition"}
+Implement a test that runs the 1D FDTD solver at various Courant
+numbers. Demonstrate that the simulation becomes unstable when
+$S = c\Delta t / \Delta x > 1$.
+
+a) Run with $S = 0.5, 0.9, 1.0, 1.1$
+b) Plot the maximum field amplitude vs. time for each case
+c) Identify the threshold for instability
+:::
+
+::: {.callout-note title="Exercise 16.2: Numerical Dispersion"}
+Study numerical dispersion in the FDTD method:
+
+a) Simulate a Gaussian pulse propagating through free space
+b) Measure the group velocity at different grid resolutions
+c) Plot the dispersion error vs. cells per wavelength
+d) Verify that error scales as $O(\Delta x^2)$
+:::
+
+::: {.callout-note title="Exercise 16.3: Interface Reflection"}
+Simulate reflection and transmission at a dielectric interface.
+For a wave incident from medium 1 ($\varepsilon_1$) to medium 2
+($\varepsilon_2$):
+
+$$
+R = \left| \frac{\eta_2 - \eta_1}{\eta_2 + \eta_1} \right|^2
+$$
+
+a) Create a simulation with an interface at $x = L/2$
+b) Use $\varepsilon_r = 1$ for $x < L/2$ and $\varepsilon_r = 4$ for $x > L/2$
+c) Measure reflected and transmitted amplitudes
+d) Compare with analytical Fresnel coefficients
+:::
+
+::: {.callout-note title="Exercise 16.4: PML Optimization"}
+Investigate PML performance:
+
+a) Vary PML thickness from 5 to 20 cells
+b) Vary polynomial grading order from 2 to 5
+c) Measure reflection coefficient for normal incidence
+d) Create a contour plot of $\log_{10}(R)$ vs. thickness and order
+:::
+
+::: {.callout-note title="Exercise 16.5: 2D Cavity Modes"}
+Extend the cavity analysis:
+
+a) Simulate a rectangular cavity with $a \neq b$
+b) Identify the first 5 resonant modes
+c) Compare numerical and analytical frequencies
+d) Plot the mode patterns and verify spatial structure
+:::
+
+::: {.callout-note title="Exercise 16.6: Antenna Radiation"}
+Model a simple dipole antenna:
+
+a) Create a line source representing a short dipole
+b) Excite with a sinusoidal current at frequency $f_0$
+c) Compute the radiation pattern in the far field
+d) Verify the $\sin^2(\theta)$ pattern expected for a short dipole
+:::
+
+::: {.callout-note title="Exercise 16.7: Energy Conservation"}
+Test energy conservation in lossless media:
+
+a) Initialize a Gaussian pulse in a PEC cavity
+b) Track total electromagnetic energy:
+   $U = \frac{1}{2}\int (\varepsilon E^2 + \mu H^2) dV$
+c) Verify energy remains constant (to numerical precision)
+d) Add a lossy region and verify energy decay matches $e^{-2\alpha x}$
+:::
+
+::: {.callout-note title="Exercise 16.8: Metamaterial Simulation"}
+Investigate negative index behavior:
+
+a) Create a region with $\varepsilon_r = -1$ (requires Drude model)
+b) Simulate a wave entering this region
+c) Observe the reversed phase velocity
+d) Discuss stability considerations for negative parameters
+:::
+
+::: {.callout-note title="Exercise 16.9: Parallel Plate Waveguide"}
+Simulate TEM mode propagation:
+
+a) Set up parallel PEC plates separated by distance $d$
+b) Excite the TEM mode (uniform field between plates)
+c) Verify propagation at speed $c$
+d) Examine higher-order mode cutoff: $f_c = mc/(2d)$
+:::
+
+::: {.callout-note title="Exercise 16.10: Time Reversal"}
+Demonstrate time-reversal focusing:
+
+a) Record fields from a point source at a boundary
+b) Time-reverse the recorded signal
+c) Re-inject and observe focusing back to source
+d) Quantify the focal spot size vs. aperture
+:::
