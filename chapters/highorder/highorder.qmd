@@ -36,6 +36,10 @@ This chapter covers:
    in Devito solvers
 5. **Comparison Studies** (@sec-highorder-comparison): Quantitative comparison
    of standard versus DRP schemes
+6. **ADER Schemes** (@sec-ader): High-order time integration by converting
+   time derivatives to spatial derivatives
+7. **Staggered Grids** (@sec-staggered): First-order velocity-pressure
+   formulations on staggered grids
 
 
 ## Dispersion Analysis {#sec-highorder-dispersion}
@@ -945,6 +949,465 @@ b) Now compare a 9-point DRP scheme with a 13-point Fornberg scheme that
 c) Discuss the trade-offs between stencil width and dispersion accuracy.
 
 
+## ADER Finite Difference Schemes {#sec-ader}
+
+ADER (Arbitrary-order-accuracy via DERivatives) time integration provides
+a powerful alternative to standard leapfrog time-stepping for solving
+hyperbolic systems. The key idea is to use Taylor series expansions in
+time, converting time derivatives into spatial derivatives using the
+governing equations. This enables temporal discretization accuracy to
+match the spatial discretization order.
+
+### First-Order Acoustic System
+
+Consider the first-order formulation of the acoustic wave equation.
+The state vector is:
+$$
+\mathbf{U} = \begin{bmatrix} p \\ \mathbf{v} \end{bmatrix}
+$$ {#eq-ader-state}
+
+where $p$ is pressure and $\mathbf{v}$ is particle velocity. The
+governing equations are:
+$$
+\frac{\partial \mathbf{U}}{\partial t} = \begin{bmatrix}
+\rho c^2 \nabla \cdot \mathbf{v} \\
+\frac{1}{\rho} \nabla p
+\end{bmatrix}
+$$ {#eq-ader-governing}
+
+where $\rho$ is density and $c$ is the wave speed.
+
+### Taylor Series Time Expansion
+
+The ADER approach expands the solution at the next time step using a
+Taylor series:
+$$
+\mathbf{U}(t + \Delta t) = \mathbf{U}(t) + \Delta t \frac{\partial \mathbf{U}}{\partial t}
++ \frac{\Delta t^2}{2} \frac{\partial^2 \mathbf{U}}{\partial t^2}
++ \frac{\Delta t^3}{6} \frac{\partial^3 \mathbf{U}}{\partial t^3}
++ \frac{\Delta t^4}{24} \frac{\partial^4 \mathbf{U}}{\partial t^4} + \cdots
+$$ {#eq-ader-taylor}
+
+The key step is converting time derivatives to spatial derivatives using
+the governing equations. For example, the second time derivative is:
+$$
+\frac{\partial^2 \mathbf{U}}{\partial t^2} = \begin{bmatrix}
+\rho c^2 \nabla \cdot \frac{\partial \mathbf{v}}{\partial t} \\
+\frac{1}{\rho} \nabla \frac{\partial p}{\partial t}
+\end{bmatrix}
+$$
+
+Substituting the expressions from @eq-ader-governing:
+$$
+\frac{\partial^2 \mathbf{U}}{\partial t^2} = \begin{bmatrix}
+c^2 \nabla^2 p \\
+c^2 \nabla(\nabla \cdot \mathbf{v})
+\end{bmatrix}
+$$ {#eq-ader-dt2}
+
+where we have assumed constant material properties.
+
+### Higher-Order Time Derivatives
+
+Continuing this process yields expressions for the third and fourth
+time derivatives (assuming constant $c$ and $\rho$):
+
+**Third time derivative:**
+$$
+\frac{\partial^3 \mathbf{U}}{\partial t^3} = \begin{bmatrix}
+\rho c^4 \nabla^2 (\nabla \cdot \mathbf{v}) \\
+\frac{c^2}{\rho} \nabla(\nabla^2 p)
+\end{bmatrix}
+$$ {#eq-ader-dt3}
+
+**Fourth time derivative:**
+$$
+\frac{\partial^4 \mathbf{U}}{\partial t^4} = \begin{bmatrix}
+c^4 \nabla^4 p \\
+c^4 \nabla(\nabla^2(\nabla \cdot \mathbf{v}))
+\end{bmatrix}
+$$ {#eq-ader-dt4}
+
+where $\nabla^4$ is the biharmonic operator:
+$$
+\nabla^4 = \frac{\partial^4}{\partial x^4} + 2\frac{\partial^4}{\partial x^2 \partial y^2} + \frac{\partial^4}{\partial y^4}
+$$ {#eq-biharmonic}
+
+### 4th-Order ADER Update Equations
+
+The complete 4th-order ADER update equations are:
+
+For pressure:
+$$
+p^{n+1} = p^n + \Delta t \, \rho c^2 \nabla \cdot \mathbf{v}
++ \frac{\Delta t^2}{2} c^2 \nabla^2 p
++ \frac{\Delta t^3}{6} \rho c^4 \nabla^2(\nabla \cdot \mathbf{v})
++ \frac{\Delta t^4}{24} c^4 \nabla^4 p
+$$ {#eq-ader-p-update}
+
+For velocity:
+$$
+\mathbf{v}^{n+1} = \mathbf{v}^n + \Delta t \frac{1}{\rho} \nabla p
++ \frac{\Delta t^2}{2} c^2 \nabla(\nabla \cdot \mathbf{v})
++ \frac{\Delta t^3}{6} \frac{c^2}{\rho} \nabla(\nabla^2 p)
++ \frac{\Delta t^4}{24} c^4 \nabla(\nabla^2(\nabla \cdot \mathbf{v}))
+$$ {#eq-ader-v-update}
+
+### ADER Implementation in Devito
+
+The following code implements a 4th-order ADER scheme in Devito:
+
+```python
+from devito import Grid, TimeFunction, VectorTimeFunction, Function
+from devito import Eq, Operator, div, grad
+import sympy as sp
+import numpy as np
+
+# Helper functions for high-order spatial derivatives
+def graddiv(f):
+    """Compute grad(div(f)) for a vector field."""
+    return sp.Matrix([[f[0].dx2 + f[1].dxdy],
+                      [f[0].dxdy + f[1].dy2]])
+
+def lapdiv(f):
+    """Compute laplace(div(f)) for a vector field."""
+    return f[0].dx3 + f[0].dxdy2 + f[1].dx2dy + f[1].dy3
+
+def gradlap(f):
+    """Compute grad(laplace(f)) for a scalar field."""
+    return sp.Matrix([[f.dx3 + f.dxdy2],
+                      [f.dx2dy + f.dy3]])
+
+def gradlapdiv(f):
+    """Compute grad(laplace(div(f))) for a vector field."""
+    return sp.Matrix([[f[0].dx4 + f[0].dx2dy2 + f[1].dx3dy + f[1].dxdy3],
+                      [f[0].dx3dy + f[0].dxdy3 + f[1].dx2dy2 + f[1].dy4]])
+
+def biharmonic(f):
+    """Compute biharmonic operator for a scalar field."""
+    return f.dx4 + 2*f.dx2dy2 + f.dy4
+
+
+def solve_ader_2d(
+    extent=(1000., 1000.),
+    shape=(201, 201),
+    c_value=1.5,
+    rho_value=1.0,
+    t_end=450.,
+    courant=0.85,
+    f0=0.020,
+):
+    """Solve 2D acoustic wave equation with 4th-order ADER time-stepping."""
+    # Create grid
+    grid = Grid(shape=shape, extent=extent)
+
+    # Create fields (no staggering needed for ADER)
+    p = TimeFunction(name='p', grid=grid, space_order=16)
+    v = VectorTimeFunction(name='v', grid=grid, space_order=16,
+                           staggered=(None, None))
+
+    # Material parameters
+    c = Function(name='c', grid=grid)
+    rho = Function(name='rho', grid=grid)
+    c.data[:] = c_value
+    rho.data[:] = rho_value
+
+    # Derived quantities
+    b = 1/rho  # buoyancy
+    c2 = c**2
+    c4 = c**4
+
+    # Time step from CFL condition
+    dt = courant * np.amin(grid.spacing) / np.amax(c.data)
+    nt = int(t_end / dt) + 1
+
+    # Time derivatives expressed as spatial derivatives
+    pdt = rho * c2 * div(v)
+    vdt = b * grad(p)
+
+    pdt2 = c2 * p.laplace
+    vdt2 = c2 * graddiv(v)
+
+    pdt3 = rho * c4 * lapdiv(v)
+    vdt3 = c2 * b * gradlap(p)
+
+    pdt4 = c4 * biharmonic(p)
+    vdt4 = c4 * gradlapdiv(v)
+
+    # Time step symbol
+    dt_sym = grid.stepping_dim.spacing
+
+    # ADER update equations (4th order)
+    eq_p = Eq(p.forward, p + dt_sym*pdt + (dt_sym**2/2)*pdt2
+              + (dt_sym**3/6)*pdt3 + (dt_sym**4/24)*pdt4)
+    eq_v = Eq(v.forward, v + dt_sym*vdt + (dt_sym**2/2)*vdt2
+              + (dt_sym**3/6)*vdt3 + (dt_sym**4/24)*vdt4)
+
+    # Source injection (Ricker wavelet)
+    # ... (source setup code)
+
+    op = Operator([eq_p, eq_v])
+    op.apply(dt=dt, time_M=nt)
+
+    return p, v
+```
+
+### Advantages of ADER Schemes
+
+The key advantages of ADER time integration include:
+
+1. **Higher CFL numbers**: ADER schemes can use larger time steps than
+   standard leapfrog methods. In the example notebook, a Courant number
+   of 0.85 is stable for ADER, whereas leapfrog requires ~0.5 for
+   the same spatial discretization.
+
+2. **No grid-grid decoupling**: Unlike standard staggered leapfrog
+   schemes, ADER avoids "checkerboard" instabilities in first-order
+   systems solved on a single grid.
+
+3. **Matched temporal and spatial accuracy**: The temporal discretization
+   order can be increased to match the spatial discretization, providing
+   balanced accuracy.
+
+4. **Numerical diffusion at boundaries**: ADER schemes exhibit numerical
+   diffusion when encountering non-smooth solutions (such as domain
+   boundaries), which can act as a natural damping mechanism.
+
+The main cost is the computation of higher-order spatial derivatives,
+which require wider stencils and more floating-point operations per
+grid point.
+
+
+## Staggered Grid Formulations {#sec-staggered}
+
+Staggered grids are a powerful technique for solving first-order
+hyperbolic systems such as the acoustic wave equation in velocity-pressure
+form. By placing different variables at different grid locations,
+staggered schemes naturally capture the physics of wave propagation
+and avoid certain numerical artifacts.
+
+### First-Order Acoustic System
+
+The acoustic wave equation can be written as a first-order system:
+$$
+\frac{\partial p}{\partial t} = \lambda \nabla \cdot \mathbf{v}
+$$ {#eq-staggered-p}
+
+$$
+\frac{\partial \mathbf{v}}{\partial t} = \frac{1}{\rho} \nabla p
+$$ {#eq-staggered-v}
+
+where $p$ is pressure, $\mathbf{v} = (v_x, v_z)$ is the velocity vector,
+$\rho$ is density, and $\lambda = \rho c^2$ is the bulk modulus
+(with $c$ being the wave speed).
+
+### The Staggered Grid Concept
+
+On a *collocated* grid, all variables are defined at the same grid
+points. On a *staggered* grid, different variables are defined at
+different locations:
+
+- **Pressure** $p$ is defined at cell centers (integer indices)
+- **Velocity $v_x$** is defined at cell faces in the x-direction
+  (half-integer in x, integer in z)
+- **Velocity $v_z$** is defined at cell faces in the z-direction
+  (integer in x, half-integer in z)
+
+This arrangement is sometimes called a *Marker and Cell* (MAC) grid
+or *Arakawa C-grid*.
+
+The staggering naturally aligns gradient and divergence operations:
+
+- $\nabla p$ at velocity locations uses centered differences of $p$
+- $\nabla \cdot \mathbf{v}$ at pressure locations uses centered
+  differences of velocity components
+
+This leads to more accurate schemes with the same stencil width compared
+to collocated grids.
+
+### Staggered Grid Implementation in Devito
+
+Devito provides built-in support for staggered grids through the
+`staggered` keyword argument. The `NODE` staggering places a variable
+at cell centers, while the default staggering for `VectorTimeFunction`
+places components at cell faces.
+
+```python
+from devito import Grid, TimeFunction, VectorTimeFunction
+from devito import Eq, Operator, div, grad, solve, NODE
+
+# Create grid
+extent = (2000., 2000.)
+shape = (81, 81)
+grid = Grid(extent=extent, shape=shape)
+
+# Pressure at cell centers (NODE)
+p = TimeFunction(name='p', grid=grid, staggered=NODE,
+                 space_order=2, time_order=1)
+
+# Velocity components at staggered locations
+v = VectorTimeFunction(name='v', grid=grid,
+                       space_order=2, time_order=1)
+
+# Material properties
+V_p = 4.0  # Wave speed (km/s)
+density = 1.0  # Density
+ro = 1/density  # 1/rho
+l2m = V_p**2 * density  # lambda = rho * c^2
+
+# Update equations
+# v^{n+1} = v^n + dt * (1/rho) * grad(p)
+u_v = Eq(v.forward, solve(v.dt - ro * grad(p), v.forward))
+
+# p^{n+1} = p^n + dt * lambda * div(v^{n+1})
+u_p = Eq(p.forward, solve(p.dt - l2m * div(v.forward), p.forward))
+
+# Create operator
+op = Operator([u_v, u_p])
+```
+
+### Comparison of 2nd and 4th Order Schemes
+
+Higher-order staggered schemes use wider stencils for the gradient and
+divergence operators. The `space_order` parameter in Devito controls this:
+
+**Second-order scheme** (`space_order=2`):
+```python
+p = TimeFunction(name='p', grid=grid, staggered=NODE,
+                 space_order=2, time_order=1)
+v = VectorTimeFunction(name='v', grid=grid,
+                       space_order=2, time_order=1)
+```
+
+Uses a 3-point stencil for derivatives, giving $O(h^2)$ spatial accuracy.
+
+**Fourth-order scheme** (`space_order=4`):
+```python
+p = TimeFunction(name='p', grid=grid, staggered=NODE,
+                 space_order=4, time_order=1)
+v = VectorTimeFunction(name='v', grid=grid,
+                       space_order=4, time_order=1)
+```
+
+Uses a 5-point stencil for derivatives, giving $O(h^4)$ spatial accuracy.
+
+### Complete Staggered Grid Solver
+
+The following code provides a complete 2D staggered grid acoustic solver:
+
+```python
+from devito import Grid, TimeFunction, VectorTimeFunction, Function
+from devito import Eq, Operator, div, grad, solve, NODE
+import numpy as np
+
+
+def ricker_wavelet(t, f0, A=1.0):
+    """Generate Ricker wavelet."""
+    tau = (np.pi * f0 * (t - 1.0/f0))**2
+    return A * (1 - 2*tau) * np.exp(-tau)
+
+
+def solve_staggered_acoustic_2d(
+    extent=(2000., 2000.),
+    shape=(81, 81),
+    velocity=4.0,
+    density=1.0,
+    t_end=200.,
+    dt=None,
+    f0=0.01,
+    space_order=2,
+):
+    """Solve 2D acoustic wave equation with staggered grid scheme.
+
+    Parameters
+    ----------
+    extent : tuple
+        Domain size (Lx, Lz) in meters/km.
+    shape : tuple
+        Grid shape (Nx, Nz).
+    velocity : float
+        Wave velocity.
+    density : float
+        Material density.
+    t_end : float
+        End time.
+    dt : float, optional
+        Time step. If None, computed from CFL.
+    f0 : float
+        Source peak frequency.
+    space_order : int
+        Spatial discretization order (2 or 4).
+
+    Returns
+    -------
+    tuple
+        (p, v) - pressure and velocity fields.
+    """
+    grid = Grid(extent=extent, shape=shape)
+
+    # Compute time step from CFL if not provided
+    if dt is None:
+        h_min = min(extent[0]/(shape[0]-1), extent[1]/(shape[1]-1))
+        dt = 0.5 * h_min / velocity  # CFL ~ 0.5
+
+    nt = int(t_end / dt) + 1
+
+    # Create staggered fields
+    p = TimeFunction(name='p', grid=grid, staggered=NODE,
+                     space_order=space_order, time_order=1)
+    v = VectorTimeFunction(name='v', grid=grid,
+                           space_order=space_order, time_order=1)
+
+    # Material properties
+    ro = 1.0 / density
+    l2m = velocity**2 * density
+
+    # Update equations
+    u_v = Eq(v.forward, solve(v.dt - ro * grad(p), v.forward))
+    u_p = Eq(p.forward, solve(p.dt - l2m * div(v.forward), p.forward))
+
+    # Source (inject into pressure field)
+    t_values = np.linspace(0, t_end, nt)
+    src_data = ricker_wavelet(t_values, f0)
+
+    # Find source location (center of domain)
+    src_x = shape[0] // 2
+    src_z = shape[1] // 2
+
+    op = Operator([u_v, u_p])
+
+    # Time stepping with source injection
+    for n in range(nt - 1):
+        op.apply(time_m=n, time_M=n, dt=dt)
+        # Inject source
+        p.data[(n+1) % 2, src_x, src_z] += dt * src_data[n]
+
+    return p, v
+```
+
+### Staggered vs. ADER: When to Use Each
+
+| Feature | Staggered Grid | ADER |
+|---------|----------------|------|
+| Time accuracy | 1st order (leapfrog) | Arbitrary order |
+| Maximum stable CFL | ~0.5 | ~0.85 or higher |
+| Memory usage | Lower | Higher (more derivatives) |
+| Code complexity | Simpler | More complex |
+| Best for | Standard wave propagation | Long-time simulations |
+
+**Choose staggered grids when:**
+
+- Memory is limited
+- Standard CFL conditions are acceptable
+- Simplicity is preferred
+
+**Choose ADER when:**
+
+- Large time steps are needed
+- Long propagation times require matched temporal accuracy
+- Computational cost per step is less important than total steps
+
+
 ## Summary {#sec-highorder-summary}
 
 This chapter introduced high-order finite difference methods and their
@@ -964,6 +1427,12 @@ application to wave propagation in Devito.
 4. **Devito's custom weights** feature enables easy implementation of any
    finite difference scheme, including DRP.
 
+5. **ADER time integration** converts time derivatives to spatial
+   derivatives, enabling high-order temporal accuracy and larger CFL numbers.
+
+6. **Staggered grids** place different variables at different grid
+   locations, naturally capturing the physics of first-order wave systems.
+
 ### Practical Guidelines
 
 - **For general PDEs**: Use Devito's default Fornberg weights with
@@ -971,6 +1440,12 @@ application to wave propagation in Devito.
 
 - **For wave propagation**: Consider DRP weights, especially for long
   simulations or high-frequency content.
+
+- **For first-order systems**: Use staggered grids for natural handling
+  of velocity and pressure variables.
+
+- **For long simulations**: Consider ADER time integration to allow
+  larger time steps.
 
 - **Always verify stability**: Compute the CFL limit for your chosen
   weights and ensure $\Delta t$ is below it.

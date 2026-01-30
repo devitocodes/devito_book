@@ -1089,6 +1089,524 @@ c) Measure the reflection coefficient and compare to the theoretical value:
    $R = \frac{\rho_2 V_{p2} - \rho_1 V_{p1}}{\rho_2 V_{p2} + \rho_1 V_{p1}}$
 :::
 
+## Viscoacoustic Wave Equations {#sec-viscoacoustic}
+
+The elastic and acoustic wave equations we have studied assume that
+wave propagation is lossless---energy is conserved as waves travel
+through the medium. In real Earth materials, however, seismic waves
+lose energy as they propagate due to *attenuation*. This energy loss
+causes wave amplitudes to decrease and affects the frequency content
+of signals. Modeling attenuation is essential for:
+
+- **Seismic imaging**: Q compensation in migration algorithms
+- **Full waveform inversion (FWI)**: Accurate amplitude fitting
+- **Reservoir characterization**: Oil and gas cause anomalous attenuation
+- **Earthquake seismology**: Understanding ground motion decay
+
+### The Quality Factor Q {#sec-quality-factor}
+
+Attenuation in seismic wave propagation is quantified by the *quality
+factor* $Q$, a dimensionless number defined as:
+
+$$
+Q = 2\pi \frac{E}{\Delta E}
+$$ {#eq-q-definition}
+
+where $E$ is the energy stored in the wave and $\Delta E$ is the energy
+lost per cycle. A high $Q$ means low attenuation (the wave travels far
+with little energy loss), while a low $Q$ means high attenuation.
+
+Typical values in the Earth:
+
+| Material | Q |
+|----------|---|
+| Steel | 5000 |
+| Granite | 100--500 |
+| Sandstone (dry) | 50--100 |
+| Sandstone (oil-saturated) | 10--50 |
+| Sediments | 20--100 |
+| Water | nearly $\infty$ |
+
+The relationship between $Q$ and amplitude decay over distance $x$ is:
+
+$$
+A(x) = A_0 \exp\left(-\frac{\omega x}{2 v Q}\right)
+$$ {#eq-amplitude-decay}
+
+where $\omega = 2\pi f$ is the angular frequency and $v$ is velocity.
+This shows that high frequencies attenuate faster than low frequencies,
+leading to *dispersion* (frequency-dependent velocity).
+
+### Rheological Models {#sec-rheological-models}
+
+Several mathematical models exist to incorporate attenuation into
+wave equations. Each has trade-offs between accuracy, computational
+cost, and ease of implementation.
+
+#### Standard Linear Solid (SLS) Model
+
+The Standard Linear Solid (SLS) model, also known as the Zener model,
+uses a *memory variable* to capture the viscoelastic behavior of the
+medium. This approach accurately models frequency-dependent $Q$ across
+a broad bandwidth.
+
+The first-order velocity-pressure formulation with memory variable is:
+
+$$
+\begin{aligned}
+\frac{\partial P}{\partial t} + \kappa (\tau + 1) \nabla \cdot \mathbf{v} + r &= S \\
+\frac{\partial \mathbf{v}}{\partial t} + \frac{1}{\rho} \nabla P &= 0 \\
+\frac{\partial r}{\partial t} + \frac{1}{\tau_\sigma} \left( r + \tau \kappa \nabla \cdot \mathbf{v} \right) &= 0
+\end{aligned}
+$$ {#eq-sls-system}
+
+where:
+
+- $P$ is the pressure field
+- $\mathbf{v} = (v_x, v_z)$ is particle velocity
+- $r$ is the memory variable
+- $\kappa = \rho v_p^2$ is the bulk modulus
+- $\tau = \tau_\epsilon / \tau_\sigma - 1$ is the relaxation magnitude
+- $\tau_\sigma$ and $\tau_\epsilon$ are stress and strain relaxation times
+
+The relaxation parameters are computed from $Q$ and the reference
+frequency $f_0$:
+
+$$
+\tau_\sigma = \frac{\sqrt{Q^2 + 1} - 1}{2\pi f_0 Q}, \quad
+\tau_\epsilon = \frac{\sqrt{Q^2 + 1} + 1}{2\pi f_0 Q}
+$$ {#eq-relaxation-times}
+
+This can be simplified to:
+
+$$
+\tau_\sigma = \frac{\sqrt{1 + 1/Q^2} - 1/Q}{f_0}, \quad
+\tau_\epsilon = \frac{1}{f_0^2 \tau_\sigma}
+$$ {#eq-relaxation-simplified}
+
+#### Kelvin-Voigt Model
+
+The Kelvin-Voigt model adds a viscosity term directly to the wave equation:
+
+$$
+\frac{\partial^2 P}{\partial t^2} - v^2 \nabla^2 P - \eta \nabla^2 \left(\frac{\partial P}{\partial t}\right) = S
+$$ {#eq-kelvin-voigt-second}
+
+where $\eta = v^2 / (\omega_0 Q)$ is the viscosity coefficient.
+
+In first-order form:
+
+$$
+\begin{aligned}
+\frac{\partial P}{\partial t} + \kappa \nabla \cdot \mathbf{v} - \eta \rho \nabla \cdot \left(\frac{1}{\rho} \nabla P\right) &= S \\
+\frac{\partial \mathbf{v}}{\partial t} + \frac{1}{\rho} \nabla P &= 0
+\end{aligned}
+$$ {#eq-kelvin-voigt-system}
+
+The Kelvin-Voigt model is simpler than SLS (no memory variable) but
+provides frequency-dependent attenuation that increases with frequency.
+
+#### Maxwell Model
+
+The Maxwell model uses a simple absorption coefficient $g$:
+
+$$
+\begin{aligned}
+\frac{\partial P}{\partial t} + \kappa \nabla \cdot \mathbf{v} + \frac{\omega_0}{Q} P &= S \\
+\frac{\partial \mathbf{v}}{\partial t} + \frac{1}{\rho} \nabla P &= 0
+\end{aligned}
+$$ {#eq-maxwell-system}
+
+where $\omega_0 = 2\pi f_0$ is the angular reference frequency. The
+absorption coefficient is $g = \omega_0 / Q$.
+
+This is the simplest approach computationally but provides constant
+(frequency-independent) attenuation, which is less physically realistic.
+
+### Devito Implementation of the SLS Model {#sec-sls-devito}
+
+The SLS viscoacoustic equations can be implemented in Devito using the
+explicit API:
+
+```python
+from devito import (
+    Grid, VectorTimeFunction, TimeFunction, Function,
+    Eq, Operator, div, grad, solve
+)
+import numpy as np
+
+# Domain and grid setup
+Lx, Lz = 6000.0, 6000.0  # meters
+Nx, Nz = 301, 301
+grid = Grid(shape=(Nx, Nz), extent=(Lx, Lz), dtype=np.float32)
+
+# Material parameters
+space_order = 8
+vp = Function(name='vp', grid=grid, space_order=space_order)
+b = Function(name='b', grid=grid, space_order=space_order)   # buoyancy = 1/rho
+qp = Function(name='qp', grid=grid, space_order=space_order)
+
+# Set parameter values (here constant, but can be spatially varying)
+vp.data[:] = 2.0   # km/s
+b.data[:] = 1.0    # 1/rho
+qp.data[:] = 50.0  # Quality factor
+
+# Reference frequency
+f0 = 0.005  # kHz
+
+# Compute relaxation parameters
+Q = qp.data
+t_s = (np.sqrt(1.0 + 1.0/Q**2) - 1.0/Q) / f0
+t_ep = 1.0 / (f0**2 * t_s)
+tau = t_ep / t_s - 1.0
+
+# Create Functions for relaxation parameters
+t_s_fn = Function(name='t_s', grid=grid, space_order=space_order)
+tau_fn = Function(name='tau', grid=grid, space_order=space_order)
+t_s_fn.data[:] = t_s
+tau_fn.data[:] = tau
+
+# Bulk modulus
+bm = Function(name='bm', grid=grid, space_order=space_order)
+rho = 1.0 / b.data
+bm.data[:] = rho * vp.data**2
+
+# Create fields
+v = VectorTimeFunction(name='v', grid=grid, time_order=1, space_order=space_order)
+p = TimeFunction(name='p', grid=grid, time_order=1, space_order=space_order)
+r = TimeFunction(name='r', grid=grid, time_order=1, space_order=space_order)
+
+# SLS equations
+# dv/dt + b * grad(p) = 0
+pde_v = v.dt + b * grad(p)
+u_v = Eq(v.forward, solve(pde_v, v.forward))
+
+# dr/dt + (1/t_s) * (r + tau * bm * div(v.forward)) = 0
+pde_r = r.dt + (1.0 / t_s_fn) * (r + tau_fn * bm * div(v.forward))
+u_r = Eq(r.forward, solve(pde_r, r.forward))
+
+# dp/dt + bm * (tau + 1) * div(v.forward) + r.forward = 0
+pde_p = p.dt + bm * (tau_fn + 1.0) * div(v.forward) + r.forward
+u_p = Eq(p.forward, solve(pde_p, p.forward))
+
+# Create operator
+op = Operator([u_v, u_r, u_p])
+```
+
+The key differences from the acoustic case are:
+
+1. **Memory variable** $r$: An additional `TimeFunction` that tracks
+   the viscoelastic memory of the medium.
+
+2. **Relaxation parameters**: The `t_s` and `tau` fields control the
+   attenuation behavior. These are derived from $Q$.
+
+3. **Three coupled PDEs**: The velocity, memory, and pressure equations
+   must be solved together at each time step.
+
+### Using the Module Interface {#sec-viscoacoustic-module}
+
+The complete viscoacoustic solvers are available in
+`src/systems/viscoacoustic_devito.py`:
+
+```python
+from src.systems import solve_viscoacoustic_sls
+
+result = solve_viscoacoustic_sls(
+    Lx=6000.0, Lz=6000.0,  # Domain [m]
+    Nx=301, Nz=301,         # Grid points
+    T=2000.0,               # Simulation time [ms]
+    vp=2.0,                 # P-wave velocity [km/s]
+    rho=1.0,                # Density
+    Q=50.0,                 # Quality factor
+    f0=0.005,               # Reference frequency [kHz]
+)
+
+# Access results
+print(f"Max pressure: {result.p.max():.6f}")
+```
+
+All three rheological models are available:
+
+```python
+from src.systems import (
+    solve_viscoacoustic_sls,      # Standard Linear Solid
+    solve_viscoacoustic_kv,       # Kelvin-Voigt
+    solve_viscoacoustic_maxwell,  # Maxwell
+)
+```
+
+### Comparison of Rheological Models {#sec-rheological-comparison}
+
+| Model | Memory Vars | Q Accuracy | Complexity | Use Case |
+|-------|-------------|------------|------------|----------|
+| SLS | Yes (1) | Excellent | Medium | FWI, RTM |
+| Kelvin-Voigt | No | Good | Low | Simple modeling |
+| Maxwell | No | Fair | Lowest | Quick tests |
+
+The SLS model is most widely used in production seismic imaging because
+it accurately captures the frequency-dependent nature of real-world
+attenuation. The Kelvin-Voigt model provides a good balance of accuracy
+and simplicity. The Maxwell model is useful for quick tests but should
+not be used when accurate amplitude information is needed.
+
+## Viscoelastic Wave Equations {#sec-viscoelastic}
+
+While viscoacoustic equations model attenuation in fluids and for P-waves
+only, *viscoelastic* equations extend this to solid media where both
+P-waves and S-waves experience attenuation. This requires separate
+quality factors $Q_p$ (for P-waves) and $Q_s$ (for S-waves).
+
+### The Velocity-Stress Formulation with Attenuation {#sec-viscoelastic-formulation}
+
+The 3D viscoelastic wave equations in velocity-stress form with
+memory variables are:
+
+**Momentum equation:**
+
+$$
+\rho \frac{\partial \mathbf{v}}{\partial t} = \nabla \cdot \boldsymbol{\tau}
+$$ {#eq-viscoelastic-momentum}
+
+**Stress equation with relaxation:**
+
+$$
+\frac{\partial \boldsymbol{\tau}}{\partial t} =
+\lambda \frac{\tau_{\epsilon,p}}{\tau_\sigma} (\nabla \cdot \mathbf{v}) \mathbf{I} +
+\mu \frac{\tau_{\epsilon,s}}{\tau_\sigma} \mathbf{e} + \mathbf{r}
+$$ {#eq-viscoelastic-stress}
+
+**Memory variable equation:**
+
+$$
+\frac{\partial \mathbf{r}}{\partial t} + \frac{1}{\tau_\sigma} \left(
+\mathbf{r} +
+\lambda \left(\frac{\tau_{\epsilon,p}}{\tau_\sigma} - 1\right) (\nabla \cdot \mathbf{v}) \mathbf{I} +
+\mu \left(\frac{\tau_{\epsilon,s}}{\tau_\sigma} - 1\right) \mathbf{e}
+\right) = 0
+$$ {#eq-viscoelastic-memory}
+
+where:
+
+- $\mathbf{v} = (v_x, v_y, v_z)$ is the velocity vector
+- $\boldsymbol{\tau}$ is the stress tensor
+- $\mathbf{r}$ is the memory tensor
+- $\mathbf{e} = \nabla \mathbf{v} + (\nabla \mathbf{v})^T$ is the strain rate tensor
+- $\tau_\sigma$ is the stress relaxation time (from $Q_p$)
+- $\tau_{\epsilon,p}$ is the strain relaxation time for P-waves
+- $\tau_{\epsilon,s}$ is the strain relaxation time for S-waves
+
+### Relaxation Parameters for P and S Waves {#sec-viscoelastic-relaxation}
+
+The relaxation times are computed from the quality factors:
+
+$$
+\tau_\sigma = \frac{\sqrt{1 + 1/Q_p^2} - 1/Q_p}{f_0}
+$$ {#eq-tau-sigma}
+
+$$
+\tau_{\epsilon,p} = \frac{1}{f_0^2 \tau_\sigma}
+$$ {#eq-tau-ep}
+
+$$
+\tau_{\epsilon,s} = \frac{1 + f_0 Q_s \tau_\sigma}{f_0 Q_s - f_0^2 \tau_\sigma}
+$$ {#eq-tau-es}
+
+For fluid layers (water) where $V_s = 0$ and $Q_s = 0$, special
+handling is required. Setting $\tau_{\epsilon,s} = \tau_{\epsilon,p}$
+in fluid regions effectively disables shear wave attenuation.
+
+### TensorTimeFunction for Memory Variables {#sec-tensor-memory}
+
+The viscoelastic equations require tensor memory variables. In Devito,
+we use `TensorTimeFunction` for both the stress $\boldsymbol{\tau}$
+and memory $\mathbf{r}$:
+
+```python
+from devito import (
+    Grid, VectorTimeFunction, TensorTimeFunction, Function,
+    Eq, Operator, div, grad, diag, solve
+)
+
+# 3D Grid
+grid = Grid(shape=(Nx, Ny, Nz), extent=(Lx, Ly, Lz))
+
+# Velocity vector (3 components)
+v = VectorTimeFunction(name='v', grid=grid, time_order=1, space_order=4)
+
+# Stress tensor (6 unique components for symmetric 3x3)
+tau = TensorTimeFunction(name='t', grid=grid, time_order=1, space_order=4)
+
+# Memory tensor (same structure as stress)
+r = TensorTimeFunction(name='r', grid=grid, time_order=1, space_order=4)
+```
+
+The `TensorTimeFunction` automatically handles the 3D tensor structure:
+
+- `tau[0, 0]` = $\tau_{xx}$
+- `tau[1, 1]` = $\tau_{yy}$
+- `tau[2, 2]` = $\tau_{zz}$
+- `tau[0, 1]` = $\tau_{xy}$
+- `tau[0, 2]` = $\tau_{xz}$
+- `tau[1, 2]` = $\tau_{yz}$
+
+### Devito Implementation {#sec-viscoelastic-devito}
+
+The complete viscoelastic equations in Devito:
+
+```python
+# Material parameter Functions
+l = Function(name='l', grid=grid, space_order=so)       # lambda
+mu = Function(name='mu', grid=grid, space_order=so)     # shear modulus
+b = Function(name='b', grid=grid, space_order=so)       # buoyancy = 1/rho
+
+# Relaxation parameter Functions
+t_s = Function(name='t_s', grid=grid, space_order=so)   # tau_sigma
+t_ep = Function(name='t_ep', grid=grid, space_order=so) # tau_epsilon_p
+t_es = Function(name='t_es', grid=grid, space_order=so) # tau_epsilon_s
+
+# Strain rate tensor: e = grad(v) + grad(v)^T
+e = grad(v.forward) + grad(v.forward).transpose(inner=False)
+
+# Particle velocity equation: dv/dt = b * div(tau)
+pde_v = v.dt - b * div(tau)
+u_v = Eq(v.forward, solve(pde_v, v.forward))
+
+# Stress equation with memory:
+# dtau/dt = l*(t_ep/t_s)*div(v)*I + mu*(t_es/t_s)*e - r
+pde_tau = (
+    tau.dt
+    - r.forward
+    - l * (t_ep / t_s) * diag(div(v.forward))
+    - mu * (t_es / t_s) * e
+)
+u_tau = Eq(tau.forward, solve(pde_tau, tau.forward))
+
+# Memory variable equation:
+# dr/dt + (1/t_s)*(r + l*(t_ep/t_s - 1)*div(v)*I + mu*(t_es/t_s - 1)*e) = 0
+pde_r = (
+    r.dt
+    + (1.0 / t_s) * (
+        r
+        + l * (t_ep / t_s - 1.0) * diag(div(v.forward))
+        + mu * (t_es / t_s - 1.0) * e
+    )
+)
+u_r = Eq(r.forward, solve(pde_r, r.forward))
+
+# Create operator
+op = Operator([u_v, u_r, u_tau])
+```
+
+Key points:
+
+1. **Three tensor equations**: Velocity, memory, and stress are all
+   coupled tensors.
+
+2. **The `diag()` function**: Creates a diagonal tensor from a scalar
+   (the divergence), representing $(\nabla \cdot \mathbf{v}) \mathbf{I}$.
+
+3. **Transpose with `inner=False`**: The `transpose(inner=False)`
+   transposes the spatial indices of the gradient tensor without
+   contracting them.
+
+4. **Order of equations**: The memory variable equation uses `v.forward`
+   to ensure consistent time stepping.
+
+### Example: Marine Seismic with Water Layer {#sec-viscoelastic-marine}
+
+A common application is marine seismic modeling with a water layer
+(fluid) over sediments and rock (solids):
+
+```python
+from src.systems import solve_viscoelastic_3d, create_layered_model_3d
+
+# Create a 3-layer model: water, sediment, rock
+shape = (201, 101, 101)  # Nx, Ny, Nz
+vp, vs, Qp, Qs, rho = create_layered_model_3d(
+    shape,
+    vp_layers=[1.52, 1.6, 2.2],      # km/s
+    vs_layers=[0.0, 0.4, 1.2],       # km/s (water has vs=0)
+    Qp_layers=[10000., 40., 100.],   # Q for P-waves
+    Qs_layers=[0., 30., 70.],        # Q for S-waves (water has Qs=0)
+    rho_layers=[1.05, 1.3, 2.0],     # g/cm^3
+    layer_depths=[0, 50, 54],        # layer interfaces in z-index
+)
+
+# Run simulation
+result = solve_viscoelastic_3d(
+    extent=(200., 100., 100.),  # meters
+    shape=shape,
+    T=30.0,                     # milliseconds
+    vp=vp, vs=vs, rho=rho,
+    Qp=Qp, Qs=Qs,
+    f0=0.12,                    # reference frequency
+    src_coords=(100., 50., 35.), # source location
+)
+```
+
+In this example:
+
+- The **water layer** ($V_s = 0$, $Q_s = 0$) only supports P-waves
+- The **sediment layer** has low $Q$ values (high attenuation)
+- The **rock layer** has higher $Q$ values (less attenuation)
+
+### Stability Considerations {#sec-viscoelastic-stability}
+
+The viscoelastic wave equation can be less stable than the elastic
+case due to the memory variables. A smaller time step (typically
+0.9$\times$ the elastic CFL limit) is recommended:
+
+$$
+\Delta t \leq 0.9 \times \frac{h}{\sqrt{3} V_{p,\max}}
+$$
+
+where $h = \min(\Delta x, \Delta y, \Delta z)$ is the minimum grid
+spacing in 3D.
+
+### Exercises {#sec-viscoelastic-exercises}
+
+::: {#exr-viscoacoustic-q}
+**Effect of Q on wave propagation**
+
+Using the viscoacoustic solver:
+
+a) Run simulations with $Q = 20$, $Q = 50$, and $Q = 200$
+b) Compare the maximum pressure amplitude at the same time
+c) Plot amplitude vs. distance from source for each case
+d) Verify the exponential decay relationship @eq-amplitude-decay
+:::
+
+::: {#exr-viscoacoustic-models}
+**Comparing rheological models**
+
+a) Run the same problem with SLS, Kelvin-Voigt, and Maxwell models
+b) Compare the wavefield snapshots at the same time
+c) Compare computational time for each model
+d) Which model would you choose for FWI and why?
+:::
+
+::: {#exr-viscoelastic-marine}
+**Marine seismic simulation**
+
+Using the viscoelastic solver:
+
+a) Create a model with 50 m water layer over rock
+b) Place a source at 35 m depth (in the water)
+c) Observe the P-wave transmission into the rock
+d) Identify the water-bottom reflection in the data
+e) Why are there no S-waves in the water layer?
+:::
+
+::: {#exr-viscoelastic-memory}
+**Understanding memory variables**
+
+a) Run a viscoelastic simulation and plot the memory tensor component $r_{xx}$
+b) Compare the memory variable magnitude for high and low $Q$
+c) What happens to the memory variable as $Q \to \infty$?
+d) Explain why memory variables are necessary for accurate attenuation modeling
+:::
+
 ## Key Takeaways {#sec-systems-summary}
 
 1. **Systems of PDEs** require careful treatment of coupling between
@@ -1100,20 +1618,30 @@ c) Measure the reflection coefficient and compare to the theoretical value:
 3. **The Elastic Wave Equations** model seismic wave propagation in solids,
    supporting both P-waves (compressional) and S-waves (shear).
 
-4. **Devito's solve() function** automatically isolates forward time
+4. **The Viscoacoustic Wave Equations** add attenuation to acoustic/P-wave
+   propagation using the quality factor $Q$ and rheological models (SLS,
+   Kelvin-Voigt, Maxwell).
+
+5. **The Viscoelastic Wave Equations** extend attenuation modeling to full
+   elastic media with separate $Q_p$ and $Q_s$ for P-waves and S-waves.
+
+6. **Memory variables** in SLS and viscoelastic models capture the
+   history-dependent response of attenuating media.
+
+7. **Devito's solve() function** automatically isolates forward time
    terms in coupled nonlinear equations.
 
-5. **VectorTimeFunction and TensorTimeFunction** provide convenient
+8. **VectorTimeFunction and TensorTimeFunction** provide convenient
    abstractions for vector and tensor fields in Devito.
 
-6. **Vector operators** (div, grad, diag) work directly with tensor types
+9. **Vector operators** (div, grad, diag) work directly with tensor types
    and handle staggered grid discretization automatically.
 
-7. **Static fields** (like bathymetry or Lame parameters) use `Function`
-   instead of `TimeFunction` to avoid unnecessary time indexing.
+10. **Static fields** (like bathymetry or Lame parameters) use `Function`
+    instead of `TimeFunction` to avoid unnecessary time indexing.
 
-8. **ConditionalDimension** enables efficient snapshot saving without
-   storing every time step.
+11. **ConditionalDimension** enables efficient snapshot saving without
+    storing every time step.
 
-9. **Staggered grids** improve accuracy for first-order hyperbolic systems
-   like the velocity-stress formulation of elastic waves.
+12. **Staggered grids** improve accuracy for first-order hyperbolic systems
+    like the velocity-stress formulation of elastic and viscoelastic waves.
