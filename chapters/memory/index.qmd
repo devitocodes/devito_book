@@ -1,0 +1,9 @@
+# Memory Management and Wavefield Storage
+
+This chapter addresses the critical challenge of memory management in
+large-scale wave propagation simulations. We develop techniques for
+efficient wavefield storage using Devito's `ConditionalDimension`,
+introduce checkpointing strategies for adjoint computations, and
+discuss I/O strategies for production-scale simulations.
+
+{{< include memory.qmd >}}

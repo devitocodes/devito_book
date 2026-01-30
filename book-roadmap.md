@@ -20,12 +20,12 @@ Extend *Finite Difference Computing with PDEs* with content from `devito_repo/ex
 | **Phase 1** | ✅ Complete | 62 | `ab9b38c0` |
 | **Phase 2** | ✅ Complete | 73 | `b9e017b3` |
 | **Phase 3** | ✅ Complete | 91 | `04accab7` |
-| **Phase 4** | ✅ Complete | 90 | pending |
-| **Phase 5** | 🔲 Not started | - | - |
+| **Phase 4** | ✅ Complete | 90 | `b9dc387d` |
+| **Phase 5** | ✅ Complete | 40 | pending |
 | **Phase 6** | 🔲 Not started | - | - |
 | **Phase 7** | 🔲 Not started | - | - |
 
-**Total tests: 501**
+**Total tests: 541**
 
 ---
 
@@ -285,28 +285,33 @@ op = Operator([stencil] + src_term + rec_term)
 
 ---
 
-## Phase 5: Performance and Scalability
+## Phase 5: Performance and Scalability ✅ COMPLETE
 
 **Effort**: Medium | **Value**: High | **Source**: Ready notebooks
 
 Practical content for anyone running real simulations.
 
-### 5.1 Chapter 15: GPU Computing
+### 5.1 Chapter 10: Performance Optimization ✅
 
-**Source**: `performance/01_gpu.ipynb`
-
-- Devito GPU backends
-- Memory management on GPU
-- Performance comparison
-
-### 5.2 Chapter 16: Memory Management and I/O
-
-**Source**: `08_snapshotting.ipynb`, `12_time_blocking.ipynb`
+**Source**: `performance/01_gpu.ipynb`, `performance/00_overview.ipynb`
 
 **Sections**:
-- 16.1 Wavefield Storage Strategies
-- 16.2 Snapshotting with ConditionalDimension
-- 16.3 Time Blocking and Compression
+- 10.1 Introduction to Performance (FLOPS, bandwidth, roofline)
+- 10.2 Devito Optimization Architecture (loop blocking, SIMD, OpenMP)
+- 10.3 GPU Computing with Devito (platforms, memory management)
+- 10.4 Performance Analysis (profiling, bottlenecks)
+- 10.5 Exercises
+
+### 5.2 Chapter 11: Memory Management and I/O ✅
+
+**Source**: `08_snapshotting.ipynb`, `05_conditional_dimension.ipynb`
+
+**Sections**:
+- 11.1 Memory Challenges in Wave Propagation
+- 11.2 Snapshotting with ConditionalDimension
+- 11.3 Checkpointing Strategies (Revolve algorithm, pyrevolve)
+- 11.4 I/O Strategies (disk, compression, HDF5)
+- 11.5 Exercises
 
 **Key pattern**:
 ```python
@@ -314,21 +319,27 @@ time_sub = ConditionalDimension('t_sub', parent=grid.time_dim, factor=10)
 usave = TimeFunction(name='usave', grid=grid, save=nsnaps, time_dim=time_sub)
 ```
 
-### 5.3 Chapter 17: Distributed Computing with Dask
+### 5.3 Chapter 12: Distributed Computing with Dask ✅
 
 **Source**: `04_dask.ipynb`
 
-- Dask cluster integration
-- Shot-parallel FWI
-- Scaling to HPC
+**Sections**:
+- 12.1 Introduction to Parallel Computing
+- 12.2 Domain Decomposition with MPI
+- 12.3 Task-Based Parallelism with Dask (shot-parallel FWI)
+- 12.4 Hybrid Approaches (MPI + threading, cloud)
+- 12.5 Exercises
 
 **Deliverables**:
-- [ ] `chapters/performance/gpu.qmd`
-- [ ] `chapters/performance/memory.qmd`
-- [ ] `chapters/performance/distributed.qmd`
-- [ ] `src/performance/snapshotting.py`
-- [ ] `src/performance/checkpointing.py`
-- [ ] Tests for performance patterns
+- [x] `chapters/performance/performance.qmd` (Chapter 10)
+- [x] `chapters/memory/memory.qmd` (Chapter 11)
+- [x] `chapters/distributed/distributed.qmd` (Chapter 12)
+- [x] `src/performance/benchmark.py`
+- [x] `src/memory/snapshotting.py`
+- [x] `src/distributed/dask_utils.py`
+- [x] `tests/test_performance.py` (20 tests)
+- [x] `tests/test_memory.py` (22 tests, 2 skip without h5py)
+- [x] `tests/test_distributed.py` (26 tests, all skip without dask)
 
 ---
 

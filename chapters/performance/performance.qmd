@@ -1,0 +1,718 @@
+## Introduction to Performance {#sec-perf-intro}
+
+High-performance computing is essential for solving realistic PDE problems.
+A single seismic imaging computation may require billions of floating-point
+operations per time step, executed thousands of times. Even modest improvements
+in efficiency can save hours or days of compute time.
+
+This chapter explores how Devito achieves high performance through:
+
+1. **Automatic optimization**: Compiler passes that transform your symbolic
+   equations into efficient low-level code
+2. **Hardware portability**: Support for multi-core CPUs, GPUs, and distributed
+   systems
+3. **Profiling tools**: Built-in capabilities to measure and analyze performance
+
+### Why Performance Matters for PDE Solvers
+
+Consider the 3D acoustic wave equation:
+$$
+\frac{\partial^2 u}{\partial t^2} = c^2 \nabla^2 u
+$$ {#eq-perf-wave}
+
+For a realistic seismic imaging problem with:
+
+- Grid size: $1000 \times 1000 \times 1000$ points
+- Time steps: 10,000
+- Stencil operations: ~25 floating-point operations per point
+
+The total computation requires approximately:
+$$
+1000^3 \times 10{,}000 \times 25 = 2.5 \times 10^{14} \text{ FLOPS}
+$$
+
+At 100 GFLOPS (a modest CPU performance), this takes 2,500 seconds (42 minutes).
+At 10 TFLOPS (achievable on GPUs), it takes only 25 seconds.
+
+### Key Performance Metrics
+
+#### FLOPS (Floating-Point Operations Per Second)
+
+FLOPS measures raw computational throughput:
+
+- **Peak FLOPS**: Theoretical maximum based on hardware specifications
+- **Achieved FLOPS**: Actual performance in your application
+- **Arithmetic intensity**: FLOPS per byte of memory accessed
+
+Modern hardware peak performance:
+
+| Hardware | Peak FLOPS |
+|----------|------------|
+| Intel Xeon (16 cores) | ~1 TFLOPS |
+| NVIDIA A100 GPU | ~19.5 TFLOPS (FP64) |
+| NVIDIA H100 GPU | ~67 TFLOPS (FP64) |
+
+#### Memory Bandwidth
+
+Stencil computations are typically *memory-bound*, meaning performance is
+limited by how fast data can be moved rather than how fast arithmetic can
+be performed.
+
+Memory bandwidth examples:
+
+| Hardware | Bandwidth |
+|----------|-----------|
+| DDR4 RAM | ~50 GB/s |
+| NVIDIA A100 (HBM2e) | 2,039 GB/s |
+| NVIDIA H100 (HBM3) | 3,350 GB/s |
+
+#### The Roofline Model
+
+The roofline model relates achieved performance to arithmetic intensity:
+$$
+\text{Performance} = \min(\text{Peak FLOPS}, \text{Bandwidth} \times \text{Arithmetic Intensity})
+$$ {#eq-perf-roofline}
+
+For stencil codes, arithmetic intensity is typically 0.5-2 FLOPS/byte,
+placing them firmly in the memory-bound regime. This explains why:
+
+1. Cache optimization (loop blocking) is critical
+2. GPUs with high memory bandwidth excel at stencil computations
+3. Reducing memory traffic often matters more than reducing FLOPS
+
+
+## Devito Optimization Architecture {#sec-perf-architecture}
+
+Devito applies a sophisticated pipeline of optimization passes to transform
+your symbolic equations into highly optimized C code. Understanding these
+passes helps you write code that Devito can optimize effectively.
+
+### Optimization Levels
+
+Devito provides several optimization levels, analogous to compiler flags
+like `-O2` and `-O3`:
+
+```python
+from devito import Operator, Eq, Grid, TimeFunction
+
+grid = Grid(shape=(80, 80, 80))
+u = TimeFunction(name='u', grid=grid, space_order=4)
+
+# No optimizations (for debugging)
+op_noop = Operator([Eq(u.forward, u + u.laplace)], opt='noop')
+
+# Default: full optimizations
+op_advanced = Operator([Eq(u.forward, u + u.laplace)], opt='advanced')
+
+# Or equivalently (advanced is default)
+op_default = Operator([Eq(u.forward, u + u.laplace)])
+```
+
+The optimization levels are:
+
+| Level | Description |
+|-------|-------------|
+| `noop` | No optimizations; useful for debugging |
+| `advanced` | Full optimization pipeline (default) |
+| `advanced-fsg` | Alternative pass ordering for some architectures |
+
+### Setting Optimization Options
+
+Options can be set globally, programmatically, or per-operator:
+
+```python
+from devito import configuration, Operator
+
+# Global (via environment variable)
+# export DEVITO_OPT=noop
+
+# Programmatic (affects all subsequent operators)
+configuration['opt'] = 'advanced'
+
+# Per-operator (takes precedence)
+op = Operator(eq, opt=('advanced', {'openmp': True}))
+```
+
+### Key Optimization Passes
+
+#### Loop Blocking (Cache Tiling)
+
+Loop blocking partitions the iteration space into smaller blocks that fit
+in cache, dramatically improving data locality.
+
+```python
+from devito import Operator, Eq, Grid, TimeFunction, Function, sin
+
+grid = Grid(shape=(80, 80, 80))
+f = Function(name='f', grid=grid)
+u = TimeFunction(name='u', grid=grid, space_order=4)
+
+eq = Eq(u.forward, f**2 * sin(f) * u.dy.dy)
+
+# Enable blocking with OpenMP
+op = Operator(eq, opt=('blocking', {'openmp': True}))
+```
+
+The generated code includes nested loops over blocks:
+
+```c
+for (int x0_blk0 = x0_blk0_m; x0_blk0 <= x0_blk0_M; x0_blk0 += x0_blk0_size)
+{
+  for (int y0_blk0 = y0_blk0_m; y0_blk0 <= y0_blk0_M; y0_blk0 += y0_blk0_size)
+  {
+    // Inner loops process one block
+    for (int x = x0_blk0; x <= min(x_M, x0_blk0 + x0_blk0_size - 1); x++)
+    {
+      for (int y = y0_blk0; y <= min(y_M, y0_blk0 + y0_blk0_size - 1); y++)
+      {
+        // Computation here
+      }
+    }
+  }
+}
+```
+
+Block sizes are tunable at runtime:
+
+```python
+# Run with custom block sizes
+op.apply(time_M=100, x0_blk0_size=24, y0_blk0_size=32)
+
+# Or use autotuning
+op.apply(time_M=100, autotune='aggressive')
+```
+
+Blocking options:
+
+- `blockinner={True, False}`: Enable blocking of innermost dimension (3D+ blocking)
+- `blocklevels={int}`: Number of blocking levels for hierarchical cache utilization
+
+```python
+# 6D blocking: outer blocks and inner blocks
+op = Operator(eq, opt=('blocking', {
+    'blockinner': True,
+    'blocklevels': 2,
+    'openmp': True
+}))
+```
+
+#### SIMD Vectorization
+
+Devito uses OpenMP SIMD pragmas to enable vectorization:
+
+```python
+op = Operator(eq, opt=('blocking', 'simd', {'openmp': True}))
+```
+
+This generates code with `#pragma omp simd` directives that help compilers
+vectorize the innermost loops.
+
+#### Common Subexpression Elimination (CSE)
+
+CSE identifies and eliminates redundant computations:
+
+```python
+# Original expression computes 1/h_y multiple times
+eq = Eq(u.forward, (u[t,x,y+1] - u[t,x,y-1]) / (2*h_y) +
+                   (u[t,x,y+2] - u[t,x,y-2]) / (4*h_y))
+
+# After CSE, 1/h_y is computed once and reused
+# float r0 = 1.0F / h_y;
+```
+
+#### Code Motion (Loop-Invariant Hoisting)
+
+Expressions that don't change within a loop are hoisted outside:
+
+```python
+from devito import sin
+
+eq = Eq(u.forward, f**2 * sin(f) * u.laplace)
+
+op = Operator(eq, opt=('lift', {'openmp': True}))
+```
+
+The expensive `sin(f)` computation (which is time-invariant) gets hoisted
+to a separate loop that runs once before the time-stepping loop.
+
+#### Cross-Iteration Redundancy Elimination (CIRE)
+
+CIRE identifies redundant computations across consecutive loop iterations,
+common in nested derivative expressions:
+
+```python
+# u.dy.dy expands to terms like:
+# (u[y+1] - 2*u[y] + u[y-1]) at iteration y
+# (u[y+2] - 2*u[y+1] + u[y]) at iteration y+1
+# The subexpression u[y+1] appears in both
+
+op = Operator(eq, opt=('cire-sops', {'openmp': True}))
+```
+
+CIRE options:
+
+- `cire-mingain={int}`: Minimum benefit threshold (default: 10)
+- `cire-maxpar={True, False}`: Trade storage for parallelism
+- `min-storage={True, False}`: Minimize temporary array sizes
+
+### OpenMP Parallelization
+
+OpenMP parallelization is enabled via options:
+
+```python
+# Enable OpenMP
+op = Operator(eq, opt=('advanced', {'openmp': True}))
+
+# Or via environment variable
+# export DEVITO_LANGUAGE=openmp
+```
+
+The generated code includes OpenMP pragmas:
+
+```c
+#pragma omp parallel num_threads(nthreads)
+{
+  #pragma omp for collapse(2) schedule(dynamic,1)
+  for (int x = x_m; x <= x_M; x++)
+  {
+    for (int y = y_m; y <= y_M; y++)
+    {
+      // ...
+    }
+  }
+}
+```
+
+Control the number of threads at runtime:
+
+```python
+op.apply(time_M=100, nthreads=8)
+
+# Or use environment variable
+# export OMP_NUM_THREADS=8
+```
+
+OpenMP options:
+
+- `par-collapse-ncores`: Minimum cores for loop collapsing (default: 4)
+- `par-dynamic-work`: Threshold for dynamic vs static scheduling (default: 10)
+- `par-nested`: Enable nested parallelism threshold (default: 2)
+
+
+## GPU Computing with Devito {#sec-perf-gpu}
+
+Devito supports GPU acceleration through OpenMP target offloading, enabling
+your PDE solvers to run on NVIDIA, AMD, and Intel GPUs without code changes.
+
+### GPU Backends
+
+Devito supports multiple GPU backends:
+
+| Platform | Backend | Environment Variable |
+|----------|---------|---------------------|
+| NVIDIA | OpenMP offload | `DEVITO_PLATFORM=nvidiaX` |
+| AMD | OpenMP offload | `DEVITO_PLATFORM=amdgpuX` |
+| Intel | OpenMP offload | `DEVITO_PLATFORM=intelgpuX` |
+
+### Creating a GPU Operator
+
+Specify the platform when creating the `Operator`:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator, solve, Constant
+
+# Create grid and field
+grid = Grid(shape=(256, 256, 256), extent=(1000., 1000., 1000.))
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+
+# Define diffusion equation
+c = Constant(name='c')
+eq = Eq(u.dt, c * u.laplace)
+stencil = Eq(u.forward, solve(eq, u.forward))
+
+# Create GPU operator
+op = Operator([stencil], platform='nvidiaX')
+```
+
+The generated code uses OpenMP target offloading:
+
+```c
+#pragma omp target enter data map(to: u[0:size])
+
+for (int time = time_m; time <= time_M; time += 1)
+{
+  #pragma omp target teams distribute parallel for collapse(3)
+  for (int x = x_m; x <= x_M; x++)
+  {
+    for (int y = y_m; y <= y_M; y++)
+    {
+      for (int z = z_m; z <= z_M; z++)
+      {
+        // Stencil computation
+      }
+    }
+  }
+}
+
+#pragma omp target exit data map(from: u[0:size])
+```
+
+### Memory Management
+
+GPU performance depends critically on minimizing data transfers between
+CPU (host) and GPU (device).
+
+#### The `gpu-fit` Option
+
+When using `TimeFunction` with `save` (storing all time steps), you must
+tell Devito whether the data fits in GPU memory:
+
+```python
+# Save all time steps (may not fit in GPU memory)
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4, save=1000)
+
+# Tell Devito the data fits in GPU memory
+op = Operator([stencil], platform='nvidiaX',
+              opt=('advanced', {'gpu-fit': u}))
+```
+
+Without `gpu-fit`, Devito may generate code that streams data between
+CPU and GPU, which can severely impact performance.
+
+#### Unified Memory
+
+For simpler memory management, some systems support unified memory where
+the same address space is accessible from both CPU and GPU:
+
+```python
+# Enable unified memory (if supported by hardware)
+from devito import configuration
+configuration['devicemem'] = 'unified'
+```
+
+### Complete GPU Example
+
+Here is a complete example solving the 2D diffusion equation on a GPU:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator, solve, Constant
+import numpy as np
+
+# Grid setup
+nx, ny = 256, 256
+grid = Grid(shape=(nx, ny), extent=(1.0, 1.0))
+
+# Create field with save buffer for visualization
+u = TimeFunction(name='u', grid=grid, space_order=2, save=200)
+c = Constant(name='c')
+
+# Diffusion equation
+eq = Eq(u.dt, c * u.laplace)
+stencil = Eq(u.forward, solve(eq, u.forward))
+
+# Create GPU operator
+op = Operator([stencil], platform='nvidiaX',
+              opt=('advanced', {'gpu-fit': u}))
+
+# Initial condition: ring in center
+xx, yy = np.meshgrid(
+    np.linspace(0., 1., nx, dtype=np.float32),
+    np.linspace(0., 1., ny, dtype=np.float32)
+)
+r = (xx - 0.5)**2 + (yy - 0.5)**2
+u.data[0, np.logical_and(r >= 0.05, r <= 0.1)] = 1.0
+
+# Run simulation
+op.apply(dt=5e-5, c=0.5)
+```
+
+### Examining Generated GPU Code
+
+To see the generated code, use the `cfunction` property:
+
+```python
+# Print the generated C code
+print(op)
+
+# Or access the compiled function
+print(op.cfunction)
+```
+
+For GPU operators, you will see OpenMP target pragmas:
+
+```c
+#pragma omp target teams distribute parallel for collapse(2)
+for (int x = x_m; x <= x_M; x += 1)
+{
+  for (int y = y_m; y <= y_M; y += 1)
+  {
+    // Stencil update
+  }
+}
+```
+
+### Device Selection
+
+When multiple GPUs are available, select the device:
+
+```python
+# Via environment variable
+# export DEVITO_DEVICEID=1
+
+# Or at runtime
+op.apply(time_M=100, deviceid=1)
+```
+
+
+## Performance Analysis {#sec-perf-analysis}
+
+Devito provides built-in tools for measuring and analyzing performance.
+Understanding where time is spent helps identify optimization opportunities.
+
+### Basic Timing
+
+Every operator returns timing statistics:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator
+
+grid = Grid(shape=(200, 200, 200))
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=8)
+
+op = Operator([Eq(u.forward, 2*u - u.backward + u.laplace)])
+
+# Run and collect statistics
+summary = op.apply(time_M=100, dt=0.001)
+
+# Print timing information
+print(f"Total runtime: {summary.globals['fdlike'].time:.3f} seconds")
+```
+
+### Profiling with Devito
+
+Enable detailed profiling with the `profiler` option:
+
+```python
+from devito import configuration
+
+# Enable advanced profiling
+configuration['profiling'] = 'advanced'
+
+# Now run the operator
+summary = op.apply(time_M=100, dt=0.001)
+
+# Access detailed timings
+for section, timing in summary.items():
+    print(f"{section}: {timing}")
+```
+
+### Measuring GFLOPS and Bandwidth
+
+Calculate achieved performance metrics:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator
+import numpy as np
+
+def measure_performance(nx, nt, space_order=4):
+    """Measure operator performance."""
+    grid = Grid(shape=(nx, nx, nx))
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=space_order)
+
+    op = Operator([Eq(u.forward, 2*u - u.backward + u.laplace)])
+
+    # Initialize
+    u.data[:] = np.random.rand(*u.data.shape).astype(np.float32)
+
+    # Warm-up run
+    op.apply(time_M=10, dt=0.001)
+
+    # Timed run
+    summary = op.apply(time_M=nt, dt=0.001)
+    elapsed = summary.globals['fdlike'].time
+
+    # Estimate FLOPS (approximate for Laplacian stencil)
+    # 2nd order time: 3 operations (2*u - u.backward + ...)
+    # Space order 4: ~13 ops for 3D Laplacian
+    flops_per_point = 16
+    total_flops = flops_per_point * nx**3 * nt
+
+    gflops = total_flops / elapsed / 1e9
+
+    # Memory traffic estimate
+    # Read: u (3 time levels) = 3 * nx^3 * 4 bytes
+    # Write: u.forward = nx^3 * 4 bytes
+    bytes_per_step = 4 * nx**3 * 4  # 4 arrays * size * float32
+    total_bytes = bytes_per_step * nt
+    bandwidth = total_bytes / elapsed / 1e9
+
+    return {
+        'grid_size': nx,
+        'time_steps': nt,
+        'elapsed': elapsed,
+        'gflops': gflops,
+        'bandwidth_gb_s': bandwidth
+    }
+
+# Run benchmark
+result = measure_performance(nx=200, nt=100)
+print(f"Grid: {result['grid_size']}^3")
+print(f"Time: {result['elapsed']:.3f} s")
+print(f"Performance: {result['gflops']:.2f} GFLOPS")
+print(f"Bandwidth: {result['bandwidth_gb_s']:.2f} GB/s")
+```
+
+### Roofline Analysis
+
+Compare your achieved performance against hardware limits:
+
+```python
+def roofline_analysis(gflops, bandwidth, arithmetic_intensity):
+    """Analyze performance against roofline model."""
+    # Example hardware specs (adjust for your system)
+    peak_gflops = 500  # CPU peak
+    peak_bandwidth = 100  # GB/s
+
+    # Compute roofline
+    memory_bound_limit = peak_bandwidth * arithmetic_intensity
+    roofline = min(peak_gflops, memory_bound_limit)
+
+    efficiency = gflops / roofline * 100
+
+    print(f"Achieved: {gflops:.2f} GFLOPS")
+    print(f"Roofline: {roofline:.2f} GFLOPS")
+    print(f"Efficiency: {efficiency:.1f}%")
+
+    if gflops < memory_bound_limit:
+        print("Status: Memory-bound (as expected for stencils)")
+    else:
+        print("Status: Compute-bound")
+```
+
+### Comparing CPU vs GPU Performance
+
+Benchmark the same operator on different platforms:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator
+import numpy as np
+
+def benchmark_platforms(nx=200, nt=100):
+    """Compare CPU and GPU performance."""
+    grid = Grid(shape=(nx, nx, nx))
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+
+    eq = Eq(u.forward, 2*u - u.backward + u.laplace)
+
+    results = {}
+
+    # CPU with OpenMP
+    op_cpu = Operator([eq], opt=('advanced', {'openmp': True}))
+    u.data[:] = np.random.rand(*u.data.shape).astype(np.float32)
+    summary_cpu = op_cpu.apply(time_M=nt, dt=0.001)
+    results['CPU'] = summary_cpu.globals['fdlike'].time
+
+    # GPU (uncomment if GPU available)
+    # op_gpu = Operator([eq], platform='nvidiaX')
+    # u.data[:] = np.random.rand(*u.data.shape).astype(np.float32)
+    # summary_gpu = op_gpu.apply(time_M=nt, dt=0.001)
+    # results['GPU'] = summary_gpu.globals['fdlike'].time
+
+    return results
+
+# Run comparison
+# results = benchmark_platforms()
+# print(f"CPU time: {results['CPU']:.3f} s")
+# print(f"GPU time: {results['GPU']:.3f} s")
+# print(f"Speedup: {results['CPU']/results['GPU']:.1f}x")
+```
+
+### Identifying Bottlenecks
+
+Common performance issues and solutions:
+
+| Symptom | Likely Cause | Solution |
+|---------|--------------|----------|
+| Low GFLOPS, low bandwidth | Poor cache utilization | Enable/tune loop blocking |
+| High bandwidth, low GFLOPS | Memory-bound (normal) | Increase arithmetic intensity |
+| Scales poorly with cores | False sharing or load imbalance | Tune OpenMP options |
+| GPU slower than expected | Data transfer overhead | Use `gpu-fit`, minimize save buffers |
+
+### Autotuning
+
+Let Devito automatically find optimal parameters:
+
+```python
+# Aggressive autotuning (recommended for production)
+summary = op.apply(time_M=100, dt=0.001, autotune='aggressive')
+
+# The optimal block sizes are cached for subsequent runs
+summary = op.apply(time_M=1000, dt=0.001)  # Uses cached parameters
+```
+
+Autotuning modes:
+
+- `off`: No autotuning (use defaults)
+- `basic`: Quick search over block sizes
+- `aggressive`: Extensive search for best parameters
+
+
+## Exercises {#sec-perf-exercises}
+
+### Exercise 10.1: Optimization Level Comparison
+
+Write code that solves the 3D wave equation with different optimization
+levels (`noop`, `advanced`) and compares the execution times.
+
+1. Create a $100^3$ grid with space order 8
+2. Run 50 time steps with each optimization level
+3. Measure and compare the execution times
+4. Calculate the speedup from optimizations
+
+### Exercise 10.2: Block Size Tuning
+
+For the 3D diffusion equation:
+
+1. Implement a parameter sweep over block sizes (8, 16, 24, 32, 48, 64)
+2. Measure performance for each configuration
+3. Plot performance vs block size
+4. Compare your manual tuning with Devito's autotuner
+
+### Exercise 10.3: Memory Bandwidth Analysis
+
+For a 4th order wave equation stencil:
+
+1. Calculate the theoretical arithmetic intensity (FLOPS/byte)
+2. Measure achieved bandwidth using Devito's profiler
+3. Determine if the code is memory-bound or compute-bound
+4. Estimate the maximum achievable performance on your hardware
+
+### Exercise 10.4: GPU vs CPU Comparison
+
+If you have access to a GPU:
+
+1. Implement the 2D diffusion solver from @sec-perf-gpu
+2. Measure CPU performance with OpenMP (varying thread counts)
+3. Measure GPU performance
+4. Calculate speedup and efficiency for each platform
+5. Determine the grid size where GPU becomes faster than CPU
+
+### Exercise 10.5: Profiling a Real Application
+
+Using the acoustic wave propagation example:
+
+1. Enable advanced profiling
+2. Run a simulation and collect timing data
+3. Identify which sections consume the most time
+4. Experiment with different optimization options
+5. Document the performance improvements achieved
+
+### Exercise 10.6: Generated Code Analysis
+
+For the diffusion equation:
+
+1. Generate operators with `opt='noop'` and `opt='advanced'`
+2. Print the generated C code using `print(op)`
+3. Identify the optimizations applied (loop blocking, SIMD, etc.)
+4. Count the number of operations in the inner loop
+5. Estimate the arithmetic intensity from the generated code

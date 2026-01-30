@@ -23,6 +23,9 @@ book:
         - chapters/systems/index.qmd
         - chapters/highorder/index.qmd
         - chapters/adjoint/index.qmd
+        - chapters/memory/index.qmd
+        - chapters/distributed/index.qmd
+        - chapters/performance/index.qmd
     - part: "Appendices"
       chapters:
         - chapters/appendices/formulas/index.qmd
@@ -177,6 +180,9 @@ src_elliptic: "https://github.com/devitocodes/devito_book/tree/devito/src/ellipt
 src_systems: "https://github.com/devitocodes/devito_book/tree/devito/src/systems"
 src_highorder: "https://github.com/devitocodes/devito_book/tree/devito/src/highorder"
 src_adjoint: "https://github.com/devitocodes/devito_book/tree/devito/src/adjoint"
+src_memory: "https://github.com/devitocodes/devito_book/tree/devito/src/memory"
+src_distributed: "https://github.com/devitocodes/devito_book/tree/devito/src/distributed"
+src_performance: "https://github.com/devitocodes/devito_book/tree/devito/src/performance"
 src_formulas: "https://github.com/devitocodes/devito_book/tree/devito/src/formulas"
 src_softeng2: "https://github.com/devitocodes/devito_book/tree/devito/src/softeng2"
 
