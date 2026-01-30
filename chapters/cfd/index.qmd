@@ -1,0 +1,3 @@
+# Computational Fluid Dynamics {#sec-ch-cfd}
+
+{{< include cfd.qmd >}}

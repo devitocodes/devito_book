@@ -21,11 +21,11 @@ Extend *Finite Difference Computing with PDEs* with content from `devito_repo/ex
 | **Phase 2** | ✅ Complete | 73 | `b9e017b3` |
 | **Phase 3** | ✅ Complete | 91 | `04accab7` |
 | **Phase 4** | ✅ Complete | 90 | `b9dc387d` |
-| **Phase 5** | ✅ Complete | 40 | pending |
-| **Phase 6** | 🔲 Not started | - | - |
+| **Phase 5** | ✅ Complete | 40 | `05db189a` |
+| **Phase 6** | ✅ Complete | 116 | pending |
 | **Phase 7** | 🔲 Not started | - | - |
 
-**Total tests: 541**
+**Total tests: 657**
 
 ---
 
@@ -343,33 +343,45 @@ usave = TimeFunction(name='usave', grid=grid, save=nsnaps, time_dim=time_sub)
 
 ---
 
-## Phase 6: Domain Applications
+## Phase 6: Domain Applications ✅ COMPLETE (6.1)
 
 **Effort**: Variable | **Value**: Medium-High | **Source**: Mixed
 
-### 6.1 Quick Additions (Existing Notebooks)
+### 6.1 Quick Additions (Existing Notebooks) ✅
 
-**Chapter 10: Computational Finance**
+**Chapter 13: Computational Finance** ✅
 - Source: `finance/bs_ivbp.ipynb`
 - Black-Scholes PDE, non-standard SpaceDimension
+- **Deliverables**:
+  - [x] `chapters/finance/finance.qmd` (1,125 lines)
+  - [x] `src/finance/black_scholes_devito.py` (538 lines)
+  - [x] `tests/test_finance_devito.py` (36 tests)
 
-**Chapter 11: Porous Media Flow**
+**Chapter 14: Porous Media Flow** ✅
 - Source: `cfd/09_Darcy_flow_equation.ipynb`
 - Darcy's law, permeability fields
+- **Deliverables**:
+  - [x] `chapters/darcy/darcy.qmd` (1,635 lines)
+  - [x] `src/darcy/darcy_devito.py` (1,004 lines)
+  - [x] `tests/test_darcy_devito.py` (24 tests)
 
-**Chapter 12: CFD (Navier-Stokes)**
+**Chapter 15: CFD (Navier-Stokes)** ✅
 - Source: `cfd/07_cavity_flow.ipynb`
 - Lid-driven cavity, projection method
+- **Deliverables**:
+  - [x] `chapters/cfd/cfd.qmd` (1,033 lines)
+  - [x] `src/cfd/navier_stokes_devito.py` (739 lines)
+  - [x] `tests/test_cfd_devito.py` (56 tests)
 
-### 6.2 New Development Required
+### 6.2 New Development Required (Not Started)
 
-**Chapter 13: Computational Electromagnetics (Maxwell)**
+**Chapter 16: Computational Electromagnetics (Maxwell)**
 - Develop from scratch
 - Yee grid / FDTD scheme
 - E and H field staggering
 - PML absorbing boundaries
 
-**Chapter 14: Numerical Relativity**
+**Chapter 17: Numerical Relativity**
 - Develop from scratch
 - ADM/BSSN formulation
 - Gravitational wave extraction
@@ -403,9 +415,9 @@ usave = TimeFunction(name='usave', grid=grid, save=nsnaps, time_dim=time_sub)
 | **2.2** | Elastic Waves | Medium | High | ✅ Complete |
 | **3.1** | ADER/Staggered | Medium | High | ✅ Complete |
 | **3.2** | Attenuation | Medium | High | ✅ Complete |
-| **4** | Inverse Problems | High | Very High | 🔲 Not started |
-| **5** | Performance | Medium | High | 🔲 Not started |
-| **6.1** | Finance/Darcy/NS | Low-Medium | Medium | 🔲 Not started |
+| **4** | Inverse Problems | High | Very High | ✅ Complete |
+| **5** | Performance | Medium | High | ✅ Complete |
+| **6.1** | Finance/Darcy/NS | Low-Medium | Medium | ✅ Complete |
 | **6.2** | Maxwell/GR | High | Medium | 🔲 Not started |
 | **7** | Theory Appendix | Low | Medium | 🔲 Not started |
 
@@ -464,3 +476,35 @@ Each solver must include:
 - 91 new tests (411 total)
 - Fixed damping field creation for small grids
 - Commit: `04accab7`
+
+### 2026-01-30: Phase 4 Complete
+- Created Chapter 9: Inverse Problems and Optimization
+- Full explicit API implementations for RTM, FWI, LSRTM
+- SparseTimeFunction for sources and receivers
+- Memory-efficient snapshotting with ConditionalDimension
+- Barzilai-Borwein step size for LSRTM
+- 90 tests (501 total)
+- Commit: `b9dc387d`
+
+### 2026-01-30: Phase 5 Complete
+- Created Chapter 10: Performance Optimization (roofline model, GPU computing)
+- Created Chapter 11: Memory Management (snapshotting, checkpointing)
+- Created Chapter 12: Distributed Computing (Dask shot-parallel FWI)
+- 40 new tests (541 total, 26 skip without dask/h5py)
+- Commit: `05db189a`
+
+### 2026-01-30: Phase 6 Complete (6.1 Quick Additions)
+- Created Chapter 13: Computational Finance (Black-Scholes PDE)
+  - Custom SpaceDimension for asset price grid
+  - Greeks computation (Delta, Gamma, Theta)
+  - Analytical solution verification
+- Created Chapter 14: Porous Media Flow (Darcy's law)
+  - Heterogeneous permeability fields (Gaussian random, layered)
+  - Dual-buffer Jacobi iteration
+  - Well source terms
+- Created Chapter 15: CFD/Navier-Stokes (Lid-driven cavity)
+  - Fractional step/projection method
+  - Ghia benchmark data for verification
+  - Streamfunction computation
+- 116 new tests (657 total)
+- Commit: pending

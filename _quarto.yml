@@ -26,6 +26,9 @@ book:
         - chapters/memory/index.qmd
         - chapters/distributed/index.qmd
         - chapters/performance/index.qmd
+        - chapters/cfd/index.qmd
+        - chapters/darcy/index.qmd
+        - chapters/finance/index.qmd
     - part: "Appendices"
       chapters:
         - chapters/appendices/formulas/index.qmd
@@ -183,8 +186,11 @@ src_adjoint: "https://github.com/devitocodes/devito_book/tree/devito/src/adjoint
 src_memory: "https://github.com/devitocodes/devito_book/tree/devito/src/memory"
 src_distributed: "https://github.com/devitocodes/devito_book/tree/devito/src/distributed"
 src_performance: "https://github.com/devitocodes/devito_book/tree/devito/src/performance"
+src_cfd: "https://github.com/devitocodes/devito_book/tree/devito/src/cfd"
+src_darcy: "https://github.com/devitocodes/devito_book/tree/devito/src/darcy"
 src_formulas: "https://github.com/devitocodes/devito_book/tree/devito/src/formulas"
 src_softeng2: "https://github.com/devitocodes/devito_book/tree/devito/src/softeng2"
+src_finance: "https://github.com/devitocodes/devito_book/tree/devito/src/finance"
 
 crossref:
   eq-prefix: ""

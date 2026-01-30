@@ -1,0 +1,1125 @@
+## Introduction to Computational Finance {#sec-finance-intro}
+
+Financial mathematics represents one of the most impactful applications
+of partial differential equations. The 1973 Black-Scholes-Merton model
+revolutionized derivatives pricing and earned Myron Scholes and Robert
+Merton the Nobel Prize in Economics. The model's central equation is a
+parabolic PDE that determines the fair price of financial options.
+
+### Options and Derivatives
+
+An *option* is a financial contract giving the holder the right, but not
+the obligation, to buy or sell an underlying asset at a specified price
+(the *strike price*) on or before a specified date (the *expiration date*).
+
+| Option Type | Right Granted | Payoff at Expiration |
+|-------------|---------------|----------------------|
+| Call | Buy asset at strike K | max(S - K, 0) |
+| Put | Sell asset at strike K | max(K - S, 0) |
+
+Here S denotes the asset price. The option is *in-the-money* if exercising
+it would be profitable, *out-of-the-money* if not, and *at-the-money* if
+S equals K.
+
+**European options** can only be exercised at expiration, while **American
+options** can be exercised any time before expiration. American options
+are more complex to price due to this early exercise feature.
+
+### Why PDEs in Finance?
+
+The Black-Scholes model derives a PDE by constructing a *risk-free portfolio*
+that hedges the option with the underlying asset. Through continuous
+rebalancing, this portfolio eliminates randomness, leaving a deterministic
+PDE that relates option value to time and asset price.
+
+The resulting equation has the structure of a diffusion equation with
+variable coefficients, making finite difference methods natural for
+numerical solution. Devito's symbolic capabilities shine here, allowing
+us to express the equation directly and let the framework handle discretization.
+
+### Financial vs Physical Variables
+
+While our previous chapters used spatial coordinates x, y, z and time t,
+the Black-Scholes equation uses:
+
+- **S** - the underlying asset price (analogous to a spatial variable)
+- **t** - time to expiration (evolving backward from expiration to present)
+- **V(S, t)** - the option value (our unknown field)
+
+This change of variables is more than notational; it reflects the
+fundamentally different nature of the problem. The asset price S ranges
+from 0 to infinity (in principle), while physical spatial domains are
+typically bounded.
+
+### Chapter Overview
+
+This chapter develops a complete Black-Scholes solver using Devito:
+
+1. Derive the Black-Scholes PDE and its boundary conditions
+2. Create a custom `SpaceDimension` for the asset price grid
+3. Implement explicit finite difference schemes
+4. Price European call and put options
+5. Compute the *Greeks* (sensitivities) from the numerical solution
+6. Verify against analytical solutions
+
+
+## The Black-Scholes Equation {#sec-finance-blackscholes}
+
+The Black-Scholes equation describes how an option's value evolves as
+the underlying asset price changes and time passes. We derive the equation
+from first principles, establishing the boundary conditions needed for
+numerical solution.
+
+### The Stochastic Model
+
+The underlying asset price S follows *geometric Brownian motion*:
+$$
+dS = \mu S \, dt + \sigma S \, dW
+$$ {#eq-finance-gbm}
+where:
+
+- $\mu$ is the expected return (drift rate)
+- $\sigma$ is the volatility (standard deviation of returns)
+- $dW$ is a Wiener process increment (random walk)
+
+The volatility $\sigma$ measures how much the asset price fluctuates.
+Higher volatility means higher option prices because there's more chance
+of favorable outcomes.
+
+### Deriving the PDE
+
+Consider an option with value $V(S, t)$. By Ito's lemma, the option value
+changes according to:
+$$
+dV = \frac{\partial V}{\partial t} dt + \frac{\partial V}{\partial S} dS +
+\frac{1}{2} \frac{\partial^2 V}{\partial S^2} (dS)^2
+$$
+
+Since $(dS)^2 = \sigma^2 S^2 dt$ (ignoring higher-order terms), we get:
+$$
+dV = \left(\frac{\partial V}{\partial t} + \mu S \frac{\partial V}{\partial S} +
+\frac{1}{2}\sigma^2 S^2 \frac{\partial^2 V}{\partial S^2}\right) dt +
+\sigma S \frac{\partial V}{\partial S} dW
+$$ {#eq-finance-ito}
+
+### The Hedged Portfolio
+
+Construct a portfolio consisting of one option and $-\Delta$ shares of
+the underlying asset, where $\Delta = \partial V/\partial S$. The portfolio
+value is:
+$$
+\Pi = V - \Delta S = V - \frac{\partial V}{\partial S} S
+$$
+
+The change in portfolio value is:
+$$
+d\Pi = dV - \frac{\partial V}{\partial S} dS =
+\left(\frac{\partial V}{\partial t} + \frac{1}{2}\sigma^2 S^2 \frac{\partial^2 V}{\partial S^2}\right) dt
+$$
+
+Crucially, the random term $dW$ has canceled! This is the *hedging* that
+eliminates risk.
+
+### The Risk-Free Condition
+
+Since the portfolio is risk-free, it must earn the risk-free rate $r$:
+$$
+d\Pi = r \Pi \, dt = r\left(V - S\frac{\partial V}{\partial S}\right) dt
+$$
+
+Equating the two expressions for $d\Pi$ gives the **Black-Scholes equation**:
+$$
+\frac{\partial V}{\partial t} + \frac{1}{2}\sigma^2 S^2 \frac{\partial^2 V}{\partial S^2} +
+r S \frac{\partial V}{\partial S} - r V = 0
+$$ {#eq-finance-bs}
+
+Note that the drift $\mu$ does not appear! Under the risk-neutral measure,
+all assets grow at the risk-free rate $r$, a remarkable consequence of
+no-arbitrage pricing.
+
+### Terminal and Boundary Conditions
+
+The Black-Scholes equation is parabolic, like the diffusion equation.
+It requires:
+
+**Terminal condition** at expiration $t = T$:
+$$
+V(S, T) = \text{payoff}(S)
+$$
+For a call: $\max(S - K, 0)$. For a put: $\max(K - S, 0)$.
+
+**Boundary conditions** as $S \to 0$ and $S \to \infty$:
+
+For a **call option**:
+$$
+\begin{aligned}
+V(0, t) &= 0 & \text{(worthless if asset is worthless)} \\
+V(S, t) &\sim S - K e^{-r(T-t)} & \text{as } S \to \infty
+\end{aligned}
+$$ {#eq-finance-bc-call}
+
+For a **put option**:
+$$
+\begin{aligned}
+V(0, t) &= K e^{-r(T-t)} & \text{(worth discounted strike if asset is worthless)} \\
+V(S, t) &\to 0 & \text{as } S \to \infty
+\end{aligned}
+$$ {#eq-finance-bc-put}
+
+### Time Reversal
+
+It is conventional to solve the Black-Scholes equation *backward* in time
+from expiration to present. Define $\tau = T - t$ (time to expiration).
+Then $\partial V/\partial t = -\partial V/\partial \tau$, and the equation
+becomes:
+$$
+\frac{\partial V}{\partial \tau} = \frac{1}{2}\sigma^2 S^2 \frac{\partial^2 V}{\partial S^2} +
+r S \frac{\partial V}{\partial S} - r V
+$$ {#eq-finance-bs-forward}
+
+This has the form of a forward parabolic equation, allowing us to march
+from $\tau = 0$ (expiration) forward to $\tau = T$ (present).
+
+
+## Non-Standard SpaceDimension {#sec-finance-spacedim}
+
+Devito's default grid assumes spatial coordinates starting at the origin.
+For the Black-Scholes equation, our "spatial" variable is the asset price
+S, which ranges from 0 to some maximum value $S_{\max}$. We need a custom
+`SpaceDimension` to handle this non-physical coordinate.
+
+### Custom Dimension for Asset Price
+
+Devito allows creating custom dimensions with specified spacing:
+
+```python
+from devito import Grid, SpaceDimension, Constant, TimeFunction
+
+# Asset price parameters
+S_max = 200.0  # Maximum asset price
+nS = 100       # Number of grid intervals
+
+dS = S_max / nS  # Grid spacing
+
+# Create custom SpaceDimension for asset price
+s_dim = SpaceDimension(name='s', spacing=Constant(name='h_s', value=dS))
+
+# Create grid with custom dimension
+grid = Grid(shape=(nS + 1,), dimensions=(s_dim,), extent=(S_max,))
+
+# Create TimeFunction on this grid
+V = TimeFunction(name='V', grid=grid, time_order=1, space_order=2)
+
+print(f"Grid shape: {grid.shape}")
+print(f"Grid spacing: {s_dim.spacing}")
+print(f"Grid extent: {grid.extent}")
+```
+
+The `SpaceDimension` named `s` represents the asset price coordinate.
+The `Constant` for spacing ensures correct symbolic derivative calculations.
+
+### Asset Price as a Function
+
+To use the asset price $S$ in the PDE coefficients ($rS$ and $\sigma^2 S^2$),
+we create a `Function` that stores the asset price at each grid point:
+
+```python
+from devito import Function
+import numpy as np
+
+# Asset price array
+S_arr = np.linspace(0, S_max, nS + 1)
+
+# Store as Devito Function
+S_func = Function(name='S_arr', grid=grid)
+S_func.data[:] = S_arr
+
+print(f"Asset prices: {S_arr[:5]}...{S_arr[-5:]}")
+```
+
+This `S_func` can now be used in symbolic expressions like `S_func * V.dx`
+for the convection term $rS \partial V/\partial S$.
+
+### Grid Considerations
+
+Several practical considerations affect the grid design:
+
+1. **Domain size**: $S_{\max}$ should be several times the strike price K
+   to ensure accurate far-field boundary conditions.
+
+2. **Resolution near the strike**: Option values change rapidly near
+   $S = K$ (the "kink" in the payoff). Uniform grids may need refinement.
+
+3. **Handling S = 0**: The coefficient $\sigma^2 S^2$ vanishes at $S = 0$,
+   making the PDE degenerate. The boundary condition handles this case.
+
+For a strike price $K = 100$, typical choices are $S_{\max} = 200$ to
+$S_{\max} = 300$, with 100-200 grid points in $S$.
+
+
+## Finite Difference Discretization {#sec-finance-discretization}
+
+We discretize the Black-Scholes equation using finite differences.
+The explicit scheme is simple to implement but has stability constraints.
+We also discuss implicit schemes that allow larger time steps.
+
+### The Explicit Scheme
+
+Using forward differences in time and central differences in space:
+$$
+\frac{V_i^{n+1} - V_i^n}{\Delta \tau} = \frac{1}{2}\sigma^2 S_i^2
+\frac{V_{i+1}^n - 2V_i^n + V_{i-1}^n}{\Delta S^2} +
+r S_i \frac{V_{i+1}^n - V_{i-1}^n}{2\Delta S} - r V_i^n
+$$ {#eq-finance-explicit}
+
+Solving for $V_i^{n+1}$:
+$$
+V_i^{n+1} = V_i^n + \Delta\tau \left[
+\frac{1}{2}\sigma^2 S_i^2 \frac{V_{i+1}^n - 2V_i^n + V_{i-1}^n}{\Delta S^2} +
+r S_i \frac{V_{i+1}^n - V_{i-1}^n}{2\Delta S} - r V_i^n
+\right]
+$$ {#eq-finance-explicit-update}
+
+This can be rearranged into the standard form:
+$$
+V_i^{n+1} = a_i V_{i-1}^n + b_i V_i^n + c_i V_{i+1}^n
+$$
+where the coefficients depend on $S_i$, $\sigma$, $r$, $\Delta\tau$,
+and $\Delta S$.
+
+### Stability Analysis
+
+The explicit scheme is stable only if the time step is sufficiently small.
+The stability condition involves the Courant-Friedrichs-Lewy (CFL) criterion
+applied to both the diffusion and convection terms:
+$$
+\Delta\tau \lesssim \frac{\Delta S^2}{\sigma^2 S_{\max}^2 + |r| S_{\max} \Delta S}
+$$ {#eq-finance-stability}
+
+For typical parameters ($\sigma = 0.2$, $r = 0.05$, $S_{\max} = 200$,
+$\Delta S = 2$), this gives $\Delta\tau \lesssim 0.0025$. With $T = 1$ year,
+we need at least 400 time steps.
+
+### The Implicit Scheme
+
+The implicit (backward Euler) scheme:
+$$
+\frac{V_i^{n+1} - V_i^n}{\Delta \tau} = \frac{1}{2}\sigma^2 S_i^2
+\frac{V_{i+1}^{n+1} - 2V_i^{n+1} + V_{i-1}^{n+1}}{\Delta S^2} +
+r S_i \frac{V_{i+1}^{n+1} - V_{i-1}^{n+1}}{2\Delta S} - r V_i^{n+1}
+$$
+
+is unconditionally stable but requires solving a tridiagonal system at
+each time step. The Crank-Nicolson scheme (average of explicit and implicit)
+offers second-order accuracy in time and is commonly used in practice.
+
+### Boundary Condition Implementation
+
+For the explicit scheme, boundary conditions are applied after each time step:
+
+**Call option**:
+
+- At $S = 0$: $V_0^{n+1} = 0$
+- At $S = S_{\max}$: Linear extrapolation or $V_{N_S}^{n+1} = S_{\max} - K e^{-r\tau}$
+
+**Put option**:
+
+- At $S = 0$: $V_0^{n+1} = K e^{-r\tau}$
+- At $S = S_{\max}$: $V_{N_S}^{n+1} = 0$
+
+
+## Implementation in Devito {#sec-finance-devito}
+
+We now implement the Black-Scholes solver in Devito, demonstrating the
+use of custom `SpaceDimension` and explicit time-stepping.
+
+### Setting Up the Grid
+
+```python
+from devito import (Grid, SpaceDimension, TimeFunction, Function,
+                    Eq, Operator, Constant, configuration)
+import numpy as np
+
+configuration['log-level'] = 'ERROR'
+
+# Option parameters
+K = 100.0       # Strike price
+T = 1.0         # Time to expiration (years)
+r = 0.05        # Risk-free rate
+sigma = 0.2     # Volatility
+
+# Grid parameters
+S_max = 200.0   # Maximum asset price
+nS = 100        # Number of asset price intervals
+nt = 2000       # Number of time steps
+
+dS = S_max / nS
+dt = T / nt
+
+print(f"Grid spacing: dS = {dS}, dt = {dt}")
+print(f"Stability check: dt should be < {dS**2 / (sigma**2 * S_max**2):.6f}")
+```
+
+### Creating the Custom Dimension
+
+```python
+# Custom SpaceDimension for asset price
+s_dim = SpaceDimension(name='s', spacing=Constant(name='h_s', value=dS))
+
+# Create 1D grid
+grid = Grid(shape=(nS + 1,), dimensions=(s_dim,), extent=(S_max,))
+
+# Asset price array
+S_arr = np.linspace(0, S_max, nS + 1)
+
+# TimeFunction for option value
+V = TimeFunction(name='V', grid=grid, time_order=1, space_order=2)
+
+# Function for asset price in coefficients
+S_func = Function(name='S', grid=grid)
+S_func.data[:] = S_arr
+```
+
+### Building the PDE
+
+The Black-Scholes equation in forward time ($\tau$):
+$$
+\frac{\partial V}{\partial \tau} = \underbrace{\frac{1}{2}\sigma^2 S^2 \frac{\partial^2 V}{\partial S^2}}_{\text{diffusion}} +
+\underbrace{r S \frac{\partial V}{\partial S}}_{\text{convection}} -
+\underbrace{r V}_{\text{reaction}}
+$$
+
+```python
+# Create symbolic constants
+sigma_const = Constant(name='sigma', value=sigma)
+r_const = Constant(name='r', value=r)
+dt_const = Constant(name='dt', value=dt)
+
+# PDE terms using Devito's derivative notation
+diffusion = 0.5 * sigma_const**2 * S_func**2 * V.dx2   # d2V/dS2
+convection = r_const * S_func * V.dx                    # dV/dS
+reaction = -r_const * V                                 # -rV
+
+pde_rhs = diffusion + convection + reaction
+
+# Update equation: V^{n+1} = V^n + dt * (rhs)
+# Apply only to interior points
+update_eq = Eq(V.forward, V + dt_const * pde_rhs, subdomain=grid.interior)
+
+print("Update equation:")
+print(update_eq)
+```
+
+The `subdomain=grid.interior` ensures the update is applied only to
+interior grid points, leaving boundaries for explicit boundary conditions.
+
+### Boundary Conditions for Call Option
+
+```python
+# Get time dimension for boundary conditions
+t = grid.stepping_dim
+
+# Boundary at S = 0: V = 0
+bc_left = Eq(V[t + 1, 0], 0.0)
+
+# Boundary at S = S_max: linear extrapolation
+# V[nS] = V[nS-1] + dS (approximately S - K for large S)
+bc_right = Eq(V[t + 1, nS], V[t + 1, nS - 1] + dS)
+
+# Create operator with update and boundary conditions
+op = Operator([update_eq, bc_left, bc_right])
+```
+
+### Terminal Condition and Time Stepping
+
+```python
+# Terminal condition: call payoff at expiration
+V.data[0, :] = np.maximum(S_arr - K, 0)
+V.data[1, :] = V.data[0, :]
+
+# Time stepping loop
+for n in range(nt):
+    # Apply one time step
+    op.apply(time_m=0, time_M=0, dt=dt)
+
+    # Copy forward buffer to current for next iteration
+    V.data[0, :] = V.data[1, :]
+
+# Extract present value
+V_present = V.data[0, :].copy()
+```
+
+### Complete Call Option Solver
+
+```python
+def solve_bs_call_devito(S_max=200.0, K=100.0, T=1.0, r=0.05,
+                          sigma=0.2, nS=100, nt=2000):
+    """
+    Solve Black-Scholes PDE for European call option using Devito.
+
+    Parameters
+    ----------
+    S_max : float
+        Maximum asset price in grid
+    K : float
+        Strike price
+    T : float
+        Time to expiration (years)
+    r : float
+        Risk-free interest rate
+    sigma : float
+        Volatility
+    nS : int
+        Number of asset price grid intervals
+    nt : int
+        Number of time steps
+
+    Returns
+    -------
+    S : np.ndarray
+        Asset price grid
+    V : np.ndarray
+        Option values at present time
+    """
+    from devito import configuration
+    configuration['log-level'] = 'ERROR'
+
+    dS = S_max / nS
+    dt = T / nt
+
+    # Create custom dimension and grid
+    s_dim = SpaceDimension(name='s', spacing=Constant(name='h_s', value=dS))
+    grid = Grid(shape=(nS + 1,), dimensions=(s_dim,), extent=(S_max,))
+
+    # Asset price array and function
+    S_arr = np.linspace(0, S_max, nS + 1)
+    S_func = Function(name='S', grid=grid)
+    S_func.data[:] = S_arr
+
+    # TimeFunction for option value
+    V = TimeFunction(name='V', grid=grid, time_order=1, space_order=2)
+
+    # Constants
+    sigma_c = Constant(name='sigma', value=sigma)
+    r_c = Constant(name='r', value=r)
+    dt_c = Constant(name='dt', value=dt)
+
+    # PDE right-hand side
+    rhs = (0.5 * sigma_c**2 * S_func**2 * V.dx2 +
+           r_c * S_func * V.dx - r_c * V)
+
+    update = Eq(V.forward, V + dt_c * rhs, subdomain=grid.interior)
+
+    # Boundary conditions
+    t = grid.stepping_dim
+    bc_left = Eq(V[t + 1, 0], 0.0)
+    bc_right = Eq(V[t + 1, nS], V[t + 1, nS - 1] + dS)
+
+    op = Operator([update, bc_left, bc_right])
+
+    # Terminal condition
+    V.data[0, :] = np.maximum(S_arr - K, 0)
+    V.data[1, :] = V.data[0, :]
+
+    # Time stepping
+    for n in range(nt):
+        op.apply(time_m=0, time_M=0, dt=dt)
+        V.data[0, :] = V.data[1, :]
+
+    return S_arr, V.data[0, :].copy()
+```
+
+### Running the Solver
+
+```python
+import matplotlib.pyplot as plt
+
+# Solve with default parameters
+S, V = solve_bs_call_devito(S_max=200.0, K=100.0, T=1.0,
+                            r=0.05, sigma=0.2, nS=100, nt=2000)
+
+# Plot option value vs asset price
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Numerical solution
+ax.plot(S, V, 'b-', linewidth=2, label='Numerical (Devito)')
+
+# Intrinsic value (payoff at expiration)
+payoff = np.maximum(S - 100, 0)
+ax.plot(S, payoff, 'k--', linewidth=1, label='Intrinsic value')
+
+ax.set_xlabel('Asset Price S', fontsize=12)
+ax.set_ylabel('Option Value V', fontsize=12)
+ax.set_title('European Call Option Value', fontsize=14)
+ax.legend(fontsize=11)
+ax.grid(True, alpha=0.3)
+ax.set_xlim([0, 200])
+ax.set_ylim([0, 110])
+
+plt.tight_layout()
+```
+
+The plot shows the option value as a smooth curve above the intrinsic
+value (payoff), with the difference representing *time value*. Options
+are worth more than their intrinsic value because the asset price may
+move favorably before expiration.
+
+
+## European and American Options {#sec-finance-options}
+
+European options can only be exercised at expiration, while American
+options can be exercised any time. This early exercise feature makes
+American options more valuable but also more complex to price.
+
+### European Options: The Straightforward Case
+
+For European options, we simply solve the Black-Scholes PDE with the
+terminal condition given by the payoff. The solution gives the unique
+fair price under the no-arbitrage assumption.
+
+**European Call**:
+
+- Terminal condition: $V(S, T) = \max(S - K, 0)$
+- Boundary: $V(0, t) = 0$, $V(S_{\max}, t) \approx S - Ke^{-r(T-t)}$
+
+**European Put**:
+
+- Terminal condition: $V(S, T) = \max(K - S, 0)$
+- Boundary: $V(0, t) = Ke^{-r(T-t)}$, $V(S_{\max}, t) = 0$
+
+The put option solver is similar to the call, with modified boundary
+conditions:
+
+```python
+def solve_bs_put_devito(S_max=200.0, K=100.0, T=1.0, r=0.05,
+                         sigma=0.2, nS=100, nt=2000):
+    """Solve Black-Scholes PDE for European put option."""
+    from devito import configuration
+    configuration['log-level'] = 'ERROR'
+
+    dS = S_max / nS
+    dt = T / nt
+
+    s_dim = SpaceDimension(name='s', spacing=Constant(name='h_s', value=dS))
+    grid = Grid(shape=(nS + 1,), dimensions=(s_dim,), extent=(S_max,))
+
+    S_arr = np.linspace(0, S_max, nS + 1)
+    S_func = Function(name='S', grid=grid)
+    S_func.data[:] = S_arr
+
+    V = TimeFunction(name='V', grid=grid, time_order=1, space_order=2)
+
+    sigma_c = Constant(name='sigma', value=sigma)
+    r_c = Constant(name='r', value=r)
+    dt_c = Constant(name='dt', value=dt)
+
+    rhs = (0.5 * sigma_c**2 * S_func**2 * V.dx2 +
+           r_c * S_func * V.dx - r_c * V)
+
+    update = Eq(V.forward, V + dt_c * rhs, subdomain=grid.interior)
+
+    t = grid.stepping_dim
+
+    # Put boundary conditions
+    # At S = 0: V = K (approximately K*exp(-r*tau) at present)
+    bc_left = Eq(V[t + 1, 0], K)
+
+    # At S = S_max: V = 0
+    bc_right = Eq(V[t + 1, nS], 0.0)
+
+    op = Operator([update, bc_left, bc_right])
+
+    # Terminal condition: put payoff
+    V.data[0, :] = np.maximum(K - S_arr, 0)
+    V.data[1, :] = V.data[0, :]
+
+    # Time stepping with time-dependent left boundary
+    for n in range(nt):
+        op.apply(time_m=0, time_M=0, dt=dt)
+        V.data[0, :] = V.data[1, :]
+
+        # Update S=0 boundary with discounted strike
+        tau = (n + 1) * dt
+        V.data[0, 0] = K * np.exp(-r * tau)
+
+    return S_arr, V.data[0, :].copy()
+```
+
+### Comparing Calls and Puts
+
+```python
+# Solve both options
+S_call, V_call = solve_bs_call_devito()
+S_put, V_put = solve_bs_put_devito()
+
+# Verify put-call parity: C - P = S - K*exp(-r*T)
+# At S = 100, with K = 100, r = 0.05, T = 1:
+# Expected difference: 100 - 100*exp(-0.05) = 100 - 95.12 = 4.88
+
+S_test = 100.0
+V_call_100 = np.interp(S_test, S_call, V_call)
+V_put_100 = np.interp(S_test, S_put, V_put)
+parity_diff = V_call_100 - V_put_100
+expected_diff = S_test - K * np.exp(-0.05 * 1.0)
+
+print(f"Call value at S=100: {V_call_100:.4f}")
+print(f"Put value at S=100:  {V_put_100:.4f}")
+print(f"C - P = {parity_diff:.4f}")
+print(f"S - K*exp(-rT) = {expected_diff:.4f}")
+print(f"Put-call parity error: {abs(parity_diff - expected_diff):.6f}")
+```
+
+The put-call parity provides a powerful check on our numerical solutions.
+
+### American Options: Early Exercise
+
+American options require checking at each time step whether early exercise
+is optimal. The option value must satisfy:
+$$
+V(S, t) \geq \text{payoff}(S)
+$$
+at all times, not just expiration.
+
+This converts the PDE problem to a *free boundary problem* or
+*linear complementarity problem*. The simplest approach is to apply
+the payoff constraint after each time step:
+
+```python
+def solve_american_put(S_max=200.0, K=100.0, T=1.0, r=0.05,
+                       sigma=0.2, nS=100, nt=2000):
+    """Solve Black-Scholes for American put with early exercise."""
+    # ... same setup as European put ...
+
+    S_arr = np.linspace(0, S_max, nS + 1)
+    payoff = np.maximum(K - S_arr, 0)
+
+    # Time stepping with early exercise check
+    for n in range(nt):
+        op.apply(time_m=0, time_M=0, dt=dt)
+        V.data[0, :] = V.data[1, :]
+
+        # Early exercise constraint: V >= payoff
+        V.data[0, :] = np.maximum(V.data[0, :], payoff)
+
+    return S_arr, V.data[0, :].copy()
+```
+
+The American put is always worth at least as much as its European
+counterpart, with the difference being the *early exercise premium*.
+
+
+## Greeks: Delta, Gamma, Theta {#sec-finance-greeks}
+
+The *Greeks* are partial derivatives of the option value with respect
+to various parameters. They measure the sensitivity of the option price
+to changes in market conditions.
+
+### The Main Greeks
+
+| Greek | Symbol | Definition | Interpretation |
+|-------|--------|------------|----------------|
+| Delta | $\Delta$ | $\partial V/\partial S$ | Change in option value per unit change in asset price |
+| Gamma | $\Gamma$ | $\partial^2 V/\partial S^2$ | Rate of change of delta |
+| Theta | $\Theta$ | $\partial V/\partial t$ | Time decay (value lost per day) |
+| Vega | $\mathcal{V}$ | $\partial V/\partial \sigma$ | Sensitivity to volatility |
+| Rho | $\rho$ | $\partial V/\partial r$ | Sensitivity to interest rate |
+
+Delta and Gamma relate to hedging the option with the underlying asset.
+Theta represents time decay, the loss in option value as expiration
+approaches. Vega and Rho measure sensitivity to model parameters.
+
+### Computing Greeks from Numerical Solution
+
+We can compute Delta and Gamma directly from the numerical solution
+using finite differences:
+
+```python
+def compute_greeks(V, S, dt, r, sigma):
+    """
+    Compute Greeks from numerical option solution.
+
+    Parameters
+    ----------
+    V : np.ndarray
+        Option values at current time
+    S : np.ndarray
+        Asset price grid
+    dt : float
+        Time step (for theta estimation)
+    r : float
+        Risk-free rate
+    sigma : float
+        Volatility
+
+    Returns
+    -------
+    dict
+        Dictionary with 'delta', 'gamma', 'theta' arrays
+    """
+    dS = S[1] - S[0]
+    nS = len(S)
+
+    # Delta: dV/dS using central differences
+    delta = np.zeros(nS)
+    delta[1:-1] = (V[2:] - V[:-2]) / (2 * dS)  # Central
+    delta[0] = (V[1] - V[0]) / dS               # Forward
+    delta[-1] = (V[-1] - V[-2]) / dS            # Backward
+
+    # Gamma: d2V/dS2 using central differences
+    gamma = np.zeros(nS)
+    gamma[1:-1] = (V[2:] - 2*V[1:-1] + V[:-2]) / dS**2
+
+    # Theta: estimate from Black-Scholes equation
+    # theta = -0.5*sigma^2*S^2*gamma - r*S*delta + r*V
+    theta = -0.5 * sigma**2 * S**2 * gamma - r * S * delta + r * V
+
+    return {'delta': delta, 'gamma': gamma, 'theta': theta}
+```
+
+### Visualizing the Greeks
+
+```python
+# Compute Greeks for call option
+S, V = solve_bs_call_devito(S_max=200.0, K=100.0, T=1.0,
+                            r=0.05, sigma=0.2, nS=200, nt=4000)
+greeks = compute_greeks(V, S, dt=1.0/4000, r=0.05, sigma=0.2)
+
+fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+
+# Option value
+axes[0, 0].plot(S, V, 'b-', linewidth=2)
+axes[0, 0].set_xlabel('Asset Price S')
+axes[0, 0].set_ylabel('Option Value V')
+axes[0, 0].set_title('Call Option Value')
+axes[0, 0].set_xlim([50, 150])
+axes[0, 0].grid(True, alpha=0.3)
+
+# Delta
+axes[0, 1].plot(S, greeks['delta'], 'g-', linewidth=2)
+axes[0, 1].axhline(y=0.5, color='k', linestyle='--', alpha=0.5)
+axes[0, 1].set_xlabel('Asset Price S')
+axes[0, 1].set_ylabel('Delta')
+axes[0, 1].set_title('Delta (dV/dS)')
+axes[0, 1].set_xlim([50, 150])
+axes[0, 1].set_ylim([0, 1])
+axes[0, 1].grid(True, alpha=0.3)
+
+# Gamma
+axes[1, 0].plot(S, greeks['gamma'], 'r-', linewidth=2)
+axes[1, 0].set_xlabel('Asset Price S')
+axes[1, 0].set_ylabel('Gamma')
+axes[1, 0].set_title('Gamma (d2V/dS2)')
+axes[1, 0].set_xlim([50, 150])
+axes[1, 0].grid(True, alpha=0.3)
+
+# Theta
+axes[1, 1].plot(S, greeks['theta'], 'm-', linewidth=2)
+axes[1, 1].set_xlabel('Asset Price S')
+axes[1, 1].set_ylabel('Theta')
+axes[1, 1].set_title('Theta (dV/dt)')
+axes[1, 1].set_xlim([50, 150])
+axes[1, 1].grid(True, alpha=0.3)
+
+plt.tight_layout()
+```
+
+### Interpretation of Greeks Plots
+
+**Delta** ranges from 0 to 1 for calls (negative for puts):
+
+- Deep out-of-the-money (S << K): Delta near 0
+- At-the-money (S = K): Delta near 0.5
+- Deep in-the-money (S >> K): Delta near 1
+
+**Gamma** peaks at-the-money:
+
+- Measures how quickly delta changes
+- Highest when option is near the strike
+- Important for hedging frequency
+
+**Theta** is typically negative:
+
+- Options lose value as time passes
+- Largest for at-the-money options
+- Represents the "cost" of holding the option
+
+
+## Verification {#sec-finance-verification}
+
+We verify our numerical solver against the analytical Black-Scholes
+formulas and demonstrate convergence as the grid is refined.
+
+### Analytical Black-Scholes Formula
+
+The closed-form solution for a European call is:
+$$
+C(S, t) = S N(d_1) - K e^{-r(T-t)} N(d_2)
+$$ {#eq-finance-bs-call}
+
+where $N(x)$ is the cumulative standard normal distribution and:
+$$
+\begin{aligned}
+d_1 &= \frac{\ln(S/K) + (r + \sigma^2/2)(T-t)}{\sigma\sqrt{T-t}} \\
+d_2 &= d_1 - \sigma\sqrt{T-t}
+\end{aligned}
+$$ {#eq-finance-d1d2}
+
+For a put:
+$$
+P(S, t) = K e^{-r(T-t)} N(-d_2) - S N(-d_1)
+$$ {#eq-finance-bs-put}
+
+```python
+from scipy.stats import norm
+
+def black_scholes_analytical(S, K, T, r, sigma, option_type='call'):
+    """
+    Analytical Black-Scholes formula.
+
+    Parameters
+    ----------
+    S : float or np.ndarray
+        Current asset price(s)
+    K : float
+        Strike price
+    T : float
+        Time to expiration (years)
+    r : float
+        Risk-free interest rate
+    sigma : float
+        Volatility
+    option_type : str
+        'call' or 'put'
+
+    Returns
+    -------
+    float or np.ndarray
+        Option value(s)
+    """
+    if T <= 0:
+        if option_type == 'call':
+            return np.maximum(S - K, 0)
+        else:
+            return np.maximum(K - S, 0)
+
+    S = np.asarray(S)
+
+    d1 = (np.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * np.sqrt(T))
+    d2 = d1 - sigma * np.sqrt(T)
+
+    if option_type == 'call':
+        value = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+    else:
+        value = K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+
+    return value
+```
+
+### Comparing Numerical and Analytical Solutions
+
+```python
+# Parameters
+K = 100.0
+T = 1.0
+r = 0.05
+sigma = 0.2
+
+# Numerical solution
+S_num, V_num = solve_bs_call_devito(
+    S_max=200.0, K=K, T=T, r=r, sigma=sigma, nS=200, nt=4000
+)
+
+# Analytical solution
+V_exact = black_scholes_analytical(S_num, K, T, r, sigma, 'call')
+
+# Compare
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+# Solution comparison
+axes[0].plot(S_num, V_num, 'b-', linewidth=2, label='Numerical')
+axes[0].plot(S_num, V_exact, 'r--', linewidth=2, label='Analytical')
+axes[0].set_xlabel('Asset Price S')
+axes[0].set_ylabel('Option Value V')
+axes[0].set_title('Call Option: Numerical vs Analytical')
+axes[0].legend()
+axes[0].set_xlim([50, 150])
+axes[0].grid(True, alpha=0.3)
+
+# Error
+error = np.abs(V_num - V_exact)
+axes[1].semilogy(S_num, error + 1e-10, 'k-', linewidth=1.5)
+axes[1].set_xlabel('Asset Price S')
+axes[1].set_ylabel('Absolute Error')
+axes[1].set_title('Error (|Numerical - Analytical|)')
+axes[1].set_xlim([50, 150])
+axes[1].grid(True, alpha=0.3)
+
+plt.tight_layout()
+
+# Point comparison at S = K
+V_num_atm = np.interp(K, S_num, V_num)
+V_exact_atm = black_scholes_analytical(K, K, T, r, sigma, 'call')
+print(f"At-the-money (S = K = 100):")
+print(f"  Numerical:  {V_num_atm:.6f}")
+print(f"  Analytical: {V_exact_atm:.6f}")
+print(f"  Error:      {abs(V_num_atm - V_exact_atm):.6f}")
+```
+
+### Convergence Study
+
+To verify second-order accuracy, we refine the grid and check that the
+error decreases as $O(\Delta S^2) + O(\Delta t)$:
+
+```python
+def convergence_study(K=100.0, T=1.0, r=0.05, sigma=0.2, S_test=100.0):
+    """Run convergence study for Black-Scholes solver."""
+    nS_values = [50, 100, 200, 400]
+    errors = []
+
+    V_exact = black_scholes_analytical(S_test, K, T, r, sigma, 'call')
+
+    for nS in nS_values:
+        # Use nt proportional to nS^2 for stability
+        nt = 50 * nS
+
+        S, V = solve_bs_call_devito(
+            S_max=200.0, K=K, T=T, r=r, sigma=sigma, nS=nS, nt=nt
+        )
+
+        V_num = np.interp(S_test, S, V)
+        error = abs(V_num - V_exact)
+        errors.append(error)
+
+        print(f"nS={nS:4d}, nt={nt:5d}: V={V_num:.6f}, "
+              f"error={error:.2e}")
+
+    # Compute convergence rate
+    errors = np.array(errors)
+    rates = np.log2(errors[:-1] / errors[1:])
+    print(f"\nConvergence rates: {rates}")
+    print(f"Expected rate: ~2 (second-order in space)")
+
+    return nS_values, errors, rates
+
+nS_values, errors, rates = convergence_study()
+```
+
+### Visualizing Convergence
+
+```python
+fig, ax = plt.subplots(figsize=(8, 6))
+
+h_values = 200.0 / np.array(nS_values)  # Grid spacing
+
+ax.loglog(h_values, errors, 'bo-', linewidth=2, markersize=8,
+          label='Numerical error')
+
+# Reference lines
+h_ref = np.array([h_values[0], h_values[-1]])
+ax.loglog(h_ref, 0.5*h_ref**2, 'k--', label='$O(h^2)$')
+ax.loglog(h_ref, 2*h_ref, 'k:', label='$O(h)$')
+
+ax.set_xlabel('Grid spacing $\\Delta S$', fontsize=12)
+ax.set_ylabel('Error at S = K', fontsize=12)
+ax.set_title('Convergence of Black-Scholes Solver', fontsize=14)
+ax.legend(fontsize=11)
+ax.grid(True, alpha=0.3, which='both')
+
+plt.tight_layout()
+```
+
+The solver achieves approximately second-order accuracy in space, as
+expected for the central difference discretization.
+
+
+## Exercises {#sec-finance-exercises}
+
+### Exercise 1: Put Option Pricing
+
+Modify the call option solver to price a European put option with:
+
+- $K = 100$ (strike price)
+- $T = 1$ year (time to expiration)
+- $r = 0.05$ (risk-free rate)
+- $\sigma = 0.25$ (volatility)
+
+a) Implement the correct terminal and boundary conditions for the put.
+b) Compare your numerical solution with the analytical Black-Scholes put formula.
+c) Verify put-call parity: $C - P = S - Ke^{-rT}$
+
+### Exercise 2: Volatility Surface
+
+Options with different strikes and expirations have different *implied
+volatilities*, creating a "volatility surface." Compute call option
+prices for:
+
+- Strikes: $K \in \{80, 90, 100, 110, 120\}$
+- Expirations: $T \in \{0.25, 0.5, 1.0, 2.0\}$ years
+
+with $r = 0.03$ and $\sigma = 0.2$. Create a surface plot of option values
+as a function of $(K, T)$.
+
+### Exercise 3: Grid Refinement Study
+
+Investigate the accuracy and efficiency trade-off:
+
+a) For a fixed problem, vary $\Delta S$ and $\Delta t$ independently.
+b) Plot error versus grid spacing for different time step ratios.
+c) Determine the optimal ratio $\Delta t / \Delta S^2$ for accuracy
+   and efficiency.
+
+### Exercise 4: American Put
+
+Implement the American put option with early exercise:
+
+a) Add the early exercise constraint $V \geq \max(K - S, 0)$ after each
+   time step.
+b) Compare with the European put value.
+c) Find the *early exercise boundary* - the asset price below which
+   early exercise is optimal.
+
+### Exercise 5: Greeks Computation
+
+Using your call option solver:
+
+a) Compute Delta, Gamma, and Theta numerically using finite differences.
+b) Compare with the analytical Greeks formulas:
+   - $\Delta_{\text{call}} = N(d_1)$
+   - $\Gamma = \frac{N'(d_1)}{S\sigma\sqrt{T}}$
+   - $\Theta = -\frac{S N'(d_1) \sigma}{2\sqrt{T}} - rKe^{-rT}N(d_2)$
+c) How does the accuracy of Greeks compare to the accuracy of option values?
+
+### Exercise 6: Crank-Nicolson Scheme
+
+Implement the Crank-Nicolson scheme (average of explicit and implicit):
+$$
+\frac{V^{n+1} - V^n}{\Delta t} = \frac{1}{2}\left[L(V^{n+1}) + L(V^n)\right]
+$$
+where $L$ is the Black-Scholes spatial operator.
+
+a) Set up the tridiagonal system for each time step.
+b) Compare accuracy with the explicit scheme for the same grid.
+c) What time step can you use before accuracy degrades?
+
+### Exercise 7: Barrier Options
+
+A *knock-out* call option becomes worthless if the asset price ever
+exceeds a barrier $B > K$. Modify the solver:
+
+a) Add a new boundary condition at $S = B$: $V(B, t) = 0$
+b) Price the barrier call with $K = 100$, $B = 120$, $T = 1$
+c) How does the barrier call value compare to the vanilla call?
+
+### Exercise 8: Time-Dependent Parameters
+
+In reality, interest rates and volatility vary over time. Extend the
+solver to handle:
+$$
+\frac{\partial V}{\partial \tau} = \frac{1}{2}\sigma(t)^2 S^2 \frac{\partial^2 V}{\partial S^2} +
+r(t) S \frac{\partial V}{\partial S} - r(t) V
+$$
+
+a) Implement time-dependent $r(t)$ and $\sigma(t)$ as callable functions.
+b) Price an option with linearly increasing volatility:
+   $\sigma(t) = 0.2 + 0.1 \cdot (T - t)/T$
+c) Compare with constant-volatility pricing.
