@@ -19,13 +19,13 @@ Extend *Finite Difference Computing with PDEs* with content from `devito_repo/ex
 |-------|--------|-------|--------|
 | **Phase 1** | ✅ Complete | 62 | `ab9b38c0` |
 | **Phase 2** | ✅ Complete | 73 | `b9e017b3` |
-| **Phase 3** | ✅ Complete | 91 | - |
-| **Phase 4** | 🔲 Not started | - | - |
+| **Phase 3** | ✅ Complete | 91 | `04accab7` |
+| **Phase 4** | ✅ Complete | 90 | pending |
 | **Phase 5** | 🔲 Not started | - | - |
 | **Phase 6** | 🔲 Not started | - | - |
 | **Phase 7** | 🔲 Not started | - | - |
 
-**Total tests: 411**
+**Total tests: 501**
 
 ---
 
@@ -225,13 +225,13 @@ eq_p = Eq(p.forward, p + dt*pdt + (dt**2/2)*pdt2 + (dt**3/6)*pdt3 + (dt**4/24)*p
 
 ---
 
-## Phase 4: Inverse Problems (Priority Content)
+## Phase 4: Inverse Problems (Priority Content) ✅ COMPLETE
 
 **Effort**: High | **Value**: Very High | **Source**: Ready notebooks
 
 This is the stated priority - complete treatment of adjoint methods, RTM, and FWI.
 
-### 4.1 Chapter 9: Inverse Problems and Optimization
+### 4.1 Chapter 9: Inverse Problems and Optimization ✅
 
 **Source**: `02_rtm.ipynb`, `03_fwi.ipynb`, `13_LSRTM_acoustic.ipynb`, `seismic/inversion/fwi.py`
 
@@ -242,36 +242,46 @@ This is the stated priority - complete treatment of adjoint methods, RTM, and FW
 - 9.4 Reverse Time Migration (RTM)
 - 9.5 Adjoint Wavefield Computation
 - 9.6 Gradient Computation
-- 9.7 FWI Optimization Loop (scipy L-BFGS)
+- 9.7 FWI Optimization Loop (gradient descent)
 - 9.8 Regularization (Tikhonov, TV)
-- 9.9 Least-Squares RTM (LSRTM)
+- 9.9 Least-Squares RTM (LSRTM with Barzilai-Borwein step)
 
-**Critical**: Must rewrite all examples without `SeismicModel`, `AcousticWaveSolver`, etc.
+**Critical**: All examples use explicit Devito API - no `SeismicModel`, `AcousticWaveSolver`, etc.
 
-**Key code pattern** (explicit API):
+**Key code patterns** (explicit API):
 ```python
 # Manual Ricker wavelet
 def ricker_wavelet(t, f0):
     t0 = 1.5 / f0
     return (1 - 2*(np.pi*f0*(t-t0))**2) * np.exp(-(np.pi*f0*(t-t0))**2)
 
-# Explicit SparseTimeFunction
+# Explicit SparseTimeFunction for sources and receivers
 src = SparseTimeFunction(name='src', grid=grid, npoint=1, nt=nt)
 src.coordinates.data[:] = [[500., 20.]]
 src.data[:, 0] = ricker_wavelet(time_values, f0=10.)
+
+rec = SparseTimeFunction(name='rec', grid=grid, npoint=nrec, nt=nt)
+rec.coordinates.data[:] = rec_coords
+
+# Forward modeling
+pde = (1.0 / vel**2) * u.dt2 - u.laplace
+stencil = Eq(u.forward, solve(pde, u.forward))
+src_term = src.inject(field=u.forward, expr=src * dt**2 * vel**2)
+rec_term = rec.interpolate(expr=u)
+op = Operator([stencil] + src_term + rec_term)
 ```
 
 **Deliverables**:
-- [ ] `chapters/adjoint/adjoint.qmd`
-- [ ] `src/adjoint/forward_devito.py`
-- [ ] `src/adjoint/rtm_devito.py`
-- [ ] `src/adjoint/fwi_devito.py`
-- [ ] `src/adjoint/lsrtm_devito.py`
-- [ ] `src/adjoint/gradient.py`
-- [ ] `tests/test_adjoint_devito.py`
-- [ ] `tests/test_rtm_devito.py`
-- [ ] `tests/test_fwi_devito.py`
-- [ ] `tests/test_lsrtm_devito.py`
+- [x] `chapters/adjoint/adjoint.qmd`
+- [x] `src/adjoint/forward_devito.py`
+- [x] `src/adjoint/rtm_devito.py`
+- [x] `src/adjoint/fwi_devito.py`
+- [x] `src/adjoint/lsrtm_devito.py`
+- [x] `src/adjoint/gradient.py`
+- [x] `tests/test_adjoint_forward.py` (18 tests)
+- [x] `tests/test_rtm_devito.py` (12 tests)
+- [x] `tests/test_fwi_devito.py` (32 tests)
+- [x] `tests/test_lsrtm_devito.py` (28 tests)
 
 ---
 
@@ -433,7 +443,7 @@ Each solver must include:
 - Added references for Fornberg, Tam-Webb
 - Commit: `b9e017b3`
 
-### 2026-01-29: Phase 3 Complete
+### 2026-01-30: Phase 3 Complete
 - Added Sections 8.4-8.5: ADER and Staggered Grids to Chapter 8
 - Added Sections 7.4-7.5: Viscoacoustic and Viscoelastic Waves to Chapter 7
 - Created ADER solver (`ader_devito.py`) with Taylor expansion in time
@@ -442,3 +452,4 @@ Each solver must include:
 - Created 3D Viscoelastic solver with `TensorTimeFunction` for stress/memory tensors
 - 91 new tests (411 total)
 - Fixed damping field creation for small grids
+- Commit: `04accab7`

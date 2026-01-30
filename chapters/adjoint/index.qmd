@@ -1,0 +1,9 @@
+# Inverse Problems and Adjoint-State Methods
+
+This chapter introduces inverse problems in the context of seismic imaging
+and Full-Waveform Inversion (FWI). We develop the mathematical framework
+of the adjoint-state method and implement key algorithms including forward
+modeling, Reverse Time Migration (RTM), and gradient computation using
+Devito's explicit API.
+
+{{< include adjoint.qmd >}}

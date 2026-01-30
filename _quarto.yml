@@ -22,6 +22,7 @@ book:
         - chapters/elliptic/index.qmd
         - chapters/systems/index.qmd
         - chapters/highorder/index.qmd
+        - chapters/adjoint/index.qmd
     - part: "Appendices"
       chapters:
         - chapters/appendices/formulas/index.qmd
@@ -175,6 +176,7 @@ src_advec: "https://github.com/devitocodes/devito_book/tree/devito/src/advec"
 src_elliptic: "https://github.com/devitocodes/devito_book/tree/devito/src/elliptic"
 src_systems: "https://github.com/devitocodes/devito_book/tree/devito/src/systems"
 src_highorder: "https://github.com/devitocodes/devito_book/tree/devito/src/highorder"
+src_adjoint: "https://github.com/devitocodes/devito_book/tree/devito/src/adjoint"
 src_formulas: "https://github.com/devitocodes/devito_book/tree/devito/src/formulas"
 src_softeng2: "https://github.com/devitocodes/devito_book/tree/devito/src/softeng2"
 
