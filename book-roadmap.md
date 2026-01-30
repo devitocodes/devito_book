@@ -22,10 +22,10 @@ Extend *Finite Difference Computing with PDEs* with content from `devito_repo/ex
 | **Phase 3** | ✅ Complete | 91 | `04accab7` |
 | **Phase 4** | ✅ Complete | 90 | `b9dc387d` |
 | **Phase 5** | ✅ Complete | 40 | `05db189a` |
-| **Phase 6** | ✅ Complete | 116 | pending |
-| **Phase 7** | 🔲 Not started | - | - |
+| **Phase 6** | ✅ Complete | 116 | `3aa4c655` |
+| **Phase 7** | ✅ Complete | 38 | - |
 
-**Total tests: 657**
+**Total tests: 721**
 
 ---
 
@@ -389,18 +389,25 @@ usave = TimeFunction(name='usave', grid=grid, save=nsnaps, time_dim=time_sub)
 
 ---
 
-## Phase 7: Theory Appendix
+## Phase 7: Theory Appendix ✅ COMPLETE
 
 **Effort**: Low | **Value**: Medium
 
-### Appendix D: Essential Numerical Analysis Theory
+### Appendix D: Essential Numerical Analysis Theory ✅
 
 **Source**: `17_fourier_mode.ipynb` for D.4
 
-- D.1 Lax Equivalence Theorem
-- D.2 Von Neumann Stability Analysis
-- D.3 Truncation Error Analysis (enhance existing)
-- D.4 Fourier Mode Analysis (NEW)
+**Sections**:
+- D.1 Lax Equivalence Theorem (consistency + stability = convergence)
+- D.2 Von Neumann Stability Analysis (amplification factors, CFL conditions)
+- D.3 Truncation Error Analysis (cross-reference to existing @sec-app-trunc)
+- D.4 On-the-Fly Fourier Mode Analysis (memory-efficient DFT using Devito)
+
+**Deliverables**:
+- [x] `chapters/appendices/theory/theory.qmd`
+- [x] `src/theory/stability_analysis.py` (amplification factors, CFL utilities)
+- [x] `src/theory/fourier_dft.py` (on-the-fly DFT implementation)
+- [x] `tests/test_theory.py` (38 tests)
 
 ---
 
@@ -419,7 +426,7 @@ usave = TimeFunction(name='usave', grid=grid, save=nsnaps, time_dim=time_sub)
 | **5** | Performance | Medium | High | ✅ Complete |
 | **6.1** | Finance/Darcy/NS | Low-Medium | Medium | ✅ Complete |
 | **6.2** | Maxwell/GR | High | Medium | 🔲 Not started |
-| **7** | Theory Appendix | Low | Medium | 🔲 Not started |
+| **7** | Theory Appendix | Low | Medium | ✅ Complete |
 
 ---
 
@@ -507,4 +514,14 @@ Each solver must include:
   - Ghia benchmark data for verification
   - Streamfunction computation
 - 116 new tests (657 total)
-- Commit: pending
+- Commit: `3aa4c655`
+
+### 2026-01-30: Phase 7 Complete
+- Created Appendix D: Essential Numerical Analysis Theory
+  - D.1 Lax Equivalence Theorem (consistency + stability = convergence)
+  - D.2 Von Neumann Stability Analysis (amplification factors for diffusion, advection, wave)
+  - D.3 Truncation Error Analysis (cross-reference to existing appendix)
+  - D.4 On-the-Fly Fourier Mode Analysis (memory-efficient DFT for FWI)
+- Created `src/theory/stability_analysis.py` with CFL utilities
+- Created `src/theory/fourier_dft.py` with Devito on-the-fly DFT implementation
+- 38 new tests (721 total, 1 skipped)

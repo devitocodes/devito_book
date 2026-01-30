@@ -33,6 +33,7 @@ book:
       chapters:
         - chapters/appendices/formulas/index.qmd
         - chapters/appendices/trunc/index.qmd
+        - chapters/appendices/theory/index.qmd
         - chapters/appendices/softeng2/index.qmd
   repo-url: https://github.com/devitocodes/devito_book
   site-url: https://devitocodes.github.io/devito_book
@@ -191,6 +192,7 @@ src_darcy: "https://github.com/devitocodes/devito_book/tree/devito/src/darcy"
 src_formulas: "https://github.com/devitocodes/devito_book/tree/devito/src/formulas"
 src_softeng2: "https://github.com/devitocodes/devito_book/tree/devito/src/softeng2"
 src_finance: "https://github.com/devitocodes/devito_book/tree/devito/src/finance"
+src_theory: "https://github.com/devitocodes/devito_book/tree/devito/src/theory"
 
 crossref:
   eq-prefix: ""
