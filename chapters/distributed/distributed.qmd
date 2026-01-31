@@ -1,0 +1,992 @@
+## Introduction to Parallel Computing {#sec-distributed-intro}
+
+Large-scale PDE simulations, particularly in seismic imaging, require
+computational resources far beyond what a single CPU core can provide.
+Two complementary parallelization strategies address this challenge:
+
+1. **Domain decomposition (MPI)**: Partition the computational domain
+   across processes, each responsible for a portion of the grid.
+   Communication handles boundary exchanges between subdomains.
+
+2. **Task-based parallelism (Dask)**: Distribute independent computational
+   tasks (e.g., different source locations) across workers.
+   No communication needed between tasks---they are *embarrassingly parallel*.
+
+### Embarrassingly Parallel Problems in Seismics
+
+Seismic imaging workflows often involve computing wavefields for many
+independent source experiments. Consider Full Waveform Inversion (FWI)
+where the objective function is:
+
+$$
+\Phi(\mathbf{m}) = \frac{1}{2} \sum_{s=1}^{N_s} \|\mathbf{P}_r \mathbf{u}_s(\mathbf{m}) - \mathbf{d}_s\|_2^2
+$$ {#eq-fwi-objective-sum}
+
+The sum over $N_s$ source experiments is embarrassingly parallel:
+
+- Each shot $s$ requires an independent forward simulation
+- No communication between shots during computation
+- Final gradient is simply the sum of per-shot gradients
+
+This structure makes seismic workflows ideal for task-based parallelism.
+
+### Shot-Parallel Workflows
+
+A shot-parallel FWI workflow proceeds as:
+
+1. **Distribute shots** to available workers
+2. **Compute per-shot gradients** independently on each worker
+3. **Reduce (sum)** gradients from all workers
+4. **Update model** on the main process
+5. **Repeat** until convergence
+
+The communication cost is minimal: only the model (sent to workers) and
+gradients (returned from workers) need to be transferred.
+
+### MPI vs Task-Based Parallelism
+
+| Aspect | MPI (Domain Decomposition) | Dask (Task-Based) |
+|--------|---------------------------|-------------------|
+| Parallelism type | Data parallel | Task parallel |
+| Communication | Frequent (halo exchanges) | Rare (task results) |
+| Memory scaling | Distributes memory | Replicates model |
+| Best for | Single large simulation | Many independent tasks |
+| Programming model | SPMD | Task graphs |
+
+For seismic imaging, the optimal strategy often combines both:
+
+- **MPI** for domain decomposition within each shot (memory distribution)
+- **Dask** for distributing shots across nodes (task parallelism)
+
+## Domain Decomposition with MPI {#sec-distributed-mpi}
+
+Devito provides automatic domain decomposition through MPI. When you
+run a Devito script with `mpirun`, the grid is automatically partitioned
+across MPI ranks.
+
+### Devito's Automatic Domain Decomposition
+
+The domain is decomposed along specified dimensions. For a 2D grid
+with 4 MPI ranks, a typical decomposition is:
+
+```
+Rank 0 | Rank 1
+-------+-------
+Rank 2 | Rank 3
+```
+
+Each rank computes on its subdomain plus a *halo region* containing
+data from neighboring ranks.
+
+### Halo Exchanges
+
+At each time step, boundary data must be exchanged between adjacent
+subdomains. This *halo exchange* ensures each rank has the data needed
+for stencil computations near subdomain boundaries.
+
+```
+        Rank 0                    Rank 1
+  +---------------+         +---------------+
+  |               |         |               |
+  |   Interior    |  <--->  |   Interior    |
+  |               |  halo   |               |
+  +---------------+         +---------------+
+```
+
+Devito handles halo exchanges automatically. The width of the halo
+region is determined by the stencil's `space_order`.
+
+### Running with MPI
+
+To run a Devito script with MPI:
+
+```bash
+# Run on 4 MPI ranks
+DEVITO_MPI=1 mpirun -n 4 python my_script.py
+
+# Control decomposition dimensions (X and Y only, not time)
+DEVITO_MPI=1 mpirun -n 4 python my_script.py
+```
+
+The `DEVITO_MPI=1` environment variable enables MPI mode.
+
+### Example: MPI-Parallel Wave Equation
+
+```python
+import numpy as np
+
+try:
+    from devito import Grid, TimeFunction, Eq, Operator, solve
+    DEVITO_AVAILABLE = True
+except ImportError:
+    DEVITO_AVAILABLE = False
+
+if DEVITO_AVAILABLE:
+    # Grid is automatically decomposed in MPI mode
+    shape = (201, 201)
+    extent = (2000., 2000.)
+
+    grid = Grid(shape=shape, extent=extent, dtype=np.float32)
+
+    # TimeFunction data is distributed across ranks
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+
+    # Set initial condition (each rank sets its portion)
+    # In MPI mode, u.data is the local portion of the global array
+    u.data[:] = 0.0
+
+    # Wave equation
+    c = 1.5  # velocity in km/s
+    pde = (1.0 / c**2) * u.dt2 - u.laplace
+    stencil = Eq(u.forward, solve(pde, u.forward))
+
+    # Operator handles halo exchanges automatically
+    op = Operator([stencil])
+
+    # Run simulation
+    op.apply(time_M=100, dt=0.5)
+
+    print(f"Simulation complete on rank {grid.distributor.myrank}")
+```
+
+### Strong and Weak Scaling
+
+**Strong scaling** measures speedup when fixing problem size and
+increasing processor count:
+
+$$
+S_{\text{strong}}(P) = \frac{T_1}{T_P}
+$$
+
+where $T_1$ is the time on 1 processor and $T_P$ is the time on $P$ processors.
+Ideal strong scaling gives $S = P$.
+
+**Weak scaling** measures efficiency when increasing both problem size
+and processor count proportionally:
+
+$$
+E_{\text{weak}}(P) = \frac{T_1}{T_P}
+$$
+
+where each processor has the same workload. Ideal weak scaling gives $E = 1$.
+
+Domain decomposition typically shows:
+
+- Good strong scaling up to a point (communication overhead dominates)
+- Better weak scaling (communication-to-computation ratio stays constant)
+
+## Task-Based Parallelism with Dask {#sec-distributed-dask}
+
+[Dask](https://dask.org) is a flexible parallel computing library for Python.
+It provides:
+
+- **Distributed**: A distributed task scheduler for cluster computing
+- **Delayed**: Lazy task construction for custom workloads
+- **Arrays/DataFrames**: Parallel versions of NumPy/Pandas
+
+For shot-parallel seismic workflows, we use `dask.distributed` to
+distribute independent shot computations across workers.
+
+### Dask Distributed Basics
+
+The Dask distributed scheduler consists of:
+
+1. **Client**: Submits tasks and collects results
+2. **Scheduler**: Coordinates workers and assigns tasks
+3. **Workers**: Execute tasks and store results
+
+```python
+from dask.distributed import Client, LocalCluster
+
+# Create a local cluster with 4 workers
+cluster = LocalCluster(n_workers=4, threads_per_worker=1)
+client = Client(cluster)
+
+# Submit a task
+future = client.submit(my_function, arg1, arg2)
+
+# Get the result (blocks until complete)
+result = future.result()
+
+# Or gather multiple futures
+results = client.gather(futures)
+```
+
+### Shot-Parallel FWI Workflow
+
+Here we implement shot-parallel gradient computation using Dask
+and explicit Devito API (no convenience classes).
+
+```python
+import numpy as np
+
+try:
+    from devito import Grid, TimeFunction, Function, SparseTimeFunction, Eq, Operator, solve
+    DEVITO_AVAILABLE = True
+except ImportError:
+    DEVITO_AVAILABLE = False
+
+try:
+    from dask.distributed import Client, LocalCluster, wait
+    DASK_AVAILABLE = True
+except ImportError:
+    DASK_AVAILABLE = False
+
+
+def ricker_wavelet(t, f0, t0=None):
+    """Generate a Ricker wavelet.
+
+    Parameters
+    ----------
+    t : np.ndarray
+        Time array
+    f0 : float
+        Peak frequency
+    t0 : float, optional
+        Time delay (default: 1.5/f0)
+
+    Returns
+    -------
+    np.ndarray
+        Ricker wavelet values
+    """
+    if t0 is None:
+        t0 = 1.5 / f0
+    pi_f0_t = np.pi * f0 * (t - t0)
+    return (1.0 - 2.0 * pi_f0_t**2) * np.exp(-pi_f0_t**2)
+
+
+def forward_shot(shot_id, velocity, src_coord, rec_coords, nt, dt, f0, extent):
+    """Run forward modeling for a single shot.
+
+    This function is designed to be submitted as a Dask task.
+    Each task creates its own Devito objects to avoid serialization issues.
+
+    Parameters
+    ----------
+    shot_id : int
+        Shot identifier (for logging)
+    velocity : np.ndarray
+        Velocity model (2D array)
+    src_coord : np.ndarray
+        Source coordinates [x, z]
+    rec_coords : np.ndarray
+        Receiver coordinates, shape (nrec, 2)
+    nt : int
+        Number of time steps
+    dt : float
+        Time step
+    f0 : float
+        Source peak frequency
+    extent : tuple
+        Domain extent (Lx, Lz)
+
+    Returns
+    -------
+    np.ndarray
+        Receiver data, shape (nt, nrec)
+    """
+    from devito import Grid, TimeFunction, Function, SparseTimeFunction, Eq, Operator, solve
+
+    shape = velocity.shape
+    grid = Grid(shape=shape, extent=extent, dtype=np.float32)
+
+    # Velocity field
+    vel = Function(name='vel', grid=grid, space_order=4)
+    vel.data[:] = velocity
+
+    # Wavefield
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+
+    # Source
+    src_coords_arr = np.array([src_coord])
+    src = SparseTimeFunction(
+        name='src', grid=grid, npoint=1, nt=nt,
+        coordinates=src_coords_arr
+    )
+    time_values = np.arange(nt) * dt
+    src.data[:, 0] = ricker_wavelet(time_values, f0)
+
+    # Receivers
+    nrec = len(rec_coords)
+    rec = SparseTimeFunction(
+        name='rec', grid=grid, npoint=nrec, nt=nt,
+        coordinates=rec_coords
+    )
+
+    # Build operator
+    pde = (1.0 / vel**2) * u.dt2 - u.laplace
+    stencil = Eq(u.forward, solve(pde, u.forward))
+    src_term = src.inject(
+        field=u.forward,
+        expr=src * grid.stepping_dim.spacing**2 * vel**2
+    )
+    rec_term = rec.interpolate(expr=u)
+
+    op = Operator([stencil] + src_term + rec_term)
+    op.apply(time=nt-2, dt=dt)
+
+    return rec.data.copy()
+
+
+if DEVITO_AVAILABLE and DASK_AVAILABLE:
+    # Example usage (not executed, just for demonstration)
+    example_code = """
+    # Initialize Dask client
+    cluster = LocalCluster(n_workers=4, threads_per_worker=1, death_timeout=600)
+    client = Client(cluster)
+
+    # Model parameters
+    shape = (101, 101)
+    extent = (1000., 1000.)
+    vp = np.full(shape, 2.5, dtype=np.float32)  # Constant velocity
+
+    # Time parameters
+    f0 = 0.010  # 10 Hz
+    dt = 0.5    # ms
+    nt = 2001
+
+    # Source positions (5 shots)
+    src_positions = np.array([
+        [200., 20.], [400., 20.], [500., 20.], [600., 20.], [800., 20.]
+    ])
+
+    # Receiver positions
+    nrec = 101
+    rec_coords = np.zeros((nrec, 2))
+    rec_coords[:, 0] = np.linspace(0, 1000, nrec)
+    rec_coords[:, 1] = 980.  # Near bottom
+
+    # Submit shots in parallel
+    futures = []
+    for i, src in enumerate(src_positions):
+        future = client.submit(
+            forward_shot, i, vp, src, rec_coords, nt, dt, f0, extent
+        )
+        futures.append(future)
+
+    # Wait for completion and gather results
+    wait(futures)
+    shot_data = client.gather(futures)
+
+    print(f"Computed {len(shot_data)} shots in parallel")
+    for i, data in enumerate(shot_data):
+        print(f"  Shot {i}: shape {data.shape}, max amplitude {np.max(np.abs(data)):.6f}")
+    """
+```
+
+### Submitting Devito Operators as Dask Tasks
+
+The key insight for Dask + Devito integration is that each Dask task
+should create its own Devito objects. This avoids serialization issues
+with compiled operators.
+
+**Pattern for Dask-compatible Devito functions:**
+
+```python
+def my_devito_task(parameters):
+    """A Dask-compatible function that uses Devito.
+
+    - Create all Devito objects INSIDE the function
+    - Accept only serializable parameters (numpy arrays, scalars, etc.)
+    - Return serializable results (numpy arrays, scalars)
+    """
+    # Import Devito inside the function
+    from devito import Grid, TimeFunction, Function, Eq, Operator, solve
+
+    # Create grid and fields
+    grid = Grid(shape=parameters['shape'], extent=parameters['extent'])
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+
+    # Set up and run operator
+    # ...
+
+    # Return serializable result (not Devito objects)
+    return result_array.copy()
+```
+
+### Complete Dask FWI Example
+
+Here is a complete example of shot-parallel FWI gradient computation:
+
+```python
+import numpy as np
+
+try:
+    from devito import (
+        Grid, TimeFunction, Function, SparseTimeFunction,
+        Eq, Operator, solve
+    )
+    DEVITO_AVAILABLE = True
+except ImportError:
+    DEVITO_AVAILABLE = False
+
+try:
+    from dask.distributed import Client, LocalCluster, wait
+    DASK_AVAILABLE = True
+except ImportError:
+    DASK_AVAILABLE = False
+
+
+def ricker_wavelet(t, f0, t0=None):
+    """Generate Ricker wavelet."""
+    if t0 is None:
+        t0 = 1.5 / f0
+    pi_f0_t = np.pi * f0 * (t - t0)
+    return (1.0 - 2.0 * pi_f0_t**2) * np.exp(-pi_f0_t**2)
+
+
+def fwi_gradient_single_shot(velocity, src_coord, rec_coords, d_obs,
+                              shape, extent, nt, dt, f0):
+    """Compute FWI gradient for a single shot.
+
+    Parameters
+    ----------
+    velocity : np.ndarray
+        Current velocity model
+    src_coord : np.ndarray
+        Source coordinates [x, z]
+    rec_coords : np.ndarray
+        Receiver coordinates, shape (nrec, 2)
+    d_obs : np.ndarray
+        Observed data for this shot, shape (nt, nrec)
+    shape : tuple
+        Grid shape
+    extent : tuple
+        Domain extent
+    nt : int
+        Number of time steps
+    dt : float
+        Time step
+    f0 : float
+        Source peak frequency
+
+    Returns
+    -------
+    tuple
+        (objective_value, gradient)
+    """
+    from devito import (
+        Grid, TimeFunction, Function, SparseTimeFunction,
+        Eq, Operator, solve
+    )
+
+    grid = Grid(shape=shape, extent=extent, dtype=np.float32)
+
+    # Velocity and squared slowness
+    vel = Function(name='vel', grid=grid, space_order=4)
+    vel.data[:] = velocity
+    m = Function(name='m', grid=grid, space_order=4)
+    m.data[:] = 1.0 / velocity**2
+
+    # Forward wavefield (save all time steps for adjoint correlation)
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4, save=nt)
+
+    # Source
+    src_coords_arr = np.array([src_coord])
+    src = SparseTimeFunction(
+        name='src', grid=grid, npoint=1, nt=nt,
+        coordinates=src_coords_arr
+    )
+    time_values = np.arange(nt) * dt
+    src.data[:, 0] = ricker_wavelet(time_values, f0)
+
+    # Receivers
+    nrec = len(rec_coords)
+    rec = SparseTimeFunction(
+        name='rec', grid=grid, npoint=nrec, nt=nt,
+        coordinates=rec_coords
+    )
+
+    # Forward operator
+    pde = m * u.dt2 - u.laplace
+    stencil = Eq(u.forward, solve(pde, u.forward))
+    src_term = src.inject(
+        field=u.forward,
+        expr=src * grid.stepping_dim.spacing**2 / m
+    )
+    rec_term = rec.interpolate(expr=u)
+
+    op_fwd = Operator([stencil] + src_term + rec_term)
+    op_fwd.apply(time=nt-2, dt=dt)
+
+    # Compute residual and objective
+    residual_data = rec.data - d_obs[:rec.data.shape[0], :]
+    objective = 0.5 * np.sum(residual_data**2)
+
+    # Adjoint wavefield
+    v = TimeFunction(name='v', grid=grid, time_order=2, space_order=4)
+
+    # Gradient
+    grad = Function(name='grad', grid=grid)
+
+    # Residual injection
+    residual = SparseTimeFunction(
+        name='residual', grid=grid, npoint=nrec, nt=nt,
+        coordinates=rec_coords
+    )
+    residual.data[:rec.data.shape[0], :] = residual_data
+
+    # Adjoint operator
+    pde_adj = m * v.dt2 - v.laplace
+    stencil_adj = Eq(v.backward, solve(pde_adj, v.backward))
+    res_term = residual.inject(
+        field=v.backward,
+        expr=residual * grid.stepping_dim.spacing**2 / m
+    )
+
+    # Gradient update: grad += u * v.dt2
+    gradient_update = Eq(grad, grad + u * v.dt2)
+
+    op_adj = Operator([stencil_adj] + res_term + [gradient_update])
+    op_adj.apply(u=u, v=v, dt=dt, time_M=nt-2)
+
+    return objective, grad.data.copy()
+
+
+def parallel_fwi_gradient(client, velocity, src_positions, rec_coords,
+                           observed_data, shape, extent, nt, dt, f0):
+    """Compute FWI gradient for multiple shots in parallel using Dask.
+
+    Parameters
+    ----------
+    client : dask.distributed.Client
+        Dask client
+    velocity : np.ndarray
+        Current velocity model
+    src_positions : np.ndarray
+        Source positions, shape (nshots, 2)
+    rec_coords : np.ndarray
+        Receiver coordinates, shape (nrec, 2)
+    observed_data : list
+        List of observed data arrays, one per shot
+    shape : tuple
+        Grid shape
+    extent : tuple
+        Domain extent
+    nt : int
+        Number of time steps
+    dt : float
+        Time step
+    f0 : float
+        Source peak frequency
+
+    Returns
+    -------
+    tuple
+        (total_objective, total_gradient)
+    """
+    nshots = len(src_positions)
+
+    # Submit tasks
+    futures = []
+    for i in range(nshots):
+        future = client.submit(
+            fwi_gradient_single_shot,
+            velocity, src_positions[i], rec_coords, observed_data[i],
+            shape, extent, nt, dt, f0
+        )
+        futures.append(future)
+
+    # Wait for all tasks
+    wait(futures)
+
+    # Gather and reduce results
+    total_objective = 0.0
+    total_gradient = np.zeros(shape)
+
+    for future in futures:
+        obj, grad = future.result()
+        total_objective += obj
+        total_gradient += grad
+
+    return total_objective, total_gradient
+```
+
+## Pickling Considerations for Operators {#sec-distributed-pickling}
+
+When using Dask, tasks must be *serializable* (convertible to bytes for
+network transfer). Devito objects have specific pickling behaviors:
+
+### What Can Be Pickled
+
+- **NumPy arrays**: Fully serializable
+- **Grid**: Can be pickled (stores shape, extent, dtype, etc.)
+- **Functions/TimeFunctions**: Can be pickled with their data
+- **Operators**: Can be pickled, but compiled code may need regeneration
+
+### Best Practices for Dask + Devito
+
+1. **Create operators inside tasks**: Avoids sending compiled code
+
+   ```python
+   # Good: Create operator in task
+   def my_task(velocity):
+       from devito import Grid, TimeFunction, Eq, Operator
+       grid = Grid(...)
+       op = Operator(...)  # Compiled fresh on worker
+       return result
+
+   # Avoid: Passing operator to task
+   def bad_task(operator, ...):  # May have issues
+       operator.apply(...)
+   ```
+
+2. **Pass data as NumPy arrays**: Not Devito objects
+
+   ```python
+   # Good: Pass numpy array
+   future = client.submit(task, velocity_array)
+
+   # Avoid: Pass Function object
+   future = client.submit(task, velocity_function)
+   ```
+
+3. **Return NumPy arrays**: Use `.copy()` to detach from Devito
+
+   ```python
+   def task(...):
+       ...
+       return result.data.copy()  # Not result.data
+   ```
+
+### Pickling Solvers for Reuse
+
+For workflows where the same solver structure is used repeatedly
+(same geometry, different data), you can pickle and reuse solver
+components:
+
+```python
+import cloudpickle as pickle
+
+# On main process: create and pickle solver structure
+solver_bytes = pickle.dumps(solver_params)
+
+# On worker: unpickle and customize
+def worker_task(solver_bytes, shot_data):
+    import cloudpickle as pickle
+    solver_params = pickle.loads(solver_bytes)
+
+    # Customize for this shot
+    solver_params['src_coords'] = shot_data['src_coords']
+
+    # Create operator and run
+    ...
+```
+
+Using `cloudpickle` instead of standard `pickle` provides better support
+for lambda functions and closures.
+
+## Hybrid Approaches {#sec-distributed-hybrid}
+
+For large-scale problems, combining multiple parallelization strategies
+provides the best performance.
+
+### MPI + Threading
+
+Devito supports OpenMP threading within MPI ranks:
+
+```bash
+# 4 MPI ranks, 8 threads each (32 cores total)
+export OMP_NUM_THREADS=8
+export DEVITO_MPI=1
+mpirun -n 4 python my_script.py
+```
+
+This is effective when:
+
+- Problem is too large for single-node memory (need MPI)
+- Each node has multiple cores (use threading within node)
+
+### MPI + Dask for Shot-Parallel FWI
+
+A common HPC configuration combines:
+
+- **Dask**: Distributes shots across nodes
+- **MPI**: Domain decomposition within each shot
+
+```python
+def shot_with_mpi(shot_params):
+    """Run a single shot using MPI domain decomposition.
+
+    This function is submitted as a Dask task.
+    Each task spawns MPI processes for domain decomposition.
+    """
+    import subprocess
+
+    # Run MPI-parallel simulation
+    cmd = [
+        'mpirun', '-n', '4',
+        'python', 'forward_mpi.py',
+        '--shot', str(shot_params['shot_id']),
+        '--velocity', shot_params['velocity_file'],
+    ]
+    subprocess.run(cmd, check=True)
+
+    # Load and return results
+    return np.load(f"shot_{shot_params['shot_id']}_result.npy")
+```
+
+### Multi-Node GPU Clusters
+
+For GPU clusters, Devito supports GPU execution via OpenACC or OpenMP offload.
+Combined with Dask, this enables:
+
+```python
+from dask_cuda import LocalCUDACluster
+
+# Create cluster with one worker per GPU
+cluster = LocalCUDACluster(
+    n_workers=4,  # 4 GPUs
+    threads_per_worker=1,
+    death_timeout=600
+)
+client = Client(cluster)
+
+# Each task runs on one GPU
+def gpu_forward_shot(velocity, src_coord, ...):
+    import os
+    # Set GPU device from Dask worker
+    os.environ['DEVITO_PLATFORM'] = 'nvidiaX'
+    os.environ['DEVITO_LANGUAGE'] = 'openacc'
+
+    from devito import Grid, TimeFunction, ...
+    # ... same code as CPU version
+```
+
+The `dask-cuda` package provides `LocalCUDACluster` for multi-GPU systems.
+
+### Cloud Deployment Considerations
+
+For cloud deployment (AWS, GCP, Azure), consider:
+
+1. **Containerization**: Package Devito environment in Docker
+
+   ```dockerfile
+   FROM python:3.10
+   RUN pip install devito dask[distributed]
+   COPY my_workflow.py /app/
+   ```
+
+2. **Cluster managers**: Use Kubernetes or cloud-native schedulers
+
+   ```python
+   from dask_kubernetes import KubeCluster
+
+   cluster = KubeCluster(
+       pod_template='dask-worker-spec.yaml',
+       n_workers=10,
+   )
+   client = Client(cluster)
+   ```
+
+3. **Object storage**: Store large datasets in S3/GCS
+
+   ```python
+   import s3fs
+
+   fs = s3fs.S3FileSystem()
+   with fs.open('s3://bucket/shot_data.npy', 'rb') as f:
+       data = np.load(f)
+   ```
+
+4. **Spot instances**: Use preemptible workers for cost efficiency
+
+## Using the Distributed Module {#sec-distributed-module}
+
+The `src.distributed` module provides utilities for Dask-based workflows:
+
+```python
+from src.distributed import (
+    create_local_cluster,
+    forward_shot,
+    fwi_gradient_single_shot,
+    parallel_fwi_gradient,
+    parallel_forward_modeling,
+    sum_fg_pairs,
+    FGPair,
+)
+
+# Create cluster
+cluster, client = create_local_cluster(n_workers=4)
+
+# Parallel forward modeling
+shot_data = parallel_forward_modeling(
+    client=client,
+    velocity=velocity_model,
+    src_positions=src_positions,
+    rec_coords=rec_coords,
+    nt=2001,
+    dt=0.5,
+    f0=0.010,
+    extent=(1000., 1000.),
+)
+
+# Parallel FWI gradient
+objective, gradient = parallel_fwi_gradient(
+    client=client,
+    velocity=velocity_model,
+    src_positions=src_positions,
+    rec_coords=rec_coords,
+    observed_data=shot_data,
+    shape=velocity_model.shape,
+    extent=(1000., 1000.),
+    nt=2001,
+    dt=0.5,
+    f0=0.010,
+)
+
+# Clean up
+client.close()
+cluster.close()
+```
+
+### Integration with SciPy Optimize
+
+For production FWI, the parallel gradient can be passed to scipy.optimize:
+
+```python
+from scipy import optimize
+
+def fwi_loss(m_flat, client, shape, extent, src_positions, rec_coords,
+             observed_data, nt, dt, f0, vmin, vmax):
+    """FWI loss function compatible with scipy.optimize."""
+    # Convert flat squared-slowness to velocity
+    m = m_flat.reshape(shape)
+    velocity = 1.0 / np.sqrt(m)
+    velocity = np.clip(velocity, vmin, vmax)
+
+    # Compute objective and gradient in parallel
+    objective, gradient = parallel_fwi_gradient(
+        client, velocity, src_positions, rec_coords,
+        observed_data, shape, extent, nt, dt, f0
+    )
+
+    # Convert gradient to squared-slowness space
+    grad_flat = gradient.flatten().astype(np.float64)
+
+    return objective, grad_flat
+
+
+# Initial model
+v0 = np.full(shape, 2.5, dtype=np.float32)
+m0 = 1.0 / v0.flatten()**2
+
+# Bounds
+vmin, vmax = 1.4, 4.0
+bounds = [(1.0/vmax**2, 1.0/vmin**2) for _ in range(np.prod(shape))]
+
+# L-BFGS-B optimization
+result = optimize.minimize(
+    fwi_loss, m0,
+    args=(client, shape, extent, src_positions, rec_coords,
+          observed_data, nt, dt, f0, vmin, vmax),
+    method='L-BFGS-B',
+    jac=True,
+    bounds=bounds,
+    options={'maxiter': 20, 'disp': True}
+)
+
+# Recover velocity
+velocity_final = 1.0 / np.sqrt(result.x.reshape(shape))
+```
+
+## Exercises {#sec-distributed-exercises}
+
+::: {#exr-distributed-forward-parallel}
+**Parallel forward modeling**
+
+Using the distributed module:
+
+a) Create a LocalCluster with 4 workers
+b) Generate synthetic data for 8 shots using `parallel_forward_modeling`
+c) Measure the wall-clock time for serial vs parallel execution
+d) Calculate the speedup factor
+:::
+
+::: {#exr-distributed-gradient}
+**Shot-parallel gradient computation**
+
+a) Implement `parallel_fwi_gradient` for a circle anomaly model
+b) Compare the gradient from 1 shot vs sum of 4 shots
+c) Verify the sum property: $\nabla \Phi_{\text{total}} = \sum_s \nabla \Phi_s$
+:::
+
+::: {#exr-distributed-dask-dashboard}
+**Dask dashboard monitoring**
+
+The Dask dashboard (typically at `http://localhost:8787`) provides
+real-time monitoring of task execution.
+
+a) Start a LocalCluster and open the dashboard
+b) Submit 10 forward modeling tasks
+c) Observe task distribution across workers
+d) Identify any load imbalance
+:::
+
+::: {#exr-distributed-strong-scaling}
+**Strong scaling study**
+
+For a fixed problem size:
+
+a) Measure execution time with 1, 2, 4, 8 workers
+b) Calculate speedup $S(P) = T_1 / T_P$
+c) Calculate efficiency $E(P) = S(P) / P$
+d) Plot speedup and efficiency vs number of workers
+e) Discuss deviations from ideal scaling
+:::
+
+::: {#exr-distributed-scipy}
+**FWI with scipy.optimize**
+
+Implement a complete FWI workflow:
+
+a) Create a circle anomaly model (true) and homogeneous initial model
+b) Set up 9 shots with transmission geometry
+c) Use `scipy.optimize.minimize` with L-BFGS-B and parallel gradient
+d) Run for 5 iterations
+e) Compare initial, final, and true models
+:::
+
+::: {#exr-distributed-pickling}
+**Pickling investigation**
+
+Explore what Devito objects can be pickled:
+
+a) Try to pickle a `Grid`, `Function`, `TimeFunction`, and `Operator`
+b) Note which succeed and which fail
+c) Measure the size of pickled objects
+d) Verify unpickled objects work correctly
+:::
+
+## Key Takeaways {#sec-distributed-summary}
+
+1. **Embarrassingly parallel** workloads (like shot-parallel seismics)
+   are ideal for task-based parallelism with Dask.
+
+2. **Dask distributed** provides a simple interface for distributing
+   Python tasks across workers with minimal code changes.
+
+3. **Create Devito objects inside tasks** to avoid serialization issues
+   with compiled operators.
+
+4. **Return NumPy arrays** (not Devito objects) from Dask tasks for
+   reliable serialization.
+
+5. **MPI domain decomposition** is automatic in Devito when running
+   with `DEVITO_MPI=1`.
+
+6. **Hybrid approaches** (MPI + Dask, GPU + Dask) combine the benefits
+   of domain decomposition and task parallelism.
+
+7. **SciPy optimize integration** allows using sophisticated optimization
+   algorithms (L-BFGS-B) with parallel gradient computation.
+
+8. **Scaling studies** (strong and weak) help understand the efficiency
+   of parallelization strategies.
+
+9. **The Dask dashboard** provides valuable insight into task execution
+   and worker utilization.
+
+10. **Cloud deployment** requires consideration of containerization,
+    storage, and cost optimization (spot instances).

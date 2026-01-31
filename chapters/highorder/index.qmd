@@ -1,0 +1,3 @@
+# High-Order Methods {#sec-ch-highorder}
+
+{{< include highorder.qmd >}}

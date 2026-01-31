@@ -1,0 +1,3 @@
+# Computational Finance {#sec-ch-finance}
+
+{{< include finance.qmd >}}

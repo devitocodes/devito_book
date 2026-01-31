@@ -1,0 +1,8 @@
+# Performance Optimization {#sec-ch-performance}
+
+This chapter covers performance optimization techniques in Devito. We explore
+how Devito generates optimized code, how to leverage different hardware
+platforms including GPUs, and how to analyze and improve the performance
+of your PDE solvers.
+
+{{< include performance.qmd >}}

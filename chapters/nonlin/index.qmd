@@ -6,6 +6,8 @@
 
 {{< include nonlin1D_devito.qmd >}}
 
+{{< include burgers.qmd >}}
+
 {{< include nonlin_pde_gen.qmd >}}
 
 {{< include nonlin_split.qmd >}}

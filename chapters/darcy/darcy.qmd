@@ -1,0 +1,1635 @@
+## Introduction to Porous Media Flow {#sec-darcy-intro}
+
+Porous media are materials containing interconnected void spaces through which
+fluids can flow. Examples include sandstone, soil, biological tissues, filters,
+and fuel cells. Understanding fluid flow through these materials is essential
+in petroleum engineering, groundwater hydrology, chemical engineering, and
+biomedical applications.
+
+### What is a Porous Medium?
+
+A porous medium consists of:
+
+- **Solid matrix**: The solid material structure (rock grains, soil particles)
+- **Pore space**: Interconnected voids that can contain fluid
+- **Porosity** $\phi$: The fraction of total volume occupied by pores
+
+$$
+\phi = \frac{V_{\text{pore}}}{V_{\text{total}}}
+$$ {#eq-darcy-porosity}
+
+Typical porosities range from 5-30% for consolidated rocks to 30-60% for
+unconsolidated sediments and soils.
+
+### Darcy's Law: The Fundamental Relationship
+
+In 1856, Henry Darcy conducted experiments on water flow through sand beds
+and discovered a linear relationship between flow rate and pressure gradient.
+For one-dimensional flow:
+
+$$
+q = -\frac{K}{\mu} \frac{dp}{dx}
+$$ {#eq-darcy-law-1d}
+
+where:
+
+- $q$ is the volumetric flux (volume per unit area per unit time) [m/s]
+- $K$ is the permeability of the medium [m$^2$]
+- $\mu$ is the dynamic viscosity of the fluid [Pa$\cdot$s]
+- $dp/dx$ is the pressure gradient [Pa/m]
+
+The negative sign indicates that fluid flows from high to low pressure.
+The ratio $K/\mu$ is often called the *mobility*.
+
+### Permeability
+
+Permeability $K$ is an intrinsic property of the porous medium that
+characterizes its ability to transmit fluid. It depends on:
+
+- Pore size distribution
+- Pore connectivity (tortuosity)
+- Pore geometry
+
+| Material | Permeability (m$^2$) | Permeability (Darcy) |
+|----------|---------------------|----------------------|
+| Gravel | $10^{-8}$ - $10^{-9}$ | $10^4$ - $10^5$ |
+| Sand | $10^{-10}$ - $10^{-12}$ | $10^2$ - $10^4$ |
+| Sandstone | $10^{-12}$ - $10^{-15}$ | $1$ - $10^3$ |
+| Shale | $10^{-18}$ - $10^{-21}$ | $10^{-6}$ - $10^{-3}$ |
+| Granite | $10^{-18}$ - $10^{-20}$ | $10^{-6}$ - $10^{-2}$ |
+
+The unit *Darcy* (D) is commonly used in petroleum engineering:
+1 Darcy = $9.87 \times 10^{-13}$ m$^2$.
+
+### Hydraulic Conductivity
+
+In groundwater hydrology, Darcy's law is often written using
+*hydraulic conductivity* $K_h$ [m/s]:
+
+$$
+q = -K_h \frac{dh}{dx}
+$$
+
+where $h$ is the hydraulic head. The relationship to permeability is:
+
+$$
+K_h = \frac{K \rho g}{\mu}
+$$
+
+where $\rho$ is fluid density and $g$ is gravitational acceleration.
+
+### Chapter Overview
+
+In this chapter, we develop Devito solvers for Darcy flow in porous media:
+
+1. **Steady-state pressure equation**: Solve for pressure distribution
+   given a permeability field and boundary conditions
+2. **Heterogeneous permeability**: Handle spatially varying properties
+3. **Velocity computation**: Derive Darcy velocity from pressure gradient
+4. **Transient flow**: Single-phase flow with time-dependent pressure
+5. **Boundary conditions**: Model wells, fractures, and aquifer boundaries
+
+
+## The Darcy Flow Equation {#sec-darcy-equation}
+
+The Darcy flow equation combines Darcy's law with mass conservation to
+describe pressure and velocity fields in porous media.
+
+### Mass Conservation
+
+For an incompressible fluid in a stationary porous medium, mass conservation
+requires that the divergence of the volumetric flux vanishes:
+
+$$
+\nabla \cdot \mathbf{q} = S
+$$ {#eq-darcy-continuity}
+
+where $S$ is a source/sink term representing injection or production.
+
+### The Steady-State Pressure Equation
+
+Substituting Darcy's law (@eq-darcy-law-1d) into mass conservation:
+
+$$
+\nabla \cdot \left( -\frac{K}{\mu} \nabla p \right) = S
+$$
+
+For constant viscosity, this becomes:
+
+$$
+-\nabla \cdot (K \nabla p) = \mu S
+$$ {#eq-darcy-pressure}
+
+or, expanding in two dimensions:
+
+$$
+-\frac{\partial}{\partial x}\left(K \frac{\partial p}{\partial x}\right)
+-\frac{\partial}{\partial y}\left(K \frac{\partial p}{\partial y}\right) = f
+$$ {#eq-darcy-pressure-2d}
+
+where $f = \mu S$ is the rescaled source term.
+
+When permeability is constant, this reduces to the Poisson equation:
+
+$$
+-K \nabla^2 p = f
+$$
+
+### Variable Coefficient Structure
+
+When $K = K(x, y)$ varies spatially, expanding @eq-darcy-pressure-2d gives:
+
+$$
+-\left( \frac{\partial K}{\partial x} \frac{\partial p}{\partial x}
++ K \frac{\partial^2 p}{\partial x^2}
++ \frac{\partial K}{\partial y} \frac{\partial p}{\partial y}
++ K \frac{\partial^2 p}{\partial y^2} \right) = f
+$$ {#eq-darcy-expanded}
+
+This shows that variable permeability introduces first-derivative coupling
+terms. The equation is still elliptic but requires careful discretization
+to maintain stability and conservation.
+
+### Darcy Velocity
+
+Once the pressure field is computed, the Darcy velocity follows from
+@eq-darcy-law-1d:
+
+$$
+\mathbf{q} = -\frac{K}{\mu} \nabla p
+$$ {#eq-darcy-velocity}
+
+In component form:
+
+$$
+q_x = -\frac{K}{\mu} \frac{\partial p}{\partial x}, \quad
+q_y = -\frac{K}{\mu} \frac{\partial p}{\partial y}
+$$
+
+### Physical Interpretation
+
+The pressure equation @eq-darcy-pressure describes steady-state flow where:
+
+- Fluid enters through high-pressure boundaries or injection wells ($S > 0$)
+- Fluid exits through low-pressure boundaries or production wells ($S < 0$)
+- Pressure equilibrates according to the permeability distribution
+
+High-permeability regions act as preferential flow paths, while
+low-permeability regions create barriers that redirect flow.
+
+
+## Permeability Fields {#sec-darcy-permeability}
+
+Real geological formations exhibit complex, heterogeneous permeability
+distributions. Properly representing these structures is essential for
+accurate flow predictions.
+
+### Homogeneous vs Heterogeneous Media
+
+**Homogeneous media** have constant permeability:
+
+$$
+K(x, y) = K_0 \quad \text{(constant)}
+$$
+
+This idealization is useful for analytical solutions and code verification
+but rarely represents real systems.
+
+**Heterogeneous media** have spatially varying permeability:
+
+$$
+K = K(x, y)
+$$
+
+This variation can span several orders of magnitude, even within a single
+reservoir or aquifer.
+
+### Layered Structures
+
+Many geological formations exhibit layered structure from sedimentary
+deposition. A simple model:
+
+$$
+K(x, y) = \begin{cases}
+K_1 & \text{if } y < y_1 \\
+K_2 & \text{if } y_1 \le y < y_2 \\
+K_3 & \text{if } y \ge y_2
+\end{cases}
+$$ {#eq-darcy-layered}
+
+Creating a layered permeability field in Python:
+
+```python
+import numpy as np
+
+def create_layered_permeability(nx, ny, layers):
+    """
+    Create a layered permeability field.
+
+    Parameters
+    ----------
+    nx, ny : int
+        Grid dimensions
+    layers : list of tuples
+        Each tuple is (y_fraction, K_value) specifying the layer
+        boundary as a fraction of domain height and its permeability
+
+    Returns
+    -------
+    K : np.ndarray
+        Permeability field, shape (nx, ny)
+    """
+    K = np.zeros((nx, ny))
+
+    # Sort layers by y_fraction
+    layers = sorted(layers, key=lambda x: x[0])
+
+    for j in range(ny):
+        y_frac = j / (ny - 1)
+        # Find which layer this y-coordinate belongs to
+        K_val = layers[-1][1]  # Default to top layer
+        for y_bound, K_layer in layers:
+            if y_frac < y_bound:
+                K_val = K_layer
+                break
+        K[:, j] = K_val
+
+    return K
+
+# Example: three-layer system
+layers = [
+    (0.33, 1e-12),   # Bottom: low permeability (shale)
+    (0.67, 1e-10),   # Middle: high permeability (sand)
+    (1.0,  1e-13),   # Top: medium-low permeability
+]
+K_layered = create_layered_permeability(64, 64, layers)
+```
+
+### Random Heterogeneous Fields
+
+Natural permeability fields often exhibit statistical heterogeneity
+described by geostatistical models. A common approach uses Gaussian
+random fields where $\log K$ follows a multivariate normal distribution.
+
+```python
+import numpy as np
+import numpy.fft as fft
+
+class GaussianRandomField:
+    """
+    Generate Gaussian random fields for permeability.
+
+    The covariance structure follows a Matern-like spectrum
+    with parameters controlling correlation length and smoothness.
+    """
+
+    def __init__(self, size, alpha=2, tau=3, sigma=None):
+        """
+        Parameters
+        ----------
+        size : int
+            Grid size (size x size)
+        alpha : float
+            Smoothness parameter (higher = smoother)
+        tau : float
+            Inverse correlation length
+        sigma : float, optional
+            Amplitude (computed from alpha, tau if not provided)
+        """
+        self.size = size
+
+        if sigma is None:
+            sigma = tau ** (0.5 * (2 * alpha - 2))
+
+        k_max = size // 2
+        wavenumbers = np.concatenate([
+            np.arange(0, k_max),
+            np.arange(-k_max, 0)
+        ])
+        wavenumbers = np.tile(wavenumbers, (size, 1))
+
+        k_x = wavenumbers.T
+        k_y = wavenumbers
+
+        # Spectral density
+        self.sqrt_eig = (
+            size ** 2 * np.sqrt(2.0) * sigma *
+            ((4 * np.pi ** 2 * (k_x ** 2 + k_y ** 2) + tau ** 2)
+             ** (-alpha / 2.0))
+        )
+        self.sqrt_eig[0, 0] = 0.0  # Zero mean
+
+    def sample(self, n_samples=1):
+        """Generate n_samples random fields."""
+        coeff = np.random.randn(n_samples, self.size, self.size)
+        coeff = self.sqrt_eig * coeff
+        return fft.ifftn(coeff, axes=(1, 2)).real
+```
+
+### Threshold Fields for Binary Media
+
+Many geological settings have binary or near-binary permeability:
+high-permeability channels in low-permeability matrix. This is modeled
+by thresholding a Gaussian field:
+
+```python
+def create_binary_permeability(nx, ny, K_low, K_high, seed=None):
+    """
+    Create a binary permeability field using threshold method.
+
+    Parameters
+    ----------
+    nx, ny : int
+        Grid dimensions
+    K_low, K_high : float
+        Permeability values for low and high regions
+    seed : int, optional
+        Random seed for reproducibility
+
+    Returns
+    -------
+    K : np.ndarray
+        Binary permeability field
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    grf = GaussianRandomField(max(nx, ny), alpha=2, tau=3)
+    field = grf.sample(1)[0, :nx, :ny]
+
+    # Apply threshold
+    K = np.where(field >= 0, K_high, K_low)
+
+    return K
+
+# Example: channelized permeability (4 vs 12 - common for reservoir modeling)
+K_binary = create_binary_permeability(256, 256, K_low=4.0, K_high=12.0, seed=42)
+```
+
+### Log-Normal Permeability
+
+Field measurements show that permeability often follows a log-normal
+distribution. We model this by exponentiating a Gaussian field:
+
+$$
+K(x, y) = K_{\text{ref}} \exp\left( \sigma_{\log K} \cdot Z(x, y) \right)
+$$
+
+where $Z$ is a zero-mean, unit-variance Gaussian field and
+$\sigma_{\log K}$ controls the heterogeneity strength.
+
+```python
+def create_lognormal_permeability(nx, ny, K_ref, sigma_logK, seed=None):
+    """
+    Create a log-normal permeability field.
+
+    Parameters
+    ----------
+    K_ref : float
+        Reference (geometric mean) permeability
+    sigma_logK : float
+        Standard deviation of log(K)
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    grf = GaussianRandomField(max(nx, ny), alpha=2.5, tau=4)
+    Z = grf.sample(1)[0, :nx, :ny]
+
+    # Normalize to unit variance
+    Z = Z / np.std(Z)
+
+    K = K_ref * np.exp(sigma_logK * Z)
+    return K
+```
+
+
+## Single-Phase Flow Implementation {#sec-darcy-single-phase}
+
+We now implement a Devito solver for steady-state Darcy flow with
+heterogeneous permeability.
+
+### Problem Formulation
+
+Given:
+
+- Domain $\Omega = [0, L_x] \times [0, L_y]$
+- Permeability field $K(x, y)$
+- Source term $f(x, y)$
+- Boundary conditions on $\partial\Omega$
+
+Find pressure $p(x, y)$ satisfying:
+
+$$
+-\nabla \cdot (K \nabla p) = f
+$$
+
+### Discretization
+
+Using central differences on a uniform grid with spacing $\Delta x$ and
+$\Delta y$:
+
+$$
+\frac{\partial}{\partial x}\left(K \frac{\partial p}{\partial x}\right)
+\approx \frac{1}{\Delta x^2} \left[
+K_{i+\frac{1}{2},j}(p_{i+1,j} - p_{i,j})
+- K_{i-\frac{1}{2},j}(p_{i,j} - p_{i-1,j})
+\right]
+$$ {#eq-darcy-discrete-x}
+
+where the half-point permeabilities are typically computed as harmonic
+means:
+
+$$
+K_{i+\frac{1}{2},j} = \frac{2 K_{i,j} K_{i+1,j}}{K_{i,j} + K_{i+1,j}}
+$$
+
+The harmonic mean is appropriate because permeability acts like a resistance
+in series.
+
+### Devito Implementation
+
+We use the dual-buffer pattern from the elliptic chapter, with explicit
+handling of the variable coefficient:
+
+```python
+from devito import Grid, Function, Eq, Operator, solve, configuration
+import numpy as np
+
+configuration['log-level'] = 'ERROR'
+
+def solve_darcy_2d(
+    Lx, Ly, Nx, Ny,
+    permeability,
+    source=None,
+    bc_left=0.0,
+    bc_right=1.0,
+    bc_bottom='neumann',
+    bc_top='neumann',
+    tol=1e-4,
+    max_iterations=10000,
+):
+    """
+    Solve steady-state 2D Darcy flow equation.
+
+    Solves: -div(K * grad(p)) = f
+
+    Parameters
+    ----------
+    Lx, Ly : float
+        Domain extent
+    Nx, Ny : int
+        Number of grid points
+    permeability : np.ndarray or float
+        Permeability field K(x,y), shape (Nx, Ny), or constant
+    source : np.ndarray or float, optional
+        Source term f(x,y), default is zero
+    bc_left, bc_right : float or 'neumann'
+        Boundary conditions at x=0 and x=Lx
+    bc_bottom, bc_top : float or 'neumann'
+        Boundary conditions at y=0 and y=Ly
+    tol : float
+        Convergence tolerance
+    max_iterations : int
+        Maximum iterations
+
+    Returns
+    -------
+    dict
+        Solution containing 'p', 'x', 'y', 'iterations', 'converged'
+    """
+    # Create grid
+    grid = Grid(shape=(Nx, Ny), extent=(Lx, Ly))
+    x, y = grid.dimensions
+
+    # Create solution buffers
+    p = Function(name='p', grid=grid, space_order=2)
+    pn = Function(name='pn', grid=grid, space_order=2)
+
+    # Permeability field
+    K = Function(name='K', grid=grid, space_order=2)
+    if np.isscalar(permeability):
+        K.data[:] = permeability
+    else:
+        K.data[:] = permeability
+
+    # Source term
+    f = Function(name='f', grid=grid)
+    if source is None:
+        f.data[:] = 0.0
+    elif np.isscalar(source):
+        f.data[:] = source
+    else:
+        f.data[:] = source
+
+    # The Darcy equation: -div(K * grad(p)) = f
+    # Expanded: -(K.dx * p.dx + K * p.dx2 + K.dy * p.dy + K * p.dy2) = f
+    # Rearranging for iterative solve:
+    # K.dx * pn.dx + K * pn.dx2 + K.dy * pn.dy + K * pn.dy2 = -f
+
+    # Use symbolic expression for variable-coefficient Laplacian
+    # For stability, we use the conservative form discretization
+    eqn = Eq(K * pn.laplace + K.dx * pn.dx + K.dy * pn.dy, -f,
+             subdomain=grid.interior)
+    stencil = solve(eqn, pn)
+    eq_update = Eq(p, stencil)
+
+    # Boundary conditions
+    bc_exprs = []
+
+    # Left boundary (x = 0)
+    if bc_left == 'neumann':
+        bc_exprs.append(Eq(p[0, y], p[1, y]))
+    else:
+        bc_exprs.append(Eq(p[0, y], float(bc_left)))
+
+    # Right boundary (x = Lx)
+    if bc_right == 'neumann':
+        bc_exprs.append(Eq(p[Nx-1, y], p[Nx-2, y]))
+    else:
+        bc_exprs.append(Eq(p[Nx-1, y], float(bc_right)))
+
+    # Bottom boundary (y = 0)
+    if bc_bottom == 'neumann':
+        bc_exprs.append(Eq(p[x, 0], p[x, 1]))
+    else:
+        bc_exprs.append(Eq(p[x, 0], float(bc_bottom)))
+
+    # Top boundary (y = Ly)
+    if bc_top == 'neumann':
+        bc_exprs.append(Eq(p[x, Ny-1], p[x, Ny-2]))
+    else:
+        bc_exprs.append(Eq(p[x, Ny-1], float(bc_top)))
+
+    # Build operator
+    op = Operator([eq_update] + bc_exprs)
+
+    # Initialize
+    p.data[:] = 0.0
+    pn.data[:] = 0.0
+
+    # Set Dirichlet boundary values
+    if bc_left != 'neumann':
+        p.data[0, :] = float(bc_left)
+        pn.data[0, :] = float(bc_left)
+    if bc_right != 'neumann':
+        p.data[-1, :] = float(bc_right)
+        pn.data[-1, :] = float(bc_right)
+    if bc_bottom != 'neumann':
+        p.data[:, 0] = float(bc_bottom)
+        pn.data[:, 0] = float(bc_bottom)
+    if bc_top != 'neumann':
+        p.data[:, -1] = float(bc_top)
+        pn.data[:, -1] = float(bc_top)
+
+    # Convergence loop with buffer swapping
+    l1norm = 1.0
+    iteration = 0
+
+    while l1norm > tol and iteration < max_iterations:
+        if iteration % 2 == 0:
+            _p, _pn = p, pn
+        else:
+            _p, _pn = pn, p
+
+        op(p=_p, pn=_pn)
+
+        # L1 convergence measure
+        denom = np.sum(np.abs(_pn.data[:]))
+        if denom > 1e-15:
+            l1norm = abs(np.sum(np.abs(_p.data[:]) -
+                               np.abs(_pn.data[:])) / denom)
+        else:
+            l1norm = abs(np.sum(np.abs(_p.data[:]) -
+                               np.abs(_pn.data[:])))
+
+        iteration += 1
+
+    # Get result from correct buffer
+    if iteration % 2 == 1:
+        p_final = p.data[:].copy()
+    else:
+        p_final = pn.data[:].copy()
+
+    # Coordinate arrays
+    x_coords = np.linspace(0, Lx, Nx)
+    y_coords = np.linspace(0, Ly, Ny)
+
+    return {
+        'p': p_final,
+        'x': x_coords,
+        'y': y_coords,
+        'iterations': iteration,
+        'converged': l1norm <= tol,
+        'final_l1norm': l1norm,
+    }
+```
+
+### Computing Darcy Velocity
+
+After solving for pressure, we compute the velocity field:
+
+```python
+def compute_darcy_velocity(p, K, dx, dy, mu=1.0):
+    """
+    Compute Darcy velocity from pressure field.
+
+    Parameters
+    ----------
+    p : np.ndarray
+        Pressure field, shape (Nx, Ny)
+    K : np.ndarray
+        Permeability field, shape (Nx, Ny)
+    dx, dy : float
+        Grid spacing
+    mu : float
+        Dynamic viscosity
+
+    Returns
+    -------
+    qx, qy : np.ndarray
+        Velocity components at cell centers
+    """
+    Nx, Ny = p.shape
+
+    # Compute pressure gradients using central differences
+    # Interior points
+    dp_dx = np.zeros_like(p)
+    dp_dy = np.zeros_like(p)
+
+    # Central differences for interior
+    dp_dx[1:-1, :] = (p[2:, :] - p[:-2, :]) / (2 * dx)
+    dp_dy[:, 1:-1] = (p[:, 2:] - p[:, :-2]) / (2 * dy)
+
+    # One-sided differences at boundaries
+    dp_dx[0, :] = (p[1, :] - p[0, :]) / dx
+    dp_dx[-1, :] = (p[-1, :] - p[-2, :]) / dx
+    dp_dy[:, 0] = (p[:, 1] - p[:, 0]) / dy
+    dp_dy[:, -1] = (p[:, -1] - p[:, -2]) / dy
+
+    # Darcy velocity: q = -K/mu * grad(p)
+    qx = -K / mu * dp_dx
+    qy = -K / mu * dp_dy
+
+    return qx, qy
+```
+
+### Example: Flow Through Heterogeneous Medium
+
+```python
+import matplotlib.pyplot as plt
+
+# Domain setup
+Lx, Ly = 1.0, 1.0
+Nx, Ny = 64, 64
+
+# Create heterogeneous permeability (binary channels)
+np.random.seed(42)
+K_field = create_binary_permeability(Nx, Ny, K_low=4.0, K_high=12.0, seed=42)
+
+# Solve for pressure with pressure drop across domain
+result = solve_darcy_2d(
+    Lx, Ly, Nx, Ny,
+    permeability=K_field,
+    source=1.0,  # Uniform source
+    bc_left=0.0,   # p = 0 at x = 0
+    bc_right=0.0,  # p = 0 at x = Lx
+    bc_bottom=0.0, # p = 0 at y = 0
+    bc_top=0.0,    # p = 0 at y = Ly
+    tol=1e-5,
+)
+
+print(f"Converged in {result['iterations']} iterations")
+
+# Compute velocity
+dx = Lx / (Nx - 1)
+dy = Ly / (Ny - 1)
+qx, qy = compute_darcy_velocity(result['p'], K_field, dx, dy)
+
+# Visualize
+fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+
+# Permeability
+ax = axes[0, 0]
+im = ax.imshow(K_field.T, origin='lower', extent=[0, Lx, 0, Ly])
+plt.colorbar(im, ax=ax, label='Permeability')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Permeability Field')
+
+# Pressure
+ax = axes[0, 1]
+im = ax.contourf(result['x'], result['y'], result['p'].T, levels=20)
+plt.colorbar(im, ax=ax, label='Pressure')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Pressure Field')
+
+# Velocity magnitude
+ax = axes[1, 0]
+q_mag = np.sqrt(qx**2 + qy**2)
+im = ax.imshow(q_mag.T, origin='lower', extent=[0, Lx, 0, Ly])
+plt.colorbar(im, ax=ax, label='|q|')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Velocity Magnitude')
+
+# Streamlines
+ax = axes[1, 1]
+X, Y = np.meshgrid(result['x'], result['y'], indexing='ij')
+ax.streamplot(result['x'], result['y'], qx.T, qy.T, density=1.5)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Streamlines')
+ax.set_aspect('equal')
+
+plt.tight_layout()
+```
+
+
+## Implementation in Devito {#sec-darcy-devito}
+
+This section presents a complete, modular implementation of Darcy flow
+solvers using explicit Devito API.
+
+### Design Principles
+
+Our implementation follows these principles:
+
+1. **Explicit API**: Use `Function` and `Operator`, not convenience wrappers
+2. **Dual-buffer pattern**: Efficient iteration without data copies
+3. **Modular structure**: Separate pressure solve from velocity computation
+4. **Flexible boundary conditions**: Support Dirichlet and Neumann types
+
+### Core Solver Implementation
+
+The complete solver with proper handling of variable coefficients:
+
+```python
+from devito import Grid, Function, Eq, Operator, solve, configuration
+from devito import div, grad
+import numpy as np
+
+configuration['log-level'] = 'ERROR'
+
+def solve_darcy_pressure(
+    grid, K, source,
+    bc_left=0.0, bc_right=1.0,
+    bc_bottom='neumann', bc_top='neumann',
+    tol=1e-4, max_iterations=10000,
+    omega=1.0,
+):
+    """
+    Solve the Darcy pressure equation using iterative method.
+
+    Parameters
+    ----------
+    grid : devito.Grid
+        Computational grid
+    K : devito.Function
+        Permeability field
+    source : devito.Function or float
+        Source term f
+    bc_* : float or 'neumann'
+        Boundary conditions
+    tol : float
+        Convergence tolerance
+    max_iterations : int
+        Maximum iterations
+    omega : float
+        Relaxation parameter (1.0 = Jacobi, >1 = SOR)
+
+    Returns
+    -------
+    p : devito.Function
+        Pressure solution
+    info : dict
+        Solver information
+    """
+    x, y = grid.dimensions
+    Nx, Ny = grid.shape
+
+    # Create pressure buffers
+    p = Function(name='p', grid=grid, space_order=2)
+    pn = Function(name='pn', grid=grid, space_order=2)
+
+    # Handle source term
+    if np.isscalar(source):
+        f = Function(name='f', grid=grid)
+        f.data[:] = source
+    else:
+        f = source
+
+    # Define the equation: -div(K * grad(p)) = f
+    # Using product rule: -K*laplacian(p) - grad(K).grad(p) = f
+    # Rearranged: K*laplacian(pn) + grad(K).grad(pn) = -f
+    laplacian_term = K * pn.laplace
+    gradient_coupling = K.dx * pn.dx + K.dy * pn.dy
+
+    eqn = Eq(laplacian_term + gradient_coupling, -f, subdomain=grid.interior)
+    stencil = solve(eqn, pn)
+
+    # Apply relaxation if omega != 1
+    if omega != 1.0:
+        update_expr = (1 - omega) * pn + omega * stencil
+    else:
+        update_expr = stencil
+
+    eq_update = Eq(p, update_expr)
+
+    # Build boundary condition equations
+    bc_exprs = _build_boundary_conditions(
+        p, x, y, Nx, Ny,
+        bc_left, bc_right, bc_bottom, bc_top
+    )
+
+    # Create operator
+    op = Operator([eq_update] + bc_exprs)
+
+    # Initialize
+    p.data[:] = 0.0
+    pn.data[:] = 0.0
+    _apply_dirichlet_bc(p.data, Nx, Ny, bc_left, bc_right, bc_bottom, bc_top)
+    _apply_dirichlet_bc(pn.data, Nx, Ny, bc_left, bc_right, bc_bottom, bc_top)
+
+    # Iteration loop
+    l1norm = 1.0
+    iteration = 0
+
+    while l1norm > tol and iteration < max_iterations:
+        if iteration % 2 == 0:
+            _p, _pn = p, pn
+        else:
+            _p, _pn = pn, p
+
+        op(p=_p, pn=_pn)
+
+        denom = np.sum(np.abs(_pn.data[:]))
+        if denom > 1e-15:
+            l1norm = abs(np.sum(np.abs(_p.data[:]) -
+                               np.abs(_pn.data[:])) / denom)
+        else:
+            l1norm = abs(np.sum(np.abs(_p.data[:]) - np.abs(_pn.data[:])))
+
+        iteration += 1
+
+    # Copy final result to p if needed
+    if iteration % 2 == 0:
+        p.data[:] = pn.data[:]
+
+    info = {
+        'iterations': iteration,
+        'converged': l1norm <= tol,
+        'final_l1norm': l1norm,
+    }
+
+    return p, info
+
+
+def _build_boundary_conditions(p, x, y, Nx, Ny, bc_left, bc_right,
+                                bc_bottom, bc_top):
+    """Build boundary condition equations."""
+    bc_exprs = []
+
+    if bc_left == 'neumann':
+        bc_exprs.append(Eq(p[0, y], p[1, y]))
+    else:
+        bc_exprs.append(Eq(p[0, y], float(bc_left)))
+
+    if bc_right == 'neumann':
+        bc_exprs.append(Eq(p[Nx-1, y], p[Nx-2, y]))
+    else:
+        bc_exprs.append(Eq(p[Nx-1, y], float(bc_right)))
+
+    if bc_bottom == 'neumann':
+        bc_exprs.append(Eq(p[x, 0], p[x, 1]))
+    else:
+        bc_exprs.append(Eq(p[x, 0], float(bc_bottom)))
+
+    if bc_top == 'neumann':
+        bc_exprs.append(Eq(p[x, Ny-1], p[x, Ny-2]))
+    else:
+        bc_exprs.append(Eq(p[x, Ny-1], float(bc_top)))
+
+    return bc_exprs
+
+
+def _apply_dirichlet_bc(data, Nx, Ny, bc_left, bc_right, bc_bottom, bc_top):
+    """Apply Dirichlet boundary conditions to data array."""
+    if bc_left != 'neumann':
+        data[0, :] = float(bc_left)
+    if bc_right != 'neumann':
+        data[-1, :] = float(bc_right)
+    if bc_bottom != 'neumann':
+        data[:, 0] = float(bc_bottom)
+    if bc_top != 'neumann':
+        data[:, -1] = float(bc_top)
+```
+
+### Velocity Computation with Devito
+
+We can also use Devito to compute velocities symbolically:
+
+```python
+def compute_velocity_devito(grid, p, K, mu=1.0):
+    """
+    Compute Darcy velocity using Devito operators.
+
+    Parameters
+    ----------
+    grid : devito.Grid
+        Computational grid
+    p : devito.Function
+        Pressure field
+    K : devito.Function
+        Permeability field
+    mu : float
+        Dynamic viscosity
+
+    Returns
+    -------
+    qx, qy : devito.Function
+        Velocity components
+    """
+    # Create velocity functions
+    qx = Function(name='qx', grid=grid, space_order=2)
+    qy = Function(name='qy', grid=grid, space_order=2)
+
+    # Darcy velocity: q = -K/mu * grad(p)
+    eq_qx = Eq(qx, -K / mu * p.dx)
+    eq_qy = Eq(qy, -K / mu * p.dy)
+
+    # Create and apply operator
+    op = Operator([eq_qx, eq_qy])
+    op.apply()
+
+    return qx, qy
+```
+
+### Using TimeFunction for Pseudo-Timestepping
+
+For problems requiring many iterations, using `TimeFunction` allows
+Devito to internalize the iteration loop:
+
+```python
+from devito import TimeFunction
+
+def solve_darcy_timefunction(
+    grid, K, source,
+    bc_left=0.0, bc_right=1.0,
+    bc_bottom='neumann', bc_top='neumann',
+    n_iterations=1000,
+):
+    """
+    Solve Darcy equation using TimeFunction for internal iteration.
+
+    This approach is faster for large iteration counts as the loop
+    runs in compiled code rather than Python.
+    """
+    x, y = grid.dimensions
+    t = grid.stepping_dim
+    Nx, Ny = grid.shape
+
+    # TimeFunction provides automatic buffer management
+    p = TimeFunction(name='p', grid=grid, space_order=2)
+    p.data[:] = 0.0
+
+    # Permeability and source
+    K_func = Function(name='K', grid=grid, space_order=2)
+    K_func.data[:] = K if np.isscalar(K) else K
+
+    f = Function(name='f', grid=grid)
+    f.data[:] = source if np.isscalar(source) else source
+
+    # Equation using p and p.forward
+    laplacian_term = K_func * p.laplace
+    gradient_coupling = K_func.dx * p.dx + K_func.dy * p.dy
+
+    eqn = Eq(laplacian_term + gradient_coupling, -f)
+    stencil = solve(eqn, p)
+    eq_update = Eq(p.forward, stencil)
+
+    # Boundary conditions with time index
+    bc_exprs = []
+
+    if bc_left == 'neumann':
+        bc_exprs.append(Eq(p[t+1, 0, y], p[t+1, 1, y]))
+    else:
+        bc_exprs.append(Eq(p[t+1, 0, y], float(bc_left)))
+
+    if bc_right == 'neumann':
+        bc_exprs.append(Eq(p[t+1, Nx-1, y], p[t+1, Nx-2, y]))
+    else:
+        bc_exprs.append(Eq(p[t+1, Nx-1, y], float(bc_right)))
+
+    if bc_bottom == 'neumann':
+        bc_exprs.append(Eq(p[t+1, x, 0], p[t+1, x, 1]))
+    else:
+        bc_exprs.append(Eq(p[t+1, x, 0], float(bc_bottom)))
+
+    if bc_top == 'neumann':
+        bc_exprs.append(Eq(p[t+1, x, Ny-1], p[t+1, x, Ny-2]))
+    else:
+        bc_exprs.append(Eq(p[t+1, x, Ny-1], float(bc_top)))
+
+    # Create operator
+    op = Operator([eq_update] + bc_exprs)
+
+    # Apply initial Dirichlet BCs
+    _apply_dirichlet_bc(p.data[0], Nx, Ny, bc_left, bc_right, bc_bottom, bc_top)
+    _apply_dirichlet_bc(p.data[1], Nx, Ny, bc_left, bc_right, bc_bottom, bc_top)
+
+    # Run all iterations in one call
+    op(time=n_iterations)
+
+    # Return final buffer
+    return p.data[0].copy()
+```
+
+
+## Dual-Porosity and Fractures {#sec-darcy-fractures}
+
+Natural geological formations often contain multiple flow pathways:
+primary porosity in the rock matrix and secondary porosity from fractures.
+This section introduces dual-porosity concepts.
+
+### Dual-Porosity Model
+
+The Warren-Root dual-porosity model treats the reservoir as two
+overlapping continua:
+
+1. **Matrix**: Low-permeability storage (high porosity)
+2. **Fractures**: High-permeability flow paths (low porosity)
+
+The two systems exchange fluid based on their pressure difference:
+
+$$
+\phi_m \frac{\partial p_m}{\partial t} = \nabla \cdot (K_m \nabla p_m) - \alpha (p_m - p_f)
+$$ {#eq-darcy-dual-matrix}
+
+$$
+\phi_f \frac{\partial p_f}{\partial t} = \nabla \cdot (K_f \nabla p_f) + \alpha (p_m - p_f)
+$$ {#eq-darcy-dual-fracture}
+
+where:
+
+- $p_m, p_f$ are matrix and fracture pressures
+- $K_m, K_f$ are matrix and fracture permeabilities
+- $\phi_m, \phi_f$ are matrix and fracture porosities
+- $\alpha$ is the shape factor controlling transfer rate
+
+### Steady-State Dual-Porosity
+
+For steady-state analysis where $\partial p/\partial t = 0$:
+
+$$
+\nabla \cdot (K_m \nabla p_m) = \alpha (p_m - p_f)
+$$
+$$
+\nabla \cdot (K_f \nabla p_f) = -\alpha (p_m - p_f)
+$$
+
+This is a coupled system of elliptic equations.
+
+### Implementation Sketch
+
+```python
+def solve_dual_porosity_steady(
+    grid, K_matrix, K_fracture, alpha,
+    bc_left=0.0, bc_right=1.0, tol=1e-4, max_iterations=10000,
+):
+    """
+    Solve steady-state dual-porosity Darcy flow.
+
+    Parameters
+    ----------
+    grid : devito.Grid
+        Computational grid
+    K_matrix : np.ndarray
+        Matrix permeability field
+    K_fracture : np.ndarray
+        Fracture permeability field
+    alpha : float
+        Matrix-fracture transfer coefficient
+    """
+    x, y = grid.dimensions
+    Nx, Ny = grid.shape
+
+    # Pressure fields for matrix and fracture
+    pm = Function(name='pm', grid=grid, space_order=2)
+    pm_n = Function(name='pm_n', grid=grid, space_order=2)
+    pf = Function(name='pf', grid=grid, space_order=2)
+    pf_n = Function(name='pf_n', grid=grid, space_order=2)
+
+    # Permeability functions
+    Km = Function(name='Km', grid=grid, space_order=2)
+    Kf = Function(name='Kf', grid=grid, space_order=2)
+    Km.data[:] = K_matrix
+    Kf.data[:] = K_fracture
+
+    # Transfer coefficient
+    alpha_func = Function(name='alpha', grid=grid)
+    alpha_func.data[:] = alpha
+
+    # Matrix equation: div(Km*grad(pm)) = alpha*(pm - pf)
+    eq_matrix = Eq(Km * pm_n.laplace + Km.dx * pm_n.dx + Km.dy * pm_n.dy,
+                   alpha_func * (pm_n - pf_n), subdomain=grid.interior)
+    stencil_m = solve(eq_matrix, pm_n)
+    eq_pm = Eq(pm, stencil_m)
+
+    # Fracture equation: div(Kf*grad(pf)) = -alpha*(pm - pf)
+    eq_fracture = Eq(Kf * pf_n.laplace + Kf.dx * pf_n.dx + Kf.dy * pf_n.dy,
+                     -alpha_func * (pm_n - pf_n), subdomain=grid.interior)
+    stencil_f = solve(eq_fracture, pf_n)
+    eq_pf = Eq(pf, stencil_f)
+
+    # Boundary conditions (fractures connect to boundaries)
+    bc_exprs = []
+    bc_exprs.append(Eq(pf[0, y], float(bc_left)))
+    bc_exprs.append(Eq(pf[Nx-1, y], float(bc_right)))
+    bc_exprs.append(Eq(pf[x, 0], pf[x, 1]))  # Neumann
+    bc_exprs.append(Eq(pf[x, Ny-1], pf[x, Ny-2]))
+
+    # Matrix has no-flow boundaries (isolated)
+    bc_exprs.append(Eq(pm[0, y], pm[1, y]))
+    bc_exprs.append(Eq(pm[Nx-1, y], pm[Nx-2, y]))
+    bc_exprs.append(Eq(pm[x, 0], pm[x, 1]))
+    bc_exprs.append(Eq(pm[x, Ny-1], pm[x, Ny-2]))
+
+    op = Operator([eq_pm, eq_pf] + bc_exprs)
+
+    # Initialize
+    pm.data[:] = 0.5 * (bc_left + bc_right)  # Initial guess
+    pf.data[:] = 0.5 * (bc_left + bc_right)
+    pm_n.data[:] = pm.data[:]
+    pf_n.data[:] = pf.data[:]
+
+    # Iteration
+    # (Similar convergence loop as single-porosity case)
+    # ...
+
+    return pm, pf
+```
+
+### Discrete Fracture Networks
+
+For more detailed fracture representation, discrete fracture network (DFN)
+models explicitly represent individual fractures as high-permeability
+regions in the permeability field:
+
+```python
+def add_fracture_to_permeability(K, x0, y0, x1, y1, K_fracture, width=1):
+    """
+    Add a line fracture to permeability field.
+
+    Parameters
+    ----------
+    K : np.ndarray
+        Permeability field to modify
+    x0, y0, x1, y1 : int
+        Fracture endpoints (grid indices)
+    K_fracture : float
+        Fracture permeability
+    width : int
+        Fracture width in grid cells
+    """
+    import numpy as np
+
+    Nx, Ny = K.shape
+
+    # Bresenham's line algorithm to find cells along fracture
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx - dy
+
+    x, y = x0, y0
+    while True:
+        # Set permeability in fracture cell and neighbors
+        for di in range(-width//2, width//2 + 1):
+            for dj in range(-width//2, width//2 + 1):
+                xi, yj = x + di, y + dj
+                if 0 <= xi < Nx and 0 <= yj < Ny:
+                    K[xi, yj] = K_fracture
+
+        if x == x1 and y == y1:
+            break
+
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x += sx
+        if e2 < dx:
+            err += dx
+            y += sy
+
+    return K
+```
+
+
+## Boundary Conditions {#sec-darcy-boundary}
+
+Proper boundary conditions are essential for physically meaningful
+Darcy flow simulations. This section covers common boundary types.
+
+### Dirichlet (Pressure) Boundaries
+
+Fixed pressure boundaries represent:
+
+- **Constant pressure reservoirs**: Large aquifers, sea level
+- **Atmospheric exposure**: Open boundaries at surface
+- **Fixed injection/production pressure**
+
+Implementation:
+
+```python
+# Fixed pressure at left boundary
+bc_left = 100.0  # Pa or dimensionless
+
+# In operator:
+Eq(p[0, y], bc_left)
+```
+
+### Neumann (No-Flow) Boundaries
+
+Zero normal flux boundaries represent:
+
+- **Impermeable barriers**: Faults, seals, aquitards
+- **Symmetry planes**
+- **Domain truncation in unbounded problems**
+
+Implementation uses the "ghost cell" approach:
+
+```python
+# No-flow at bottom boundary: dp/dy = 0
+Eq(p[x, 0], p[x, 1])
+```
+
+### Specified Flux Boundaries
+
+Non-zero flux boundaries model injection or production:
+
+$$
+-K \frac{\partial p}{\partial n} = q_n
+$$
+
+where $q_n$ is the specified normal flux.
+
+```python
+def apply_flux_bc(grid, p, K, q_specified, boundary='left'):
+    """
+    Apply specified flux boundary condition.
+
+    Parameters
+    ----------
+    q_specified : float
+        Normal flux (positive = inflow)
+    """
+    x, y = grid.dimensions
+    Nx, Ny = grid.shape
+    dx = grid.extent[0] / (Nx - 1)
+
+    if boundary == 'left':
+        # p[0] = p[1] - q_specified * dx / K[0]
+        return Eq(p[0, y], p[1, y] - q_specified * dx / K[0, y])
+    # Similar for other boundaries...
+```
+
+### Well Source Terms
+
+Wells are often modeled as point or distributed sources:
+
+```python
+def add_well(source, x_well, y_well, rate, grid_shape, well_radius=1):
+    """
+    Add a well to source term.
+
+    Parameters
+    ----------
+    source : np.ndarray
+        Source array to modify
+    x_well, y_well : float
+        Well location (in grid coordinates)
+    rate : float
+        Injection rate (positive) or production rate (negative)
+    well_radius : int
+        Number of cells for well distribution
+    """
+    i_well = int(x_well)
+    j_well = int(y_well)
+
+    # Distribute rate over well cells
+    cells = 0
+    for di in range(-well_radius, well_radius + 1):
+        for dj in range(-well_radius, well_radius + 1):
+            if di*di + dj*dj <= well_radius*well_radius:
+                i, j = i_well + di, j_well + dj
+                if 0 <= i < grid_shape[0] and 0 <= j < grid_shape[1]:
+                    cells += 1
+
+    rate_per_cell = rate / max(cells, 1)
+
+    for di in range(-well_radius, well_radius + 1):
+        for dj in range(-well_radius, well_radius + 1):
+            if di*di + dj*dj <= well_radius*well_radius:
+                i, j = i_well + di, j_well + dj
+                if 0 <= i < grid_shape[0] and 0 <= j < grid_shape[1]:
+                    source[i, j] += rate_per_cell
+
+    return source
+```
+
+### Example: Five-Spot Well Pattern
+
+A classic petroleum engineering problem is the five-spot pattern:
+four production wells at corners with one injection well in the center.
+
+```python
+# Domain setup
+Lx, Ly = 1.0, 1.0
+Nx, Ny = 64, 64
+
+# Homogeneous permeability
+K = np.ones((Nx, Ny)) * 1e-12
+
+# Source term with wells
+source = np.zeros((Nx, Ny))
+
+# Injection well at center
+add_well(source, Nx//2, Ny//2, rate=1.0, grid_shape=(Nx, Ny))
+
+# Production wells at corners
+for i_corner, j_corner in [(5, 5), (5, Ny-6), (Nx-6, 5), (Nx-6, Ny-6)]:
+    add_well(source, i_corner, j_corner, rate=-0.25, grid_shape=(Nx, Ny))
+
+# Solve with no-flow boundaries
+result = solve_darcy_2d(
+    Lx, Ly, Nx, Ny,
+    permeability=K,
+    source=source,
+    bc_left='neumann',
+    bc_right='neumann',
+    bc_bottom='neumann',
+    bc_top='neumann',
+)
+```
+
+
+## Verification {#sec-darcy-verification}
+
+Verification ensures our implementation correctly solves the mathematical
+equations. We use analytical solutions and conservation checks.
+
+### Analytical Solution: Homogeneous 1D
+
+For constant permeability with no source and linear pressure drop:
+
+$$
+-K \frac{d^2 p}{dx^2} = 0, \quad p(0) = p_0, \quad p(L) = p_1
+$$
+
+The exact solution is:
+
+$$
+p(x) = p_0 + (p_1 - p_0) \frac{x}{L}
+$$ {#eq-darcy-exact-1d}
+
+```python
+def verify_linear_pressure():
+    """Verify solver against linear analytical solution."""
+    Lx, Ly = 1.0, 0.1  # Thin domain approximates 1D
+    Nx, Ny = 64, 8
+    p0, p1 = 1.0, 0.0
+
+    # Homogeneous permeability
+    K = np.ones((Nx, Ny)) * 1.0
+
+    result = solve_darcy_2d(
+        Lx, Ly, Nx, Ny,
+        permeability=K,
+        source=0.0,
+        bc_left=p0,
+        bc_right=p1,
+        bc_bottom='neumann',
+        bc_top='neumann',
+        tol=1e-8,
+    )
+
+    # Analytical solution
+    x = result['x']
+    p_exact = p0 + (p1 - p0) * x / Lx
+
+    # Compare at centerline
+    j_mid = Ny // 2
+    p_numerical = result['p'][:, j_mid]
+
+    error = np.max(np.abs(p_numerical - p_exact))
+    print(f"Maximum error: {error:.2e}")
+
+    assert error < 1e-4, f"Error too large: {error}"
+    return error
+```
+
+### Analytical Solution: Point Source
+
+For a point source in an infinite homogeneous medium:
+
+$$
+p(r) = \frac{Q}{2\pi K} \ln(r/r_0)
+$$
+
+where $r$ is distance from the source and $r_0$ is a reference radius.
+
+### Mass Conservation Check
+
+For steady-state flow, total inflow must equal total outflow:
+
+$$
+\oint_{\partial\Omega} \mathbf{q} \cdot \mathbf{n} \, dS + \int_\Omega S \, dV = 0
+$$
+
+```python
+def check_mass_conservation(p, K, source, Lx, Ly, Nx, Ny):
+    """
+    Check mass conservation for Darcy flow solution.
+
+    Returns
+    -------
+    imbalance : float
+        Relative mass imbalance (should be near zero)
+    """
+    dx = Lx / (Nx - 1)
+    dy = Ly / (Ny - 1)
+
+    # Compute fluxes at boundaries
+    # Left boundary (x = 0): flux = K * dp/dx
+    flux_left = np.sum(K[0, :] * (p[1, :] - p[0, :]) / dx) * dy
+
+    # Right boundary
+    flux_right = np.sum(K[-1, :] * (p[-1, :] - p[-2, :]) / dx) * dy
+
+    # Bottom boundary
+    flux_bottom = np.sum(K[:, 0] * (p[:, 1] - p[:, 0]) / dy) * dx
+
+    # Top boundary
+    flux_top = np.sum(K[:, -1] * (p[:, -1] - p[:, -2]) / dy) * dx
+
+    # Total boundary flux (outward positive)
+    boundary_flux = flux_right - flux_left + flux_top - flux_bottom
+
+    # Total source
+    total_source = np.sum(source) * dx * dy
+
+    # Imbalance
+    if abs(total_source) > 1e-15:
+        imbalance = abs(boundary_flux - total_source) / abs(total_source)
+    else:
+        imbalance = abs(boundary_flux)
+
+    return imbalance
+```
+
+### Convergence Study
+
+Verify second-order accuracy by refining the grid:
+
+```python
+def convergence_study():
+    """Grid convergence study for Darcy solver."""
+    grid_sizes = [16, 32, 64, 128]
+    errors = []
+
+    Lx, Ly = 1.0, 1.0
+    p0, p1 = 1.0, 0.0
+
+    for N in grid_sizes:
+        K = np.ones((N, N))
+
+        result = solve_darcy_2d(
+            Lx, Ly, N, N,
+            permeability=K,
+            source=0.0,
+            bc_left=p0, bc_right=p1,
+            bc_bottom='neumann', bc_top='neumann',
+            tol=1e-10,
+        )
+
+        # Exact solution (linear)
+        X, Y = np.meshgrid(result['x'], result['y'], indexing='ij')
+        p_exact = p0 + (p1 - p0) * X / Lx
+
+        # L2 error
+        error = np.sqrt(np.mean((result['p'] - p_exact)**2))
+        errors.append(error)
+
+    errors = np.array(errors)
+    grid_sizes = np.array(grid_sizes)
+
+    # Compute convergence rate
+    rates = np.log(errors[:-1] / errors[1:]) / np.log(2)
+    print("Grid sizes:", grid_sizes)
+    print("Errors:", errors)
+    print("Convergence rates:", rates)
+
+    # Should be approximately 2 for second-order scheme
+    assert np.mean(rates) > 1.8, "Convergence rate too low"
+
+    return grid_sizes, errors, rates
+```
+
+
+## Exercises {#sec-darcy-exercises}
+
+### Exercise 1: Layered Reservoir
+
+Create a three-layer permeability field representing a typical
+sedimentary sequence:
+
+- Bottom layer (0 to 0.3): $K = 10^{-14}$ m$^2$ (shale)
+- Middle layer (0.3 to 0.7): $K = 10^{-11}$ m$^2$ (sandstone)
+- Top layer (0.7 to 1.0): $K = 10^{-13}$ m$^2$ (siltstone)
+
+Solve for pressure with $p = 10^6$ Pa at $x = 0$ and $p = 0$ at $x = L$.
+Plot the pressure and velocity fields. Discuss how the layering affects
+flow paths.
+
+### Exercise 2: Effect of Heterogeneity
+
+Compare solutions for:
+
+a) Homogeneous field with $K = 8$ (average of 4 and 12)
+b) Binary heterogeneous field with $K \in \{4, 12\}$ (as in text)
+c) Log-normal field with same geometric mean
+
+Use the same boundary conditions and source term. Compare total flow
+rates and pressure distributions. What is the "effective permeability"
+of each heterogeneous case?
+
+### Exercise 3: Well Placement Optimization
+
+For a rectangular reservoir ($2:1$ aspect ratio) with a single injection
+well at the center and a single production well:
+
+a) Place the production well at different locations and measure steady-state
+   flow rate
+b) Find the optimal production well location for maximum flow rate
+c) How does heterogeneity affect the optimal location?
+
+### Exercise 4: Fracture Network
+
+Create a permeability field with a background matrix ($K = 1$) and
+three fractures ($K = 100$):
+
+- Horizontal fracture from $(0.2, 0.5)$ to $(0.8, 0.5)$
+- Diagonal fracture from $(0.3, 0.2)$ to $(0.7, 0.8)$
+- Vertical fracture from $(0.6, 0.1)$ to $(0.6, 0.9)$
+
+Solve for pressure with a horizontal pressure gradient. Plot streamlines
+to visualize how fractures channelize flow.
+
+### Exercise 5: Mass Conservation Verification
+
+Implement the mass conservation check and verify it for:
+
+a) A problem with only boundary conditions (no internal sources)
+b) A problem with one injection and one production well of equal magnitude
+c) A problem with distributed source
+
+The imbalance should be small (order of discretization error).
+
+### Exercise 6: Transient Single-Phase Flow
+
+Extend the steady-state solver to transient single-phase flow:
+
+$$
+\phi \frac{\partial p}{\partial t} = \nabla \cdot (K \nabla p) + S
+$$
+
+Using explicit time-stepping with `TimeFunction`:
+
+a) Implement the transient solver
+b) Start from an initial condition and march to steady state
+c) Compare the steady-state result with the iterative solver
+d) Analyze how compressibility (through $\phi$) affects approach to equilibrium
+
+### Exercise 7: Convergence Rate Study
+
+For the linear pressure problem (homogeneous $K$, no source, Dirichlet BCs):
+
+a) Run the iterative solver with different grid sizes: $N = 16, 32, 64, 128$
+b) Record the number of iterations to reach $L_1 < 10^{-6}$
+c) Plot iterations vs $N$ and determine the scaling
+d) Compare with the theoretical Jacobi iteration scaling ($O(N^2)$)
+
+### Exercise 8: SOR Acceleration
+
+Implement Successive Over-Relaxation (SOR) by modifying the update:
+
+$$
+p^{(k+1)} = (1-\omega) p^{(k)} + \omega \cdot (\text{Jacobi update})
+$$
+
+a) Test with $\omega = 1.0$ (Jacobi), $1.5$, $1.8$, $1.9$
+b) Find the optimal $\omega$ that minimizes iterations
+c) Compare with the theoretical optimal $\omega = 2/(1 + \sin(\pi/N))$

@@ -1,0 +1,671 @@
+This appendix provides the theoretical foundations underpinning finite
+difference methods for partial differential equations. We cover four
+essential topics: the Lax equivalence theorem that connects consistency
+and stability to convergence, Von Neumann stability analysis for
+determining when schemes remain bounded, truncation error analysis
+for quantifying discretization accuracy, and Fourier mode analysis
+for memory-efficient gradient computations.
+
+## The Lax Equivalence Theorem {#sec-theory-lax}
+
+The Lax equivalence theorem is a cornerstone result in numerical
+analysis that establishes when a finite difference scheme will
+converge to the true solution. It states that for a *consistent*
+finite difference scheme applied to a *well-posed* linear initial
+value problem, *stability* is both necessary and sufficient for
+*convergence*.
+
+### Definitions
+
+Before stating the theorem formally, we need precise definitions
+of the key concepts.
+
+**Well-posed problem.** An initial value problem is *well-posed*
+(in the sense of Hadamard) if:
+
+1. A solution exists
+2. The solution is unique
+3. The solution depends continuously on the initial data
+
+For PDEs of the form
+$$
+\frac{\partial u}{\partial t} = \mathcal{L}u, \quad u(x,0) = u_0(x),
+$$
+where $\mathcal{L}$ is a spatial differential operator, well-posedness
+typically requires appropriate boundary conditions and smoothness
+assumptions on the initial data.
+
+**Consistency.** A finite difference scheme is *consistent* with
+a differential equation if the truncation error (the residual when
+the exact solution is substituted into the discrete equations)
+vanishes as the mesh is refined:
+$$
+\lim_{\Delta t, \Delta x \to 0} R^n = 0,
+$$
+where $R^n = \mathcal{L}_\Delta(\uex) - \mathcal{L}(\uex)$ is the
+truncation error, $\mathcal{L}_\Delta$ is the discrete operator,
+and $\uex$ is the exact solution.
+
+A scheme is *consistent of order $(p, q)$* if $R = \Oof{\Delta t^p + \Delta x^q}$.
+
+**Stability.** A finite difference scheme is *stable* if the numerical
+solution remains bounded as the computation proceeds. More precisely,
+the scheme
+$$
+u^{n+1} = Q u^n
+$$
+(where $Q$ is the discrete evolution operator) is stable if there
+exist constants $C$ and $\alpha$ independent of $n$, $\Delta t$, and
+$\Delta x$ such that
+$$
+\|Q^n\| \leq C e^{\alpha n \Delta t}
+$$
+for all $n \geq 0$ and all sufficiently small $\Delta t$ and $\Delta x$.
+For schemes where $\alpha = 0$, this reduces to uniform boundedness:
+$\|Q^n\| \leq C$.
+
+**Convergence.** A finite difference scheme is *convergent* if the
+numerical solution approaches the exact solution as the mesh is refined:
+$$
+\lim_{\Delta t, \Delta x \to 0} \max_n \|u^n - \uex(t_n)\| = 0.
+$$
+
+### The Theorem
+
+::: {.callout-note}
+## Lax Equivalence Theorem
+For a *consistent* finite difference approximation to a *well-posed*
+linear initial value problem, stability is the necessary and sufficient
+condition for convergence.
+
+In symbols: **Consistency + Stability $\Longleftrightarrow$ Convergence**
+:::
+
+The proof, originally due to Lax and Richtmyer (1956), uses the fact
+that the error $e^n = u^n - \uex(t_n)$ satisfies
+$$
+e^{n+1} = Q e^n + R^n,
+$$
+where $R^n$ is the truncation error. Iterating this relation and
+using the stability bound $\|Q^n\| \leq C$ along with consistency
+($R^n \to 0$) establishes convergence.
+
+### Practical Implications
+
+The Lax theorem has profound implications for numerical methods:
+
+1. **Consistency is relatively easy to verify.** Taylor series
+   expansion (see @sec-app-trunc) directly gives the truncation
+   error and its order. Tools like SymPy automate this analysis.
+
+2. **Stability is the critical constraint.** Most effort in
+   numerical analysis goes into determining stability conditions.
+   Von Neumann analysis (@sec-theory-vonneumann) provides a
+   systematic approach for linear problems with constant coefficients.
+
+3. **Convergence follows automatically.** Once consistency and
+   stability are established, convergence is guaranteed. There is
+   no need to analyze the error directly.
+
+4. **The theorem only applies to linear problems.** Nonlinear
+   problems require additional analysis (e.g., the Lax-Wendroff
+   theorem for conservation laws).
+
+### Connection to Devito
+
+Devito's symbolic approach to finite differences provides automatic
+consistency:
+
+- When you write `u.dt2` for $\partial^2 u/\partial t^2$, Devito
+  generates stencils with known truncation errors based on the
+  specified `time_order`.
+- Similarly, `u.dx2` or `u.laplace` generate spatial stencils
+  with truncation errors determined by `space_order`.
+- The `solve()` function manipulates symbolic expressions while
+  preserving their consistency properties.
+
+However, **stability must still be ensured by the user** through
+appropriate time step selection (CFL condition) or implicit methods.
+The following section provides the tools for stability analysis.
+
+## Von Neumann Stability Analysis {#sec-theory-vonneumann}
+
+Von Neumann stability analysis (also called Fourier stability analysis)
+is a technique for determining the stability of finite difference
+schemes applied to linear PDEs with constant coefficients. The method
+exploits the linearity of the scheme to analyze individual Fourier
+modes.
+
+### The Fourier Mode Ansatz
+
+Consider a general linear finite difference scheme that can be written as
+$$
+u_j^{n+1} = \sum_{k=-p}^{q} a_k u_{j+k}^n,
+$$
+where $a_k$ are coefficients that may depend on the mesh ratios
+(e.g., $\nu = c\Delta t/\Delta x$ for advection or
+$r = \alpha\Delta t/\Delta x^2$ for diffusion).
+
+The key insight is that any mesh function can be decomposed into
+Fourier modes. We substitute a single Fourier mode
+$$
+u_j^n = g^n e^{i \xi j \Delta x}
+$$ {#eq-theory-fourier-mode}
+into the scheme, where:
+
+- $g$ is the *amplification factor* (complex, depends on $\xi$)
+- $\xi$ is the wave number
+- $i = \sqrt{-1}$
+
+The factor $e^{i\xi j\Delta x}$ represents spatial oscillation with
+wavelength $\lambda = 2\pi/\xi$, while $g^n$ represents the temporal
+evolution.
+
+### The Amplification Factor
+
+Substituting (@eq-theory-fourier-mode) into the scheme yields
+$$
+g^{n+1} e^{i\xi j\Delta x} = \sum_{k=-p}^{q} a_k g^n e^{i\xi(j+k)\Delta x},
+$$
+which simplifies to
+$$
+g = \sum_{k=-p}^{q} a_k e^{i\xi k\Delta x}.
+$$ {#eq-theory-amplification}
+
+This gives $g$ as a function of the dimensionless wave number
+$\theta = \xi \Delta x$.
+
+### Stability Criterion
+
+The scheme is stable if and only if
+$$
+|g(\theta)| \leq 1 + \Oof{\Delta t}
+$$ {#eq-theory-stability-criterion}
+for all wave numbers $\theta \in [0, 2\pi]$.
+
+For practical purposes, we often use the simpler criterion $|g| \leq 1$
+for all $\theta$. When this holds, the scheme is *strongly stable*.
+
+::: {.callout-warning}
+Von Neumann analysis provides a *necessary* condition for stability
+with periodic or unbounded domains. For bounded domains with non-periodic
+boundary conditions, additional analysis may be required (e.g., matrix
+stability analysis or energy methods).
+:::
+
+### Example: 1D Diffusion Equation (FTCS)
+
+Consider the diffusion equation
+$$
+\frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x^2}
+$$
+discretized with Forward-Time Central-Space (FTCS):
+$$
+\frac{u_j^{n+1} - u_j^n}{\Delta t} = \alpha \frac{u_{j+1}^n - 2u_j^n + u_{j-1}^n}{\Delta x^2}.
+$$
+
+Rearranging:
+$$
+u_j^{n+1} = u_j^n + r(u_{j+1}^n - 2u_j^n + u_{j-1}^n),
+$$
+where $r = \alpha\Delta t/\Delta x^2$ is the *mesh ratio* or *Fourier number*.
+
+Substituting the Fourier mode ansatz:
+$$
+g = 1 + r(e^{i\theta} - 2 + e^{-i\theta}) = 1 + r(2\cos\theta - 2) = 1 - 4r\sin^2(\theta/2).
+$$
+
+For stability, we need $|g| \leq 1$ for all $\theta \in [0, 2\pi]$.
+
+- Maximum of $g$: occurs at $\theta = 0$, giving $g = 1$
+- Minimum of $g$: occurs at $\theta = \pi$, giving $g = 1 - 4r$
+
+The condition $|1 - 4r| \leq 1$ requires $-1 \leq 1 - 4r \leq 1$, which gives:
+$$
+0 \leq r \leq \frac{1}{2}, \quad \text{i.e.,} \quad
+\Delta t \leq \frac{\Delta x^2}{2\alpha}.
+$$ {#eq-theory-diffusion-stability}
+
+This is the famous stability condition for explicit diffusion schemes.
+
+### Example: 1D Advection Equation (FTCS)
+
+Consider the advection equation
+$$
+\frac{\partial u}{\partial t} + c \frac{\partial u}{\partial x} = 0
+$$
+discretized with Forward-Time Central-Space:
+$$
+\frac{u_j^{n+1} - u_j^n}{\Delta t} + c \frac{u_{j+1}^n - u_{j-1}^n}{2\Delta x} = 0.
+$$
+
+Rearranging with $\nu = c\Delta t/\Delta x$ (Courant number):
+$$
+u_j^{n+1} = u_j^n - \frac{\nu}{2}(u_{j+1}^n - u_{j-1}^n).
+$$
+
+The amplification factor is:
+$$
+g = 1 - \frac{\nu}{2}(e^{i\theta} - e^{-i\theta}) = 1 - i\nu\sin\theta.
+$$
+
+The magnitude is:
+$$
+|g|^2 = 1 + \nu^2\sin^2\theta \geq 1
+$$
+for all $\nu \neq 0$ and $\theta \neq 0, \pi$.
+
+**The FTCS scheme is unconditionally unstable for advection!**
+
+This is why upwind differencing or more sophisticated schemes are
+needed for advection-dominated problems.
+
+### Example: Upwind Scheme for Advection
+
+Using first-order upwind (assuming $c > 0$):
+$$
+u_j^{n+1} = u_j^n - \nu(u_j^n - u_{j-1}^n) = (1-\nu)u_j^n + \nu u_{j-1}^n.
+$$
+
+The amplification factor is:
+$$
+g = 1 - \nu + \nu e^{-i\theta} = 1 - \nu(1 - \cos\theta) - i\nu\sin\theta.
+$$
+
+Computing $|g|^2$:
+$$
+|g|^2 = (1 - \nu(1-\cos\theta))^2 + \nu^2\sin^2\theta = 1 - 2\nu(1-\nu)(1-\cos\theta).
+$$
+
+For $|g|^2 \leq 1$, we need $\nu(1-\nu)(1-\cos\theta) \geq 0$, which requires:
+$$
+0 \leq \nu \leq 1, \quad \text{i.e.,} \quad
+\Delta t \leq \frac{\Delta x}{c}.
+$$ {#eq-theory-cfl-advection}
+
+This is the **CFL condition** (Courant-Friedrichs-Lewy) for advection.
+
+### Example: 1D Wave Equation (Leapfrog)
+
+The wave equation
+$$
+\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
+$$
+with the standard leapfrog (central differences) scheme:
+$$
+\frac{u_j^{n+1} - 2u_j^n + u_j^{n-1}}{\Delta t^2} = c^2 \frac{u_{j+1}^n - 2u_j^n + u_{j-1}^n}{\Delta x^2}.
+$$
+
+This involves three time levels, so we use the ansatz $u_j^n = g^n e^{i\theta j}$
+to get:
+$$
+g^2 - 2g + 1 = -4\nu^2\sin^2(\theta/2) \cdot g,
+$$
+where $\nu = c\Delta t/\Delta x$.
+
+Solving the quadratic:
+$$
+g = 1 - 2\nu^2\sin^2(\theta/2) \pm i\sqrt{4\nu^2\sin^2(\theta/2)(1 - \nu^2\sin^2(\theta/2))}.
+$$
+
+For $|g| = 1$ (no growth or decay), we need $\nu^2\sin^2(\theta/2) \leq 1$
+for all $\theta$, which requires:
+$$
+\nu \leq 1, \quad \text{i.e.,} \quad
+\Delta t \leq \frac{\Delta x}{c}.
+$$ {#eq-theory-cfl-wave}
+
+### Summary of CFL Conditions
+
+The following table summarizes the stability conditions for common schemes:
+
+| Equation | Scheme | Stability Condition |
+|----------|--------|---------------------|
+| Diffusion $u_t = \alpha u_{xx}$ | FTCS | $\Delta t \leq \Delta x^2/(2\alpha)$ |
+| Advection $u_t + cu_x = 0$ | FTCS | Unconditionally unstable |
+| Advection $u_t + cu_x = 0$ | Upwind | $\Delta t \leq \Delta x/|c|$ |
+| Advection $u_t + cu_x = 0$ | Lax-Wendroff | $\Delta t \leq \Delta x/|c|$ |
+| Wave $u_{tt} = c^2 u_{xx}$ | Leapfrog | $\Delta t \leq \Delta x/c$ |
+| Wave $u_{tt} = c^2 u_{xx}$ | 2D Leapfrog | $\Delta t \leq \Delta x/(c\sqrt{2})$ |
+| Wave $u_{tt} = c^2 u_{xx}$ | 3D Leapfrog | $\Delta t \leq \Delta x/(c\sqrt{3})$ |
+
+### Implementation in Devito
+
+While Devito does not automatically enforce CFL conditions, it provides
+tools to help:
+
+```python
+from devito import Grid, TimeFunction, Eq, solve, Operator
+import numpy as np
+
+def compute_cfl(c, dt, dx):
+    """Compute CFL number for wave equation."""
+    return c * dt / dx
+
+def stable_timestep(c, dx, cfl_max=0.9):
+    """Compute maximum stable time step."""
+    return cfl_max * dx / c
+
+# Example: 2D acoustic wave
+grid = Grid(shape=(101, 101), extent=(1000., 1000.))
+dx, dy = grid.spacing
+c = 1500.0  # velocity
+
+# Compute stable time step
+dt = stable_timestep(c, min(dx, dy), cfl_max=0.5)
+print(f"dx = {dx}, dy = {dy}, c = {c}")
+print(f"Stable dt = {dt:.6f}")
+print(f"CFL number = {compute_cfl(c, dt, min(dx, dy)):.3f}")
+```
+
+## Truncation Error Analysis {#sec-theory-trunc}
+
+Truncation error analysis quantifies the accuracy of finite difference
+approximations by examining how well the discrete equations approximate
+the continuous differential equations. This topic is covered in detail
+in @sec-app-trunc.
+
+The key results connecting truncation error to the Lax theorem are:
+
+1. **Consistency requirement**: A scheme is consistent if and only if
+   its truncation error vanishes as $\Delta t, \Delta x \to 0$.
+
+2. **Order of accuracy**: If $R = \Oof{\Delta t^p + \Delta x^q}$, then
+   the scheme is consistent of order $(p, q)$.
+
+3. **Connection to convergence**: For a stable scheme, the convergence
+   rate matches the consistency order (at least for linear problems).
+
+4. **Modified equation analysis**: The truncation error can be used to
+   derive a *modified equation* that the numerical solution actually
+   solves to higher order. This reveals the nature of numerical
+   dissipation and dispersion.
+
+See @sec-app-trunc for complete derivations and examples.
+
+## On-the-Fly Fourier Mode Analysis {#sec-theory-fourier}
+
+In seismic inversion and other large-scale wave propagation problems,
+storing the full time history of the wavefield is prohibitively
+expensive. The on-the-fly discrete Fourier transform (DFT) provides
+a memory-efficient alternative by computing frequency-domain quantities
+during the time-stepping loop.
+
+### Motivation
+
+Consider full waveform inversion (FWI) where the gradient computation
+requires correlating forward and adjoint wavefields at all times.
+For a typical 3D problem:
+
+- Grid size: $500 \times 500 \times 200$ points
+- Time steps: 10,000
+- Memory for full history: $500 \times 500 \times 200 \times 10000 \times 4$ bytes $\approx 2$ TB
+
+Instead of storing all time steps, we can compute frequency-domain
+wavefields on-the-fly, requiring only:
+
+- Grid size: $500 \times 500 \times 200$ points
+- Number of frequencies: 10-50
+- Memory: $500 \times 500 \times 200 \times 50 \times 8$ bytes $\approx 20$ GB
+
+This is a factor of 100 reduction in memory.
+
+### The Discrete Fourier Transform
+
+The DFT of a time series $u(t_n)$ sampled at $N$ time steps is:
+$$
+U(\omega_k) = \sum_{n=0}^{N-1} u(t_n) e^{-i\omega_k t_n} \Delta t,
+$$ {#eq-theory-dft}
+where $\omega_k = 2\pi f_k$ is the angular frequency.
+
+The key observation is that this sum can be computed *incrementally*:
+$$
+U_k^{n+1} = U_k^n + u(t_n) e^{-i\omega_k t_n} \Delta t.
+$$ {#eq-theory-dft-incremental}
+
+At each time step, we simply add the current wavefield contribution
+to the running sum for each frequency.
+
+### Devito Implementation
+
+Devito's symbolic framework makes implementing on-the-fly DFT
+straightforward. The key components are:
+
+1. **Complex-valued Function** for storing Fourier modes
+2. **Inc()** operator for accumulation
+3. **exp()** for the Fourier basis functions
+
+```python
+from devito import (Grid, TimeFunction, Function, Eq, Inc,
+                    Operator, Dimension, solve)
+from sympy import exp, I, pi
+import numpy as np
+
+# Setup grid and wavefield
+grid = Grid(shape=(101, 101), extent=(1000., 1000.))
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+
+# Velocity model
+c = Function(name='c', grid=grid)
+c.data[:] = 1500.0
+
+# Single frequency mode
+freq = 10.0  # Hz
+omega = 2 * pi * freq
+
+# Complex-valued function to store the Fourier mode
+# Note: Devito Functions can have complex dtype
+freq_mode = Function(name='freq_mode', grid=grid, dtype=np.complex64)
+
+# Time stepping indices
+t = grid.stepping_dim
+dt = grid.stepping_dim.spacing
+
+# Fourier basis function
+basis = exp(-I * omega * t * dt)
+
+# PDE and update equation
+pde = (1.0 / c**2) * u.dt2 - u.laplace
+update = Eq(u.forward, solve(pde, u.forward))
+
+# DFT accumulation (Inc adds to existing value)
+dft_eq = Inc(freq_mode, basis * u)
+
+# Combined operator
+op = Operator([update, dft_eq])
+```
+
+### Multiple Frequencies
+
+For multiple frequencies, we add a frequency dimension:
+
+```python
+from devito import Dimension
+
+# Number of frequencies
+nfreq = 20
+f = Dimension(name='f')
+
+# Array of frequencies (e.g., 5-25 Hz)
+frequencies = Function(name='frequencies', dimensions=(f,),
+                       shape=(nfreq,), dtype=np.float32)
+frequencies.data[:] = np.linspace(5.0, 25.0, nfreq)
+
+# Multi-frequency Fourier modes
+freq_modes = Function(name='freq_modes', grid=grid, dtype=np.complex64,
+                      dimensions=(f, *grid.dimensions),
+                      shape=(nfreq, *grid.shape))
+
+# Vectorized omega
+omega = 2 * pi * frequencies
+
+# Vectorized basis (broadcasts over frequency dimension)
+basis = exp(-I * omega * t * dt)
+
+# Accumulation equation
+dft_eq = Inc(freq_modes, basis * u)
+```
+
+### Application to FWI Gradients
+
+In frequency-domain FWI, the gradient can be expressed as:
+$$
+\nabla_m J = \sum_k \text{Re}\left[U^*(\omega_k) \cdot P(\omega_k)\right],
+$$
+where $U$ is the forward wavefield, $P$ is the adjoint wavefield,
+and $m$ is the model parameter (e.g., velocity).
+
+With on-the-fly DFT:
+
+1. **Forward pass**: Accumulate $U(\omega_k)$ for selected frequencies
+2. **Adjoint pass**: Accumulate $P(\omega_k)$ for the same frequencies
+3. **Gradient**: Compute correlation in frequency domain
+
+This approach is described in detail in @Witte2019 and is
+implemented in the Devito seismic examples.
+
+### Accuracy Considerations
+
+The on-the-fly DFT introduces some approximations:
+
+1. **Discrete vs. continuous**: The DFT approximates the continuous
+   Fourier transform with error $\Oof{\Delta t}$.
+
+2. **Frequency selection**: Only selected frequencies are computed.
+   For FWI, this is usually sufficient since the gradient is
+   band-limited by the source wavelet.
+
+3. **Aliasing**: The Nyquist frequency is $f_{\text{max}} = 1/(2\Delta t)$.
+   Frequencies should be chosen below this limit.
+
+### Complete Example
+
+Here is a complete example demonstrating on-the-fly DFT for a 2D
+acoustic wave propagation:
+
+```python
+"""
+On-the-fly DFT for 2D acoustic wave propagation.
+
+Demonstrates memory-efficient frequency-domain wavefield computation.
+"""
+from devito import (Grid, TimeFunction, Function, Eq, Inc,
+                    Operator, Dimension, SparseTimeFunction, solve)
+from sympy import exp, I, pi
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def ricker_wavelet(t, f0):
+    """Ricker wavelet with peak frequency f0."""
+    t0 = 1.5 / f0
+    return (1 - 2*(np.pi*f0*(t-t0))**2) * np.exp(-(np.pi*f0*(t-t0))**2)
+
+
+def run_otf_dft(nx=101, ny=101, nt=500, frequencies=None):
+    """
+    Run acoustic wave simulation with on-the-fly DFT.
+
+    Parameters
+    ----------
+    nx, ny : int
+        Grid dimensions
+    nt : int
+        Number of time steps
+    frequencies : array-like, optional
+        Frequencies (Hz) for DFT. Default: [5, 10, 15, 20]
+
+    Returns
+    -------
+    freq_modes : ndarray
+        Complex Fourier modes, shape (nfreq, nx, ny)
+    """
+    if frequencies is None:
+        frequencies = np.array([5.0, 10.0, 15.0, 20.0], dtype=np.float32)
+
+    nfreq = len(frequencies)
+
+    # Grid setup
+    extent = (1000., 1000.)
+    grid = Grid(shape=(nx, ny), extent=extent)
+
+    # Wavefield
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+
+    # Velocity model (constant for simplicity)
+    c = Function(name='c', grid=grid)
+    c.data[:] = 1500.0
+
+    # Time stepping parameters
+    dt = 0.8 * min(grid.spacing) / 1500.0  # CFL-stable
+    t = grid.stepping_dim
+
+    # Source setup
+    src = SparseTimeFunction(name='src', grid=grid, npoint=1, nt=nt)
+    src.coordinates.data[:] = [[extent[0]/2, extent[1]/2]]
+    time_values = np.arange(nt) * dt
+    src.data[:, 0] = ricker_wavelet(time_values, f0=15.0)
+
+    # Frequency dimension and storage
+    f = Dimension(name='f')
+    freqs = Function(name='freqs', dimensions=(f,), shape=(nfreq,),
+                     dtype=np.float32)
+    freqs.data[:] = frequencies
+
+    freq_modes = Function(name='freq_modes', dtype=np.complex64,
+                          dimensions=(f, *grid.dimensions),
+                          shape=(nfreq, *grid.shape))
+
+    # PDE and update
+    pde = (1.0 / c**2) * u.dt2 - u.laplace
+    update = Eq(u.forward, solve(pde, u.forward))
+
+    # Source injection
+    src_term = src.inject(field=u.forward, expr=src * dt**2 * c**2)
+
+    # DFT accumulation
+    omega = 2 * pi * freqs
+    basis = exp(-I * omega * t * t.spacing)
+    dft_eq = Inc(freq_modes, basis * u)
+
+    # Create and run operator
+    op = Operator([update] + src_term + [dft_eq])
+    op(time_M=nt-1, dt=dt)
+
+    return freq_modes.data.copy(), frequencies
+
+
+if __name__ == "__main__":
+    # Run simulation
+    modes, freqs = run_otf_dft(nx=101, ny=101, nt=500)
+
+    # Plot results
+    fig, axes = plt.subplots(2, len(freqs), figsize=(14, 7))
+
+    for i, f in enumerate(freqs):
+        # Real part
+        im1 = axes[0, i].imshow(np.real(modes[i]).T,
+                                 cmap='seismic', origin='lower')
+        axes[0, i].set_title(f'{f:.0f} Hz (Real)')
+        plt.colorbar(im1, ax=axes[0, i])
+
+        # Imaginary part
+        im2 = axes[1, i].imshow(np.imag(modes[i]).T,
+                                 cmap='seismic', origin='lower')
+        axes[1, i].set_title(f'{f:.0f} Hz (Imag)')
+        plt.colorbar(im2, ax=axes[1, i])
+
+    plt.tight_layout()
+    plt.savefig('otf_dft_modes.png', dpi=150)
+    plt.show()
+```
+
+### References
+
+The on-the-fly DFT method for seismic inversion is described in:
+
+- @Witte2019: "Compressive least-squares migration with on-the-fly
+  Fourier transforms", Geophysics, 84(5), R655-R672.
+
+This approach combines well with randomized source encoding and
+other compression techniques for large-scale seismic inversion.

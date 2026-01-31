@@ -1,0 +1,9 @@
+# Distributed Computing and Scalability
+
+This chapter introduces distributed computing techniques for scaling PDE
+solvers to large problems. We cover Devito's automatic domain decomposition
+with MPI, task-based parallelism with Dask for embarrassingly parallel
+workloads like shot-parallel seismic imaging, and hybrid approaches
+for multi-node GPU clusters.
+
+{{< include distributed.qmd >}}

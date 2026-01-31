@@ -1,0 +1,3 @@
+# Essential Numerical Analysis Theory {#sec-app-theory}
+
+{{< include theory.qmd >}}

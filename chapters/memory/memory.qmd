@@ -1,0 +1,1244 @@
+## Memory Challenges in Wave Propagation {#sec-memory-challenges}
+
+Wave propagation simulations for seismic imaging and inversion face
+a fundamental memory challenge: the forward wavefield must be available
+at *every time step* for correlation with the adjoint wavefield. This
+section quantifies the memory requirements and explores trade-offs
+between storage and recomputation.
+
+### The Memory Problem
+
+Consider the acoustic wave equation solved on a 3D grid:
+
+$$
+\frac{1}{v^2(\mathbf{x})} \frac{\partial^2 u}{\partial t^2} = \nabla^2 u + s(\mathbf{x}, t)
+$$ {#eq-acoustic-3d}
+
+For Reverse Time Migration (RTM) or Full Waveform Inversion (FWI), we need
+to compute the imaging condition or gradient:
+
+$$
+\text{Image}(\mathbf{x}) = \sum_{t=1}^{n_t} u(\mathbf{x}, t) \cdot v(\mathbf{x}, t)
+$$ {#eq-imaging-condition-mem}
+
+where $u$ is the forward wavefield and $v$ is the adjoint wavefield. The
+critical issue is that $u[t]$ must be available when we compute $v[t]$,
+but the adjoint propagates *backward* in time.
+
+### Memory Requirements
+
+For a typical 3D seismic imaging problem:
+
+| Parameter | Typical Value |
+|-----------|---------------|
+| Grid size | $500 \times 500 \times 500$ |
+| Bytes per float | 4 (single precision) |
+| Time steps | 2000 |
+| Points per snapshot | $125 \times 10^6$ |
+| **Full wavefield storage** | **1 TB** |
+
+For multi-shot imaging with 1000 shots, storing all wavefields simultaneously
+would require *petabytes* of memory---clearly impractical.
+
+### Trade-offs: Memory vs. Recomputation
+
+There are three fundamental approaches to handle this memory challenge:
+
+1. **Full storage**: Store the complete forward wavefield
+   - Pros: Simple, no recomputation
+   - Cons: Prohibitive memory for 3D
+
+2. **Snapshotting**: Store wavefield at subsampled time intervals
+   - Pros: Reduced memory by factor of $k$ (save every $k$ steps)
+   - Cons: Reduced temporal resolution, interpolation needed
+
+3. **Checkpointing**: Store selected checkpoints and recompute as needed
+   - Pros: Optimal memory-computation trade-off
+   - Cons: More complex implementation, increased runtime
+
+The following table summarizes the trade-offs:
+
+| Approach | Memory | Extra Forward Solves |
+|----------|--------|---------------------|
+| Full storage | $O(n_t)$ | 0 |
+| Snapshotting (factor $k$) | $O(n_t/k)$ | 0 |
+| Binomial checkpointing | $O(\log n_t)$ | $O(n_t \log n_t / \log \log n_t)$ |
+| Revolve optimal | $O(c)$ for $c$ checkpoints | minimized |
+
+### Memory Estimation Function
+
+Here is a utility to estimate memory requirements:
+
+```python
+def estimate_wavefield_memory(
+    shape: tuple,
+    nt: int,
+    dtype_bytes: int = 4,
+    time_order: int = 2,
+) -> dict:
+    """Estimate memory requirements for wavefield storage.
+
+    Parameters
+    ----------
+    shape : tuple
+        Spatial grid shape, e.g., (nx, ny) or (nx, ny, nz)
+    nt : int
+        Number of time steps
+    dtype_bytes : int
+        Bytes per element (4 for float32, 8 for float64)
+    time_order : int
+        Time order of the scheme (determines time buffer size)
+
+    Returns
+    -------
+    dict
+        Memory estimates for different storage strategies
+    """
+    import numpy as np
+
+    ndim = len(shape)
+    npoints = np.prod(shape)
+    time_buffer = time_order + 1
+
+    # Memory in bytes
+    per_snapshot = npoints * dtype_bytes
+    full_storage = nt * per_snapshot
+    rolling_buffer = time_buffer * per_snapshot
+
+    results = {
+        'grid_points': int(npoints),
+        'dimensions': ndim,
+        'per_snapshot_MB': per_snapshot / (1024**2),
+        'full_storage_GB': full_storage / (1024**3),
+        'rolling_buffer_MB': rolling_buffer / (1024**2),
+    }
+
+    # Snapshotting estimates
+    for factor in [10, 50, 100]:
+        nsnaps = nt // factor
+        results[f'snapshot_factor_{factor}_GB'] = (nsnaps * per_snapshot) / (1024**3)
+
+    return results
+
+# Example usage
+shape_2d = (1001, 1001)
+shape_3d = (501, 501, 501)
+nt = 2000
+
+print("2D Grid (1001 x 1001):")
+mem_2d = estimate_wavefield_memory(shape_2d, nt)
+print(f"  Full storage: {mem_2d['full_storage_GB']:.2f} GB")
+print(f"  Snapshot factor 10: {mem_2d['snapshot_factor_10_GB']:.2f} GB")
+print(f"  Snapshot factor 100: {mem_2d['snapshot_factor_100_GB']:.2f} GB")
+
+print("\n3D Grid (501 x 501 x 501):")
+mem_3d = estimate_wavefield_memory(shape_3d, nt)
+print(f"  Full storage: {mem_3d['full_storage_GB']:.2f} GB")
+print(f"  Snapshot factor 10: {mem_3d['snapshot_factor_10_GB']:.2f} GB")
+print(f"  Snapshot factor 100: {mem_3d['snapshot_factor_100_GB']:.2f} GB")
+```
+
+## Snapshotting with ConditionalDimension {#sec-snapshotting}
+
+Devito provides the `ConditionalDimension` construct for efficient
+wavefield snapshotting. This approach saves the wavefield at regular
+intervals during forward propagation, reducing memory requirements
+by the snapshot factor while maintaining a rolling time buffer.
+
+### Understanding ConditionalDimension
+
+A `ConditionalDimension` creates a derived iteration space that executes
+only when a condition is met. For snapshotting, we use the `factor`
+parameter to specify how often to save:
+
+```python
+from devito import ConditionalDimension, TimeFunction, Grid
+
+# Create a grid
+grid = Grid(shape=(101, 101), extent=(1000., 1000.))
+time = grid.time_dim
+
+# Create subsampled time dimension (save every 10 steps)
+factor = 10
+time_sub = ConditionalDimension('t_sub', parent=time, factor=factor)
+```
+
+The generated code includes a conditional check:
+
+```c
+for (int time = time_m; time <= time_M; time += 1)
+{
+    // ... wave equation update ...
+
+    if ((time) % (factor) == 0)
+    {
+        // Save snapshot
+        usave[time / factor][x][y] = u[t0][x][y];
+    }
+}
+```
+
+### Basic Snapshotting Pattern
+
+The key pattern for snapshotting involves three elements:
+
+1. A standard `TimeFunction` with rolling buffer (only 2-3 time levels in memory)
+2. A `ConditionalDimension` for subsampled time
+3. A snapshot `TimeFunction` that saves at subsampled times
+
+```python
+import numpy as np
+
+try:
+    from devito import (
+        Grid, TimeFunction, ConditionalDimension,
+        Eq, Operator, solve
+    )
+    DEVITO_AVAILABLE = True
+except ImportError:
+    DEVITO_AVAILABLE = False
+
+if DEVITO_AVAILABLE:
+    # Domain parameters
+    shape = (101, 101)
+    extent = (1000., 1000.)
+
+    # Time parameters
+    nt = 500  # Total time steps
+    factor = 10  # Save every 10 steps
+    nsnaps = nt // factor  # Number of snapshots
+
+    # Create grid
+    grid = Grid(shape=shape, extent=extent, dtype=np.float32)
+    time = grid.time_dim
+
+    # Create subsampled time dimension
+    time_sub = ConditionalDimension('t_sub', parent=time, factor=factor)
+
+    # Forward wavefield with rolling buffer (only 3 time levels)
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+
+    # Snapshot storage (saves at subsampled times)
+    usave = TimeFunction(
+        name='usave', grid=grid,
+        time_order=0,  # No time derivatives needed
+        save=nsnaps,   # Total number of snapshots
+        time_dim=time_sub  # Use subsampled time
+    )
+
+    print(f"Forward wavefield u: time levels = {u.time_size}")
+    print(f"Snapshot buffer usave: snapshots = {usave.data.shape[0]}")
+
+    # Memory comparison
+    u_mem = u.data.nbytes / (1024**2)
+    usave_mem = usave.data.nbytes / (1024**2)
+    full_mem = nt * np.prod(shape) * 4 / (1024**2)
+
+    print(f"\nMemory usage:")
+    print(f"  Rolling buffer u: {u_mem:.2f} MB")
+    print(f"  Snapshot buffer usave: {usave_mem:.2f} MB")
+    print(f"  Full storage (all {nt} steps): {full_mem:.2f} MB")
+    print(f"  Memory savings: {full_mem / (u_mem + usave_mem):.1f}x")
+```
+
+### Complete Snapshotting Example for Wave Equation
+
+Here is a complete example implementing wave propagation with snapshotting:
+
+```python
+import numpy as np
+
+try:
+    from devito import (
+        Grid, Function, TimeFunction, ConditionalDimension,
+        Eq, Operator, solve
+    )
+    DEVITO_AVAILABLE = True
+except ImportError:
+    DEVITO_AVAILABLE = False
+
+def wave_propagation_with_snapshotting(
+    shape: tuple = (101, 101),
+    extent: tuple = (1000., 1000.),
+    vel: float = 2.0,
+    nt: int = 500,
+    dt: float = 1.0,
+    snapshot_factor: int = 10,
+) -> tuple:
+    """Solve 2D wave equation with wavefield snapshotting.
+
+    Parameters
+    ----------
+    shape : tuple
+        Grid shape (nx, ny)
+    extent : tuple
+        Physical extent (Lx, Ly) in meters
+    vel : float
+        Wave velocity in km/s
+    nt : int
+        Number of time steps
+    dt : float
+        Time step in ms
+    snapshot_factor : int
+        Save wavefield every snapshot_factor steps
+
+    Returns
+    -------
+    tuple
+        (usave_data, time_indices, memory_savings)
+    """
+    if not DEVITO_AVAILABLE:
+        raise ImportError("Devito is required")
+
+    # Number of snapshots
+    nsnaps = nt // snapshot_factor
+
+    # Create grid
+    grid = Grid(shape=shape, extent=extent, dtype=np.float32)
+    time = grid.time_dim
+    x, y = grid.dimensions
+
+    # Subsampled time dimension
+    time_sub = ConditionalDimension('t_sub', parent=time, factor=snapshot_factor)
+
+    # Velocity field
+    v = Function(name='v', grid=grid, space_order=4)
+    v.data[:] = vel
+
+    # Forward wavefield (rolling buffer)
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+
+    # Snapshot storage
+    usave = TimeFunction(
+        name='usave', grid=grid,
+        time_order=0, save=nsnaps, time_dim=time_sub
+    )
+
+    # Initial condition: Gaussian pulse at center
+    cx, cy = extent[0] / 2, extent[1] / 2
+    X, Y = np.meshgrid(
+        np.linspace(0, extent[0], shape[0]),
+        np.linspace(0, extent[1], shape[1]),
+        indexing='ij'
+    )
+    sigma = min(extent) / 20
+    u.data[0, :, :] = np.exp(-((X - cx)**2 + (Y - cy)**2) / (2 * sigma**2))
+    u.data[1, :, :] = u.data[0, :, :]
+
+    # Wave equation: u_tt = v^2 * laplace(u)
+    pde = (1.0 / v**2) * u.dt2 - u.laplace
+    stencil = Eq(u.forward, solve(pde, u.forward))
+
+    # Snapshot equation (conditional save)
+    snapshot_eq = Eq(usave, u)
+
+    # Create operator with both equations
+    op = Operator([stencil, snapshot_eq])
+
+    # Run
+    op.apply(time=nt-2, dt=dt)
+
+    # Calculate memory savings
+    full_memory = nt * np.prod(shape) * 4
+    actual_memory = u.data.nbytes + usave.data.nbytes
+    savings = full_memory / actual_memory
+
+    # Time indices for snapshots
+    time_indices = np.arange(0, nt, snapshot_factor)
+
+    return usave.data.copy(), time_indices, savings
+
+if DEVITO_AVAILABLE:
+    # Run example
+    snapshots, times, savings = wave_propagation_with_snapshotting(
+        shape=(101, 101),
+        extent=(1000., 1000.),
+        nt=500,
+        snapshot_factor=10
+    )
+
+    print(f"Collected {len(times)} snapshots at times: {times[:5]}... (ms)")
+    print(f"Snapshot array shape: {snapshots.shape}")
+    print(f"Memory savings factor: {savings:.1f}x")
+```
+
+### Memory-Efficient RTM with Snapshotting
+
+For RTM, we save snapshots during forward propagation and access them
+during adjoint propagation. The imaging condition is evaluated at
+snapshot times:
+
+```python
+import numpy as np
+
+try:
+    from devito import (
+        Grid, Function, TimeFunction, SparseTimeFunction,
+        ConditionalDimension, Eq, Operator, solve
+    )
+    DEVITO_AVAILABLE = True
+except ImportError:
+    DEVITO_AVAILABLE = False
+
+def rtm_with_snapshotting(
+    shape: tuple,
+    extent: tuple,
+    vp: np.ndarray,
+    src_coords: np.ndarray,
+    rec_coords: np.ndarray,
+    residual_data: np.ndarray,
+    nt: int,
+    dt: float,
+    snapshot_factor: int = 10,
+) -> np.ndarray:
+    """Compute RTM image with wavefield snapshotting.
+
+    Parameters
+    ----------
+    shape : tuple
+        Grid shape (nx, nz)
+    extent : tuple
+        Physical extent (Lx, Lz) in meters
+    vp : np.ndarray
+        Velocity model
+    src_coords : np.ndarray
+        Source coordinates
+    rec_coords : np.ndarray
+        Receiver coordinates
+    residual_data : np.ndarray
+        Data residual for adjoint source
+    nt : int
+        Number of time steps
+    dt : float
+        Time step
+    snapshot_factor : int
+        Snapshot interval
+
+    Returns
+    -------
+    np.ndarray
+        RTM image
+    """
+    if not DEVITO_AVAILABLE:
+        raise ImportError("Devito is required")
+
+    nsnaps = nt // snapshot_factor
+    nrec = len(rec_coords)
+    space_order = 4
+
+    # Grid and dimensions
+    grid = Grid(shape=shape, extent=extent, dtype=np.float32)
+    time = grid.time_dim
+
+    # Subsampled time dimension
+    time_sub = ConditionalDimension('t_sub', parent=time, factor=snapshot_factor)
+
+    # Velocity and squared slowness
+    vel = Function(name='vel', grid=grid, space_order=space_order)
+    vel.data[:] = vp
+    m = Function(name='m', grid=grid, space_order=space_order)
+    m.data[:] = 1.0 / vp**2
+
+    # Forward wavefield
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=space_order)
+
+    # Snapshot storage
+    usave = TimeFunction(
+        name='usave', grid=grid,
+        time_order=0, save=nsnaps, time_dim=time_sub
+    )
+
+    # Source
+    src = SparseTimeFunction(
+        name='src', grid=grid, npoint=1, nt=nt,
+        coordinates=src_coords
+    )
+    # Simple Gaussian source
+    t_arr = np.arange(nt) * dt
+    f0 = 0.010
+    t0 = 1.5 / f0
+    src.data[:, 0] = (1 - 2*(np.pi*f0*(t_arr - t0))**2) * np.exp(-(np.pi*f0*(t_arr - t0))**2)
+
+    # Forward propagation with snapshotting
+    pde_fwd = m * u.dt2 - u.laplace
+    stencil_fwd = Eq(u.forward, solve(pde_fwd, u.forward))
+    src_term = src.inject(field=u.forward, expr=src * grid.stepping_dim.spacing**2 / m)
+    snapshot_eq = Eq(usave, u)
+
+    op_fwd = Operator([stencil_fwd] + src_term + [snapshot_eq])
+    op_fwd.apply(time=nt-2, dt=dt)
+
+    # Adjoint wavefield
+    v = TimeFunction(name='v', grid=grid, time_order=2, space_order=space_order)
+
+    # RTM image
+    image = Function(name='image', grid=grid)
+
+    # Residual injection
+    residual = SparseTimeFunction(
+        name='residual', grid=grid, npoint=nrec, nt=nt,
+        coordinates=rec_coords
+    )
+    residual.data[:] = residual_data
+
+    # Adjoint propagation (backward in time)
+    pde_adj = m * v.dt2 - v.laplace
+    stencil_adj = Eq(v.backward, solve(pde_adj, v.backward))
+    res_term = residual.inject(
+        field=v.backward,
+        expr=residual * grid.stepping_dim.spacing**2 / m
+    )
+
+    # Imaging condition with subsampled forward wavefield
+    # Note: We access usave using subsampled indexing
+    imaging_eq = Eq(image, image + usave * v)
+
+    op_adj = Operator([stencil_adj] + res_term + [imaging_eq])
+
+    # Run adjoint with snapshot times matching
+    op_adj.apply(usave=usave, dt=dt, time_M=nt-2)
+
+    return image.data.copy()
+
+# Example usage
+if DEVITO_AVAILABLE:
+    shape = (101, 101)
+    extent = (1000., 1000.)
+    nt = 500
+    nrec = 50
+
+    # Simple velocity model
+    vp = np.full(shape, 2.0, dtype=np.float32)
+    vp[:, 50:] = 2.5  # Interface
+
+    # Geometry
+    src_coords = np.array([[500., 20.]])
+    rec_coords = np.zeros((nrec, 2))
+    rec_coords[:, 0] = np.linspace(100, 900, nrec)
+    rec_coords[:, 1] = 20.
+
+    # Synthetic residual
+    residual_data = np.random.randn(nt, nrec).astype(np.float32) * 0.01
+
+    image = rtm_with_snapshotting(
+        shape=shape,
+        extent=extent,
+        vp=vp,
+        src_coords=src_coords,
+        rec_coords=rec_coords,
+        residual_data=residual_data,
+        nt=nt,
+        dt=1.0,
+        snapshot_factor=10,
+    )
+
+    print(f"RTM image computed. Shape: {image.shape}")
+    print(f"Image max amplitude: {np.max(np.abs(image)):.6f}")
+```
+
+### Effect of Snapshot Factor on Accuracy
+
+The choice of snapshot factor represents a trade-off between memory
+and imaging accuracy. Coarser subsampling:
+
+- Reduces memory by the snapshot factor
+- May introduce aliasing if temporal frequencies exceed Nyquist
+- Can be mitigated by temporal interpolation
+
+A safe rule of thumb: the snapshot factor should satisfy:
+
+$$
+\text{factor} \leq \frac{1}{f_{\max} \cdot dt}
+$$
+
+where $f_{\max}$ is the maximum frequency in the wavefield and $dt$
+is the time step. For typical seismic applications with $f_{\max} = 25$ Hz
+and $dt = 1$ ms, this suggests $\text{factor} \leq 40$.
+
+## Checkpointing Strategies {#sec-checkpointing}
+
+When memory is severely constrained, checkpointing provides an optimal
+trade-off between storage and recomputation. Instead of storing all
+time steps or subsampled snapshots, checkpointing stores selected
+*checkpoints* and recomputes intermediate states on demand.
+
+### The Checkpointing Problem
+
+Consider the dependency structure for computing the RTM gradient:
+
+1. Forward propagation: $u[0] \to u[1] \to \cdots \to u[n_t]$
+2. Adjoint propagation (backward): $v[n_t] \to v[n_t-1] \to \cdots \to v[0]$
+3. Imaging condition: At each time $t$, compute $\text{image} += u[t] \cdot v[t]$
+
+The problem: when computing $v[t]$, we need $u[t]$, but we've already
+computed past $u[t]$ in the forward pass.
+
+### Binomial Checkpointing
+
+The binomial checkpointing algorithm (Griewank, 2000) provides a
+memory-optimal solution. Given $c$ checkpoint slots, the algorithm
+determines:
+
+1. Which time steps to checkpoint
+2. When to restore from checkpoints
+3. What segments to recompute
+
+The time complexity with $c$ checkpoints is:
+
+$$
+T(n_t, c) \approx n_t \cdot \frac{\log n_t}{\log c}
+$$
+
+### The Revolve Algorithm
+
+Revolve (Griewank and Walther, 2000) is an optimal checkpointing
+schedule. Key concepts:
+
+- **Capo**: Current position in the forward time loop
+- **Fine**: Final time step
+- **Check**: Number of available checkpoint slots
+- **Action**: What to do next (ADVANCE, TAKESHOT, RESTORE, etc.)
+
+The algorithm minimizes total forward solves while respecting memory
+constraints.
+
+### PyRevolve Integration with Devito
+
+Devito provides integration with pyrevolve through the `DevitoCheckpoint`
+and `CheckpointOperator` classes:
+
+```python
+import numpy as np
+
+try:
+    from devito import (
+        Grid, Function, TimeFunction, SparseTimeFunction,
+        Eq, Operator, solve, DevitoCheckpoint, CheckpointOperator, Revolver
+    )
+    DEVITO_AVAILABLE = True
+    CHECKPOINT_AVAILABLE = True
+except ImportError:
+    try:
+        from devito import Grid, Function, TimeFunction, Eq, Operator, solve
+        DEVITO_AVAILABLE = True
+        CHECKPOINT_AVAILABLE = False
+    except ImportError:
+        DEVITO_AVAILABLE = False
+        CHECKPOINT_AVAILABLE = False
+
+def demonstrate_checkpointing():
+    """Demonstrate checkpointing with Devito and pyrevolve."""
+    if not CHECKPOINT_AVAILABLE:
+        print("Checkpointing not available. Install pyrevolve.")
+        return
+
+    # Setup
+    shape = (51, 51)
+    extent = (1000., 1000.)
+    nt = 100
+    dt = 1.0
+    ncheckpoints = 5  # Very limited memory
+
+    grid = Grid(shape=shape, extent=extent, dtype=np.float32)
+
+    # Velocity
+    vel = Function(name='vel', grid=grid, space_order=4)
+    vel.data[:] = 2.0
+
+    # Squared slowness
+    m = Function(name='m', grid=grid, space_order=4)
+    m.data[:] = 1.0 / vel.data**2
+
+    # Forward wavefield (no save - checkpointing handles this)
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+
+    # Forward operator
+    pde_fwd = m * u.dt2 - u.laplace
+    stencil_fwd = Eq(u.forward, solve(pde_fwd, u.forward))
+    op_fwd = Operator([stencil_fwd])
+
+    # Adjoint wavefield
+    v = TimeFunction(name='v', grid=grid, time_order=2, space_order=4)
+    grad = Function(name='grad', grid=grid)
+
+    # Adjoint operator with gradient
+    pde_adj = m * v.dt2 - v.laplace
+    stencil_adj = Eq(v.backward, solve(pde_adj, v.backward))
+    grad_update = Eq(grad, grad + u * v.dt2)
+    op_adj = Operator([stencil_adj, grad_update])
+
+    # Create checkpoint wrapper
+    cp = DevitoCheckpoint([u])
+
+    # Wrap operators for pyrevolve
+    wrap_fwd = CheckpointOperator(op_fwd, dt=dt)
+    wrap_adj = CheckpointOperator(op_adj, dt=dt, v=v, grad=grad)
+
+    # Create revolver with limited checkpoints
+    wrp = Revolver(cp, wrap_fwd, wrap_adj, ncheckpoints, nt - 2)
+
+    # Initial condition
+    cx, cy = extent[0] / 2, extent[1] / 2
+    X, Y = np.meshgrid(
+        np.linspace(0, extent[0], shape[0]),
+        np.linspace(0, extent[1], shape[1]),
+        indexing='ij'
+    )
+    u.data[0, :, :] = np.exp(-((X - cx)**2 + (Y - cy)**2) / (2 * 50**2))
+    u.data[1, :, :] = u.data[0, :, :]
+
+    # Run forward with checkpointing
+    print(f"Running checkpointed forward pass with {ncheckpoints} checkpoints...")
+    wrp.apply_forward()
+    print(f"Final wavefield max: {np.max(np.abs(u.data)):.6f}")
+
+    # Initialize adjoint (synthetic residual at final time)
+    v.data[-1, :, :] = u.data[-1, :, :] * 0.1
+
+    # Run reverse with automatic recomputation
+    print("Running checkpointed reverse pass...")
+    wrp.apply_reverse()
+    print(f"Gradient computed. Max value: {np.max(np.abs(grad.data)):.6f}")
+
+    # Memory analysis
+    memory_full = nt * np.prod(shape) * 4 / (1024**2)
+    memory_checkpoints = ncheckpoints * np.prod(shape) * 4 / (1024**2)
+    print(f"\nMemory comparison:")
+    print(f"  Full storage: {memory_full:.2f} MB")
+    print(f"  Checkpointing ({ncheckpoints} slots): {memory_checkpoints:.2f} MB")
+    print(f"  Savings: {memory_full / memory_checkpoints:.1f}x")
+
+if DEVITO_AVAILABLE:
+    demonstrate_checkpointing()
+```
+
+### Optimal Checkpoint Selection
+
+The number of checkpoints $c$ should be chosen based on:
+
+1. Available memory: $c = \lfloor M_{\text{available}} / M_{\text{snapshot}} \rfloor$
+2. Acceptable runtime overhead: More checkpoints = fewer recomputations
+
+The following table shows trade-offs for $n_t = 1000$ time steps:
+
+| Checkpoints | Memory (relative) | Forward solves | Overhead |
+|-------------|-------------------|----------------|----------|
+| 1000 (full) | 1000x | 1 | 0% |
+| 100 | 100x | ~2 | 100% |
+| 50 | 50x | ~3 | 200% |
+| 20 | 20x | ~5 | 400% |
+| 10 | 10x | ~10 | 900% |
+
+### Comparison: Snapshotting vs. Checkpointing
+
+Both approaches reduce memory, but serve different purposes:
+
+**Snapshotting** (ConditionalDimension):
+
+- Best when some temporal resolution loss is acceptable
+- Simple implementation
+- No recomputation overhead
+- Good for visualization, debugging
+
+**Checkpointing** (pyrevolve):
+
+- Best when full temporal resolution is required
+- More complex implementation
+- Trades compute for memory
+- Essential for adjoint with limited memory
+
+## I/O Strategies {#sec-io-strategies}
+
+For production-scale simulations, wavefields may need to be stored on
+disk. This section discusses strategies for efficient I/O operations.
+
+### Writing Wavefields to Disk
+
+The simplest approach uses NumPy binary format:
+
+```python
+import numpy as np
+import os
+
+def save_wavefield_binary(data: np.ndarray, filename: str) -> None:
+    """Save wavefield to binary file.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Wavefield data to save
+    filename : str
+        Output filename
+    """
+    data.tofile(filename)
+
+def load_wavefield_binary(
+    filename: str,
+    shape: tuple,
+    dtype: type = np.float32
+) -> np.ndarray:
+    """Load wavefield from binary file.
+
+    Parameters
+    ----------
+    filename : str
+        Input filename
+    shape : tuple
+        Expected array shape
+    dtype : type
+        Data type
+
+    Returns
+    -------
+    np.ndarray
+        Loaded wavefield
+    """
+    data = np.fromfile(filename, dtype=dtype)
+    return data.reshape(shape)
+
+# Example usage
+shape = (100, 100, 100)
+wavefield = np.random.randn(*shape).astype(np.float32)
+
+save_wavefield_binary(wavefield, '/tmp/wavefield.bin')
+loaded = load_wavefield_binary('/tmp/wavefield.bin', shape)
+
+assert np.allclose(wavefield, loaded)
+print(f"Saved and loaded {wavefield.nbytes / 1024**2:.1f} MB")
+```
+
+### Compression Techniques
+
+For large wavefields, compression significantly reduces storage:
+
+```python
+import numpy as np
+
+def save_wavefield_compressed(
+    data: np.ndarray,
+    filename: str,
+    compression_level: int = 1
+) -> dict:
+    """Save wavefield with compression.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Wavefield data
+    filename : str
+        Output filename (will append .npz)
+    compression_level : int
+        Compression level (0-9, higher = more compression, slower)
+
+    Returns
+    -------
+    dict
+        Compression statistics
+    """
+    import os
+
+    # Save compressed
+    np.savez_compressed(filename, data=data)
+
+    # Get file sizes
+    compressed_size = os.path.getsize(filename + '.npz')
+    uncompressed_size = data.nbytes
+
+    stats = {
+        'uncompressed_MB': uncompressed_size / (1024**2),
+        'compressed_MB': compressed_size / (1024**2),
+        'ratio': uncompressed_size / compressed_size,
+    }
+
+    return stats
+
+def load_wavefield_compressed(filename: str) -> np.ndarray:
+    """Load compressed wavefield.
+
+    Parameters
+    ----------
+    filename : str
+        Input filename (without .npz extension)
+
+    Returns
+    -------
+    np.ndarray
+        Loaded wavefield
+    """
+    return np.load(filename + '.npz')['data']
+
+# Example: compression of wavefield
+shape = (100, 100, 100)
+wavefield = np.random.randn(*shape).astype(np.float32)
+
+stats = save_wavefield_compressed(wavefield, '/tmp/wavefield_compressed')
+print(f"Compression ratio: {stats['ratio']:.2f}x")
+print(f"Saved {stats['uncompressed_MB']:.1f} MB -> {stats['compressed_MB']:.1f} MB")
+
+# Clean up
+import os
+os.remove('/tmp/wavefield_compressed.npz')
+```
+
+### HDF5 for Large-Scale Storage
+
+For very large datasets, HDF5 provides chunked, compressed storage
+with parallel I/O support:
+
+```python
+import numpy as np
+
+def save_wavefield_hdf5(
+    data: np.ndarray,
+    filename: str,
+    dataset_name: str = 'wavefield',
+    compression: str = 'gzip',
+    compression_level: int = 4
+) -> None:
+    """Save wavefield to HDF5 with compression.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Wavefield data
+    filename : str
+        Output HDF5 filename
+    dataset_name : str
+        Name of dataset in HDF5 file
+    compression : str
+        Compression algorithm ('gzip', 'lzf', None)
+    compression_level : int
+        Compression level (1-9 for gzip)
+    """
+    try:
+        import h5py
+    except ImportError:
+        raise ImportError("h5py required for HDF5 I/O")
+
+    with h5py.File(filename, 'w') as f:
+        # Create dataset with chunking for efficient access
+        chunks = tuple(min(64, s) for s in data.shape)
+        f.create_dataset(
+            dataset_name, data=data,
+            compression=compression,
+            compression_opts=compression_level,
+            chunks=chunks
+        )
+
+def load_wavefield_hdf5(
+    filename: str,
+    dataset_name: str = 'wavefield',
+    slices: tuple = None
+) -> np.ndarray:
+    """Load wavefield from HDF5, optionally with slicing.
+
+    Parameters
+    ----------
+    filename : str
+        Input HDF5 filename
+    dataset_name : str
+        Name of dataset
+    slices : tuple, optional
+        Slice specification for partial loading
+
+    Returns
+    -------
+    np.ndarray
+        Loaded wavefield (or slice thereof)
+    """
+    try:
+        import h5py
+    except ImportError:
+        raise ImportError("h5py required for HDF5 I/O")
+
+    with h5py.File(filename, 'r') as f:
+        if slices is not None:
+            return f[dataset_name][slices]
+        return f[dataset_name][:]
+```
+
+### Streaming Workflows
+
+For production seismic imaging, streaming workflows process data
+without storing complete wavefields:
+
+```python
+import numpy as np
+
+class StreamingRTM:
+    """Streaming RTM implementation for memory-limited systems.
+
+    This class implements a streaming workflow where:
+    1. Forward propagation writes snapshots to disk
+    2. Adjoint propagation reads snapshots from disk
+    3. Imaging is done on-the-fly
+
+    This allows RTM on datasets larger than available memory.
+    """
+
+    def __init__(
+        self,
+        shape: tuple,
+        extent: tuple,
+        vp: np.ndarray,
+        snapshot_dir: str,
+        snapshot_factor: int = 10
+    ):
+        """Initialize streaming RTM.
+
+        Parameters
+        ----------
+        shape : tuple
+            Grid shape
+        extent : tuple
+            Physical extent
+        vp : np.ndarray
+            Velocity model
+        snapshot_dir : str
+            Directory for snapshot storage
+        snapshot_factor : int
+            Snapshot interval
+        """
+        self.shape = shape
+        self.extent = extent
+        self.vp = vp
+        self.snapshot_dir = snapshot_dir
+        self.snapshot_factor = snapshot_factor
+
+        import os
+        os.makedirs(snapshot_dir, exist_ok=True)
+
+    def _snapshot_path(self, time_idx: int) -> str:
+        """Get path for snapshot file."""
+        import os
+        return os.path.join(self.snapshot_dir, f'snapshot_{time_idx:06d}.npy')
+
+    def forward_propagation(self, nt: int, dt: float, src_coords: np.ndarray):
+        """Run forward propagation with streaming snapshots to disk.
+
+        Parameters
+        ----------
+        nt : int
+            Number of time steps
+        dt : float
+            Time step
+        src_coords : np.ndarray
+            Source coordinates
+        """
+        # Implementation would use Devito for propagation
+        # and write snapshots to disk at regular intervals
+        print(f"Forward propagation with streaming to {self.snapshot_dir}")
+
+        # Simplified placeholder - actual implementation uses Devito
+        for t in range(0, nt, self.snapshot_factor):
+            snapshot = np.zeros(self.shape, dtype=np.float32)
+            np.save(self._snapshot_path(t), snapshot)
+
+    def adjoint_propagation(
+        self,
+        nt: int,
+        dt: float,
+        residual_data: np.ndarray,
+        rec_coords: np.ndarray
+    ) -> np.ndarray:
+        """Run adjoint propagation with streaming reads from disk.
+
+        Parameters
+        ----------
+        nt : int
+            Number of time steps
+        dt : float
+            Time step
+        residual_data : np.ndarray
+            Data residual
+        rec_coords : np.ndarray
+            Receiver coordinates
+
+        Returns
+        -------
+        np.ndarray
+            RTM image
+        """
+        print(f"Adjoint propagation with streaming reads")
+
+        image = np.zeros(self.shape, dtype=np.float32)
+
+        # Simplified placeholder
+        for t in range(nt - 1, -1, -self.snapshot_factor):
+            if t % self.snapshot_factor == 0:
+                snapshot_path = self._snapshot_path(t)
+                try:
+                    u_snapshot = np.load(snapshot_path)
+                    # image += u_snapshot * v_adjoint  # In actual implementation
+                except FileNotFoundError:
+                    pass
+
+        return image
+
+    def cleanup(self):
+        """Remove snapshot files."""
+        import os
+        import glob
+
+        for f in glob.glob(os.path.join(self.snapshot_dir, 'snapshot_*.npy')):
+            os.remove(f)
+```
+
+### Performance Considerations
+
+When choosing an I/O strategy, consider:
+
+1. **Disk bandwidth**: SSDs provide 2-5 GB/s, HDDs ~100-200 MB/s
+2. **Compression ratio**: Wavefields typically compress 2-4x
+3. **Access pattern**: Sequential access is much faster than random
+4. **Parallel I/O**: For multi-node systems, use MPI-IO or parallel HDF5
+
+The following table summarizes recommendations:
+
+| Data Size | Recommended Approach |
+|-----------|---------------------|
+| < 10 GB | NumPy binary or compressed |
+| 10-100 GB | HDF5 with chunking |
+| > 100 GB | Streaming with checkpointing |
+| Multi-node | Parallel HDF5 or streaming |
+
+## Using the Memory Module {#sec-memory-module}
+
+The complete memory management utilities are available in `src/memory/`:
+
+```python
+from src.memory import (
+    # Memory estimation
+    estimate_wavefield_memory,
+
+    # Snapshotting utilities
+    create_snapshot_timefunction,
+    SnapshotResult,
+
+    # I/O utilities
+    save_wavefield,
+    load_wavefield,
+)
+
+# Estimate memory requirements
+shape = (501, 501, 201)
+nt = 2000
+mem = estimate_wavefield_memory(shape, nt)
+print(f"Full storage: {mem['full_storage_GB']:.1f} GB")
+print(f"With factor-50 snapshotting: {mem['snapshot_factor_50_GB']:.1f} GB")
+
+# Create snapshotted TimeFunction
+grid, usave = create_snapshot_timefunction(
+    shape=(101, 101),
+    extent=(1000., 1000.),
+    nt=500,
+    snapshot_factor=10
+)
+print(f"Snapshot buffer shape: {usave.data.shape}")
+```
+
+## Exercises {#sec-memory-exercises}
+
+::: {#exr-memory-estimate}
+**Memory requirements estimation**
+
+Write a function that computes the memory requirements for a 3D seismic
+imaging problem with the following parameters:
+
+- Model dimensions: $n_x \times n_y \times n_z$ grid points
+- Recording time: $T$ seconds with time step $dt$
+- Number of sources: $n_s$
+
+Compute:
+
+a) Memory for full wavefield storage (all sources simultaneously)
+b) Memory with snapshotting (factor = 20)
+c) Memory with binomial checkpointing (10 checkpoint slots)
+:::
+
+::: {#exr-snapshot-accuracy}
+**Snapshot factor and imaging accuracy**
+
+Implement an experiment to study the effect of snapshot factor on
+RTM imaging accuracy:
+
+a) Create a simple layered velocity model with 2-3 horizontal reflectors
+b) Run RTM with snapshot factors: 1, 5, 10, 20, 50
+c) Compare images using the correlation coefficient
+d) Plot image quality vs. snapshot factor and memory savings
+:::
+
+::: {#exr-checkpoint-vs-snapshot}
+**Checkpointing vs. snapshotting comparison**
+
+For a 2D wave propagation problem:
+
+a) Implement both snapshotting and checkpointing approaches
+b) Compare memory usage for equivalent accuracy
+c) Measure runtime for both approaches
+d) Plot the memory-runtime trade-off curve
+:::
+
+::: {#exr-io-benchmark}
+**I/O performance benchmarking**
+
+Benchmark different I/O strategies for wavefield storage:
+
+a) Raw binary (numpy.tofile)
+b) Compressed NumPy (numpy.savez_compressed)
+c) HDF5 with gzip compression
+d) HDF5 with LZF compression
+
+Measure:
+
+- Write throughput (GB/s)
+- Read throughput (GB/s)
+- Compression ratio
+- CPU overhead
+:::
+
+::: {#exr-streaming-rtm}
+**Streaming RTM implementation**
+
+Extend the `StreamingRTM` class to:
+
+a) Use Devito for actual wave propagation
+b) Implement proper source injection and receiver recording
+c) Add support for multiple shots with parallel processing
+d) Benchmark against in-memory RTM for accuracy and performance
+:::
+
+## Key Takeaways {#sec-memory-summary}
+
+1. **Full wavefield storage** is prohibitive for 3D seismic imaging,
+   often requiring hundreds of gigabytes or terabytes of memory.
+
+2. **Snapshotting** using `ConditionalDimension` reduces memory by
+   saving wavefields at regular intervals. The snapshot factor
+   provides a direct memory savings multiplier.
+
+3. **The snapshotting pattern** requires:
+   - A standard `TimeFunction` with rolling buffer
+   - A `ConditionalDimension` with the desired factor
+   - A snapshot `TimeFunction` using the conditional dimension
+
+4. **Checkpointing** with pyrevolve provides optimal memory-computation
+   trade-offs by storing selected checkpoints and recomputing as needed.
+
+5. **Revolve algorithm** minimizes forward solves given memory constraints,
+   achieving $O(\log n_t)$ memory with $O(n_t \log n_t)$ compute.
+
+6. **Choose snapshotting** when some temporal resolution loss is acceptable
+   and no recomputation overhead is desired.
+
+7. **Choose checkpointing** when full temporal resolution is required
+   and compute resources are available for recomputation.
+
+8. **For production-scale imaging**, streaming workflows with disk-based
+   snapshot storage enable processing of arbitrarily large datasets.
+
+9. **Compression** can reduce wavefield storage by 2-4x with minimal
+   performance impact.
+
+10. **HDF5** with chunking and parallel I/O is recommended for very
+    large datasets and multi-node systems.

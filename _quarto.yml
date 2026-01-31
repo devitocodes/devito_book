@@ -6,8 +6,8 @@ book:
   title: "Finite Difference Computing with PDEs"
   subtitle: "A Devito Approach"
   author:
-    - name: Hans Petter Langtangen
-    - name: Svein Linge
+    - name: Gerard J. Gorman
+      affiliation: Imperial College London
   date: today
   chapters:
     - index.qmd
@@ -19,10 +19,22 @@ book:
         - chapters/diffu/index.qmd
         - chapters/advec/index.qmd
         - chapters/nonlin/index.qmd
+        - chapters/elliptic/index.qmd
+        - chapters/systems/index.qmd
+        - chapters/highorder/index.qmd
+        - chapters/adjoint/index.qmd
+        - chapters/memory/index.qmd
+        - chapters/distributed/index.qmd
+        - chapters/performance/index.qmd
+        - chapters/cfd/index.qmd
+        - chapters/darcy/index.qmd
+        - chapters/finance/index.qmd
+        - chapters/maxwell/index.qmd
     - part: "Appendices"
       chapters:
         - chapters/appendices/formulas/index.qmd
         - chapters/appendices/trunc/index.qmd
+        - chapters/appendices/theory/index.qmd
         - chapters/appendices/softeng2/index.qmd
   repo-url: https://github.com/devitocodes/devito_book
   site-url: https://devitocodes.github.io/devito_book
@@ -169,8 +181,20 @@ src_diffu: "https://github.com/devitocodes/devito_book/tree/devito/src/diffu"
 src_nonlin: "https://github.com/devitocodes/devito_book/tree/devito/src/nonlin"
 src_trunc: "https://github.com/devitocodes/devito_book/tree/devito/src/trunc"
 src_advec: "https://github.com/devitocodes/devito_book/tree/devito/src/advec"
+src_elliptic: "https://github.com/devitocodes/devito_book/tree/devito/src/elliptic"
+src_systems: "https://github.com/devitocodes/devito_book/tree/devito/src/systems"
+src_highorder: "https://github.com/devitocodes/devito_book/tree/devito/src/highorder"
+src_adjoint: "https://github.com/devitocodes/devito_book/tree/devito/src/adjoint"
+src_memory: "https://github.com/devitocodes/devito_book/tree/devito/src/memory"
+src_distributed: "https://github.com/devitocodes/devito_book/tree/devito/src/distributed"
+src_performance: "https://github.com/devitocodes/devito_book/tree/devito/src/performance"
+src_cfd: "https://github.com/devitocodes/devito_book/tree/devito/src/cfd"
+src_darcy: "https://github.com/devitocodes/devito_book/tree/devito/src/darcy"
 src_formulas: "https://github.com/devitocodes/devito_book/tree/devito/src/formulas"
 src_softeng2: "https://github.com/devitocodes/devito_book/tree/devito/src/softeng2"
+src_finance: "https://github.com/devitocodes/devito_book/tree/devito/src/finance"
+src_theory: "https://github.com/devitocodes/devito_book/tree/devito/src/theory"
+src_maxwell: "https://github.com/devitocodes/devito_book/tree/devito/src/maxwell"
 
 crossref:
   eq-prefix: ""

@@ -1,0 +1,1471 @@
+## Introduction to Inverse Problems {#sec-adjoint-intro}
+
+Throughout this book, we have focused on *forward problems*: given
+a physical model and initial/boundary conditions, compute the solution.
+In many applications, however, we face the *inverse problem*: given
+observed data, determine the unknown model parameters that produced it.
+
+### Forward vs Inverse Problems
+
+Consider the acoustic wave equation:
+
+$$
+\frac{1}{v^2(\mathbf{x})} \frac{\partial^2 u}{\partial t^2} - \nabla^2 u = s(\mathbf{x}, t)
+$$ {#eq-acoustic-wave}
+
+In the **forward problem**, we know:
+
+- The velocity model $v(\mathbf{x})$
+- The source wavelet $s(\mathbf{x}, t)$
+- Initial and boundary conditions
+
+And we compute the wavefield $u(\mathbf{x}, t)$.
+
+In the **inverse problem**, we know:
+
+- The source wavelet $s(\mathbf{x}, t)$
+- Measurements of the wavefield at receiver locations $\mathbf{d} = \mathbf{P}_r u$
+
+And we seek the velocity model $v(\mathbf{x})$.
+
+### Ill-Posedness and Regularization
+
+Inverse problems are typically *ill-posed* in the sense of Hadamard:
+
+1. **Existence**: A solution may not exist (noisy data)
+2. **Uniqueness**: Multiple models may fit the data equally well
+3. **Stability**: Small changes in data can cause large changes in the solution
+
+To address ill-posedness, we formulate inverse problems as *optimization problems*
+with regularization:
+
+$$
+\min_{\mathbf{m}} \Phi(\mathbf{m}) = \frac{1}{2}\|\mathbf{P}_r u(\mathbf{m}) - \mathbf{d}\|_2^2 + \lambda R(\mathbf{m})
+$$ {#eq-inverse-objective}
+
+where:
+
+- $\mathbf{m}$ is the model (e.g., squared slowness $m = 1/v^2$)
+- $\mathbf{P}_r$ samples the wavefield at receiver locations
+- $\mathbf{d}$ is the observed data
+- $R(\mathbf{m})$ is a regularization term (smoothness, sparsity, etc.)
+- $\lambda$ balances data fit and regularization
+
+### Seismic Imaging Context
+
+In seismic imaging, the inverse problem has tremendous practical importance:
+
+- **Exploration geophysics**: Finding oil and gas reservoirs
+- **Earthquake seismology**: Determining Earth structure
+- **Medical imaging**: Ultrasound tomography
+
+The data are seismic recordings (seismograms) from controlled sources or
+natural earthquakes. The goal is to recover subsurface velocity structure
+from surface measurements.
+
+Two key methods in seismic imaging are:
+
+1. **Reverse Time Migration (RTM)**: Creates an image of reflectivity
+2. **Full Waveform Inversion (FWI)**: Iteratively updates velocity model
+
+Both rely on the *adjoint-state method* for efficient gradient computation.
+
+## The Adjoint-State Method {#sec-adjoint-method}
+
+The adjoint-state method provides an efficient way to compute gradients
+of objective functions constrained by PDEs. It is fundamental to
+optimization-based approaches in seismic imaging.
+
+### Linear System Formulation
+
+The discretized wave equation can be written as a linear system:
+
+$$
+\mathbf{A}(\mathbf{m}) \mathbf{u} = \mathbf{q}
+$$ {#eq-forward-system}
+
+where:
+
+- $\mathbf{A}(\mathbf{m})$ is the discretized wave equation operator (depends on model)
+- $\mathbf{u}$ is the discretized wavefield (all time steps stacked)
+- $\mathbf{q}$ is the discretized source term
+
+For explicit time stepping, $\mathbf{A}$ is lower triangular, so solving
+@eq-forward-system is equivalent to marching forward in time.
+
+### The Adjoint Equation
+
+The adjoint equation is:
+
+$$
+\mathbf{A}(\mathbf{m})^T \mathbf{v} = \delta \mathbf{d}
+$$ {#eq-adjoint-system}
+
+where:
+
+- $\mathbf{A}^T$ is the transpose (adjoint) of the forward operator
+- $\mathbf{v}$ is the *adjoint wavefield*
+- $\delta \mathbf{d} = \mathbf{P}_r^T (\mathbf{P}_r \mathbf{u} - \mathbf{d})$ is the data residual
+  injected at receiver locations
+
+For the acoustic wave equation, the adjoint operator $\mathbf{A}^T$ is
+*upper triangular*, meaning we solve it by marching *backward* in time.
+This is the origin of the term "reverse time" in RTM.
+
+### Mathematical Derivation of the Gradient
+
+To derive the gradient, we use the Lagrangian approach. Define:
+
+$$
+\mathcal{L}(\mathbf{m}, \mathbf{u}, \mathbf{v}) = \frac{1}{2}\|\mathbf{P}_r \mathbf{u} - \mathbf{d}\|_2^2 + \mathbf{v}^T (\mathbf{A}(\mathbf{m})\mathbf{u} - \mathbf{q})
+$$ {#eq-lagrangian}
+
+The gradient of the objective function with respect to the model is:
+
+$$
+\nabla_{\mathbf{m}} \Phi = \frac{\partial \mathcal{L}}{\partial \mathbf{m}} = \mathbf{v}^T \frac{\partial \mathbf{A}}{\partial \mathbf{m}} \mathbf{u}
+$$ {#eq-gradient-general}
+
+For the acoustic wave equation with squared slowness $m = 1/v^2$:
+
+$$
+\nabla_m \Phi = \sum_{t=1}^{n_t} u[t] \cdot v_{tt}[t]
+$$ {#eq-fwi-gradient}
+
+where:
+
+- $u[t]$ is the forward wavefield at time $t$
+- $v_{tt}[t]$ is the second time derivative of the adjoint wavefield
+
+For RTM (imaging condition without the second derivative):
+
+$$
+\text{Image} = \sum_{t=1}^{n_t} u[t] \cdot v[t]
+$$ {#eq-rtm-imaging}
+
+### SymPy Derivation
+
+Let us verify the gradient formula symbolically using SymPy. Consider
+the continuous 1D acoustic wave equation:
+
+$$
+m(x) \frac{\partial^2 u}{\partial t^2} - \frac{\partial^2 u}{\partial x^2} = s(x, t)
+$$ {#eq-1d-acoustic}
+
+where $m(x) = 1/v(x)^2$ is the squared slowness.
+
+```python
+import sympy as sp
+
+# Define symbols
+x, t, T = sp.symbols('x t T', real=True)
+m = sp.Function('m')(x)
+u = sp.Function('u')(x, t)
+v = sp.Function('v')(x, t)  # adjoint wavefield
+
+# Forward PDE: m * u_tt - u_xx = s
+forward_pde = m * sp.diff(u, t, 2) - sp.diff(u, x, 2)
+
+# Take variation with respect to m
+# delta_L / delta_m = integral over x,t of (v * delta_PDE)
+# where delta_PDE = delta_m * u_tt
+
+# The gradient contribution is: v * u_tt
+gradient_kernel = v * sp.diff(u, t, 2)
+
+# For FWI, we compute: integral_t (u * v_tt)
+# which equals integral_t (v * u_tt) by integration by parts
+# (assuming v(T) = v_t(T) = 0 final conditions)
+
+fwi_gradient_kernel = u * sp.diff(v, t, 2)
+
+print("RTM imaging condition kernel: u * v")
+print("FWI gradient kernel: u * v_tt")
+```
+
+The key insight is that the FWI gradient requires the *second time derivative*
+of the adjoint wavefield, while RTM uses the adjoint wavefield directly.
+
+### Practical Considerations
+
+Several practical aspects affect the implementation:
+
+1. **Memory requirements**: Storing the full forward wavefield for
+   correlation with the adjoint wavefield requires significant memory.
+   For a 3D problem with 1000 time steps and $500^3$ grid points,
+   this could be 500 GB in single precision.
+
+2. **Checkpointing**: Advanced techniques store only selected time
+   steps and recompute intermediate states during back-propagation.
+
+3. **Source-receiver reciprocity**: Allows computational savings
+   by treating receivers as virtual sources.
+
+4. **Boundary conditions**: Absorbing boundaries in the forward
+   propagation require *negated damping* in the adjoint.
+
+## Forward Modeling with Explicit API {#sec-forward-explicit}
+
+We now implement 2D acoustic forward modeling using Devito's explicit API.
+This approach provides full control over the wave propagation without
+relying on high-level convenience classes.
+
+### The 2D Acoustic Wave Equation
+
+In 2D, the acoustic wave equation with a velocity field $v(x, z)$ is:
+
+$$
+\frac{1}{v(x,z)^2} \frac{\partial^2 u}{\partial t^2} = \frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial z^2} + s(x, z, t)
+$$ {#eq-2d-acoustic}
+
+### Grid and Field Setup
+
+We start by creating the computational grid and required fields:
+
+```python
+import numpy as np
+from devito import Grid, Function, TimeFunction, Eq, Operator, solve
+
+# Domain parameters
+shape = (101, 101)      # Grid points (nx, nz)
+extent = (1000., 1000.) # Physical extent [m]
+origin = (0., 0.)       # Origin
+
+# Create grid
+grid = Grid(shape=shape, extent=extent, origin=origin, dtype=np.float32)
+
+# Velocity field (Function - static, no time dependence)
+vel = Function(name='vel', grid=grid, space_order=4)
+
+# Example: two-layer model
+nz_interface = shape[1] // 2
+vel.data[:, :nz_interface] = 1.5  # Upper layer: 1500 m/s
+vel.data[:, nz_interface:] = 2.5  # Lower layer: 2500 m/s
+
+# Wavefield (TimeFunction - time-varying)
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4)
+```
+
+The key Devito types are:
+
+- `Grid`: Defines the computational domain
+- `Function`: Static field (velocity, density, etc.)
+- `TimeFunction`: Time-varying field with automatic time indexing
+
+### The Ricker Wavelet
+
+A Ricker wavelet (Mexican hat) is the standard source in seismic modeling:
+
+```python
+def ricker_wavelet(t, f0, t0=None):
+    """Generate a Ricker wavelet.
+
+    Parameters
+    ----------
+    t : np.ndarray
+        Time array
+    f0 : float
+        Peak frequency [Hz]
+    t0 : float, optional
+        Time delay. Default: 1.5/f0
+
+    Returns
+    -------
+    np.ndarray
+        Ricker wavelet values
+    """
+    if t0 is None:
+        t0 = 1.5 / f0
+    pi_f0_t = np.pi * f0 * (t - t0)
+    return (1.0 - 2.0 * pi_f0_t**2) * np.exp(-pi_f0_t**2)
+```
+
+The Ricker wavelet has these properties:
+
+- Zero mean (no DC component)
+- Compact support in both time and frequency
+- Peak frequency at $f_0$
+
+### SparseTimeFunction for Sources and Receivers
+
+Sources and receivers are point locations that do not align with grid
+points. Devito's `SparseTimeFunction` handles interpolation automatically:
+
+```python
+from devito import SparseTimeFunction
+
+# Time parameters
+t0 = 0.0       # Start time [ms]
+tn = 1000.0    # End time [ms]
+f0 = 0.010     # Peak frequency [kHz] = 10 Hz
+dt = 0.5       # Time step [ms]
+nt = int((tn - t0) / dt) + 1  # Number of time steps
+time_values = np.linspace(t0, tn, nt)
+
+# Source coordinates (single source at center, shallow depth)
+src_coords = np.array([[500., 20.]])  # (x, z) in meters
+
+# Create source SparseTimeFunction
+src = SparseTimeFunction(
+    name='src', grid=grid, npoint=1, nt=nt,
+    coordinates=src_coords
+)
+
+# Set source wavelet
+src.data[:, 0] = ricker_wavelet(time_values, f0)
+
+# Receiver coordinates (line of receivers at surface)
+nrec = 101
+rec_coords = np.zeros((nrec, 2))
+rec_coords[:, 0] = np.linspace(0, extent[0], nrec)
+rec_coords[:, 1] = 30.  # Receiver depth
+
+# Create receiver SparseTimeFunction
+rec = SparseTimeFunction(
+    name='rec', grid=grid, npoint=nrec, nt=nt,
+    coordinates=rec_coords
+)
+```
+
+### Building the Wave Equation Operator
+
+The update equation for the acoustic wave equation is:
+
+```python
+# Wave equation: (1/v^2) * u_tt - laplace(u) = 0
+# Rearranged: u_tt = v^2 * laplace(u)
+pde = (1.0 / vel**2) * u.dt2 - u.laplace
+
+# Solve for u.forward (next time step)
+stencil = Eq(u.forward, solve(pde, u.forward))
+
+# Source injection: add source term to update
+# The injection uses: src * dt^2 * v^2
+src_term = src.inject(field=u.forward, expr=src * grid.stepping_dim.spacing**2 * vel**2)
+
+# Receiver interpolation: sample wavefield at receiver locations
+rec_term = rec.interpolate(expr=u)
+
+# Create operator
+op = Operator([stencil] + src_term + rec_term)
+```
+
+The key operations are:
+
+- `solve(pde, u.forward)`: Algebraically isolates `u.forward`
+- `src.inject()`: Injects source values onto the grid
+- `rec.interpolate()`: Samples grid values at receiver locations
+
+### Running the Forward Simulation
+
+```python
+# Run forward modeling
+op.apply(time=nt-2, dt=dt)
+
+# Results are in:
+# - u.data: Wavefield at final time steps
+# - rec.data: Receiver recordings (shot record)
+```
+
+### Complete Forward Modeling Example
+
+Here is a complete example that can be run:
+
+```python
+import numpy as np
+
+# Check if Devito is available
+try:
+    from devito import (
+        Grid, Function, TimeFunction, SparseTimeFunction,
+        Eq, Operator, solve
+    )
+    DEVITO_AVAILABLE = True
+except ImportError:
+    DEVITO_AVAILABLE = False
+    print("Devito not available. Install with: pip install devito")
+
+if DEVITO_AVAILABLE:
+    # Ricker wavelet
+    def ricker_wavelet(t, f0, t0=None):
+        if t0 is None:
+            t0 = 1.5 / f0
+        pi_f0_t = np.pi * f0 * (t - t0)
+        return (1.0 - 2.0 * pi_f0_t**2) * np.exp(-pi_f0_t**2)
+
+    # Parameters
+    shape = (101, 101)
+    extent = (1000., 1000.)
+    space_order = 4
+
+    # Time parameters
+    f0 = 0.010  # 10 Hz
+    t0, tn = 0.0, 1000.0
+    dt = 0.5
+    nt = int((tn - t0) / dt) + 1
+    time_values = np.linspace(t0, tn, nt)
+
+    # Create grid
+    grid = Grid(shape=shape, extent=extent, dtype=np.float32)
+
+    # Velocity model (two layers)
+    vel = Function(name='vel', grid=grid, space_order=space_order)
+    vel.data[:, :50] = 1.5
+    vel.data[:, 50:] = 2.5
+
+    # Wavefield
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=space_order)
+
+    # Source
+    src_coords = np.array([[500., 20.]])
+    src = SparseTimeFunction(name='src', grid=grid, npoint=1, nt=nt,
+                              coordinates=src_coords)
+    src.data[:, 0] = ricker_wavelet(time_values, f0)
+
+    # Receivers
+    nrec = 101
+    rec_coords = np.zeros((nrec, 2))
+    rec_coords[:, 0] = np.linspace(0, extent[0], nrec)
+    rec_coords[:, 1] = 30.
+    rec = SparseTimeFunction(name='rec', grid=grid, npoint=nrec, nt=nt,
+                              coordinates=rec_coords)
+
+    # Build operator
+    pde = (1.0 / vel**2) * u.dt2 - u.laplace
+    stencil = Eq(u.forward, solve(pde, u.forward))
+    src_term = src.inject(field=u.forward,
+                          expr=src * grid.stepping_dim.spacing**2 * vel**2)
+    rec_term = rec.interpolate(expr=u)
+    op = Operator([stencil] + src_term + rec_term)
+
+    # Run
+    op.apply(time=nt-2, dt=dt)
+
+    print(f"Shot record shape: {rec.data.shape}")
+    print(f"Max amplitude: {np.max(np.abs(rec.data)):.6f}")
+```
+
+## Reverse Time Migration {#sec-rtm}
+
+Reverse Time Migration (RTM) creates images of subsurface reflectivity
+by correlating forward and adjoint wavefields. It is the foundation
+of modern seismic imaging.
+
+### The Imaging Condition
+
+The RTM imaging condition states that if the velocity model is
+*kinematically correct* (travel times are accurate), then the forward
+wavefield $u$ and adjoint wavefield $v$ will *coincide* at reflector
+locations at zero time offset.
+
+The image is formed by summing the cross-correlation over time:
+
+$$
+\text{Image}(\mathbf{x}) = \sum_{t=1}^{n_t} u(\mathbf{x}, t) \cdot v(\mathbf{x}, t)
+$$ {#eq-imaging-condition}
+
+This zero-lag cross-correlation is sometimes called the "source-side
+illumination" imaging condition.
+
+### Time Reversal and the Adjoint Wavefield
+
+The adjoint wavefield $v$ satisfies the same wave equation as the
+forward wavefield, but propagates *backward* in time. This is
+achieved by:
+
+1. Using `v.backward` instead of `v.forward` in the stencil
+2. Negating any damping terms (for absorbing boundaries)
+3. Injecting the data residual at receiver locations
+
+For the undamped acoustic equation, the adjoint is simply time-reversed
+propagation.
+
+### RTM Algorithm
+
+The RTM workflow for a single shot is:
+
+1. **Forward modeling with true velocity**: Generate "observed" data
+2. **Forward modeling with smooth velocity**: Save wavefield $u[t]$
+3. **Adjoint propagation**: Back-propagate data residual to get $v[t]$
+4. **Imaging**: Correlate $u[t]$ and $v[t]$ at each time step
+
+For multiple shots, repeat steps 1--4 and sum the images.
+
+### Implementing the Adjoint Operator
+
+The adjoint (back-propagation) operator differs from the forward:
+
+```python
+def create_imaging_operator(grid, model_m, image, geometry_nt):
+    """Create the RTM imaging operator.
+
+    Parameters
+    ----------
+    grid : Grid
+        Devito computational grid
+    model_m : Function
+        Squared slowness m = 1/v^2
+    image : Function
+        Image to accumulate
+    geometry_nt : int
+        Number of time steps
+
+    Returns
+    -------
+    Operator
+        Devito operator for adjoint propagation and imaging
+    """
+    from devito import TimeFunction, Eq, Operator, solve, SparseTimeFunction
+
+    # Adjoint wavefield - propagates backward in time
+    v = TimeFunction(name='v', grid=grid, time_order=2, space_order=4)
+
+    # Forward wavefield (pre-computed and passed in)
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=4,
+                     save=geometry_nt)
+
+    # Adjoint wave equation (undamped case)
+    # Note: no damping negation needed for simple acoustic
+    pde_adj = model_m * v.dt2 - v.laplace
+
+    # Use v.backward for time reversal
+    stencil = Eq(v.backward, solve(pde_adj, v.backward))
+
+    # Residual injection at receiver locations
+    residual = SparseTimeFunction(
+        name='residual', grid=grid,
+        npoint=nrec, nt=geometry_nt,
+        coordinates=rec_coords
+    )
+
+    # Inject residual into adjoint wavefield
+    # Note: inject into v.backward, scaled by dt^2 / m
+    dt_sym = grid.stepping_dim.spacing
+    res_term = residual.inject(field=v.backward,
+                                expr=residual * dt_sym**2 / model_m)
+
+    # Imaging condition: Image += u * v
+    image_update = Eq(image, image + u * v)
+
+    return Operator([stencil] + res_term + [image_update])
+```
+
+### The Negated Damping Term
+
+When using absorbing boundary conditions (damping), the adjoint
+equation requires *negated* damping. For a damped wave equation:
+
+$$
+m \frac{\partial^2 u}{\partial t^2} + \eta \frac{\partial u}{\partial t} - \nabla^2 u = s
+$$
+
+The adjoint equation is:
+
+$$
+m \frac{\partial^2 v}{\partial t^2} - \eta \frac{\partial v}{\partial t} - \nabla^2 v = r
+$$
+
+Note the sign change on the damping term $\eta$.
+
+In Devito with a damping field:
+
+```python
+# Forward equation with damping
+pde_fwd = model_m * u.dt2 + damp * u.dt - u.laplace
+
+# Adjoint equation with NEGATED damping
+# Use .dt.T which gives the transpose (backward) derivative
+pde_adj = model_m * v.dt2 + damp * v.dt.T - v.laplace
+```
+
+The `.dt.T` operator gives the transpose of the time derivative,
+which effectively negates the damping when stepping backward.
+
+### Complete RTM Implementation
+
+Here is a complete RTM example:
+
+```python
+import numpy as np
+
+try:
+    from devito import (
+        Grid, Function, TimeFunction, SparseTimeFunction,
+        Eq, Operator, solve
+    )
+    DEVITO_AVAILABLE = True
+except ImportError:
+    DEVITO_AVAILABLE = False
+
+if DEVITO_AVAILABLE:
+    def ricker_wavelet(t, f0, t0=None):
+        if t0 is None:
+            t0 = 1.5 / f0
+        pi_f0_t = np.pi * f0 * (t - t0)
+        return (1.0 - 2.0 * pi_f0_t**2) * np.exp(-pi_f0_t**2)
+
+    # Parameters
+    shape = (101, 101)
+    extent = (1000., 1000.)
+    space_order = 4
+    f0 = 0.010
+    t0, tn = 0.0, 1000.0
+    dt = 0.5
+    nt = int((tn - t0) / dt) + 1
+    time_values = np.linspace(t0, tn, nt)
+
+    # Create grid
+    grid = Grid(shape=shape, extent=extent, dtype=np.float32)
+
+    # True velocity model (with reflector)
+    vel_true = Function(name='vel_true', grid=grid, space_order=space_order)
+    vel_true.data[:, :50] = 1.5
+    vel_true.data[:, 50:] = 2.5
+
+    # Smooth velocity model (no reflector)
+    vel_smooth = Function(name='vel_smooth', grid=grid, space_order=space_order)
+    from scipy.ndimage import gaussian_filter
+    vel_smooth.data[:] = gaussian_filter(vel_true.data, sigma=(5, 5))
+
+    # Squared slowness for smooth model
+    model_m = Function(name='m', grid=grid, space_order=space_order)
+    model_m.data[:] = 1.0 / vel_smooth.data**2
+
+    # Source and receivers
+    src_coords = np.array([[500., 20.]])
+    nrec = 101
+    rec_coords = np.zeros((nrec, 2))
+    rec_coords[:, 0] = np.linspace(0, extent[0], nrec)
+    rec_coords[:, 1] = 30.
+
+    # Forward modeling function
+    def forward_model(vel, save_wavefield=False):
+        u = TimeFunction(name='u', grid=grid, time_order=2, space_order=space_order,
+                         save=nt if save_wavefield else None)
+        src = SparseTimeFunction(name='src', grid=grid, npoint=1, nt=nt,
+                                  coordinates=src_coords)
+        src.data[:, 0] = ricker_wavelet(time_values, f0)
+        rec = SparseTimeFunction(name='rec', grid=grid, npoint=nrec, nt=nt,
+                                  coordinates=rec_coords)
+
+        pde = (1.0 / vel**2) * u.dt2 - u.laplace
+        stencil = Eq(u.forward, solve(pde, u.forward))
+        src_term = src.inject(field=u.forward,
+                              expr=src * grid.stepping_dim.spacing**2 * vel**2)
+        rec_term = rec.interpolate(expr=u)
+        op = Operator([stencil] + src_term + rec_term)
+        op.apply(time=nt-2, dt=dt)
+
+        return u, rec
+
+    # Step 1: Forward modeling with true velocity (observed data)
+    _, rec_true = forward_model(vel_true, save_wavefield=False)
+    d_obs = rec_true.data.copy()
+
+    # Step 2: Forward modeling with smooth velocity (save wavefield)
+    u_fwd, rec_smooth = forward_model(vel_smooth, save_wavefield=True)
+    d_syn = rec_smooth.data.copy()
+
+    # Step 3: Compute residual
+    residual_data = d_syn - d_obs
+
+    # Step 4: Adjoint propagation and imaging
+    image = Function(name='image', grid=grid)
+    v = TimeFunction(name='v', grid=grid, time_order=2, space_order=space_order)
+
+    residual = SparseTimeFunction(name='residual', grid=grid, npoint=nrec, nt=nt,
+                                   coordinates=rec_coords)
+    residual.data[:] = residual_data
+
+    pde_adj = model_m * v.dt2 - v.laplace
+    stencil_adj = Eq(v.backward, solve(pde_adj, v.backward))
+    dt_sym = grid.stepping_dim.spacing
+    res_term = residual.inject(field=v.backward,
+                                expr=residual * dt_sym**2 / model_m)
+    image_update = Eq(image, image - u_fwd * v)  # Negative for correct polarity
+
+    op_adj = Operator([stencil_adj] + res_term + [image_update])
+    op_adj.apply(u=u_fwd, v=v, dt=dt, time_M=nt-2)
+
+    print(f"RTM image computed. Max value: {np.max(np.abs(image.data)):.6f}")
+```
+
+### Multi-Shot RTM
+
+For realistic imaging, we combine images from multiple shot positions:
+
+```python
+def rtm_multi_shot(shot_positions, vel_true, vel_smooth, nrec, extent, grid):
+    """Perform multi-shot RTM.
+
+    Parameters
+    ----------
+    shot_positions : np.ndarray
+        Source positions, shape (nshots, 2)
+    vel_true : Function
+        True velocity model
+    vel_smooth : Function
+        Smooth velocity model
+    nrec : int
+        Number of receivers
+    extent : tuple
+        Domain extent
+    grid : Grid
+        Computational grid
+
+    Returns
+    -------
+    np.ndarray
+        Stacked RTM image
+    """
+    nshots = len(shot_positions)
+    image_total = np.zeros(grid.shape)
+
+    for i, src_pos in enumerate(shot_positions):
+        print(f"Processing shot {i+1}/{nshots}")
+
+        # Update source coordinates
+        src_coords = np.array([src_pos])
+
+        # Forward with true model -> observed data
+        _, rec_true = forward_model(vel_true, src_coords, save_wavefield=False)
+
+        # Forward with smooth model -> save wavefield
+        u_fwd, rec_smooth = forward_model(vel_smooth, src_coords, save_wavefield=True)
+
+        # Compute residual
+        residual_data = rec_smooth.data - rec_true.data
+
+        # Adjoint propagation and imaging
+        image_shot = adjoint_and_image(u_fwd, residual_data, vel_smooth, rec_coords)
+
+        # Stack images
+        image_total += image_shot
+
+    return image_total
+```
+
+## Gradient Computation for FWI {#sec-fwi-gradient}
+
+Full Waveform Inversion (FWI) iteratively updates the velocity model
+to minimize the misfit between observed and synthetic data. The gradient
+of the misfit function drives the optimization.
+
+### FWI Objective Function
+
+The standard FWI objective function is the L2 norm of the data residual:
+
+$$
+\Phi_s(\mathbf{m}) = \frac{1}{2} \|\mathbf{P}_r \mathbf{u} - \mathbf{d}\|_2^2
+$$ {#eq-fwi-objective}
+
+where:
+
+- $\mathbf{m}$ is the model (squared slowness)
+- $\mathbf{u}$ is the synthetic wavefield
+- $\mathbf{d}$ is the observed data
+- $\mathbf{P}_r$ samples at receiver locations
+
+### The FWI Gradient
+
+The gradient of the FWI objective with respect to the model is:
+
+$$
+\nabla_{\mathbf{m}} \Phi_s = \sum_{t=1}^{n_t} u[t] \cdot v_{tt}[t]
+$$ {#eq-fwi-grad-formula}
+
+This can also be written as:
+
+$$
+\nabla_{\mathbf{m}} \Phi_s = \mathbf{J}^T \delta \mathbf{d}
+$$
+
+where $\mathbf{J}$ is the Jacobian (linearized forward operator) and
+$\delta \mathbf{d}$ is the data residual.
+
+### Second Time Derivative for Gradient
+
+The FWI gradient requires $v_{tt}$, the second time derivative of the
+adjoint wavefield. This can be computed in two ways:
+
+1. **Post-processing**: Compute $v_{tt}$ numerically from stored $v$
+2. **On-the-fly**: Use $(u \cdot v.dt2)$ in the correlation
+
+In Devito, we can use the `.dt2` operator:
+
+```python
+# Gradient update equation
+# gradient += u * v_tt
+gradient_update = Eq(grad, grad + u * v.dt2)
+```
+
+### Complete FWI Gradient Computation
+
+```python
+import numpy as np
+
+try:
+    from devito import (
+        Grid, Function, TimeFunction, SparseTimeFunction,
+        Eq, Operator, solve, norm
+    )
+    DEVITO_AVAILABLE = True
+except ImportError:
+    DEVITO_AVAILABLE = False
+
+if DEVITO_AVAILABLE:
+    def ricker_wavelet(t, f0, t0=None):
+        if t0 is None:
+            t0 = 1.5 / f0
+        pi_f0_t = np.pi * f0 * (t - t0)
+        return (1.0 - 2.0 * pi_f0_t**2) * np.exp(-pi_f0_t**2)
+
+    def compute_fwi_gradient(vel_model, vel_true, src_coords, rec_coords,
+                              grid, f0, dt, nt, time_values):
+        """Compute FWI gradient for a single shot.
+
+        Parameters
+        ----------
+        vel_model : Function
+            Current velocity model
+        vel_true : Function
+            True velocity model (for generating observed data)
+        src_coords : np.ndarray
+            Source coordinates
+        rec_coords : np.ndarray
+            Receiver coordinates
+        grid : Grid
+            Computational grid
+        f0 : float
+            Source peak frequency
+        dt : float
+            Time step
+        nt : int
+            Number of time steps
+        time_values : np.ndarray
+            Time array
+
+        Returns
+        -------
+        tuple
+            (objective_value, gradient)
+        """
+        space_order = 4
+        nrec = len(rec_coords)
+
+        # Forward with true model -> observed data
+        u_true = TimeFunction(name='u_true', grid=grid,
+                              time_order=2, space_order=space_order)
+        src = SparseTimeFunction(name='src', grid=grid, npoint=1, nt=nt,
+                                  coordinates=src_coords)
+        src.data[:, 0] = ricker_wavelet(time_values, f0)
+        rec_obs = SparseTimeFunction(name='rec_obs', grid=grid, npoint=nrec, nt=nt,
+                                      coordinates=rec_coords)
+
+        pde = (1.0 / vel_true**2) * u_true.dt2 - u_true.laplace
+        stencil = Eq(u_true.forward, solve(pde, u_true.forward))
+        src_term = src.inject(field=u_true.forward,
+                              expr=src * grid.stepping_dim.spacing**2 * vel_true**2)
+        rec_term = rec_obs.interpolate(expr=u_true)
+        op_true = Operator([stencil] + src_term + rec_term)
+        op_true.apply(time=nt-2, dt=dt)
+        d_obs = rec_obs.data.copy()
+
+        # Forward with current model -> synthetic data and save wavefield
+        u_syn = TimeFunction(name='u_syn', grid=grid,
+                             time_order=2, space_order=space_order, save=nt)
+        src_syn = SparseTimeFunction(name='src_syn', grid=grid, npoint=1, nt=nt,
+                                      coordinates=src_coords)
+        src_syn.data[:, 0] = ricker_wavelet(time_values, f0)
+        rec_syn = SparseTimeFunction(name='rec_syn', grid=grid, npoint=nrec, nt=nt,
+                                      coordinates=rec_coords)
+
+        pde_syn = (1.0 / vel_model**2) * u_syn.dt2 - u_syn.laplace
+        stencil_syn = Eq(u_syn.forward, solve(pde_syn, u_syn.forward))
+        src_term_syn = src_syn.inject(field=u_syn.forward,
+                                       expr=src_syn * grid.stepping_dim.spacing**2 * vel_model**2)
+        rec_term_syn = rec_syn.interpolate(expr=u_syn)
+        op_syn = Operator([stencil_syn] + src_term_syn + rec_term_syn)
+        op_syn.apply(time=nt-2, dt=dt)
+
+        # Compute residual and objective
+        residual_data = rec_syn.data - d_obs
+        objective = 0.5 * np.sum(residual_data**2)
+
+        # Adjoint propagation with gradient computation
+        m = Function(name='m', grid=grid, space_order=space_order)
+        m.data[:] = 1.0 / vel_model.data**2
+
+        grad = Function(name='grad', grid=grid)
+        v = TimeFunction(name='v', grid=grid, time_order=2, space_order=space_order)
+
+        residual = SparseTimeFunction(name='residual', grid=grid, npoint=nrec, nt=nt,
+                                       coordinates=rec_coords)
+        residual.data[:] = residual_data
+
+        pde_adj = m * v.dt2 - v.laplace
+        stencil_adj = Eq(v.backward, solve(pde_adj, v.backward))
+        dt_sym = grid.stepping_dim.spacing
+        res_term = residual.inject(field=v.backward,
+                                    expr=residual * dt_sym**2 / m)
+
+        # FWI gradient: grad += u * v.dt2
+        gradient_update = Eq(grad, grad + u_syn * v.dt2)
+
+        op_adj = Operator([stencil_adj] + res_term + [gradient_update])
+        op_adj.apply(u_syn=u_syn, v=v, dt=dt, time_M=nt-2)
+
+        return objective, grad.data.copy()
+```
+
+### Gradient Descent Update
+
+With the gradient computed, we can update the velocity model:
+
+```python
+def fwi_gradient_descent(vel_init, vel_true, niter, step_length,
+                          shots, rec_coords, grid, f0, dt, nt, time_values):
+    """Simple FWI using gradient descent.
+
+    Parameters
+    ----------
+    vel_init : np.ndarray
+        Initial velocity model
+    vel_true : Function
+        True velocity model
+    niter : int
+        Number of iterations
+    step_length : float
+        Step size for gradient descent
+    shots : list
+        List of source coordinates
+    rec_coords : np.ndarray
+        Receiver coordinates
+    grid : Grid
+        Computational grid
+
+    Returns
+    -------
+    tuple
+        (final_velocity, history)
+    """
+    vel_model = Function(name='vel_model', grid=grid, space_order=4)
+    vel_model.data[:] = vel_init
+
+    history = []
+
+    for iteration in range(niter):
+        total_objective = 0.0
+        total_gradient = np.zeros(grid.shape)
+
+        # Sum over all shots
+        for src_coords in shots:
+            obj, grad = compute_fwi_gradient(
+                vel_model, vel_true, src_coords, rec_coords,
+                grid, f0, dt, nt, time_values
+            )
+            total_objective += obj
+            total_gradient += grad
+
+        history.append(total_objective)
+        print(f"Iteration {iteration+1}: objective = {total_objective:.6f}")
+
+        # Gradient descent update
+        # Convert gradient w.r.t. m to gradient w.r.t. v
+        # dm = -step * grad_m
+        # Since m = 1/v^2, dv = -v^3 / 2 * dm
+        grad_v = -vel_model.data**3 / 2.0 * total_gradient
+        vel_model.data[:] -= step_length * grad_v / np.max(np.abs(grad_v))
+
+        # Apply bounds
+        vel_model.data[:] = np.clip(vel_model.data, 1.0, 4.0)
+
+    return vel_model.data.copy(), history
+```
+
+## Using the Module Interface {#sec-adjoint-module}
+
+The complete adjoint solvers are available in `src/adjoint/`:
+
+```python
+from src.adjoint import (
+    solve_forward_2d,       # Forward modeling
+    solve_adjoint_2d,       # Adjoint propagation
+    rtm_single_shot,        # RTM for one shot
+    rtm_multi_shot,         # RTM for multiple shots
+    compute_gradient_shot,  # FWI gradient for one shot
+    compute_residual,       # Data residual
+    ricker_wavelet,         # Source wavelet
+)
+
+# Forward modeling example
+result = solve_forward_2d(
+    shape=(101, 101),
+    extent=(1000., 1000.),
+    vp=velocity_model,
+    t_end=1000.0,
+    f0=0.010,
+    src_coords=np.array([[500., 20.]]),
+    rec_coords=receiver_coords,
+    space_order=4,
+    save_wavefield=True,
+)
+
+# Access results
+print(f"Receiver data shape: {result.rec.shape}")
+print(f"Wavefield shape: {result.u.shape}")
+
+# RTM imaging
+image = rtm_single_shot(
+    shape=(101, 101),
+    extent=(1000., 1000.),
+    vp_true=true_velocity,
+    vp_smooth=smooth_velocity,
+    src_coords=np.array([[500., 20.]]),
+    rec_coords=receiver_coords,
+    t_end=1000.0,
+    f0=0.010,
+)
+
+print(f"RTM image shape: {image.shape}")
+```
+
+## Exercises {#sec-adjoint-exercises}
+
+::: {#exr-adjoint-forward}
+**Forward modeling verification**
+
+Using the forward modeling solver:
+
+a) Create a homogeneous velocity model with $v = 2000$ m/s
+b) Verify that the wavefield is symmetric about the source location
+c) Measure the arrival time at receivers and verify it matches $d/v$
+   where $d$ is source-receiver distance
+:::
+
+::: {#exr-adjoint-reciprocity}
+**Source-receiver reciprocity**
+
+Source-receiver reciprocity states that swapping source and receiver
+positions gives the same recorded data.
+
+a) Compute forward data with source at $(x_s, z_s)$ and receiver at $(x_r, z_r)$
+b) Compute forward data with source at $(x_r, z_r)$ and receiver at $(x_s, z_s)$
+c) Verify the two recordings are identical (up to numerical precision)
+:::
+
+::: {#exr-adjoint-rtm-reflector}
+**RTM imaging of a single reflector**
+
+a) Create a two-layer model with a horizontal interface at depth $z = 500$ m
+b) Create a smooth (no reflector) background model
+c) Perform RTM with a single shot at the center of the model
+d) Verify the image shows a reflector at the correct depth
+e) Add more shots and observe how the image improves
+:::
+
+::: {#exr-adjoint-gradient}
+**FWI gradient verification**
+
+The gradient can be verified using finite differences:
+
+$$
+\frac{\partial \Phi}{\partial m_i} \approx \frac{\Phi(m + \epsilon e_i) - \Phi(m - \epsilon e_i)}{2\epsilon}
+$$
+
+a) Compute the FWI gradient using the adjoint-state method
+b) Compute the gradient numerically for a few grid points
+c) Compare the two and verify they match to within a few percent
+:::
+
+::: {#exr-adjoint-damping}
+**Effect of absorbing boundaries**
+
+a) Run forward modeling without absorbing boundaries (reflections from edges)
+b) Add a damping layer near the boundaries
+c) Compare the receiver recordings with and without damping
+d) Modify the adjoint operator to negate the damping term
+:::
+
+## Key Takeaways {#sec-adjoint-summary}
+
+1. **Inverse problems** seek model parameters from observed data, in
+   contrast to forward problems that compute solutions from known models.
+
+2. **The adjoint-state method** provides an efficient way to compute
+   gradients of PDE-constrained objective functions. The cost is one
+   forward and one adjoint solve, independent of model size.
+
+3. **Reverse Time Migration (RTM)** creates images by correlating
+   forward and adjoint wavefields. The imaging condition is
+   $\sum_t u[t] \cdot v[t]$.
+
+4. **Full Waveform Inversion (FWI)** iteratively updates velocity
+   models. The gradient is $\sum_t u[t] \cdot v_{tt}[t]$.
+
+5. **SparseTimeFunction** in Devito handles sources and receivers
+   at arbitrary (non-grid) locations through interpolation.
+
+6. **The adjoint equation** for the undamped acoustic wave equation
+   is the same PDE solved backward in time. With damping, the
+   damping term must be negated.
+
+7. **Explicit Devito API** (Grid, Function, TimeFunction, Eq, Operator)
+   provides full control over the discretization without high-level
+   convenience classes.
+
+8. **Memory management** is crucial for RTM/FWI. The forward wavefield
+   must be stored for correlation, requiring careful memory planning
+   or checkpointing schemes.
+
+9. **Multi-shot stacking** improves image quality by combining
+   information from different illumination angles.
+
+10. **Gradient descent** with proper step-length selection converges
+    the FWI objective. More sophisticated optimizers (L-BFGS, Newton-CG)
+    provide faster convergence.
+
+## Full Waveform Inversion Implementation {#sec-fwi-implementation}
+
+This section presents a complete FWI implementation using the module
+interface. The implementation includes gradient computation, step length
+selection, and box constraints.
+
+### FWI Algorithm
+
+The FWI gradient descent algorithm is:
+
+1. Initialize with a smooth velocity model $\mathbf{v}_0$
+2. For $k = 0, 1, 2, \ldots$ until convergence:
+   a. Compute objective $\Phi(\mathbf{v}_k) = \frac{1}{2}\sum_s \|\mathbf{P}_r \mathbf{u}_s - \mathbf{d}_s\|^2$
+   b. Compute gradient $\nabla_{\mathbf{v}} \Phi$ using adjoint-state method
+   c. Choose step length $\alpha_k$
+   d. Update: $\mathbf{v}_{k+1} = \mathbf{v}_k - \alpha_k \nabla \Phi$
+   e. Apply box constraints: $\mathbf{v}_{k+1} = \text{clip}(\mathbf{v}_{k+1}, v_{\min}, v_{\max})$
+
+### Using the FWI Module
+
+The `src.adjoint` module provides a complete FWI implementation:
+
+```python
+import numpy as np
+from src.adjoint import (
+    fwi_gradient_descent,
+    create_circle_model,
+    FWIResult,
+)
+
+# Create velocity models
+shape = (101, 101)
+spacing = (10.0, 10.0)
+extent = (shape[0] * spacing[0], shape[1] * spacing[1])
+
+# True model with circular anomaly
+vp_true = create_circle_model(
+    shape, spacing,
+    vp_background=2.5,  # km/s
+    vp_circle=3.0,      # km/s
+)
+
+# Initial model (smooth, no anomaly)
+vp_initial = np.full(shape, 2.5, dtype=np.float32)
+
+# Acquisition geometry
+nshots = 9
+src_positions = np.zeros((nshots, 2))
+src_positions[:, 0] = np.linspace(100, 900, nshots)  # x
+src_positions[:, 1] = 20.0  # z (near surface)
+
+nrec = 101
+rec_coords = np.zeros((nrec, 2))
+rec_coords[:, 0] = np.linspace(0, 1000, nrec)
+rec_coords[:, 1] = 980.0  # z (bottom of model)
+
+# Run FWI
+result = fwi_gradient_descent(
+    shape=shape,
+    extent=extent,
+    vp_initial=vp_initial,
+    vp_true=vp_true,
+    src_positions=src_positions,
+    rec_coords=rec_coords,
+    f0=0.010,      # Peak frequency in kHz (10 Hz)
+    t_end=1000.0,  # Simulation time in ms
+    niter=5,
+    vmin=2.0,      # Minimum velocity constraint
+    vmax=3.5,      # Maximum velocity constraint
+)
+
+# Result is an FWIResult dataclass
+print(f"Initial objective: {result.history[0]:.2f}")
+print(f"Final objective: {result.history[-1]:.2f}")
+print(f"Objective decrease: {(1 - result.history[-1]/result.history[0])*100:.1f}%")
+```
+
+### Step Length Selection
+
+The step length $\alpha$ controls how far we move along the gradient direction.
+Two common approaches are:
+
+**Simple scaling**: Scale by the maximum gradient magnitude:
+$$
+\alpha = \frac{\alpha_0}{\max_i |\nabla \Phi_i|}
+$$
+
+**Backtracking line search**: Start with a large $\alpha$ and reduce until
+the Armijo condition is satisfied:
+$$
+\Phi(\mathbf{v} - \alpha \nabla \Phi) \leq \Phi(\mathbf{v}) - c \alpha \|\nabla \Phi\|^2
+$$
+
+The module supports both methods:
+
+```python
+# Simple scaling (default)
+result = fwi_gradient_descent(..., step_length_method='simple')
+
+# Backtracking line search
+result = fwi_gradient_descent(..., step_length_method='backtracking')
+```
+
+### Box Constraints
+
+Velocity values must be physically reasonable. Box constraints enforce:
+$$
+v_{\min} \leq v(x, z) \leq v_{\max}
+$$
+
+This is implemented as a simple projection after each update:
+$$
+\mathbf{v}_{k+1} = \text{clip}(\mathbf{v}_{k+1}, v_{\min}, v_{\max})
+$$
+
+## Regularization {#sec-regularization}
+
+Seismic inversion problems are ill-posed, meaning small changes in data
+can cause large changes in the recovered model. Regularization stabilizes
+the inversion by adding prior information.
+
+### Tikhonov Regularization
+
+Tikhonov (L2) regularization penalizes large model gradients:
+
+$$
+\Phi_{\text{reg}}(\mathbf{m}) = \Phi_{\text{data}}(\mathbf{m}) + \lambda \|\nabla \mathbf{m}\|_2^2
+$$ {#eq-tikhonov}
+
+where $\lambda$ is the regularization weight. This promotes smooth models.
+
+The gradient of the regularization term is:
+$$
+\nabla_{\mathbf{m}} (\lambda \|\nabla \mathbf{m}\|_2^2) = -2\lambda \nabla^2 \mathbf{m}
+$$
+
+### Total Variation Regularization
+
+Total Variation (TV) regularization preserves sharp edges:
+
+$$
+\Phi_{\text{TV}}(\mathbf{m}) = \Phi_{\text{data}}(\mathbf{m}) + \lambda \int |\nabla \mathbf{m}| \, d\mathbf{x}
+$$ {#eq-tv-reg}
+
+The L1 norm of the gradient promotes sparsity in the gradient domain,
+which means the model can have sharp discontinuities (edges) while
+being otherwise smooth.
+
+### Implementation Considerations
+
+For seismic imaging, practical regularization includes:
+
+1. **Depth weighting**: Compensate for geometric spreading
+2. **Laplacian smoothing**: Remove high-wavenumber artifacts
+3. **Bounds**: Physical constraints on velocity range
+4. **Muting**: Exclude near-surface effects
+
+## Least-Squares RTM {#sec-lsrtm}
+
+Standard RTM produces images with acquisition footprint artifacts and
+amplitude distortions. Least-Squares RTM (LSRTM) addresses these issues
+by iteratively improving the image.
+
+### Born Approximation
+
+LSRTM is based on the Born approximation, which linearizes the wave
+equation around a smooth background model. The scattered wavefield
+due to a perturbation $\delta m$ in squared slowness is:
+
+\begin{align}
+m_0 \frac{\partial^2 p_0}{\partial t^2} - \nabla^2 p_0 &= s \label{eq:born1} \\
+m_0 \frac{\partial^2 \delta p}{\partial t^2} - \nabla^2 \delta p &= -\delta m \frac{\partial^2 p_0}{\partial t^2} \label{eq:born2}
+\end{align}
+
+where:
+
+- $m_0 = 1/v_0^2$ is the background squared slowness
+- $p_0$ is the background wavefield
+- $\delta p$ is the scattered wavefield
+- $\delta m$ is the reflectivity (perturbation)
+
+### LSRTM Formulation
+
+LSRTM solves the linear inverse problem:
+
+$$
+\min_{\mathbf{m}} \frac{1}{2} \|\mathbf{L} \mathbf{m} - \mathbf{d}\|_2^2
+$$ {#eq-lsrtm-objective}
+
+where:
+
+- $\mathbf{L}$ is the Born modeling operator
+- $\mathbf{m}$ is the reflectivity image
+- $\mathbf{d}$ is the observed data
+
+The solution uses steepest descent:
+
+$$
+\mathbf{m}_{k+1} = \mathbf{m}_k - \alpha_k \mathbf{g}_k
+$$
+
+where $\mathbf{g}_k = \mathbf{L}^T (\mathbf{L} \mathbf{m}_k - \mathbf{d})$ is the gradient.
+
+### Barzilai-Borwein Step Length
+
+The Barzilai-Borwein method computes step length from consecutive
+gradients without line search:
+
+$$
+\alpha_k^{BB1} = \frac{\mathbf{s}_{k-1}^T \mathbf{s}_{k-1}}{\mathbf{s}_{k-1}^T \mathbf{y}_{k-1}}
+\quad \text{or} \quad
+\alpha_k^{BB2} = \frac{\mathbf{s}_{k-1}^T \mathbf{y}_{k-1}}{\mathbf{y}_{k-1}^T \mathbf{y}_{k-1}}
+$$
+
+where $\mathbf{s}_{k-1} = \mathbf{m}_k - \mathbf{m}_{k-1}$ and
+$\mathbf{y}_{k-1} = \mathbf{g}_k - \mathbf{g}_{k-1}$.
+
+### Using the LSRTM Module
+
+```python
+import numpy as np
+from src.adjoint import (
+    lsrtm_steepest_descent,
+    create_layered_model,
+    LSRTMResult,
+)
+
+# Create velocity models
+shape = (101, 101)
+spacing = (10.0, 10.0)
+extent = (shape[0] * spacing[0], shape[1] * spacing[1])
+
+# True model with layers
+vp_true = create_layered_model(
+    shape, spacing,
+    vp_layers=[1.5, 2.0, 2.5, 3.0],
+)
+
+# Smooth background model
+from scipy.ndimage import gaussian_filter
+vp_smooth = gaussian_filter(vp_true, sigma=(10, 10))
+
+# Acquisition geometry
+nshots = 21
+src_positions = np.zeros((nshots, 2))
+src_positions[:, 0] = np.linspace(50, 950, nshots)
+src_positions[:, 1] = 30.0
+
+nrec = 101
+rec_coords = np.zeros((nrec, 2))
+rec_coords[:, 0] = np.linspace(0, 1000, nrec)
+rec_coords[:, 1] = 30.0
+
+# Run LSRTM
+result = lsrtm_steepest_descent(
+    shape=shape,
+    extent=extent,
+    vp_smooth=vp_smooth,
+    vp_true=vp_true,
+    src_positions=src_positions,
+    rec_coords=rec_coords,
+    f0=0.025,      # 25 Hz
+    t_end=1000.0,
+    niter=20,
+)
+
+# Compare initial RTM and final LSRTM
+print(f"Initial RTM max amplitude: {np.max(np.abs(result.image_initial)):.6f}")
+print(f"Final LSRTM max amplitude: {np.max(np.abs(result.image_final)):.6f}")
+print(f"Objective reduced by: {(1 - result.history[-1]/result.history[0])*100:.1f}%")
+```
+
+### RTM vs LSRTM Comparison
+
+LSRTM has several advantages over conventional RTM:
+
+1. **Amplitude preservation**: LSRTM produces true-amplitude images
+2. **Artifact reduction**: Acquisition footprint is minimized
+3. **Resolution**: The iterative process sharpens the image
+4. **Consistency**: Born-modeled data matches observed data
+
+The cost is increased computation (typically 10-20 iterations).
+
+## Additional Exercises {#sec-advanced-exercises}
+
+::: {#exr-fwi-circle}
+**FWI for circular anomaly**
+
+Using the FWI module:
+
+a) Create a circular anomaly model with $v_{\text{background}} = 2.5$ km/s
+   and $v_{\text{circle}} = 3.0$ km/s
+b) Start with a homogeneous initial model at $v = 2.5$ km/s
+c) Run FWI for 10 iterations with 9 shots
+d) Plot the initial, true, and recovered models
+e) Verify the objective function decreases monotonically
+:::
+
+::: {#exr-fwi-step-length}
+**Step length comparison**
+
+a) Run FWI with `step_length_method='simple'` for 10 iterations
+b) Run FWI with `step_length_method='backtracking'` for 10 iterations
+c) Compare convergence histories
+d) Which method converges faster? Why?
+:::
+
+::: {#exr-lsrtm-vs-rtm}
+**LSRTM vs RTM image quality**
+
+a) Create a layered velocity model with 4 horizontal interfaces
+b) Compute the standard RTM image (1 iteration of LSRTM)
+c) Compute the LSRTM image after 20 iterations
+d) Compare the images: which one has better amplitude fidelity?
+e) Take a vertical profile through both images and compare
+   to the true reflectivity
+:::
+
+::: {#exr-regularization}
+**Effect of regularization**
+
+Modify the FWI objective to include Tikhonov regularization:
+
+a) Implement the gradient of the Tikhonov term: $-2\lambda \nabla^2 \mathbf{m}$
+b) Run FWI with different values of $\lambda \in \{0, 0.01, 0.1, 1.0\}$
+c) Compare the recovered models
+d) What is the effect of increasing $\lambda$?
+:::
+
+::: {#exr-multi-param}
+**Multi-parameter inversion (advanced)**
+
+In real applications, we may want to invert for multiple parameters
+(velocity, density, anisotropy). Consider the acoustic equation with
+variable density:
+
+$$
+\rho \frac{\partial^2 u}{\partial t^2} = \nabla \cdot \left(\frac{1}{\rho} \nabla u\right) + s
+$$
+
+a) Derive the gradient with respect to both velocity and density
+b) Discuss the coupling between velocity and density (trade-offs)
+c) Propose a strategy for simultaneous inversion
+:::

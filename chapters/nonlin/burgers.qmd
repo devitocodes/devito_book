@@ -1,0 +1,326 @@
+## 2D Burgers Equation with Devito {#sec-burgers-devito}
+
+The Burgers equation is a fundamental nonlinear PDE that combines
+advection and diffusion. It serves as a prototype for understanding
+shock formation, numerical stability in nonlinear problems, and
+provides insight into the Navier-Stokes equations.
+
+### The Coupled Burgers Equations
+
+The 2D coupled Burgers equations describe a simplified model of
+viscous fluid flow:
+
+$$
+\frac{\partial u}{\partial t} + u \frac{\partial u}{\partial x} + v \frac{\partial u}{\partial y} = \nu \left(\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2}\right)
+$$ {#eq-burgers-u}
+
+$$
+\frac{\partial v}{\partial t} + u \frac{\partial v}{\partial x} + v \frac{\partial v}{\partial y} = \nu \left(\frac{\partial^2 v}{\partial x^2} + \frac{\partial^2 v}{\partial y^2}\right)
+$$ {#eq-burgers-v}
+
+Here $u$ and $v$ are velocity components, and $\nu$ is the viscosity
+(kinematic). The left-hand side represents nonlinear advection
+(transport of the field by itself), while the right-hand side
+represents viscous diffusion.
+
+### Physical Interpretation
+
+The Burgers equation exhibits several important physical phenomena:
+
+| Feature | Description |
+|---------|-------------|
+| **Advection** | $u \partial u/\partial x$ causes wave steepening |
+| **Diffusion** | $\nu \nabla^2 u$ smooths gradients |
+| **Shock formation** | When advection dominates, discontinuities develop |
+| **Balance** | Viscosity prevents infinite gradients |
+
+The ratio of advection to diffusion is characterized by the Reynolds
+number: $\text{Re} = UL/\nu$, where $U$ is a characteristic velocity
+and $L$ is a length scale. High Reynolds numbers (low viscosity) lead
+to steep gradients or shocks.
+
+### Discretization Strategy
+
+The Burgers equation requires careful treatment of the advection
+terms. Using centered differences for $u \partial u/\partial x$ leads
+to instability. Instead, we use **upwind differencing** for advection:
+
+**Advection terms (first-order backward):**
+$$
+u \frac{\partial u}{\partial x} \approx u_{i,j}^n \frac{u_{i,j}^n - u_{i-1,j}^n}{\Delta x}
+$$
+
+**Diffusion terms (second-order centered):**
+$$
+\frac{\partial^2 u}{\partial x^2} \approx \frac{u_{i+1,j}^n - 2u_{i,j}^n + u_{i-1,j}^n}{\Delta x^2}
+$$
+
+This **mixed discretization** uses:
+
+- First-order backward differences (`fd_order=1`, `side=left`) for advection
+- Second-order centered differences (`.laplace`) for diffusion
+
+### Implementation with first_derivative
+
+Devito's `first_derivative` function allows explicit control over
+the finite difference order and stencil direction:
+
+```python
+from devito import Grid, TimeFunction, first_derivative, Eq, Operator
+from devito.types import left
+
+# Create grid and velocity fields
+grid = Grid(shape=(Nx, Ny), extent=(Lx, Ly))
+x, y = grid.dimensions
+
+u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
+v = TimeFunction(name='v', grid=grid, time_order=1, space_order=2)
+
+# First-order backward differences for advection
+# fd_order=1 gives first-order accuracy
+# side=left gives backward difference: (u[x] - u[x-dx]) / dx
+u_dx = first_derivative(u, dim=x, side=left, fd_order=1)
+u_dy = first_derivative(u, dim=y, side=left, fd_order=1)
+v_dx = first_derivative(v, dim=x, side=left, fd_order=1)
+v_dy = first_derivative(v, dim=y, side=left, fd_order=1)
+
+# Print to see the stencil
+print(f"u_dx = {u_dx}")
+# Output: u(t, x, y)/h_x - u(t, x - h_x, y)/h_x
+```
+
+The key parameters are:
+
+| Parameter | Purpose | Example |
+|-----------|---------|---------|
+| `dim` | Differentiation dimension | `x` or `y` |
+| `side` | Stencil direction | `left` (backward) |
+| `fd_order` | Finite difference order | `1` for first-order |
+
+### Building the Burgers Equations
+
+With the explicit derivatives defined, we write the equations:
+
+```python
+from devito import Constant, solve
+
+# Viscosity as symbolic constant
+nu = Constant(name='nu')
+
+# Burgers equations with backward advection and centered diffusion
+# u_t + u*u_x + v*u_y = nu * laplace(u)
+eq_u = Eq(u.dt + u*u_dx + v*u_dy, nu*u.laplace, subdomain=grid.interior)
+eq_v = Eq(v.dt + u*v_dx + v*v_dy, nu*v.laplace, subdomain=grid.interior)
+
+# Solve for the update expressions
+stencil_u = solve(eq_u, u.forward)
+stencil_v = solve(eq_v, v.forward)
+
+update_u = Eq(u.forward, stencil_u)
+update_v = Eq(v.forward, stencil_v)
+```
+
+The `subdomain=grid.interior` ensures the stencil is only applied
+away from boundaries, where we set Dirichlet conditions separately.
+
+### Boundary Conditions
+
+Dirichlet boundary conditions require explicit equations for each
+boundary:
+
+```python
+t = grid.stepping_dim
+bc_value = 1.0  # Boundary condition value
+
+# u boundary conditions
+bc_u = [Eq(u[t+1, 0, y], bc_value)]        # left
+bc_u += [Eq(u[t+1, Nx-1, y], bc_value)]    # right
+bc_u += [Eq(u[t+1, x, 0], bc_value)]       # bottom
+bc_u += [Eq(u[t+1, x, Ny-1], bc_value)]    # top
+
+# v boundary conditions (similar)
+bc_v = [Eq(v[t+1, 0, y], bc_value)]        # left
+bc_v += [Eq(v[t+1, Nx-1, y], bc_value)]    # right
+bc_v += [Eq(v[t+1, x, 0], bc_value)]       # bottom
+bc_v += [Eq(v[t+1, x, Ny-1], bc_value)]    # top
+
+# Create operator with updates and boundary conditions
+op = Operator([update_u, update_v] + bc_u + bc_v)
+```
+
+### Alternative: VectorTimeFunction Approach
+
+For coupled vector equations like Burgers, Devito's `VectorTimeFunction`
+provides a more compact notation. The velocity field is represented as
+a single vector $\mathbf{U} = (u, v)$:
+
+$$
+\frac{\partial \mathbf{U}}{\partial t} + (\nabla \mathbf{U}) \cdot \mathbf{U} = \nu \nabla^2 \mathbf{U}
+$$
+
+```python
+from devito import VectorTimeFunction, grad
+
+# Create vector velocity field
+U = VectorTimeFunction(name='U', grid=grid, space_order=2)
+
+# U[0] is u-component, U[1] is v-component
+# Initialize components
+U[0].data[0, :, :] = u_initial
+U[1].data[0, :, :] = v_initial
+
+# Vector form of Burgers equation
+# U_forward = U - dt * (grad(U)*U - nu * laplace(U))
+s = grid.time_dim.spacing  # dt symbol
+update_U = Eq(U.forward, U - s * (grad(U)*U - nu*U.laplace),
+              subdomain=grid.interior)
+
+# The grad(U)*U term represents advection:
+# [u*u_x + v*u_y]
+# [u*v_x + v*v_y]
+```
+
+This approach is mathematically elegant and maps directly to the
+vector notation used in fluid dynamics.
+
+### Using the Solver
+
+The `src.nonlin.burgers_devito` module provides ready-to-use solvers:
+
+```python
+from src.nonlin.burgers_devito import (
+    solve_burgers_2d,
+    solve_burgers_2d_vector,
+    init_hat,
+)
+
+# Solve with scalar TimeFunction approach
+result = solve_burgers_2d(
+    Lx=2.0, Ly=2.0,   # Domain size
+    nu=0.01,           # Viscosity
+    Nx=41, Ny=41,      # Grid points
+    T=0.5,             # Final time
+    sigma=0.0009,      # Stability parameter
+)
+
+print(f"Final time: {result.t}")
+print(f"u range: [{result.u.min():.3f}, {result.u.max():.3f}]")
+print(f"v range: [{result.v.min():.3f}, {result.v.max():.3f}]")
+```
+
+### Stability Considerations
+
+The explicit scheme requires satisfying both advection and diffusion
+stability conditions:
+
+**CFL condition for advection:**
+$$
+C = \frac{|u|_{\max} \Delta t}{\Delta x} \leq 1
+$$
+
+**Fourier condition for diffusion (2D):**
+$$
+F = \frac{\nu \Delta t}{\Delta x^2} \leq 0.25
+$$
+
+The solver uses:
+$$
+\Delta t = \sigma \frac{\Delta x \cdot \Delta y}{\nu}
+$$
+where $\sigma$ is a small stability parameter (default 0.0009).
+
+### Visualizing Shock Formation
+
+The evolution shows how the initially sharp "hat" profile evolves:
+
+```python
+import matplotlib.pyplot as plt
+from src.nonlin.burgers_devito import solve_burgers_2d
+
+# Low viscosity case - steeper gradients
+result = solve_burgers_2d(
+    Lx=2.0, Ly=2.0,
+    nu=0.01,
+    Nx=41, Ny=41,
+    T=0.5,
+    save_history=True,
+    save_every=100,
+)
+
+fig, axes = plt.subplots(1, len(result.t_history), figsize=(15, 4))
+for i, (t, u) in enumerate(zip(result.t_history, result.u_history)):
+    axes[i].contourf(result.x, result.y, u.T, levels=20)
+    axes[i].set_title(f't = {t:.3f}')
+    axes[i].set_xlabel('x')
+    axes[i].set_ylabel('y')
+plt.tight_layout()
+```
+
+### Effect of Viscosity
+
+Comparing low and high viscosity reveals the balance between
+advection and diffusion:
+
+```python
+from src.nonlin.burgers_devito import solve_burgers_2d
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+for ax, nu, title in zip(axes, [0.1, 0.01], ['High viscosity', 'Low viscosity']):
+    result = solve_burgers_2d(
+        Lx=2.0, Ly=2.0,
+        nu=nu,
+        Nx=41, Ny=41,
+        T=0.5,
+    )
+    c = ax.contourf(result.x, result.y, result.u.T, levels=20)
+    ax.set_title(f'{title} (nu={nu})')
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    plt.colorbar(c, ax=ax)
+```
+
+With high viscosity ($\nu = 0.1$), diffusion dominates and the
+solution smooths rapidly. With low viscosity ($\nu = 0.01$),
+advection dominates, the "hat" moves and steepens, and gradients
+remain sharper.
+
+### Comparison: Scalar vs Vector Implementation
+
+Both implementations solve the same equations but offer different
+trade-offs:
+
+| Aspect | Scalar (`solve_burgers_2d`) | Vector (`solve_burgers_2d_vector`) |
+|--------|---------------------------|-----------------------------------|
+| **Derivatives** | Explicit `first_derivative()` | Implicit via `grad(U)*U` |
+| **Control** | Full control over stencils | Uses default differentiation |
+| **Code length** | More verbose | More compact |
+| **Debugging** | Easier to inspect | More opaque |
+
+For production use where precise control over numerical schemes is
+needed, the scalar approach with explicit `first_derivative()` is
+preferred. The vector approach is useful for rapid prototyping and
+when the default schemes are acceptable.
+
+### Summary
+
+Key points for solving Burgers equation with Devito:
+
+1. **Mixed discretization**: Use first-order upwind for advection,
+   second-order centered for diffusion
+2. **first_derivative()**: Enables explicit control of stencil order
+   and direction via `fd_order` and `side` parameters
+3. **VectorTimeFunction**: Alternative approach using `grad(U)*U`
+   for more compact code
+4. **Stability**: Must satisfy both CFL and Fourier conditions
+5. **Viscosity**: Controls the balance between sharp gradients
+   (shocks) and smooth solutions
+
+The module `src.nonlin.burgers_devito` provides:
+
+- `solve_burgers_2d`: Scalar implementation with explicit derivatives
+- `solve_burgers_2d_vector`: Vector implementation using `VectorTimeFunction`
+- `init_hat`: Classic hat-function initial condition
+- `sinusoidal_initial_condition`: Smooth sinusoidal initial data
+- `gaussian_initial_condition`: Gaussian pulse initial data

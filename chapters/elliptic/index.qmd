@@ -1,0 +1,3 @@
+# Elliptic PDEs {#sec-ch-elliptic}
+
+{{< include elliptic.qmd >}}

@@ -1,0 +1,1471 @@
+## Introduction to High-Order Methods {#sec-highorder-intro}
+
+In previous chapters, we have used second-order accurate finite difference
+schemes for spatial discretization. While these schemes are straightforward
+and widely applicable, they can introduce significant numerical errors,
+particularly *numerical dispersion* in wave propagation problems. This
+chapter explores high-order methods that mitigate these errors.
+
+### Why High-Order Methods?
+
+When solving the wave equation, standard finite difference schemes introduce
+*numerical dispersion*: different frequency components of the solution travel
+at different speeds, causing waves to distort as they propagate. This effect
+becomes more pronounced when:
+
+- The wavelength approaches the grid spacing (high wavenumber content)
+- Waves propagate over long distances
+- Multiple reflections occur
+
+The severity of numerical dispersion depends on the *order* of the spatial
+discretization. Higher-order schemes use wider stencils with more grid points,
+achieving better accuracy for the same grid spacing or allowing coarser grids
+for the same accuracy.
+
+### Chapter Overview
+
+This chapter covers:
+
+1. **Dispersion Analysis** (@sec-highorder-dispersion): Understanding how
+   numerical schemes affect wave propagation
+2. **The Fornberg Algorithm** (@sec-highorder-fornberg): Computing finite
+   difference weights for arbitrary accuracy orders
+3. **Dispersion-Relation-Preserving Schemes** (@sec-highorder-drp): Optimized
+   coefficients that minimize dispersion error
+4. **Implementation in Devito** (@sec-highorder-devito): Using custom weights
+   in Devito solvers
+5. **Comparison Studies** (@sec-highorder-comparison): Quantitative comparison
+   of standard versus DRP schemes
+6. **ADER Schemes** (@sec-ader): High-order time integration by converting
+   time derivatives to spatial derivatives
+7. **Staggered Grids** (@sec-staggered): First-order velocity-pressure
+   formulations on staggered grids
+
+
+## Dispersion Analysis {#sec-highorder-dispersion}
+
+To understand numerical dispersion, we analyze how finite difference schemes
+affect the relationship between frequency and wavenumber---the *dispersion
+relation*.
+
+### The Continuous Wave Equation
+
+Consider the 1D acoustic wave equation:
+$$
+\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
+$$ {#eq-highorder-wave}
+
+where $c$ is the wave speed. Substituting a plane wave solution
+$u(x, t) = e^{i(kx - \omega t)}$ yields the *analytical dispersion relation*:
+$$
+\omega = c k
+$$ {#eq-highorder-dispersion-analytic}
+
+This means all frequency components travel at the same speed $c$,
+preserving the wave shape.
+
+### Phase and Group Velocity
+
+The *phase velocity* $v_p$ describes how individual wave crests move:
+$$
+v_p = \frac{\omega}{k}
+$$ {#eq-highorder-phase-velocity}
+
+For the continuous wave equation, $v_p = c$ for all wavenumbers.
+
+The *group velocity* $v_g$ describes how energy (or wave packets) propagates:
+$$
+v_g = \frac{d\omega}{dk}
+$$ {#eq-highorder-group-velocity}
+
+For non-dispersive media, $v_g = v_p = c$.
+
+### The Numerical Dispersion Relation
+
+When we discretize @eq-highorder-wave using central differences in space
+and time, the discretized equation is:
+$$
+\frac{u_i^{n+1} - 2u_i^n + u_i^{n-1}}{\Delta t^2} = c^2 \sum_{m=-M}^{M} a_m \frac{u_{i+m}^n}{h^2}
+$$ {#eq-highorder-discrete-wave}
+
+where $h$ is the grid spacing, $\Delta t$ is the time step, and $a_m$ are
+the finite difference weights for the second derivative.
+
+Substituting the plane wave $u_i^n = e^{i(k i h - \omega n \Delta t)}$ gives
+the *numerical dispersion relation*:
+$$
+\frac{2(1 - \cos(\omega \Delta t))}{\Delta t^2} = \frac{c^2}{h^2} \sum_{m=-M}^{M} a_m e^{i m k h}
+$$ {#eq-highorder-numerical-dispersion}
+
+For symmetric stencils ($a_{-m} = a_m$), this simplifies to:
+$$
+\frac{2(1 - \cos(\omega \Delta t))}{\Delta t^2} = \frac{c^2}{h^2} \left[ a_0 + 2\sum_{m=1}^{M} a_m \cos(mkh) \right]
+$$
+
+### The Velocity Error Ratio
+
+To quantify numerical dispersion, we compute the ratio of the numerical
+phase velocity to the analytical phase velocity. Following Chen, Peng,
+and Li [@chen2022framework], the *velocity error ratio* is:
+$$
+\delta = \frac{v_{FD}}{c} = \frac{1}{r\beta} \arccos\left(1 + r^2 \left[ \sum_{m=1}^{M} a_m (\cos(m\beta\cos\alpha) + \cos(m\beta\sin\alpha) - 2) \right] \right)
+$$ {#eq-highorder-velocity-ratio}
+
+where:
+
+- $r = c \Delta t / h$ is the Courant number
+- $\beta = k h$ is the normalized wavenumber
+- $\alpha$ is the propagation angle (in 2D/3D)
+
+When $\delta = 1$, the numerical scheme is exact. Values $\delta \neq 1$
+indicate dispersion error.
+
+### Python Implementation
+
+```python
+import numpy as np
+
+def dispersion_ratio(weights, h, dt, v, k, alpha=0):
+    """
+    Compute the velocity error ratio for a finite difference scheme.
+
+    Parameters
+    ----------
+    weights : array_like
+        Symmetric FD weights [a_0, a_1, ..., a_M] for the second derivative
+    h : float
+        Grid spacing
+    dt : float
+        Time step
+    v : float
+        Wave velocity
+    k : float
+        Wavenumber
+    alpha : float
+        Propagation angle (radians), default 0 for 1D
+
+    Returns
+    -------
+    float
+        Velocity error ratio v_FD / v
+    """
+    if k == 0:
+        return 1.0
+
+    m = len(weights)
+    # Sum over m = 1 to M
+    cosines = np.array([
+        np.cos(i * k * h * np.cos(alpha)) +
+        np.cos(i * k * h * np.sin(alpha)) - 2
+        for i in range(1, m)
+    ])
+    total = np.sum(np.array(weights)[1:] * cosines)
+
+    # Compute the argument of arccos
+    arg = 1 + (v**2 * dt**2 / h**2) * total
+
+    # Clamp to valid range for arccos
+    arg = np.clip(arg, -1, 1)
+
+    ratio = np.arccos(arg) / (v * k * dt)
+    return ratio
+```
+
+### Dispersion Behavior
+
+For standard Taylor-series-derived stencils, the dispersion error:
+
+1. **Increases with $\beta = kh$**: Shorter wavelengths (relative to grid
+   spacing) experience more dispersion
+2. **Varies with Courant number**: Different velocities within the model
+   produce different dispersion characteristics
+3. **Depends on propagation direction**: In 2D/3D, waves aligned with grid
+   axes experience different dispersion than diagonal propagation
+
+The goal of high-order and DRP schemes is to minimize this dispersion error
+across the relevant range of wavenumbers and Courant numbers.
+
+
+## The Fornberg Algorithm {#sec-highorder-fornberg}
+
+The Fornberg algorithm [@fornberg1988generation] computes finite difference
+weights of arbitrary accuracy on arbitrary point distributions. This is the
+standard method for generating Taylor-series-optimal coefficients.
+
+### Derivation of FD Weights
+
+For a function $f(x)$ sampled at points $x_0, x_1, \ldots, x_N$, we seek
+weights $w_j$ such that:
+$$
+f^{(m)}(x_0) \approx \sum_{j=0}^{N} w_j f(x_j)
+$$ {#eq-highorder-fd-weights}
+
+approximates the $m$-th derivative at $x_0$ with maximum accuracy.
+
+The weights are determined by requiring the approximation to be exact for
+polynomials up to degree $N$. For equally spaced points, a stencil with
+$2M+1$ points ($M$ on each side of the center) achieves accuracy $O(h^{2M})$
+for the second derivative.
+
+### Standard Stencil Coefficients
+
+The second derivative with a $(2M+1)$-point symmetric stencil:
+$$
+\frac{d^2 f}{dx^2} \approx \frac{1}{h^2} \sum_{m=-M}^{M} a_m f(x + mh)
+$$ {#eq-highorder-stencil}
+
+The Fornberg algorithm gives these weights for common stencil sizes:
+
+| Stencil Size | $a_0$ | $a_{\pm 1}$ | $a_{\pm 2}$ | $a_{\pm 3}$ | $a_{\pm 4}$ | Order |
+|--------------|-------|-------------|-------------|-------------|-------------|-------|
+| 3-point | $-2$ | $1$ | | | | $O(h^2)$ |
+| 5-point | $-5/2$ | $4/3$ | $-1/12$ | | | $O(h^4)$ |
+| 7-point | $-49/18$ | $3/2$ | $-3/20$ | $1/90$ | | $O(h^6)$ |
+| 9-point | $-205/72$ | $8/5$ | $-1/5$ | $8/315$ | $-1/560$ | $O(h^8)$ |
+
+### SymPy Implementation
+
+SymPy provides the Fornberg algorithm via `finite_diff_weights`:
+
+```python
+import sympy as sp
+import numpy as np
+
+def fornberg_weights(M, derivative=2):
+    """
+    Compute Fornberg FD weights for a symmetric stencil.
+
+    Parameters
+    ----------
+    M : int
+        Number of points on each side of center (total 2M+1 points)
+    derivative : int
+        Order of derivative (default 2)
+
+    Returns
+    -------
+    np.ndarray
+        Symmetric weights [a_0, a_1, ..., a_M]
+    """
+    # Generate points: 0, 1, -1, 2, -2, ..., M, -M
+    x = [(1 - (-1)**n * (2*n + 1)) // 4 for n in range(2*M + 1)]
+
+    # Compute weights using Fornberg's algorithm
+    weights = sp.finite_diff_weights(derivative, x, 0)
+
+    # Extract weights for the requested derivative
+    # The result is nested: weights[derivative][-1] gives the full stencil
+    full_weights = weights[derivative][-1]
+
+    # Convert to symmetric form [a_0, a_1, ..., a_M]
+    # Points are ordered: 0, 1, -1, 2, -2, ...
+    # We take every other weight starting from index 0
+    symmetric = np.array([float(full_weights[i]) for i in range(0, 2*M+1, 2)])
+
+    return symmetric
+
+
+# Example: 9-point stencil (M=4)
+weights = fornberg_weights(M=4)
+print(f"9-point stencil weights: {weights}")
+# Output: [-2.84722222  1.6        -0.2         0.02539683 -0.00178571]
+```
+
+### Truncation Error Analysis
+
+For the second derivative approximated by a $(2M+1)$-point stencil, the
+truncation error is:
+$$
+\frac{d^2 f}{dx^2} = \frac{1}{h^2} \sum_{m=-M}^{M} a_m f(x + mh) + O(h^{2M})
+$$ {#eq-highorder-truncation}
+
+The leading error term involves the $(2M+2)$-th derivative of $f$. Higher-order
+stencils:
+
+1. Reduce truncation error for smooth solutions
+2. Require more points per stencil (wider data dependencies)
+3. May have stability constraints on the time step
+
+
+## Dispersion-Relation-Preserving Schemes {#sec-highorder-drp}
+
+Dispersion-Relation-Preserving (DRP) schemes optimize the finite difference
+coefficients to minimize dispersion error rather than maximize Taylor series
+accuracy. This approach, pioneered by Tam and Webb [@tam1993drp], can
+significantly outperform standard schemes for wave propagation.
+
+### The Optimization Approach
+
+Standard Fornberg coefficients minimize truncation error in a Taylor series
+sense. DRP schemes instead minimize a measure of dispersion error over a
+range of wavenumbers.
+
+For a symmetric stencil, the coefficients must satisfy:
+
+**Constraint 1** (Consistency):
+$$
+a_0 + 2\sum_{m=1}^{M} a_m = 0
+$$
+
+**Constraint 2** (Second-order minimum accuracy):
+$$
+\sum_{m=1}^{M} a_m m^2 = 1
+$$
+
+**Additional constraints** (Higher-order accuracy):
+$$
+\frac{2}{(2n)!}\sum_{m=0}^{M} a_m m^{2n} = 0 \quad \text{for } n = 2, \ldots, \lfloor M/2 \rfloor
+$$
+
+With these constraints, the system is underdetermined, leaving degrees of
+freedom to optimize for dispersion.
+
+### Tam-Webb DRP Objective Function
+
+Tam and Webb minimize the $L^2$ norm of the error in Fourier space:
+$$
+\Phi(a_m) = \int_0^{\pi/2} \left| \varphi^2 + a_0 + 2\sum_{m=1}^{M} a_m \cos(m\varphi) \right|^2 d\varphi
+$$ {#eq-highorder-tamwebb-objective}
+
+where $\varphi = kh$ is the normalized wavenumber. The term $\varphi^2$
+represents the exact second derivative in Fourier space; the stencil terms
+approximate it.
+
+### Velocity-Based DRP Objective
+
+An alternative approach [@chen2022framework] directly minimizes the velocity
+error integrated over the relevant wavenumber and velocity ranges:
+$$
+\hat{\Phi}(a_m) = \int_{v_{min}}^{v_{max}} \int_0^{k_{max}(v)} \int_0^{\pi/4} |v_{FD} - v| \, d\alpha \, dk \, dv
+$$ {#eq-highorder-chen-objective}
+
+This directly targets the physical quantity of interest (velocity error)
+rather than a proxy (Fourier space error).
+
+### Python Implementation of DRP Optimization
+
+```python
+import numpy as np
+from scipy import optimize, integrate
+
+def drp_objective_tamwebb(a, M):
+    """
+    Tam-Webb DRP objective function.
+
+    Parameters
+    ----------
+    a : array_like
+        Coefficients [a_0, a_1, ..., a_M]
+    M : int
+        Stencil half-width
+
+    Returns
+    -------
+    float
+        Objective function value
+    """
+    x = np.linspace(0, np.pi/2, 201)
+    m = np.arange(1, M + 1)
+
+    # Fourier representation of the stencil
+    stencil_fourier = a[0] + 2 * np.sum(
+        [a[i] * np.cos(i * x) for i in range(1, M + 1)],
+        axis=0
+    )
+
+    # Error: should equal -x^2 for exact second derivative
+    error = x**2 + stencil_fourier
+
+    # Integrate squared error
+    return integrate.trapezoid(error**2, x=x)
+
+
+def compute_drp_weights(M, method='tamwebb'):
+    """
+    Compute DRP-optimized finite difference weights.
+
+    Parameters
+    ----------
+    M : int
+        Stencil half-width (total 2M+1 points)
+    method : str
+        Optimization method: 'tamwebb' or 'velocity'
+
+    Returns
+    -------
+    np.ndarray
+        Optimized weights [a_0, a_1, ..., a_M]
+    """
+    # Initial guess: Fornberg weights
+    initial = fornberg_weights(M)
+
+    # Constraints
+    constraints = []
+
+    # Constraint 1: a_0 + 2*sum(a_m) = 0
+    constraints.append({
+        'type': 'eq',
+        'fun': lambda x: x[0] + 2 * np.sum(x[1:])
+    })
+
+    # Constraint 2: sum(a_m * m^2) = 1
+    constraints.append({
+        'type': 'eq',
+        'fun': lambda x: np.sum([x[i] * i**2 for i in range(len(x))]) - 1
+    })
+
+    # Higher-order constraints (for n = 2 to M//2)
+    for n in range(2, (M + 1) // 2):
+        def constraint(x, n=n):
+            return np.sum([x[i] * i**(2*n) for i in range(len(x))])
+        constraints.append({'type': 'eq', 'fun': constraint})
+
+    # Optimize
+    if method == 'tamwebb':
+        objective = lambda a: drp_objective_tamwebb(a, M)
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+    result = optimize.minimize(
+        objective,
+        initial,
+        method='SLSQP',
+        constraints=constraints,
+        options={'ftol': 1e-15, 'maxiter': 500}
+    )
+
+    if not result.success:
+        print(f"Warning: Optimization did not converge: {result.message}")
+
+    return result.x
+```
+
+### Pre-computed DRP Coefficients
+
+For convenience, here are optimized DRP coefficients for common stencil sizes:
+
+```python
+# Pre-computed DRP coefficients for the second derivative
+DRP_COEFFICIENTS = {
+    # 9-point stencil (M=4) - Tam-Webb optimized
+    4: np.array([-2.94199219, 1.67723453, -0.24123423, 0.03838539, -0.00362139]),
+
+    # 7-point stencil (M=3) - Tam-Webb optimized
+    3: np.array([-2.79926470, 1.57407407, -0.18518519, 0.01851852]),
+
+    # 5-point stencil (M=2)
+    2: np.array([-2.5, 1.33333333, -0.08333333]),
+}
+```
+
+### Comparison: Fornberg vs DRP
+
+The key difference between Fornberg and DRP coefficients:
+
+| Property | Fornberg | DRP |
+|----------|----------|-----|
+| Optimization target | Taylor series truncation | Dispersion error |
+| Accuracy at low $kh$ | Optimal | Near-optimal |
+| Accuracy at high $kh$ | Degrades | Better maintained |
+| Best for | General purposes | Wave propagation |
+
+
+## Implementation in Devito {#sec-highorder-devito}
+
+Devito supports custom finite difference weights through the `weights`
+keyword argument to derivative methods. This allows straightforward
+implementation of DRP schemes.
+
+### Using Custom Weights in Devito
+
+The basic pattern for applying custom weights:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator, solve
+import numpy as np
+
+# Custom DRP weights for 9-point stencil
+weights = np.array([
+    -2.94199219, 1.67723453, -0.24123423, 0.03838539, -0.00362139
+])
+
+# Devito expects the full symmetric stencil: [a_M, ..., a_1, a_0, a_1, ..., a_M]
+full_weights = np.concatenate([weights[::-1], weights[1:]])
+
+# Create grid and field
+grid = Grid(shape=(201, 201), extent=(2000., 2000.))
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=8)
+
+# Use custom weights for the second derivative
+u_xx_custom = u.dx2(weights=full_weights)
+u_yy_custom = u.dy2(weights=full_weights)
+
+print(f"Custom Laplacian: {u_xx_custom + u_yy_custom}")
+```
+
+### Complete 2D Wave Solver with DRP Scheme
+
+```python
+from devito import (
+    Grid, TimeFunction, Function, SparseTimeFunction,
+    Eq, Operator, solve
+)
+import numpy as np
+
+def ricker_wavelet(t, f0=30, A=1):
+    """Ricker wavelet source function."""
+    tau = (np.pi * f0 * (t - 1/f0))**2
+    return A * (1 - 2*tau) * np.exp(-tau)
+
+
+def solve_wave_2d_drp(
+    extent=(2000., 2000.),
+    shape=(201, 201),
+    velocity=1500.,
+    f0=30.,
+    t_end=0.6,
+    dt=0.0008,
+    source_location=None,
+    use_drp=True,
+    space_order=8
+):
+    """
+    Solve 2D acoustic wave equation with optional DRP scheme.
+
+    Parameters
+    ----------
+    extent : tuple
+        Domain size (Lx, Ly) in meters
+    shape : tuple
+        Grid shape (Nx, Ny)
+    velocity : float or ndarray
+        Wave velocity in m/s
+    f0 : float
+        Source peak frequency in Hz
+    t_end : float
+        Simulation end time in seconds
+    dt : float
+        Time step in seconds
+    source_location : tuple, optional
+        Source (x, y) coordinates. Default: center of domain
+    use_drp : bool
+        If True, use DRP coefficients; else use standard Fornberg
+    space_order : int
+        Spatial order (must be even; stencil has space_order+1 points)
+
+    Returns
+    -------
+    u : TimeFunction
+        Final wavefield
+    """
+    # DRP weights for 9-point stencil (space_order=8)
+    drp_weights = np.array([
+        -2.94199219, 1.67723453, -0.24123423, 0.03838539, -0.00362139
+    ])
+
+    # Fornberg weights for comparison
+    fornberg_weights = np.array([
+        -205/72, 8/5, -1/5, 8/315, -1/560
+    ])
+
+    # Select weights
+    if use_drp:
+        weights = drp_weights
+    else:
+        weights = fornberg_weights
+
+    # Full symmetric stencil
+    full_weights = np.concatenate([weights[::-1], weights[1:]])
+
+    # Create grid
+    grid = Grid(shape=shape, extent=extent)
+    x, y = grid.dimensions
+
+    # Create wavefield
+    u = TimeFunction(name='u', grid=grid, time_order=2, space_order=space_order)
+
+    # Velocity model (can be heterogeneous)
+    vel = Function(name='vel', grid=grid, space_order=space_order)
+    if np.isscalar(velocity):
+        vel.data[:] = velocity
+    else:
+        vel.data[:] = velocity
+
+    # Source setup
+    nt = int(t_end / dt) + 1
+    t_values = np.linspace(0, t_end, nt)
+
+    if source_location is None:
+        source_location = (extent[0]/2, extent[1]/2)
+
+    source = SparseTimeFunction(
+        name='src',
+        grid=grid,
+        npoint=1,
+        nt=nt,
+        coordinates=[source_location]
+    )
+    source.data[:, 0] = ricker_wavelet(t_values, f0=f0)
+
+    # Wave equation with custom weights
+    # PDE: u_tt = c^2 * (u_xx + u_yy)
+    laplacian = u.dx2(weights=full_weights) + u.dy2(weights=full_weights)
+    pde = u.dt2 - vel**2 * laplacian
+    stencil = Eq(u.forward, solve(pde, u.forward))
+
+    # Source injection
+    src_term = source.inject(field=u.forward, expr=source * dt**2 * vel**2)
+
+    # Build and run operator
+    op = Operator([stencil] + src_term, subs=grid.spacing_map)
+    op(time=nt-1, dt=dt)
+
+    return u
+
+
+# Example usage
+if __name__ == "__main__":
+    # Run with DRP scheme
+    u_drp = solve_wave_2d_drp(use_drp=True)
+    print(f"DRP wavefield norm: {np.linalg.norm(u_drp.data[-1]):.4f}")
+
+    # Run with standard scheme
+    u_std = solve_wave_2d_drp(use_drp=False)
+    print(f"Standard wavefield norm: {np.linalg.norm(u_std.data[-1]):.4f}")
+```
+
+### Using Subdomains for Variable Coefficients
+
+In heterogeneous media, different regions may benefit from different
+stencils. Devito's `SubDomain` feature allows this:
+
+```python
+from devito import SubDomain
+
+class UpperLayer(SubDomain):
+    name = 'upper'
+    def define(self, dimensions):
+        x, z = dimensions
+        return {x: x, z: ('left', 100)}  # Top 100 points
+
+class LowerLayer(SubDomain):
+    name = 'lower'
+    def define(self, dimensions):
+        x, z = dimensions
+        return {x: x, z: ('right', 100)}  # Bottom 100 points
+
+# Create stencils for each subdomain
+stencil_upper = Eq(u.forward, ..., subdomain=upper)
+stencil_lower = Eq(u.forward, ..., subdomain=lower)
+
+op = Operator([stencil_upper, stencil_lower] + src_term)
+```
+
+
+## Comparison: Standard vs DRP Schemes {#sec-highorder-comparison}
+
+This section presents quantitative comparisons between standard Fornberg
+and DRP schemes.
+
+### Dispersion Error Comparison
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+def compare_dispersion(h=7.14, dt=0.0008, velocities=[1500, 3000, 5500]):
+    """
+    Compare dispersion properties of Fornberg and DRP stencils.
+    """
+    # Weights
+    fornberg = np.array([-205/72, 8/5, -1/5, 8/315, -1/560])
+    drp = np.array([-2.94199219, 1.67723453, -0.24123423, 0.03838539, -0.00362139])
+
+    # Wavenumber range
+    beta = np.linspace(0, np.pi, 200)  # normalized wavenumber kh
+
+    fig, axes = plt.subplots(1, len(velocities), figsize=(12, 4))
+
+    for ax, v in zip(axes, velocities):
+        # Compute dispersion ratio for each scheme
+        ratio_fornberg = []
+        ratio_drp = []
+
+        for b in beta:
+            k = b / h
+            r_f = dispersion_ratio(fornberg, h, dt, v, k)
+            r_d = dispersion_ratio(drp, h, dt, v, k)
+            ratio_fornberg.append(r_f)
+            ratio_drp.append(r_d)
+
+        ax.plot(beta, ratio_fornberg, label='Fornberg', linestyle='-')
+        ax.plot(beta, ratio_drp, label='DRP', linestyle='--')
+        ax.axhline(y=1, color='k', linestyle=':', linewidth=0.5)
+        ax.set_xlabel(r'$\beta = kh$')
+        ax.set_ylabel('Velocity ratio')
+        ax.set_title(f'v = {v} m/s')
+        ax.legend()
+        ax.set_ylim([0.8, 1.2])
+        ax.set_xlim([0, np.pi])
+
+    plt.tight_layout()
+    return fig
+
+
+# Generate comparison plot
+fig = compare_dispersion()
+plt.savefig('dispersion_comparison.png', dpi=150)
+```
+
+### Wavefield Comparison
+
+The most compelling demonstration of DRP benefits is visual comparison
+of wavefields:
+
+```python
+import matplotlib.pyplot as plt
+
+# Run simulations
+u_standard = solve_wave_2d_drp(use_drp=False, t_end=0.5)
+u_drp = solve_wave_2d_drp(use_drp=True, t_end=0.5)
+
+# Plot comparison
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+# Standard scheme
+im1 = axes[0].imshow(
+    u_standard.data[-1].T,
+    cmap='seismic',
+    vmin=-0.5, vmax=0.5,
+    extent=[0, 2000, 2000, 0]
+)
+axes[0].set_title('Standard (Fornberg)')
+axes[0].set_xlabel('x (m)')
+axes[0].set_ylabel('z (m)')
+
+# DRP scheme
+im2 = axes[1].imshow(
+    u_drp.data[-1].T,
+    cmap='seismic',
+    vmin=-0.5, vmax=0.5,
+    extent=[0, 2000, 2000, 0]
+)
+axes[1].set_title('DRP Scheme')
+axes[1].set_xlabel('x (m)')
+
+# Difference
+diff = u_drp.data[-1] - u_standard.data[-1]
+im3 = axes[2].imshow(
+    diff.T,
+    cmap='seismic',
+    extent=[0, 2000, 2000, 0]
+)
+axes[2].set_title('Difference (DRP - Standard)')
+axes[2].set_xlabel('x (m)')
+
+plt.tight_layout()
+plt.savefig('wavefield_comparison.png', dpi=150)
+```
+
+### Quantitative Error Metrics
+
+For a systematic comparison, we compute:
+
+1. **Maximum dispersion error** over the relevant wavenumber range
+2. **Computational cost** (similar for same stencil size)
+3. **Stability limit** (CFL condition)
+
+```python
+def compute_max_dispersion_error(weights, h, dt, v, k_max):
+    """
+    Compute maximum dispersion error over wavenumber range.
+    """
+    k_range = np.linspace(0, k_max, 100)
+    errors = []
+
+    for k in k_range:
+        ratio = dispersion_ratio(weights, h, dt, v, k)
+        errors.append(abs(ratio - 1))
+
+    return np.max(errors)
+
+
+def critical_dt(weights, h=7.14, v_max=5500):
+    """
+    Compute critical time step for stability.
+
+    Parameters
+    ----------
+    weights : array_like
+        Stencil weights [a_0, a_1, ..., a_M]
+    h : float
+        Grid spacing
+    v_max : float
+        Maximum velocity
+
+    Returns
+    -------
+    float
+        Critical time step
+    """
+    sum_abs = np.sum(np.abs(weights))
+    return h * np.sqrt(2 / sum_abs) / v_max
+
+
+# Compare critical time steps
+fornberg = np.array([-205/72, 8/5, -1/5, 8/315, -1/560])
+drp = np.array([-2.94199219, 1.67723453, -0.24123423, 0.03838539, -0.00362139])
+
+print(f"Critical dt (Fornberg): {critical_dt(fornberg):.6f} s")
+print(f"Critical dt (DRP): {critical_dt(drp):.6f} s")
+```
+
+### When to Use DRP Schemes
+
+DRP schemes are most beneficial when:
+
+1. **Long propagation distances**: Dispersion errors accumulate over time
+2. **High-frequency content**: Wavelengths approaching grid spacing
+3. **Heterogeneous media**: Multiple reflections amplify dispersion
+4. **Seismic imaging**: Accurate phase information is critical
+
+Standard Fornberg schemes may be preferred when:
+
+1. **Memory is limited**: DRP offers no advantage for the same stencil size
+2. **Short propagation times**: Dispersion hasn't accumulated significantly
+3. **Low-frequency content**: Long wavelengths well-resolved on the grid
+
+
+## CFL Stability Condition {#sec-highorder-cfl}
+
+The CFL (Courant-Friedrichs-Lewy) condition places an upper bound on the
+time step for explicit time integration. For the acoustic wave equation:
+$$
+\Delta t \leq \frac{h}{v_{max}} \sqrt{\frac{\sum |a_{time}|}{d \sum |a_{space}|}}
+$$ {#eq-highorder-cfl}
+
+where:
+
+- $d$ is the number of spatial dimensions
+- $a_{time}$ are the time discretization weights (for second-order: $[1, -2, 1]$)
+- $a_{space}$ are the spatial stencil weights
+- $v_{max}$ is the maximum velocity in the model
+
+For second-order time integration, $\sum |a_{time}| = 4$.
+
+### CFL for Standard and DRP Stencils
+
+```python
+def cfl_number(weights, d=2):
+    """
+    Compute the CFL factor for a given stencil.
+
+    The critical time step is: dt <= h / v_max * cfl_factor
+    """
+    sum_abs_space = np.sum(np.abs(weights))
+    sum_abs_time = 4  # Second-order time: |1| + |-2| + |1|
+    return np.sqrt(sum_abs_time / (d * sum_abs_space))
+
+
+# Compare CFL factors
+print(f"CFL factor (Fornberg): {cfl_number(fornberg):.4f}")
+print(f"CFL factor (DRP): {cfl_number(drp):.4f}")
+```
+
+Note that DRP coefficients typically have slightly larger magnitudes than
+Fornberg coefficients, resulting in a marginally smaller critical time step.
+
+
+## Exercises {#sec-highorder-exercises}
+
+### Exercise 1: Dispersion Analysis
+
+Implement the `dispersion_ratio` function and create plots showing:
+
+a) The velocity error ratio as a function of normalized wavenumber $\beta = kh$
+   for the 5-point, 7-point, and 9-point Fornberg stencils.
+
+b) How the dispersion error changes with Courant number $r = c\Delta t/h$.
+
+c) Compare your results with the theoretical prediction that higher-order
+   stencils have smaller dispersion errors for a given $\beta$.
+
+### Exercise 2: DRP Optimization
+
+Using `scipy.optimize.minimize` with the SLSQP method:
+
+a) Implement the Tam-Webb objective function and compute DRP weights for
+   a 7-point stencil.
+
+b) Verify that your optimized weights satisfy the consistency constraints.
+
+c) Compare the Fourier space representation of your DRP stencil with the
+   Fornberg stencil. Plot $-a_0 - 2\sum a_m \cos(m\varphi)$ versus $\varphi^2$.
+
+### Exercise 3: 1D Wave Propagation
+
+Create a 1D wave propagation test:
+
+a) Implement a 1D wave solver with both Fornberg and DRP schemes.
+
+b) Initialize with a Ricker wavelet and propagate for several domain lengths.
+
+c) Compare the waveforms at the final time. Quantify the dispersion-induced
+   "tail" behind the main pulse.
+
+### Exercise 4: 2D Heterogeneous Medium
+
+Extend the 2D solver to a two-layer velocity model:
+
+a) Set $v_1 = 1500$ m/s for $z < 1200$ m and $v_2 = 4000$ m/s for $z \geq 1200$ m.
+
+b) Use Devito's `SubDomain` feature to apply different stencils in each layer.
+
+c) Compare wavefields from standard and DRP schemes. Pay particular attention
+   to the transmitted and reflected waves at the interface.
+
+### Exercise 5: Stability Analysis
+
+Investigate the CFL condition:
+
+a) For the 9-point DRP stencil, compute the critical time step for
+   $h = 10$ m and $v_{max} = 4500$ m/s.
+
+b) Run simulations at 90%, 100%, and 110% of the critical time step.
+   Observe and document the stability behavior.
+
+c) Explain why the simulation becomes unstable above the critical time step.
+
+### Exercise 6: Computational Cost
+
+Compare computational efficiency:
+
+a) Time the execution of Fornberg and DRP schemes for the same problem.
+   Are they comparable?
+
+b) Now compare a 9-point DRP scheme with a 13-point Fornberg scheme that
+   achieves similar dispersion properties. Which is more efficient?
+
+c) Discuss the trade-offs between stencil width and dispersion accuracy.
+
+
+## ADER Finite Difference Schemes {#sec-ader}
+
+ADER (Arbitrary-order-accuracy via DERivatives) time integration provides
+a powerful alternative to standard leapfrog time-stepping for solving
+hyperbolic systems. The key idea is to use Taylor series expansions in
+time, converting time derivatives into spatial derivatives using the
+governing equations. This enables temporal discretization accuracy to
+match the spatial discretization order.
+
+### First-Order Acoustic System
+
+Consider the first-order formulation of the acoustic wave equation.
+The state vector is:
+$$
+\mathbf{U} = \begin{bmatrix} p \\ \mathbf{v} \end{bmatrix}
+$$ {#eq-ader-state}
+
+where $p$ is pressure and $\mathbf{v}$ is particle velocity. The
+governing equations are:
+$$
+\frac{\partial \mathbf{U}}{\partial t} = \begin{bmatrix}
+\rho c^2 \nabla \cdot \mathbf{v} \\
+\frac{1}{\rho} \nabla p
+\end{bmatrix}
+$$ {#eq-ader-governing}
+
+where $\rho$ is density and $c$ is the wave speed.
+
+### Taylor Series Time Expansion
+
+The ADER approach expands the solution at the next time step using a
+Taylor series:
+$$
+\mathbf{U}(t + \Delta t) = \mathbf{U}(t) + \Delta t \frac{\partial \mathbf{U}}{\partial t}
++ \frac{\Delta t^2}{2} \frac{\partial^2 \mathbf{U}}{\partial t^2}
++ \frac{\Delta t^3}{6} \frac{\partial^3 \mathbf{U}}{\partial t^3}
++ \frac{\Delta t^4}{24} \frac{\partial^4 \mathbf{U}}{\partial t^4} + \cdots
+$$ {#eq-ader-taylor}
+
+The key step is converting time derivatives to spatial derivatives using
+the governing equations. For example, the second time derivative is:
+$$
+\frac{\partial^2 \mathbf{U}}{\partial t^2} = \begin{bmatrix}
+\rho c^2 \nabla \cdot \frac{\partial \mathbf{v}}{\partial t} \\
+\frac{1}{\rho} \nabla \frac{\partial p}{\partial t}
+\end{bmatrix}
+$$
+
+Substituting the expressions from @eq-ader-governing:
+$$
+\frac{\partial^2 \mathbf{U}}{\partial t^2} = \begin{bmatrix}
+c^2 \nabla^2 p \\
+c^2 \nabla(\nabla \cdot \mathbf{v})
+\end{bmatrix}
+$$ {#eq-ader-dt2}
+
+where we have assumed constant material properties.
+
+### Higher-Order Time Derivatives
+
+Continuing this process yields expressions for the third and fourth
+time derivatives (assuming constant $c$ and $\rho$):
+
+**Third time derivative:**
+$$
+\frac{\partial^3 \mathbf{U}}{\partial t^3} = \begin{bmatrix}
+\rho c^4 \nabla^2 (\nabla \cdot \mathbf{v}) \\
+\frac{c^2}{\rho} \nabla(\nabla^2 p)
+\end{bmatrix}
+$$ {#eq-ader-dt3}
+
+**Fourth time derivative:**
+$$
+\frac{\partial^4 \mathbf{U}}{\partial t^4} = \begin{bmatrix}
+c^4 \nabla^4 p \\
+c^4 \nabla(\nabla^2(\nabla \cdot \mathbf{v}))
+\end{bmatrix}
+$$ {#eq-ader-dt4}
+
+where $\nabla^4$ is the biharmonic operator:
+$$
+\nabla^4 = \frac{\partial^4}{\partial x^4} + 2\frac{\partial^4}{\partial x^2 \partial y^2} + \frac{\partial^4}{\partial y^4}
+$$ {#eq-biharmonic}
+
+### 4th-Order ADER Update Equations
+
+The complete 4th-order ADER update equations are:
+
+For pressure:
+$$
+p^{n+1} = p^n + \Delta t \, \rho c^2 \nabla \cdot \mathbf{v}
++ \frac{\Delta t^2}{2} c^2 \nabla^2 p
++ \frac{\Delta t^3}{6} \rho c^4 \nabla^2(\nabla \cdot \mathbf{v})
++ \frac{\Delta t^4}{24} c^4 \nabla^4 p
+$$ {#eq-ader-p-update}
+
+For velocity:
+$$
+\mathbf{v}^{n+1} = \mathbf{v}^n + \Delta t \frac{1}{\rho} \nabla p
++ \frac{\Delta t^2}{2} c^2 \nabla(\nabla \cdot \mathbf{v})
++ \frac{\Delta t^3}{6} \frac{c^2}{\rho} \nabla(\nabla^2 p)
++ \frac{\Delta t^4}{24} c^4 \nabla(\nabla^2(\nabla \cdot \mathbf{v}))
+$$ {#eq-ader-v-update}
+
+### ADER Implementation in Devito
+
+The following code implements a 4th-order ADER scheme in Devito:
+
+```python
+from devito import Grid, TimeFunction, VectorTimeFunction, Function
+from devito import Eq, Operator, div, grad
+import sympy as sp
+import numpy as np
+
+# Helper functions for high-order spatial derivatives
+def graddiv(f):
+    """Compute grad(div(f)) for a vector field."""
+    return sp.Matrix([[f[0].dx2 + f[1].dxdy],
+                      [f[0].dxdy + f[1].dy2]])
+
+def lapdiv(f):
+    """Compute laplace(div(f)) for a vector field."""
+    return f[0].dx3 + f[0].dxdy2 + f[1].dx2dy + f[1].dy3
+
+def gradlap(f):
+    """Compute grad(laplace(f)) for a scalar field."""
+    return sp.Matrix([[f.dx3 + f.dxdy2],
+                      [f.dx2dy + f.dy3]])
+
+def gradlapdiv(f):
+    """Compute grad(laplace(div(f))) for a vector field."""
+    return sp.Matrix([[f[0].dx4 + f[0].dx2dy2 + f[1].dx3dy + f[1].dxdy3],
+                      [f[0].dx3dy + f[0].dxdy3 + f[1].dx2dy2 + f[1].dy4]])
+
+def biharmonic(f):
+    """Compute biharmonic operator for a scalar field."""
+    return f.dx4 + 2*f.dx2dy2 + f.dy4
+
+
+def solve_ader_2d(
+    extent=(1000., 1000.),
+    shape=(201, 201),
+    c_value=1.5,
+    rho_value=1.0,
+    t_end=450.,
+    courant=0.85,
+    f0=0.020,
+):
+    """Solve 2D acoustic wave equation with 4th-order ADER time-stepping."""
+    # Create grid
+    grid = Grid(shape=shape, extent=extent)
+
+    # Create fields (no staggering needed for ADER)
+    p = TimeFunction(name='p', grid=grid, space_order=16)
+    v = VectorTimeFunction(name='v', grid=grid, space_order=16,
+                           staggered=(None, None))
+
+    # Material parameters
+    c = Function(name='c', grid=grid)
+    rho = Function(name='rho', grid=grid)
+    c.data[:] = c_value
+    rho.data[:] = rho_value
+
+    # Derived quantities
+    b = 1/rho  # buoyancy
+    c2 = c**2
+    c4 = c**4
+
+    # Time step from CFL condition
+    dt = courant * np.amin(grid.spacing) / np.amax(c.data)
+    nt = int(t_end / dt) + 1
+
+    # Time derivatives expressed as spatial derivatives
+    pdt = rho * c2 * div(v)
+    vdt = b * grad(p)
+
+    pdt2 = c2 * p.laplace
+    vdt2 = c2 * graddiv(v)
+
+    pdt3 = rho * c4 * lapdiv(v)
+    vdt3 = c2 * b * gradlap(p)
+
+    pdt4 = c4 * biharmonic(p)
+    vdt4 = c4 * gradlapdiv(v)
+
+    # Time step symbol
+    dt_sym = grid.stepping_dim.spacing
+
+    # ADER update equations (4th order)
+    eq_p = Eq(p.forward, p + dt_sym*pdt + (dt_sym**2/2)*pdt2
+              + (dt_sym**3/6)*pdt3 + (dt_sym**4/24)*pdt4)
+    eq_v = Eq(v.forward, v + dt_sym*vdt + (dt_sym**2/2)*vdt2
+              + (dt_sym**3/6)*vdt3 + (dt_sym**4/24)*vdt4)
+
+    # Source injection (Ricker wavelet)
+    # ... (source setup code)
+
+    op = Operator([eq_p, eq_v])
+    op.apply(dt=dt, time_M=nt)
+
+    return p, v
+```
+
+### Advantages of ADER Schemes
+
+The key advantages of ADER time integration include:
+
+1. **Higher CFL numbers**: ADER schemes can use larger time steps than
+   standard leapfrog methods. In the example notebook, a Courant number
+   of 0.85 is stable for ADER, whereas leapfrog requires ~0.5 for
+   the same spatial discretization.
+
+2. **No grid-grid decoupling**: Unlike standard staggered leapfrog
+   schemes, ADER avoids "checkerboard" instabilities in first-order
+   systems solved on a single grid.
+
+3. **Matched temporal and spatial accuracy**: The temporal discretization
+   order can be increased to match the spatial discretization, providing
+   balanced accuracy.
+
+4. **Numerical diffusion at boundaries**: ADER schemes exhibit numerical
+   diffusion when encountering non-smooth solutions (such as domain
+   boundaries), which can act as a natural damping mechanism.
+
+The main cost is the computation of higher-order spatial derivatives,
+which require wider stencils and more floating-point operations per
+grid point.
+
+
+## Staggered Grid Formulations {#sec-staggered}
+
+Staggered grids are a powerful technique for solving first-order
+hyperbolic systems such as the acoustic wave equation in velocity-pressure
+form. By placing different variables at different grid locations,
+staggered schemes naturally capture the physics of wave propagation
+and avoid certain numerical artifacts.
+
+### First-Order Acoustic System
+
+The acoustic wave equation can be written as a first-order system:
+$$
+\frac{\partial p}{\partial t} = \lambda \nabla \cdot \mathbf{v}
+$$ {#eq-staggered-p}
+
+$$
+\frac{\partial \mathbf{v}}{\partial t} = \frac{1}{\rho} \nabla p
+$$ {#eq-staggered-v}
+
+where $p$ is pressure, $\mathbf{v} = (v_x, v_z)$ is the velocity vector,
+$\rho$ is density, and $\lambda = \rho c^2$ is the bulk modulus
+(with $c$ being the wave speed).
+
+### The Staggered Grid Concept
+
+On a *collocated* grid, all variables are defined at the same grid
+points. On a *staggered* grid, different variables are defined at
+different locations:
+
+- **Pressure** $p$ is defined at cell centers (integer indices)
+- **Velocity $v_x$** is defined at cell faces in the x-direction
+  (half-integer in x, integer in z)
+- **Velocity $v_z$** is defined at cell faces in the z-direction
+  (integer in x, half-integer in z)
+
+This arrangement is sometimes called a *Marker and Cell* (MAC) grid
+or *Arakawa C-grid*.
+
+The staggering naturally aligns gradient and divergence operations:
+
+- $\nabla p$ at velocity locations uses centered differences of $p$
+- $\nabla \cdot \mathbf{v}$ at pressure locations uses centered
+  differences of velocity components
+
+This leads to more accurate schemes with the same stencil width compared
+to collocated grids.
+
+### Staggered Grid Implementation in Devito
+
+Devito provides built-in support for staggered grids through the
+`staggered` keyword argument. The `NODE` staggering places a variable
+at cell centers, while the default staggering for `VectorTimeFunction`
+places components at cell faces.
+
+```python
+from devito import Grid, TimeFunction, VectorTimeFunction
+from devito import Eq, Operator, div, grad, solve, NODE
+
+# Create grid
+extent = (2000., 2000.)
+shape = (81, 81)
+grid = Grid(extent=extent, shape=shape)
+
+# Pressure at cell centers (NODE)
+p = TimeFunction(name='p', grid=grid, staggered=NODE,
+                 space_order=2, time_order=1)
+
+# Velocity components at staggered locations
+v = VectorTimeFunction(name='v', grid=grid,
+                       space_order=2, time_order=1)
+
+# Material properties
+V_p = 4.0  # Wave speed (km/s)
+density = 1.0  # Density
+ro = 1/density  # 1/rho
+l2m = V_p**2 * density  # lambda = rho * c^2
+
+# Update equations
+# v^{n+1} = v^n + dt * (1/rho) * grad(p)
+u_v = Eq(v.forward, solve(v.dt - ro * grad(p), v.forward))
+
+# p^{n+1} = p^n + dt * lambda * div(v^{n+1})
+u_p = Eq(p.forward, solve(p.dt - l2m * div(v.forward), p.forward))
+
+# Create operator
+op = Operator([u_v, u_p])
+```
+
+### Comparison of 2nd and 4th Order Schemes
+
+Higher-order staggered schemes use wider stencils for the gradient and
+divergence operators. The `space_order` parameter in Devito controls this:
+
+**Second-order scheme** (`space_order=2`):
+```python
+p = TimeFunction(name='p', grid=grid, staggered=NODE,
+                 space_order=2, time_order=1)
+v = VectorTimeFunction(name='v', grid=grid,
+                       space_order=2, time_order=1)
+```
+
+Uses a 3-point stencil for derivatives, giving $O(h^2)$ spatial accuracy.
+
+**Fourth-order scheme** (`space_order=4`):
+```python
+p = TimeFunction(name='p', grid=grid, staggered=NODE,
+                 space_order=4, time_order=1)
+v = VectorTimeFunction(name='v', grid=grid,
+                       space_order=4, time_order=1)
+```
+
+Uses a 5-point stencil for derivatives, giving $O(h^4)$ spatial accuracy.
+
+### Complete Staggered Grid Solver
+
+The following code provides a complete 2D staggered grid acoustic solver:
+
+```python
+from devito import Grid, TimeFunction, VectorTimeFunction, Function
+from devito import Eq, Operator, div, grad, solve, NODE
+import numpy as np
+
+
+def ricker_wavelet(t, f0, A=1.0):
+    """Generate Ricker wavelet."""
+    tau = (np.pi * f0 * (t - 1.0/f0))**2
+    return A * (1 - 2*tau) * np.exp(-tau)
+
+
+def solve_staggered_acoustic_2d(
+    extent=(2000., 2000.),
+    shape=(81, 81),
+    velocity=4.0,
+    density=1.0,
+    t_end=200.,
+    dt=None,
+    f0=0.01,
+    space_order=2,
+):
+    """Solve 2D acoustic wave equation with staggered grid scheme.
+
+    Parameters
+    ----------
+    extent : tuple
+        Domain size (Lx, Lz) in meters/km.
+    shape : tuple
+        Grid shape (Nx, Nz).
+    velocity : float
+        Wave velocity.
+    density : float
+        Material density.
+    t_end : float
+        End time.
+    dt : float, optional
+        Time step. If None, computed from CFL.
+    f0 : float
+        Source peak frequency.
+    space_order : int
+        Spatial discretization order (2 or 4).
+
+    Returns
+    -------
+    tuple
+        (p, v) - pressure and velocity fields.
+    """
+    grid = Grid(extent=extent, shape=shape)
+
+    # Compute time step from CFL if not provided
+    if dt is None:
+        h_min = min(extent[0]/(shape[0]-1), extent[1]/(shape[1]-1))
+        dt = 0.5 * h_min / velocity  # CFL ~ 0.5
+
+    nt = int(t_end / dt) + 1
+
+    # Create staggered fields
+    p = TimeFunction(name='p', grid=grid, staggered=NODE,
+                     space_order=space_order, time_order=1)
+    v = VectorTimeFunction(name='v', grid=grid,
+                           space_order=space_order, time_order=1)
+
+    # Material properties
+    ro = 1.0 / density
+    l2m = velocity**2 * density
+
+    # Update equations
+    u_v = Eq(v.forward, solve(v.dt - ro * grad(p), v.forward))
+    u_p = Eq(p.forward, solve(p.dt - l2m * div(v.forward), p.forward))
+
+    # Source (inject into pressure field)
+    t_values = np.linspace(0, t_end, nt)
+    src_data = ricker_wavelet(t_values, f0)
+
+    # Find source location (center of domain)
+    src_x = shape[0] // 2
+    src_z = shape[1] // 2
+
+    op = Operator([u_v, u_p])
+
+    # Time stepping with source injection
+    for n in range(nt - 1):
+        op.apply(time_m=n, time_M=n, dt=dt)
+        # Inject source
+        p.data[(n+1) % 2, src_x, src_z] += dt * src_data[n]
+
+    return p, v
+```
+
+### Staggered vs. ADER: When to Use Each
+
+| Feature | Staggered Grid | ADER |
+|---------|----------------|------|
+| Time accuracy | 1st order (leapfrog) | Arbitrary order |
+| Maximum stable CFL | ~0.5 | ~0.85 or higher |
+| Memory usage | Lower | Higher (more derivatives) |
+| Code complexity | Simpler | More complex |
+| Best for | Standard wave propagation | Long-time simulations |
+
+**Choose staggered grids when:**
+
+- Memory is limited
+- Standard CFL conditions are acceptable
+- Simplicity is preferred
+
+**Choose ADER when:**
+
+- Large time steps are needed
+- Long propagation times require matched temporal accuracy
+- Computational cost per step is less important than total steps
+
+
+## Summary {#sec-highorder-summary}
+
+This chapter introduced high-order finite difference methods and their
+application to wave propagation in Devito.
+
+### Key Concepts
+
+1. **Numerical dispersion** causes different frequency components to travel
+   at different speeds, distorting wave shapes over time.
+
+2. **The Fornberg algorithm** generates finite difference weights that
+   maximize Taylor series accuracy.
+
+3. **DRP schemes** optimize weights to minimize dispersion error, often
+   outperforming Fornberg weights of the same stencil size for wave problems.
+
+4. **Devito's custom weights** feature enables easy implementation of any
+   finite difference scheme, including DRP.
+
+5. **ADER time integration** converts time derivatives to spatial
+   derivatives, enabling high-order temporal accuracy and larger CFL numbers.
+
+6. **Staggered grids** place different variables at different grid
+   locations, naturally capturing the physics of first-order wave systems.
+
+### Practical Guidelines
+
+- **For general PDEs**: Use Devito's default Fornberg weights with
+  appropriate `space_order`.
+
+- **For wave propagation**: Consider DRP weights, especially for long
+  simulations or high-frequency content.
+
+- **For first-order systems**: Use staggered grids for natural handling
+  of velocity and pressure variables.
+
+- **For long simulations**: Consider ADER time integration to allow
+  larger time steps.
+
+- **Always verify stability**: Compute the CFL limit for your chosen
+  weights and ensure $\Delta t$ is below it.
+
+- **Profile before optimizing**: Standard schemes may be sufficient for
+  many applications; measure dispersion error before switching to DRP.
+
+### Looking Ahead
+
+The techniques in this chapter apply to:
+
+- **Seismic imaging**: Full waveform inversion, reverse-time migration
+- **Computational acoustics**: Room acoustics, outdoor sound propagation
+- **Electromagnetic simulation**: Maxwell's equations in FDTD form
+
+Each application may benefit from domain-specific optimizations of the
+finite difference coefficients.
+
+
+## References {.unnumbered}
+
+::: {#refs}
+:::

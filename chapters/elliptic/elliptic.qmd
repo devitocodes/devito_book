@@ -1,0 +1,984 @@
+## Introduction to Elliptic PDEs {#sec-elliptic-intro}
+
+The previous chapters have focused on time-dependent PDEs: waves propagating,
+heat diffusing, quantities being advected. These are *evolution equations*
+where the solution changes in time from a given initial state. In this
+chapter, we turn to a fundamentally different class: *elliptic PDEs*,
+which describe steady-state or equilibrium phenomena.
+
+### Boundary Value Problems vs Initial Value Problems
+
+Time-dependent PDEs are *initial value problems* (IVPs): given the state
+at $t=0$, we march forward in time to find the solution at later times.
+Elliptic PDEs are *boundary value problems* (BVPs): the solution is
+determined entirely by conditions prescribed on the boundary of the domain,
+with no time evolution involved.
+
+| Property | IVPs (Wave, Diffusion) | BVPs (Elliptic) |
+|----------|------------------------|-----------------|
+| Time dependence | Solution evolves in time | No time variable |
+| Initial condition | Required | Not applicable |
+| Boundary conditions | Affect propagation | Fully determine solution |
+| Information flow | Forward in time | Throughout domain simultaneously |
+| Typical uses | Transient phenomena | Equilibrium, steady-state |
+
+### Physical Applications
+
+Elliptic PDEs arise in numerous physical contexts:
+
+- **Steady-state heat conduction**: Temperature distribution when heat
+  flow has reached equilibrium
+- **Electrostatics**: Electric potential from fixed charge distributions
+- **Incompressible fluid flow**: Pressure field, stream functions
+- **Gravitation**: Gravitational potential from mass distributions
+- **Structural mechanics**: Equilibrium deformations
+
+### The Canonical Elliptic Equations
+
+The two fundamental elliptic equations are:
+
+**Laplace equation** (homogeneous):
+$$
+\nabla^2 u = \frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} = 0
+$$ {#eq-elliptic-laplace}
+
+**Poisson equation** (with source term):
+$$
+\nabla^2 u = \frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} = f(x, y)
+$$ {#eq-elliptic-poisson}
+
+The Laplace equation describes equilibrium with no internal sources.
+The Poisson equation adds a source term $f(x, y)$ representing distributed
+sources or sinks within the domain.
+
+### Boundary Conditions
+
+Elliptic problems require boundary conditions on the entire boundary
+$\partial\Omega$ of the domain $\Omega$:
+
+**Dirichlet conditions**: Prescribe the value of $u$ on the boundary:
+$$
+u = g(x, y) \quad \text{on } \partial\Omega
+$$
+
+**Neumann conditions**: Prescribe the normal derivative:
+$$
+\frac{\partial u}{\partial n} = h(x, y) \quad \text{on } \partial\Omega
+$$
+
+**Mixed (Robin) conditions**: Linear combination of value and derivative.
+
+For the Laplace and Poisson equations, a unique solution exists with
+Dirichlet conditions on the entire boundary, or Neumann conditions
+(with a consistency requirement) plus specification of $u$ at one point.
+
+### Iterative Solution Methods
+
+Since elliptic PDEs have no time variable, we cannot simply "march"
+to the solution. Instead, we use iterative methods that start with
+an initial guess and progressively refine it until convergence.
+
+The classical approach is the *Jacobi iteration*: discretize the PDE
+on a grid, solve the discrete equation for the central point in terms
+of its neighbors, and sweep through the grid repeatedly until the
+solution stops changing.
+
+For the 2D Laplace equation with equal grid spacing $h$:
+$$
+u_{i,j} = \frac{1}{4}\left(u_{i+1,j} + u_{i-1,j} + u_{i,j+1} + u_{i,j-1}\right)
+$$ {#eq-elliptic-jacobi}
+
+This is exactly the five-point stencil average. Jacobi iteration replaces
+each interior value with the average of its four neighbors, while
+boundary values are held fixed.
+
+### Chapter Overview
+
+In this chapter, we implement elliptic solvers using Devito. The key
+challenge is that Devito's `TimeFunction` is designed for time-stepping,
+but elliptic problems have no time. We explore two approaches:
+
+1. **Dual-buffer `Function` pattern**: Use two `Function` objects
+   as alternating buffers, with explicit buffer swapping in Python
+2. **Pseudo-timestepping with `TimeFunction`**: Treat the iteration
+   index as a "pseudo-time" and let Devito handle buffer management
+
+Both approaches converge to the same steady-state solution, but they
+differ in how the iteration loop is structured and how much control
+we retain over the convergence process.
+
+
+## The Laplace Equation {#sec-elliptic-laplace}
+
+The Laplace equation models steady-state phenomena where the field
+variable reaches equilibrium with its surroundings. We solve:
+$$
+\frac{\partial^2 p}{\partial x^2} + \frac{\partial^2 p}{\partial y^2} = 0
+$$
+on a rectangular domain with prescribed boundary conditions.
+
+### Problem Setup
+
+Consider the domain $[0, 2] \times [0, 1]$ with:
+
+- $p = 0$ at $x = 0$ (left boundary)
+- $p = y$ at $x = 2$ (right boundary, linear profile)
+- $\frac{\partial p}{\partial y} = 0$ at $y = 0$ and $y = 1$ (top and bottom: zero normal derivative)
+
+The Neumann conditions at the top and bottom mean no flux crosses these
+boundaries. Combined with the Dirichlet conditions on left and right,
+this problem has a unique solution that smoothly interpolates between
+the boundary values.
+
+### Discretization
+
+Using central differences on a uniform grid with spacing $\Delta x$ and $\Delta y$:
+$$
+\frac{p_{i+1,j} - 2p_{i,j} + p_{i-1,j}}{\Delta x^2} +
+\frac{p_{i,j+1} - 2p_{i,j} + p_{i,j-1}}{\Delta y^2} = 0
+$$
+
+Solving for $p_{i,j}$:
+$$
+p_{i,j} = \frac{\Delta y^2(p_{i+1,j} + p_{i-1,j}) + \Delta x^2(p_{i,j+1} + p_{i,j-1})}{2(\Delta x^2 + \Delta y^2)}
+$$ {#eq-elliptic-laplace-discrete}
+
+This weighted average accounts for potentially different grid spacings
+in $x$ and $y$.
+
+### The Dual-Buffer Pattern in Devito
+
+For steady-state problems without time derivatives, we use `Function`
+objects instead of `TimeFunction`. Since we need to iterate, we require
+two buffers: one holding the current estimate (`pn`) and one for the
+updated values (`p`).
+
+```python
+from devito import Grid, Function, Eq, solve, Operator
+import numpy as np
+
+# Domain: [0, 2] x [0, 1] with 31 x 31 grid points
+nx, ny = 31, 31
+grid = Grid(shape=(nx, ny), extent=(2.0, 1.0))
+
+# Two Function objects for dual-buffer iteration
+p = Function(name='p', grid=grid, space_order=2)
+pn = Function(name='pn', grid=grid, space_order=2)
+```
+
+The `space_order=2` ensures we have sufficient ghost points for
+second-order spatial derivatives.
+
+### Deriving the Stencil Symbolically
+
+We express the Laplace equation using `pn` and let SymPy solve for the
+central point. The result is then assigned to `p`:
+
+```python
+# Define the Laplace equation: laplacian(pn) = 0
+# Apply only on interior points via subdomain
+eqn = Eq(pn.laplace, 0, subdomain=grid.interior)
+
+# Solve symbolically for the central point value
+stencil = solve(eqn, pn)
+
+# Create update equation: p gets the new value from neighbors in pn
+eq_stencil = Eq(p, stencil)
+
+print(f"Update stencil:\n{eq_stencil}")
+```
+
+The output shows the weighted average of neighbors from `pn` being
+assigned to `p`:
+```
+Eq(p(x, y), 0.5*(h_x**2*pn(x, y - h_y) + h_x**2*pn(x, y + h_y) +
+                h_y**2*pn(x - h_x, y) + h_y**2*pn(x + h_x, y))/(h_x**2 + h_y**2))
+```
+
+### Implementing Boundary Conditions
+
+For the Dirichlet conditions, we assign fixed values. For the Neumann
+conditions (zero normal derivative), we use a numerical trick: copy
+the value from the adjacent interior row to the boundary row.
+
+```python
+x, y = grid.dimensions
+
+# Create a 1D Function for the right boundary profile p = y
+bc_right = Function(name='bc_right', shape=(ny,), dimensions=(y,))
+bc_right.data[:] = np.linspace(0, 1, ny)
+
+# Boundary condition equations
+bc = [Eq(p[0, y], 0.0)]                # p = 0 at x = 0
+bc += [Eq(p[nx-1, y], bc_right[y])]    # p = y at x = 2
+bc += [Eq(p[x, 0], p[x, 1])]           # dp/dy = 0 at y = 0
+bc += [Eq(p[x, ny-1], p[x, ny-2])]     # dp/dy = 0 at y = 1
+
+# Build the operator
+op = Operator(expressions=[eq_stencil] + bc)
+```
+
+The Neumann boundary conditions `p[x, 0] = p[x, 1]` enforce
+$\partial p/\partial y = 0$ by making the boundary value equal to
+its neighbor, yielding a centered difference of zero.
+
+### Convergence Criterion: The L1 Norm
+
+We iterate until the solution stops changing appreciably. The L1 norm
+measures the relative change between iterations:
+$$
+L_1 = \frac{\sum_{i,j} |p_{i,j}^{(k+1)}| - |p_{i,j}^{(k)}|}{\sum_{i,j} |p_{i,j}^{(k)}|}
+$$ {#eq-elliptic-l1norm}
+
+When $L_1$ drops below a tolerance (e.g., $10^{-4}$), we consider
+the solution converged.
+
+### Solution with Data Copying
+
+The straightforward approach copies data between buffers each iteration:
+
+```python
+from devito import configuration
+configuration['log-level'] = 'ERROR'  # Suppress logging
+
+# Initialize both buffers
+p.data[:] = 0.0
+p.data[-1, :] = np.linspace(0, 1, ny)  # Right boundary
+pn.data[:] = 0.0
+pn.data[-1, :] = np.linspace(0, 1, ny)
+
+# Convergence loop with data copying
+l1norm_target = 1.0e-4
+l1norm = 1.0
+
+while l1norm > l1norm_target:
+    # Copy current solution to pn
+    pn.data[:] = p.data[:]
+
+    # Apply one Jacobi iteration
+    op(p=p, pn=pn)
+
+    # Compute L1 norm
+    l1norm = (np.sum(np.abs(p.data[:]) - np.abs(pn.data[:])) /
+              np.sum(np.abs(pn.data[:])))
+
+print(f"Converged with L1 norm = {l1norm:.2e}")
+```
+
+This works but the data copy `pn.data[:] = p.data[:]` is expensive
+for large grids.
+
+### Buffer Swapping Without Data Copy
+
+A more efficient approach exploits Devito's argument substitution.
+Instead of copying data, we swap which `Function` plays each role:
+
+```python
+# Initialize both buffers
+p.data[:] = 0.0
+p.data[-1, :] = np.linspace(0, 1, ny)
+pn.data[:] = 0.0
+pn.data[-1, :] = np.linspace(0, 1, ny)
+
+# Convergence loop with buffer swapping
+l1norm_target = 1.0e-4
+l1norm = 1.0
+counter = 0
+
+while l1norm > l1norm_target:
+    # Determine buffer roles based on iteration parity
+    if counter % 2 == 0:
+        _p, _pn = p, pn
+    else:
+        _p, _pn = pn, p
+
+    # Apply operator with swapped arguments
+    op(p=_p, pn=_pn)
+
+    # Compute L1 norm
+    l1norm = (np.sum(np.abs(_p.data[:]) - np.abs(_pn.data[:])) /
+              np.sum(np.abs(_pn.data[:])))
+    counter += 1
+
+print(f"Converged in {counter} iterations")
+```
+
+The key line is `op(p=_p, pn=_pn)`. We pass `Function` objects that
+alternate roles: on even iterations, `p` gets updated from `pn`;
+on odd iterations, `pn` gets updated from `p`. No data is copied;
+we simply reinterpret which buffer is "current" vs "previous."
+
+### Complete Laplace Solver
+
+```python
+from devito import Grid, Function, Eq, solve, Operator, configuration
+import numpy as np
+
+def solve_laplace_2d(nx, ny, extent, l1norm_target=1e-4):
+    """
+    Solve the 2D Laplace equation with:
+    - p = 0 at x = 0
+    - p = y at x = x_max
+    - dp/dy = 0 at y = 0 and y = y_max
+
+    Parameters
+    ----------
+    nx, ny : int
+        Number of grid points in x and y directions.
+    extent : tuple
+        Domain size (Lx, Ly).
+    l1norm_target : float
+        Convergence tolerance for L1 norm.
+
+    Returns
+    -------
+    p : Function
+        Converged solution field.
+    iterations : int
+        Number of iterations to convergence.
+    """
+    configuration['log-level'] = 'ERROR'
+
+    # Create grid and functions
+    grid = Grid(shape=(nx, ny), extent=extent)
+    p = Function(name='p', grid=grid, space_order=2)
+    pn = Function(name='pn', grid=grid, space_order=2)
+
+    # Symbolic equation and stencil
+    eqn = Eq(pn.laplace, 0, subdomain=grid.interior)
+    stencil = solve(eqn, pn)
+    eq_stencil = Eq(p, stencil)
+
+    # Boundary conditions
+    x, y = grid.dimensions
+    bc_right = Function(name='bc_right', shape=(ny,), dimensions=(y,))
+    bc_right.data[:] = np.linspace(0, extent[1], ny)
+
+    bc = [Eq(p[0, y], 0.0)]
+    bc += [Eq(p[nx-1, y], bc_right[y])]
+    bc += [Eq(p[x, 0], p[x, 1])]
+    bc += [Eq(p[x, ny-1], p[x, ny-2])]
+
+    op = Operator(expressions=[eq_stencil] + bc)
+
+    # Initialize
+    p.data[:] = 0.0
+    p.data[-1, :] = bc_right.data[:]
+    pn.data[:] = 0.0
+    pn.data[-1, :] = bc_right.data[:]
+
+    # Iterate with buffer swapping
+    l1norm = 1.0
+    counter = 0
+
+    while l1norm > l1norm_target:
+        if counter % 2 == 0:
+            _p, _pn = p, pn
+        else:
+            _p, _pn = pn, p
+
+        op(p=_p, pn=_pn)
+
+        l1norm = (np.sum(np.abs(_p.data[:]) - np.abs(_pn.data[:])) /
+                  np.sum(np.abs(_pn.data[:])))
+        counter += 1
+
+    # Ensure result is in p (swap if needed)
+    if counter % 2 == 1:
+        p.data[:] = pn.data[:]
+
+    return p, counter
+```
+
+### Visualizing the Solution
+
+```python
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+p, iterations = solve_laplace_2d(nx=31, ny=31, extent=(2.0, 1.0))
+print(f"Converged in {iterations} iterations")
+
+# Create coordinate arrays
+x = np.linspace(0, 2.0, 31)
+y = np.linspace(0, 1.0, 31)
+X, Y = np.meshgrid(x, y, indexing='ij')
+
+fig = plt.figure(figsize=(12, 5))
+
+# Surface plot
+ax1 = fig.add_subplot(121, projection='3d')
+ax1.plot_surface(X, Y, p.data[:], cmap='viridis')
+ax1.set_xlabel('x')
+ax1.set_ylabel('y')
+ax1.set_zlabel('p')
+ax1.set_title('Laplace Equation Solution')
+ax1.view_init(30, 225)
+
+# Contour plot
+ax2 = fig.add_subplot(122)
+c = ax2.contourf(X, Y, p.data[:], levels=20, cmap='viridis')
+plt.colorbar(c, ax=ax2)
+ax2.set_xlabel('x')
+ax2.set_ylabel('y')
+ax2.set_title('Contour View')
+ax2.set_aspect('equal')
+```
+
+The solution shows a smooth transition from $p=0$ on the left to $p=y$
+on the right, with level curves that respect the zero-flux condition
+at top and bottom.
+
+
+## The Poisson Equation {#sec-elliptic-poisson}
+
+The Poisson equation adds a source term to the Laplace equation:
+$$
+\frac{\partial^2 p}{\partial x^2} + \frac{\partial^2 p}{\partial y^2} = b(x, y)
+$$ {#eq-elliptic-poisson-pde}
+
+This models scenarios with internal sources or sinks, such as heat
+generation, electric charges, or fluid injection.
+
+### Problem Setup
+
+Consider a domain $[0, 2] \times [0, 1]$ with:
+
+- $p = 0$ on all boundaries (homogeneous Dirichlet)
+- Point sources: $b = +100$ at $(x, y) = (0.5, 0.25)$ and $b = -100$ at $(1.5, 0.75)$
+
+The positive source creates a "hill" in the solution; the negative
+source creates a "valley." The solution represents the equilibrium
+field balancing these sources against the zero boundary conditions.
+
+### Discretization with Source Term
+
+The discretized Poisson equation becomes:
+$$
+p_{i,j} = \frac{\Delta y^2(p_{i+1,j} + p_{i-1,j}) + \Delta x^2(p_{i,j+1} + p_{i,j-1}) - b_{i,j}\Delta x^2\Delta y^2}{2(\Delta x^2 + \Delta y^2)}
+$$ {#eq-elliptic-poisson-discrete}
+
+The source term $b_{i,j}$ appears in the numerator, scaled by the
+product of grid spacings squared.
+
+### Dual-Buffer Implementation
+
+Using the same dual-buffer pattern as for Laplace:
+
+```python
+from devito import Grid, Function, Eq, solve, Operator, configuration
+import numpy as np
+
+configuration['log-level'] = 'ERROR'
+
+# Grid setup
+nx, ny = 50, 50
+grid = Grid(shape=(nx, ny), extent=(2.0, 1.0))
+
+# Solution buffers
+p = Function(name='p', grid=grid, space_order=2)
+pd = Function(name='pd', grid=grid, space_order=2)
+
+# Source term
+b = Function(name='b', grid=grid)
+b.data[:] = 0.0
+b.data[int(nx/4), int(ny/4)] = 100      # Positive source
+b.data[int(3*nx/4), int(3*ny/4)] = -100  # Negative source
+
+# Poisson equation: laplacian(pd) = b
+eq = Eq(pd.laplace, b, subdomain=grid.interior)
+stencil = solve(eq, pd)
+eq_stencil = Eq(p, stencil)
+
+# Boundary conditions (p = 0 on all boundaries)
+x, y = grid.dimensions
+bc = [Eq(p[x, 0], 0.0)]
+bc += [Eq(p[x, ny-1], 0.0)]
+bc += [Eq(p[0, y], 0.0)]
+bc += [Eq(p[nx-1, y], 0.0)]
+
+op = Operator([eq_stencil] + bc)
+```
+
+### Fixed Iteration Count
+
+For the Poisson equation with localized sources, we often use a fixed
+number of iterations rather than a convergence criterion:
+
+```python
+# Initialize
+p.data[:] = 0.0
+pd.data[:] = 0.0
+
+# Fixed number of iterations
+nt = 100
+
+for i in range(nt):
+    if i % 2 == 0:
+        _p, _pd = p, pd
+    else:
+        _p, _pd = pd, p
+
+    op(p=_p, pd=_pd)
+
+# Ensure result is in p
+if nt % 2 == 1:
+    p.data[:] = pd.data[:]
+```
+
+### Using TimeFunction for Pseudo-Timestepping
+
+An alternative approach treats the iteration index as a pseudo-time
+dimension. This allows Devito to internalize the iteration loop,
+improving performance by avoiding Python overhead.
+
+```python
+from devito import TimeFunction
+
+# Reset grid
+grid = Grid(shape=(nx, ny), extent=(2.0, 1.0))
+
+# TimeFunction provides automatic buffer management
+p = TimeFunction(name='p', grid=grid, space_order=2)
+p.data[:] = 0.0
+
+# Source term (unchanged)
+b = Function(name='b', grid=grid)
+b.data[:] = 0.0
+b.data[int(nx/4), int(ny/4)] = 100
+b.data[int(3*nx/4), int(3*ny/4)] = -100
+
+# Poisson equation: solve for p, write to p.forward
+eq = Eq(p.laplace, b)
+stencil = solve(eq, p)
+eq_stencil = Eq(p.forward, stencil)
+
+# Boundary conditions with explicit time index
+t = grid.stepping_dim
+bc = [Eq(p[t + 1, x, 0], 0.0)]
+bc += [Eq(p[t + 1, x, ny-1], 0.0)]
+bc += [Eq(p[t + 1, 0, y], 0.0)]
+bc += [Eq(p[t + 1, nx-1, y], 0.0)]
+
+op = Operator([eq_stencil] + bc)
+```
+
+Note the boundary conditions now include `t + 1` to index the forward
+time level, matching `p.forward` in the stencil update.
+
+### Executing the TimeFunction Approach
+
+The operator can now run multiple iterations internally:
+
+```python
+# Run 100 pseudo-timesteps in one call
+op(time=100)
+
+# Access result (buffer index depends on iteration count)
+result = p.data[0]  # or p.data[1] depending on parity
+```
+
+This approach is faster because the iteration loop runs in compiled
+C code rather than Python, with no function call overhead per iteration.
+
+### Complete Poisson Solver
+
+```python
+from devito import Grid, TimeFunction, Function, Eq, solve, Operator, configuration
+import numpy as np
+
+def solve_poisson_2d(nx, ny, extent, sources, nt=100):
+    """
+    Solve the 2D Poisson equation with point sources.
+
+    Parameters
+    ----------
+    nx, ny : int
+        Number of grid points.
+    extent : tuple
+        Domain size (Lx, Ly).
+    sources : list of tuples
+        Each tuple is ((i, j), value) specifying source location and strength.
+    nt : int
+        Number of iterations.
+
+    Returns
+    -------
+    p : ndarray
+        Solution field.
+    """
+    configuration['log-level'] = 'ERROR'
+
+    grid = Grid(shape=(nx, ny), extent=extent)
+    p = TimeFunction(name='p', grid=grid, space_order=2)
+    p.data[:] = 0.0
+
+    # Set up source term
+    b = Function(name='b', grid=grid)
+    b.data[:] = 0.0
+    for (i, j), value in sources:
+        b.data[i, j] = value
+
+    # Poisson equation
+    eq = Eq(p.laplace, b)
+    stencil = solve(eq, p)
+    eq_stencil = Eq(p.forward, stencil)
+
+    # Boundary conditions
+    x, y = grid.dimensions
+    t = grid.stepping_dim
+    bc = [Eq(p[t + 1, x, 0], 0.0)]
+    bc += [Eq(p[t + 1, x, ny-1], 0.0)]
+    bc += [Eq(p[t + 1, 0, y], 0.0)]
+    bc += [Eq(p[t + 1, nx-1, y], 0.0)]
+
+    op = Operator([eq_stencil] + bc)
+    op(time=nt)
+
+    return p.data[0].copy()
+```
+
+### Visualizing the Poisson Solution
+
+```python
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+# Solve with positive and negative sources
+sources = [
+    ((12, 12), 100),   # Positive source at ~(0.5, 0.25)
+    ((37, 37), -100),  # Negative source at ~(1.5, 0.75)
+]
+result = solve_poisson_2d(nx=50, ny=50, extent=(2.0, 1.0),
+                          sources=sources, nt=100)
+
+# Coordinate arrays
+x = np.linspace(0, 2.0, 50)
+y = np.linspace(0, 1.0, 50)
+X, Y = np.meshgrid(x, y, indexing='ij')
+
+fig = plt.figure(figsize=(12, 5))
+
+ax1 = fig.add_subplot(121, projection='3d')
+ax1.plot_surface(X, Y, result, cmap='coolwarm')
+ax1.set_xlabel('x')
+ax1.set_ylabel('y')
+ax1.set_zlabel('p')
+ax1.set_title('Poisson Equation with Point Sources')
+ax1.view_init(30, 225)
+
+ax2 = fig.add_subplot(122)
+c = ax2.contourf(X, Y, result, levels=20, cmap='coolwarm')
+plt.colorbar(c, ax=ax2)
+ax2.plot(0.5, 0.25, 'k+', markersize=15, markeredgewidth=2)  # Source +
+ax2.plot(1.5, 0.75, 'ko', markersize=10, fillstyle='none')   # Source -
+ax2.set_xlabel('x')
+ax2.set_ylabel('y')
+ax2.set_title('Contour View with Source Locations')
+ax2.set_aspect('equal')
+```
+
+The solution shows a peak at the positive source and a trough at
+the negative source, with the field decaying to zero at the boundaries.
+
+
+## Iterative Solver Analysis {#sec-elliptic-analysis}
+
+Having implemented Jacobi iteration for elliptic equations, we now
+examine the convergence properties and performance considerations.
+
+### Convergence Rate of Jacobi Iteration
+
+The Jacobi method converges, but slowly. The error after $k$ iterations
+satisfies:
+$$
+\|e^{(k)}\| \leq \rho^k \|e^{(0)}\|
+$$
+
+where $\rho$ is the spectral radius of the iteration matrix. For Jacobi
+on a square grid of size $N \times N$ with Dirichlet conditions:
+$$
+\rho \approx 1 - \frac{\pi^2}{N^2}
+$$
+
+This means the number of iterations to reduce the error by a factor
+$\epsilon$ is approximately:
+$$
+k \approx \frac{\ln(1/\epsilon)}{\ln(1/\rho)} \approx \frac{N^2}{\pi^2} \ln(1/\epsilon)
+$$ {#eq-elliptic-jacobi-iterations}
+
+For $N = 100$ and $\epsilon = 10^{-6}$, we need roughly $14{,}000$
+iterations. This quadratic scaling with grid size makes Jacobi
+impractical for fine grids.
+
+### Monitoring Convergence
+
+The L1 norm we use measures relative change:
+$$
+L_1^{(k)} = \frac{\sum_{i,j} |p_{i,j}^{(k+1)}| - |p_{i,j}^{(k)}|}{\sum_{i,j} |p_{i,j}^{(k)}|}
+$$
+
+A more rigorous metric is the residual norm:
+$$
+r^{(k)} = \|\nabla^2 p^{(k)} - f\|
+$$
+
+which measures how well the current iterate satisfies the PDE.
+
+```python
+def compute_residual(p, b, dx, dy):
+    """Compute the residual of the Poisson equation."""
+    # Interior Laplacian using numpy
+    laplacian = (
+        (p[2:, 1:-1] - 2*p[1:-1, 1:-1] + p[:-2, 1:-1]) / dx**2 +
+        (p[1:-1, 2:] - 2*p[1:-1, 1:-1] + p[1:-1, :-2]) / dy**2
+    )
+    residual = laplacian - b[1:-1, 1:-1]
+    return np.sqrt(np.sum(residual**2))
+```
+
+### Convergence History
+
+Tracking the L1 norm over iterations reveals the convergence behavior:
+
+```python
+from devito import Grid, Function, Eq, solve, Operator, configuration
+import numpy as np
+import matplotlib.pyplot as plt
+
+configuration['log-level'] = 'ERROR'
+
+def solve_laplace_with_history(nx, ny, max_iter=5000, l1norm_target=1e-6):
+    """Solve Laplace equation and record convergence history."""
+    grid = Grid(shape=(nx, ny), extent=(2.0, 1.0))
+    p = Function(name='p', grid=grid, space_order=2)
+    pn = Function(name='pn', grid=grid, space_order=2)
+
+    eqn = Eq(pn.laplace, 0, subdomain=grid.interior)
+    stencil = solve(eqn, pn)
+    eq_stencil = Eq(p, stencil)
+
+    x, y = grid.dimensions
+    bc_right = Function(name='bc_right', shape=(ny,), dimensions=(y,))
+    bc_right.data[:] = np.linspace(0, 1, ny)
+
+    bc = [Eq(p[0, y], 0.0)]
+    bc += [Eq(p[nx-1, y], bc_right[y])]
+    bc += [Eq(p[x, 0], p[x, 1])]
+    bc += [Eq(p[x, ny-1], p[x, ny-2])]
+
+    op = Operator(expressions=[eq_stencil] + bc)
+
+    p.data[:] = 0.0
+    p.data[-1, :] = bc_right.data[:]
+    pn.data[:] = 0.0
+    pn.data[-1, :] = bc_right.data[:]
+
+    l1_history = []
+    l1norm = 1.0
+    counter = 0
+
+    while l1norm > l1norm_target and counter < max_iter:
+        if counter % 2 == 0:
+            _p, _pn = p, pn
+        else:
+            _p, _pn = pn, p
+
+        op(p=_p, pn=_pn)
+
+        l1norm = (np.sum(np.abs(_p.data[:]) - np.abs(_pn.data[:])) /
+                  np.sum(np.abs(_pn.data[:])))
+        l1_history.append(l1norm)
+        counter += 1
+
+    return l1_history
+
+# Compare convergence for different grid sizes
+plt.figure(figsize=(10, 6))
+for n in [16, 32, 64]:
+    history = solve_laplace_with_history(n, n, max_iter=3000, l1norm_target=1e-8)
+    plt.semilogy(history, label=f'{n}x{n} grid')
+
+plt.xlabel('Iteration')
+plt.ylabel('L1 Norm')
+plt.title('Jacobi Iteration Convergence')
+plt.legend()
+plt.grid(True)
+```
+
+The plot shows that convergence slows dramatically as the grid is refined,
+consistent with the $O(N^2)$ iteration count.
+
+### Dual-Buffer vs TimeFunction Performance
+
+The two implementation approaches have different performance characteristics:
+
+**Dual-buffer with Python loop**:
+
+- Full control over convergence criterion
+- Can check convergence every iteration
+- Python loop overhead per iteration
+- Best for moderate iteration counts with tight convergence tolerance
+
+**TimeFunction with internal loop**:
+
+- Iteration loop in compiled code
+- Much faster per iteration
+- Can only check convergence after all iterations
+- Best for fixed iteration counts or when speed matters most
+
+```python
+import time
+
+# Benchmark dual-buffer approach
+start = time.time()
+p1, iters1 = solve_laplace_2d(nx=64, ny=64, extent=(2.0, 1.0), l1norm_target=1e-5)
+time_dual = time.time() - start
+print(f"Dual-buffer: {iters1} iterations in {time_dual:.3f} s")
+
+# For TimeFunction comparison, we would run with same iteration count
+# and compare wall-clock time
+```
+
+### Improving Convergence: Gauss-Seidel and SOR
+
+Jacobi iteration updates all points simultaneously using values from
+the previous iteration. The *Gauss-Seidel* method uses updated values
+as soon as they are available:
+
+$$
+p_{i,j}^{(k+1)} = \frac{1}{4}\left(p_{i+1,j}^{(k)} + p_{i-1,j}^{(k+1)} +
+p_{i,j+1}^{(k)} + p_{i,j-1}^{(k+1)}\right)
+$$
+
+This roughly halves the number of iterations but introduces data
+dependencies that complicate parallelization.
+
+*Successive Over-Relaxation* (SOR) further accelerates convergence:
+$$
+p_{i,j}^{(k+1)} = (1-\omega) p_{i,j}^{(k)} + \omega \cdot (\text{Gauss-Seidel update})
+$$
+
+The optimal relaxation parameter is:
+$$
+\omega_{\text{opt}} = \frac{2}{1 + \sin(\pi/N)}
+$$ {#eq-elliptic-sor-omega}
+
+With optimal $\omega$, SOR requires $O(N)$ iterations instead of $O(N^2)$.
+However, SOR is inherently sequential and harder to implement efficiently
+in Devito's parallel framework.
+
+### Multigrid Methods
+
+For production use, *multigrid methods* achieve $O(N)$ complexity by
+solving on a hierarchy of grids. The key insight is that Jacobi
+efficiently reduces high-frequency error components but struggles
+with low-frequency modes. Multigrid uses coarse grids to efficiently
+handle low frequencies, then interpolates corrections back to fine grids.
+
+Multigrid implementation goes beyond basic Devito patterns but is
+available in specialized libraries that can interface with Devito-generated
+code.
+
+### Summary: Choosing an Approach
+
+| Criterion | Dual-Buffer | TimeFunction |
+|-----------|-------------|--------------|
+| Convergence control | Fine-grained | Per-batch |
+| Python overhead | Per iteration | Once per call |
+| Code complexity | Moderate | Simpler operator |
+| Flexibility | More flexible | Faster execution |
+| Best use case | Adaptive convergence | Fixed iterations |
+
+For problems where the number of iterations is predictable, the
+`TimeFunction` approach is faster. For problems requiring tight
+convergence tolerance or adaptive stopping criteria, the dual-buffer
+approach offers more control.
+
+### Key Takeaways
+
+1. **Steady-state problems require iteration**, not time-stepping.
+   Devito supports both dual-buffer `Function` patterns and
+   pseudo-timestepping with `TimeFunction`.
+
+2. **Jacobi iteration converges slowly** with $O(N^2)$ iterations for
+   an $N \times N$ grid. For fine grids, consider Gauss-Seidel,
+   SOR, or multigrid methods.
+
+3. **Buffer swapping via argument substitution** avoids expensive
+   data copies: `op(p=_p, pn=_pn)` with alternating assignments.
+
+4. **The L1 norm** provides a practical convergence metric, but the
+   residual norm more directly measures how well the PDE is satisfied.
+
+5. **Boundary conditions for Neumann problems** use the "copy trick":
+   setting boundary values equal to adjacent interior values enforces
+   zero normal derivative.
+
+6. **Source terms in Poisson equation** are handled by a separate
+   `Function` object `b` that enters the symbolic equation.
+
+
+## Exercises {#sec-elliptic-exercises}
+
+### Exercise 1: Grid Resolution Study
+
+Solve the Laplace problem from @sec-elliptic-laplace with grid sizes
+$N = 16, 32, 64, 128$. For each:
+
+a) Record the number of iterations to achieve $L_1 < 10^{-5}$.
+b) Plot iterations vs $N$ and verify the $O(N^2)$ scaling.
+c) Compare the solution profiles along $y = 0.5$.
+
+### Exercise 2: Multiple Sources
+
+Modify the Poisson solver to handle four sources:
+
+- $b = +50$ at $(0.25, 0.25)$ and $(0.75, 0.75)$
+- $b = -50$ at $(0.25, 0.75)$ and $(0.75, 0.25)$
+
+on the unit square with $p = 0$ on all boundaries.
+
+Visualize the solution and discuss the symmetry.
+
+### Exercise 3: Non-Homogeneous Dirichlet Conditions
+
+Solve the Laplace equation on $[0, 1]^2$ with:
+
+- $p = \sin(\pi y)$ at $x = 0$
+- $p = 0$ at $x = 1$, $y = 0$, and $y = 1$
+
+Create a 1D `Function` for the $x = 0$ boundary condition, similar
+to the `bc_right` pattern in @sec-elliptic-laplace.
+
+### Exercise 4: Convergence Comparison
+
+Implement both the dual-buffer approach with L1 convergence criterion
+and the `TimeFunction` approach with fixed iterations. For a $64 \times 64$
+grid:
+
+a) Determine how many iterations the dual-buffer approach needs for
+   $L_1 < 10^{-5}$.
+b) Run the `TimeFunction` approach for the same number of iterations.
+c) Compare wall-clock times. Which is faster and by how much?
+
+### Exercise 5: Residual Monitoring
+
+Modify the convergence loop to compute both the L1 norm and the residual
+$\|\nabla^2 p - f\|_2$ at each iteration. Plot both metrics vs iteration
+number. Do they decrease at the same rate?
+
+### Exercise 6: Variable Coefficients
+
+The equation $\nabla \cdot (k(x,y) \nabla p) = 0$ with spatially varying
+conductivity $k(x,y)$ arises in heterogeneous media. Consider
+$k(x,y) = 1 + 0.5\sin(\pi x)\sin(\pi y)$ on the unit square.
+
+The discrete equation becomes:
+$$
+\frac{1}{\Delta x}\left[k_{i+1/2,j}(p_{i+1,j} - p_{i,j}) - k_{i-1/2,j}(p_{i,j} - p_{i-1,j})\right] + \cdots = 0
+$$
+
+Create a `Function` for $k$ and implement the variable-coefficient
+Laplacian using explicit indexing. Solve with $p = 0$ at $x = 0$ and
+$p = 1$ at $x = 1$, with zero-flux conditions at $y = 0$ and $y = 1$.
