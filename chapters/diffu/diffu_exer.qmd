@@ -48,13 +48,13 @@ u(x,0) &= I(x), & x\in [0,L]\tp
 
 The energy estimate for this problem reads
 $$
-||u||**{L^2} \leq ||I||**{L^2},
+||u||_{L^2} \leq ||I||_{L^2},
 $$ {#eq-diffu-exer-estimates-p1-result}
 where the $||\cdot ||_{L^2}$ norm is defined by
 $$
 ||g||_{L^2} = \sqrt{\int_0^L g^2dx}\tp
 $$ {#eq-diffu-exer-estimates-L2}
-The quantify  $||u||**{L^2}$ or $\half ||u||**{L^2}$ is known
+The quantify  $||u||_{L^2}$ or $\half ||u||_{L^2}$ is known
 as the *energy* of the solution, although it is not the physical
 energy of the system. A mathematical tradition has introduced the
 notion *energy* in this context.
@@ -89,7 +89,7 @@ u(x,0) &= 0, & x\in [0,L]\tp
 ```
 The associated energy estimate is
 $$
-||u||**{L^2} \leq ||f||**{L^2}\tp
+||u||_{L^2} \leq ||f||_{L^2}\tp
 $$ {#eq-diffu-exer-estimates-p2-result}
 (This result is more difficult to derive.)
 
@@ -119,7 +119,7 @@ show that the energy estimate for
 the compound problem
 becomes
 $$
-||u||**{L^2} \leq ||I||**{L^2} + ||f||_{L^2}\tp
+||u||_{L^2} \leq ||I||_{L^2} + ||f||_{L^2}\tp
 $$ {#eq-diffu-exer-estimates-p3-result}
 
 
@@ -358,63 +358,45 @@ with $\bar L=4$ and $\bar L=8$, respectively (keep $\Delta x$ the same).
 
 
 ::: {.callout-tip collapse="true" title="Solution"}
-We can use the `viz` function in `diff1D_vc.py` to do the number
-crunching. Appropriate calls and visualization go here:
+We can use the Devito solver from `diffu1D_devito.py` to perform the computation.
+See @sec-diffu-devito for the complete implementation.
 
 ```python
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.pardir, "src-diffu"))
-from diffu1D_vc import viz
+from src.diffu import solve_diffusion_1d
+import numpy as np
+import matplotlib.pyplot as plt
+from math import pi, sin
 
 sol = []  # store solutions
 for Nx, L in [[20, 4], [40, 8]]:
     dt = 0.1
     dx = float(L) / Nx
-    D = dt / dx**2
-    from math import pi, sin
-
+    F = 0.5 * dt / dx**2  # Fourier number with a=0.5
     T = 2 * pi * 6
-    from numpy import zeros
 
-    a = zeros(Nx + 1) + 0.5
-    cpu, u_ = viz(
-        I=lambda x: 0,
-        a=a,
-        L=L,
-        Nx=Nx,
-        D=D,
-        T=T,
-        umin=-1.1,
-        umax=1.1,
-        theta=0.5,
+    # Solve using Devito
+    result = solve_diffusion_1d(
+        L=L, a=0.5, Nx=Nx, T=T, F=F,
+        I=lambda x: np.zeros_like(x),
         u_L=lambda t: sin(t),
-        u_R=0,
-        animate=False,
-        store_u=True,
+        u_R=lambda t: 0,
+        save_history=True,
     )
-    sol.append(u_)
-    print("computed solution for Nx=%d in [0,%g]" % (Nx, L))
+    sol.append((result.x, result.history))
+    print(f"computed solution for Nx={Nx} in [0,{L}]")
 
-print(sol[0].shape)
-print(sol[1].shape)
-import matplotlib.pyplot as plt
-
+# Animate and save frames
 counter = 0
-for u0, u1 in zip(sol[0][2:], sol[1][2:], strict=False):
-    x0 = sol[0][0]
-    x1 = sol[1][0]
+for u0, u1 in zip(sol[0][1], sol[1][1]):
+    x0, x1 = sol[0][0], sol[1][0]
     plt.clf()
     plt.plot(x0, u0, "r-", label="short")
     plt.plot(x1, u1, "b-", label="long")
     plt.legend()
     plt.axis([x1[0], x1[-1], -1.1, 1.1])
-    plt.savefig("tmp_%04d.png" % counter)
+    plt.savefig(f"tmp_{counter:04d}.png")
     counter += 1
 ```
-
-MOVIE: [https://github.com/hplgit/fdm-book/raw/master/doc/pub/book/html/mov-diffu/surface_osc/movie.mp4]
 
 :::
 
@@ -854,8 +836,8 @@ u\sim1/\delta$ in simulations, we can just replace $\bar f$ by $\delta
 \bar f$ in the scaled PDE.
 
 Use this trick and implement the two scaled models. Reuse software for
-the diffusion equation (e.g., the `solver` function in
-`diffu1D_vc.py`).  Make a function `run(gamma, beta=10, delta=40,
+the diffusion equation (e.g., the Devito solver in
+`diffu1D_devito.py`, see @sec-diffu-devito).  Make a function `run(gamma, beta=10, delta=40,
 scaling=1, animate=False)` that runs the model with the given
 $\gamma$, $\beta$, and $\delta$ parameters as well as an indicator
 `scaling` that is 1 for the scaling in a) and 2 for the scaling in
@@ -874,89 +856,58 @@ it is attractive to plot $\bar f/\delta$ together with $\bar u$.
 
 
 ::: {.callout-tip collapse="true" title="Solution"}
-Here is a possible `run` function:
+Here is a possible `run` function using the Devito solver:
 
 ```python
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.pardir, "src-diffu"))
 import numpy as np
-from diffu1D_vc import solver
+import matplotlib.pyplot as plt
+from src.diffu import solve_diffusion_1d
 
 
 def run(gamma, beta=10, delta=40, scaling=1, animate=False):
-    """Run the scaled model for welding."""
+    """Run the scaled model for welding using Devito."""
     if scaling == 1:
         v = gamma
-        a = 1
+        a = 1.0
     elif scaling == 2:
         v = 1
         a = 1.0 / gamma
 
     b = 0.5 * beta**2
     L = 1.0
-    ymin = 0
-    global ymax
-    ymax = 1.2
-
-    I = lambda x: 0
-    f = lambda x, t: delta * np.exp(-b * (x - v * t) ** 2)
-
-    import time
-
-    import matplotlib.pyplot as plt
-
-    plot_arrays = []
-
-    def process_u(u, x, t, n):
-        global ymax
-        if animate:
-            plt.clf()
-            plt.plot(x, u, "r-", x, f(x, t[n]) / delta, "b-")
-            plt.axis([0, L, ymin, ymax])
-            plt.title(f"t={t[n]:f}")
-            plt.xlabel("x")
-            plt.ylabel(f"u and f/{delta:g}")
-            plt.draw()
-            plt.pause(0.001)
-        if t[n] == 0:
-            time.sleep(1)
-            plot_arrays.append(x)
-        dt = t[1] - t[0]
-        tol = dt / 10.0
-        if abs(t[n] - 0.2) < tol or abs(t[n] - 0.5) < tol:
-            plot_arrays.append((u.copy(), f(x, t[n]) / delta))
-            if u.max() > ymax:
-                ymax = u.max()
-
     Nx = 100
-    D = 10
     T = 0.5
-    u_L = u_R = 0
-    theta = 1.0
-    cpu = solver(I, a, f, L, Nx, D, T, theta, u_L, u_R, user_action=process_u)
-    x = plot_arrays[0]
+    F = 0.5  # Fourier number for stability
+
+    # Source function
+    def f(x, t):
+        return delta * np.exp(-b * (x - v * t) ** 2)
+
+    # Solve using Devito with source term
+    result = solve_diffusion_1d(
+        L=L, a=a, Nx=Nx, T=T, F=F,
+        I=lambda x: np.zeros_like(x),
+        f=f,
+        save_history=True,
+    )
+
+    # Extract solutions at t=0.2 and t=0.5
+    x = result.x
+    dt = result.dt
+    idx_02 = int(0.2 / dt)
+    idx_05 = int(0.5 / dt)
+
     plt.figure()
-    for u, f in plot_arrays[1:]:
-        plt.plot(x, u, "r-", x, f, "b--")
-    plt.axis([x[0], x[-1], 0, ymax])
+    for idx, t_val in [(idx_02, 0.2), (idx_05, 0.5)]:
+        u = result.history[idx]
+        f_vals = f(x, t_val) / delta
+        plt.plot(x, u, "r-", x, f_vals, "b--")
+
     plt.xlabel("$x$")
     plt.ylabel(rf"$u, \ f/{delta:g}$")
-    plt.legend(
-        [
-            "$u,\\ t=0.2$",
-            f"$f/{delta:g},\\ t=0.2$",
-            "$u,\\ t=0.5$",
-            f"$f/{delta:g},\\ t=0.5$",
-        ]
-    )
-    filename = "tmp1_gamma%g_s%d" % (gamma, scaling)
     s = "diffusion" if scaling == 1 else "source"
     plt.title(rf"$\beta = {beta:g},\ \gamma = {gamma:g},\ $" + f"scaling={s}")
-    plt.savefig(filename + ".pdf")
-    plt.savefig(filename + ".png")
-    return cpu
+    plt.savefig(f"tmp1_gamma{gamma}_s{scaling}.png")
 ```
 Note that we have dropped the bar notation in the plots. It is common
 to drop the bars as soon as the scaled problem is established.

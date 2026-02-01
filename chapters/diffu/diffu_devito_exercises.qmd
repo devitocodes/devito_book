@@ -521,63 +521,51 @@ The 2D solver should also achieve second-order spatial convergence
 when the Fourier number is held fixed.
 :::
 
-### Exercise 10: Comparison with Legacy Code {#exer-diffu-legacy}
+### Exercise 10: Performance Scaling {#exer-diffu-scaling}
 
-Compare the Devito solver with the legacy NumPy implementation.
+Investigate how Devito's performance scales with problem size.
 
-a) Run both solvers with the same parameters.
-b) Verify they produce the same results.
-c) Compare execution times.
+a) Run the 1D solver with increasing grid sizes (Nx = 100, 500, 1000, 5000).
+b) Measure and plot the execution time vs grid size.
+c) Determine if the scaling is linear in Nx.
 
 ::: {.callout-note collapse="true" title="Solution"}
 ```python
 from src.diffu import solve_diffusion_1d
-from src.diffu.diffu1D_u0 import solver_FE_simple
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 # Parameters
 L = 1.0
 a = 1.0
-Nx = 200
 F = 0.5
-T = 0.1
+T = 0.01  # Short time for timing tests
 
-dx = L / Nx
-dt = F * dx**2 / a
+grid_sizes = [100, 500, 1000, 5000]
+times = []
 
-# Devito solver
-t0 = time.perf_counter()
-result_devito = solve_diffusion_1d(
-    L=L, a=a, Nx=Nx, T=T, F=F,
-    I=lambda x: np.sin(np.pi * x),
-)
-t_devito = time.perf_counter() - t0
+for Nx in grid_sizes:
+    t0 = time.perf_counter()
+    result = solve_diffusion_1d(
+        L=L, a=a, Nx=Nx, T=T, F=F,
+        I=lambda x: np.sin(np.pi * x),
+    )
+    times.append(time.perf_counter() - t0)
+    print(f"Nx={Nx}: {times[-1]:.4f} s")
 
-# Legacy NumPy solver
-t0 = time.perf_counter()
-u_legacy, x_legacy, t_legacy, cpu_legacy = solver_FE_simple(
-    I=lambda x: np.sin(np.pi * x),
-    a=a,
-    f=lambda x, t: 0,
-    L=L,
-    dt=dt,
-    F=F,
-    T=T,
-)
-t_numpy = time.perf_counter() - t0
-
-# Compare results
-diff = np.max(np.abs(result_devito.u - u_legacy))
-print(f"Maximum difference: {diff:.2e}")
-print(f"Devito time: {t_devito:.4f} s")
-print(f"NumPy time: {t_numpy:.4f} s")
-
-# Note: For small problems, NumPy may be faster due to compilation
-# overhead. For large problems, Devito's optimized C code wins.
+# Plot scaling
+plt.figure(figsize=(8, 6))
+plt.loglog(grid_sizes, times, 'bo-', label='Measured')
+plt.loglog(grid_sizes, times[0]*(np.array(grid_sizes)/grid_sizes[0]),
+           'r--', label='O(N)')
+plt.xlabel('Grid size (Nx)')
+plt.ylabel('Time (s)')
+plt.legend()
+plt.title('Devito 1D Diffusion Solver Scaling')
+plt.grid(True)
 ```
 
-For large grids, Devito's automatically generated and optimized C code
-typically outperforms pure Python/NumPy implementations. The advantage
-grows with problem size.
+The Devito solver typically shows linear scaling in Nx for 1D problems,
+as expected for an explicit scheme where each time step is O(Nx).
 :::

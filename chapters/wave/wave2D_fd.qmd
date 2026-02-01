@@ -136,29 +136,29 @@ $$
 $$
 which becomes
 $$
-\frac{u^{n+1}**{i,j} - 2u^{n}**{i,j} + u^{n-1}_{i,j}}{\Delta t^2}
+\frac{u^{n+1}_{i,j} - 2u^{n}_{i,j} + u^{n-1}_{i,j}}{\Delta t^2}
 = c^2
-\frac{u^{n}**{i+1,j} - 2u^{n}**{i,j} + u^{n}_{i-1,j}}{\Delta x^2}
+\frac{u^{n}_{i+1,j} - 2u^{n}_{i,j} + u^{n}_{i-1,j}}{\Delta x^2}
 + c^2
-\frac{u^{n}**{i,j+1} - 2u^{n}**{i,j} + u^{n}_{i,j-1}}{\Delta y^2}
+\frac{u^{n}_{i,j+1} - 2u^{n}_{i,j} + u^{n}_{i,j-1}}{\Delta y^2}
 + f^n_{i,j},
 $$
 Assuming, as usual, that all values at time levels $n$ and $n-1$
 are known, we can solve for the only unknown $u^{n+1}_{i,j}$. The
 result can be compactly written as
 $$
-u^{n+1}**{i,j} = 2u^n**{i,j} + u^{n-1}_{i,j} + c^2\Delta t^2[D_xD_x u + D_yD_y u]^n_{i,j}\tp
+u^{n+1}_{i,j} = 2u^n_{i,j} + u^{n-1}_{i,j} + c^2\Delta t^2[D_xD_x u + D_yD_y u]^n_{i,j}\tp
 $$ {#eq-wave-2D3D-models-unp1}
 
 As in the 1D case, we need to develop a special formula for $u^1_{i,j}$
 where we combine the general scheme for $u^{n+1}_{i,j}$, when $n=0$,
 with the discretization of the initial condition:
 $$
-[D_{2t}u = V]^0_{i,j}\quad\Rightarrow\quad u^{-1}**{i,j} = u^1**{i,j} - 2\Delta t V_{i,j} \tp
+[D_{2t}u = V]^0_{i,j}\quad\Rightarrow\quad u^{-1}_{i,j} = u^1_{i,j} - 2\Delta t V_{i,j} \tp
 $$
 The result becomes, in compact form,
 $$
-u^{1}**{i,j} = u^0**{i,j} -2\Delta V_{i,j} + {\half}
+u^{1}_{i,j} = u^0_{i,j} -2\Delta V_{i,j} + {\half}
 c^2\Delta t^2[D_xD_x u + D_yD_y u]^0_{i,j}\tp
 $$ {#eq-wave-2D3D-models-u1}
 
@@ -173,20 +173,20 @@ When written out and solved for the unknown $u^{n+1}_{i,j,k}$, one gets the
 scheme
 
 \begin{align*}
-u^{n+1}**{i,j,k} &= - u^{n-1}**{i,j,k}  + 2u^{n}_{i,j,k} + \\
-&\quad \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta x^2} ( \half(q_{i,j,k} + q_{i+1,j,k})(u^{n}**{i+1,j,k} - u^{n}**{i,j,k}) - \\
-&\qquad\qquad \half(q_{i-1,j,k} + q_{i,j,k})(u^{n}**{i,j,k} - u^{n}**{i-1,j,k})) + \\
-&\quad \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta y^2} ( \half(q_{i,j,k} + q_{i,j+1,k})(u^{n}**{i,j+1,k} - u^{n}**{i,j,k}) - \\
-&\qquad\qquad\half(q_{i,j-1,k} + q_{i,j,k})(u^{n}**{i,j,k} - u^{n}**{i,j-1,k})) + \\
-&\quad \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta z^2} ( \half(q_{i,j,k} + q_{i,j,k+1})(u^{n}**{i,j,k+1} - u^{n}**{i,j,k}) -\\
-&\qquad\qquad \half(q_{i,j,k-1} + q_{i,j,k})(u^{n}**{i,j,k} - u^{n}**{i,j,k-1})) + \\
+u^{n+1}_{i,j,k} &= - u^{n-1}_{i,j,k}  + 2u^{n}_{i,j,k} + \\
+&\quad \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta x^2} ( \half(q_{i,j,k} + q_{i+1,j,k})(u^{n}_{i+1,j,k} - u^{n}_{i,j,k}) - \\
+&\qquad\qquad \half(q_{i-1,j,k} + q_{i,j,k})(u^{n}_{i,j,k} - u^{n}_{i-1,j,k})) + \\
+&\quad \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta y^2} ( \half(q_{i,j,k} + q_{i,j+1,k})(u^{n}_{i,j+1,k} - u^{n}_{i,j,k}) - \\
+&\qquad\qquad\half(q_{i,j-1,k} + q_{i,j,k})(u^{n}_{i,j,k} - u^{n}_{i,j-1,k})) + \\
+&\quad \frac{1}{\varrho_{i,j,k}}\frac{1}{\Delta z^2} ( \half(q_{i,j,k} + q_{i,j,k+1})(u^{n}_{i,j,k+1} - u^{n}_{i,j,k}) -\\
+&\qquad\qquad \half(q_{i,j,k-1} + q_{i,j,k})(u^{n}_{i,j,k} - u^{n}_{i,j,k-1})) + \\
 &\quad \Delta t^2 f^n_{i,j,k}
 \end{align*} \tp
 
 Also here we need to develop a special formula for $u^1_{i,j,k}$
 by combining the scheme for $n=0$ with the discrete initial condition,
 which is just a matter of inserting
-$u^{-1}**{i,j,k}=u^1**{i,j,k} - 2\Delta tV_{i,j,k}$ in the scheme
+$u^{-1}_{i,j,k}=u^1_{i,j,k} - 2\Delta tV_{i,j,k}$ in the scheme
 and solving for $u^1_{i,j,k}$.
 
 ### Handling boundary conditions where $u$ is known
@@ -216,11 +216,11 @@ $$
 From this it follows that $u^n_{i,-1}=u^n_{i,1}$.
 The discretized PDE at the boundary point $(i,0)$ reads
 $$
-\frac{u^{n+1}**{i,0} - 2u^{n}**{i,0} + u^{n-1}_{i,0}}{\Delta t^2}
+\frac{u^{n+1}_{i,0} - 2u^{n}_{i,0} + u^{n-1}_{i,0}}{\Delta t^2}
 = c^2
-\frac{u^{n}**{i+1,0} - 2u^{n}**{i,0} + u^{n}_{i-1,0}}{\Delta x^2}
+\frac{u^{n}_{i+1,0} - 2u^{n}_{i,0} + u^{n}_{i-1,0}}{\Delta x^2}
 + c^2
-\frac{u^{n}**{i,1} - 2u^{n}**{i,0} + u^{n}_{i,-1}}{\Delta y^2}
+\frac{u^{n}_{i,1} - 2u^{n}_{i,0} + u^{n}_{i,-1}}{\Delta y^2}
 + f^n_{i,j},
 $$
 We can then just insert $u^n_{i,1}$ for $u^n_{i,-1}$ in this equation
@@ -237,4 +237,4 @@ mesh is to have $u^n_{i,-1}$ available as a ghost value.  The mesh is
 extended with one extra line (2D) or plane (3D) of ghost cells at a
 Neumann boundary. In the present example it means that we need a line
 with ghost cells below the $y$ axis.  The ghost values must be updated
-according to $u^{n+1}**{i,-1}=u^{n+1}**{i,1}$.
+according to $u^{n+1}_{i,-1}=u^{n+1}_{i,1}$.

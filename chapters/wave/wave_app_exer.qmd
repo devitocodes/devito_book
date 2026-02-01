@@ -8,18 +8,16 @@ effect of the jump on the wave motion.
 
 :::{.callout-tip title="According to Section @sec-wave-app-string,"}
 the density enters the mathematical model as $\varrho$ in
-$\varrho u_{tt} = Tu_{xx}$, where $T$ is the string tension. Modify, e.g., the
-`wave1D_u0v.py` code to incorporate the tension and two density values.
-Make a mesh function `rho` with density values at each spatial mesh point.
-A value for the tension may be 150 N. Corresponding density values can
-be computed from the wave velocity estimations in the `guitar` function
-in the `wave1D_u0v.py` file.
+$\varrho u_{tt} = Tu_{xx}$, where $T$ is the string tension. Modify the
+Devito solver from @sec-wave-devito to incorporate the tension and two
+density values. Make a mesh function `rho` with density values at each
+spatial mesh point. A value for the tension may be 150 N.
 :::
 
 ## Exercise: Simulate damped waves on a string {#sec-wave-app-exer-string-damping}
 
 Formulate a mathematical model for damped waves on a string.
-Use data from Section @sec-wave-pde1-guitar-data, and
+Use typical guitar string parameters (e.g., $L = 0.75$ m, frequency 440 Hz), and
 tune the damping parameter so that the string is very close to
 the rest state after 15 s. Make a movie of the wave motion.
 
@@ -64,8 +62,8 @@ Q\exp{(-\frac{r^2}{2\Delta r^2})}\sin\omega t,& \sin\omega t\geq 0\\
 $$
 Here, $Q$ and $\omega$ are constants to be chosen.
 
-:::{.callout-tip title="Use the program `wave1D_u0v.py` as a starting point. Let `solver`"}
-compute the $v$ function and then set $u=v/r$. However,
+:::{.callout-tip title="Use the Devito solver from @sec-wave-devito as a starting point."}
+Compute the $v$ function and then set $u=v/r$. However,
 $u=v/r$ for $r=0$ requires special treatment. One possibility is
 to compute `u[1:] = v[1:]/r[1:]` and then set `u[0]=u[1]`. The latter
 makes it evident that $\partial u/\partial r = 0$ in a plot.
@@ -139,8 +137,8 @@ $$ {#eq-wave-app-exer-tsunami1D-hill-box}
 for $x\in [B_m - B_s, B_m + B_s]$ while $B=B_0$ outside this
 interval.
 
-The [`wave1D_dn_vc.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_dn_vc.py)
-program can be used as starting point for the implementation.
+The Devito solver from @sec-wave-devito can be used as a starting point
+for the implementation.
 Visualize both the bottom topography and the
 water surface elevation in
 the same plot.
@@ -569,13 +567,13 @@ the value of $I(C^{-1}(C(x)-t_n))$.
 
 Make movies showing a comparison of the numerical and exact solutions
 for the two initial conditions
-(@sec-wave-app-exer-advec1D-I-sin) and (@eq-wave-app-exer-advec1D-I-gauss).
+(@eq-wave-app-exer-advec1D-I-sin) and (@eq-wave-app-exer-advec1D-I-gauss).
 Choose $\Delta t = \Delta x /\max_{0,L} c(x)$
 and the velocity of the medium as
 
  1. $c(x) = 1 + \epsilon\sin(k\pi x/L)$, $\epsilon <1$,
  1. $c(x) = 1 + I(x)$, where $I$ is given by
-   (@sec-wave-app-exer-advec1D-I-sin) or (@eq-wave-app-exer-advec1D-I-gauss).
+   (@eq-wave-app-exer-advec1D-I-sin) or (@eq-wave-app-exer-advec1D-I-gauss).
 
 The PDE $u_t + cu_x=0$ expresses that the initial condition $I(x)$
 is transported with velocity $c(x)$.

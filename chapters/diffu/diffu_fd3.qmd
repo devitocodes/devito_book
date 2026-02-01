@@ -28,15 +28,15 @@ point $(i,j,n+\half)$ and apply the difference approximations:
 Written out,
 
 \begin{align}
-& \frac{u^{n+1}**{i,j}-u^n**{i,j}}{\Delta t} =\nonumber\\
+& \frac{u^{n+1}_{i,j}-u^n_{i,j}}{\Delta t} =\nonumber\\
 &\qquad \theta (\dfc
-(\frac{u^{n+1}**{i-1,j} - 2u^{n+1}**{i,j} + u^{n+1}_{i+1,j}}{\Delta x^2} +
-\frac{u^{n+1}**{i,j-1} - 2u^{n+1}**{i,j} + u^{n+1}_{i,j+1}}{\Delta y^2}) +
+(\frac{u^{n+1}_{i-1,j} - 2u^{n+1}_{i,j} + u^{n+1}_{i+1,j}}{\Delta x^2} +
+\frac{u^{n+1}_{i,j-1} - 2u^{n+1}_{i,j} + u^{n+1}_{i,j+1}}{\Delta y^2}) +
 f^{n+1}_{i,j})
 + \nonumber\\
 &\qquad (1-\theta)(\dfc
-(\frac{u^{n}**{i-1,j} - 2u^{n}**{i,j} + u^{n}_{i+1,j}}{\Delta x^2} +
-\frac{u^{n}**{i,j-1} - 2u^{n}**{i,j} + u^{n}_{i,j+1}}{\Delta y^2}) +
+(\frac{u^{n}_{i-1,j} - 2u^{n}_{i,j} + u^{n}_{i+1,j}}{\Delta x^2} +
+\frac{u^{n}_{i,j-1} - 2u^{n}_{i,j} + u^{n}_{i,j+1}}{\Delta y^2}) +
 f^{n}_{i,j})
 \end{align}
 We collect the unknowns on the left-hand side
@@ -46,17 +46,17 @@ $$
 & u^{n+1}_{i,j} -
 \theta\left(
 F_x
-(u^{n+1}**{i-1,j} - 2u^{n+1}**{i,j} + u^{n+1}_{i+1,j}) +
+(u^{n+1}_{i-1,j} - 2u^{n+1}_{i,j} + u^{n+1}_{i+1,j}) +
 F_y
-(u^{n+1}**{i,j-1} - 2u^{n+1}**{i,j} + u^{n+1}_{i,j+1})\right)
+(u^{n+1}_{i,j-1} - 2u^{n+1}_{i,j} + u^{n+1}_{i,j+1})\right)
 = \\
 &\qquad
 (1-\theta)\left(
 F_x
-(u^{n}**{i-1,j} - 2u^{n}**{i,j} + u^{n}_{i+1,j}) +
+(u^{n}_{i-1,j} - 2u^{n}_{i,j} + u^{n}_{i+1,j}) +
 F_y
-(u^{n}**{i,j-1} - 2u^{n}**{i,j} + u^{n}_{i,j+1})\right) + \\
-&\qquad \theta \Delta t f^{n+1}**{i,j} + (1-\theta) \Delta t f^{n}**{i,j}
+(u^{n}_{i,j-1} - 2u^{n}_{i,j} + u^{n}_{i,j+1})\right) + \\
+&\qquad \theta \Delta t f^{n+1}_{i,j} + (1-\theta) \Delta t f^{n}_{i,j}
 + u^n_{i,j},
 \end{split}
 $$ {#eq-diffu-2D-theta-scheme2}
@@ -99,17 +99,17 @@ The corresponding equations are
 & u^{n+1}_{i,j} -
 \theta\left(
 F_x
-(u^{n+1}**{i-1,j} - 2u^{n+1}**{i,j} + u^{n+1}_{i+1,j}) +
+(u^{n+1}_{i-1,j} - 2u^{n+1}_{i,j} + u^{n+1}_{i+1,j}) +
 F_y
-(u^{n+1}**{i,j-1} - 2u^{n+1}**{i,j} + u^{n+1}_{i,j+1})\right)
+(u^{n+1}_{i,j-1} - 2u^{n+1}_{i,j} + u^{n+1}_{i,j+1})\right)
 =  \\
 &\qquad
 (1-\theta)\left(
 F_x
-(u^{n}**{i-1,j} - 2u^{n}**{i,j} + u^{n}_{i+1,j}) +
+(u^{n}_{i-1,j} - 2u^{n}_{i,j} + u^{n}_{i+1,j}) +
 F_y
-(u^{n}**{i,j-1} - 2u^{n}**{i,j} + u^{n}_{i,j+1})\right) + \\
-&\qquad \theta \Delta t f^{n+1}**{i,j} + (1-\theta) \Delta t f^{n}**{i,j}
+(u^{n}_{i,j-1} - 2u^{n}_{i,j} + u^{n}_{i,j+1})\right) + \\
+&\qquad \theta \Delta t f^{n+1}_{i,j} + (1-\theta) \Delta t f^{n}_{i,j}
 + u^n_{i,j},
 \end{align*}
 
@@ -246,10 +246,10 @@ interior points, we get for $p=5,6$, corresponding to $i=1,2$ and $j=1$:
 b_p &= u^{n}_{i,j} +
 (1-\theta)\left(
 F_x
-(u^{n}**{i-1,j} - 2u^{n}**{i,j} + u^{n}_{i+1,j}) +
+(u^{n}_{i-1,j} - 2u^{n}_{i,j} + u^{n}_{i+1,j}) +
 F_y
-(u^{n}**{i,j-1} - 2u^{n}**{i,j} + u^{n}_{i,j+1})\right) + \\
-&\qquad \theta \Delta t f^{n+1}**{i,j} + (1-\theta) \Delta t f^{n}**{i,j}\tp
+(u^{n}_{i,j-1} - 2u^{n}_{i,j} + u^{n}_{i,j+1})\right) + \\
+&\qquad \theta \Delta t f^{n+1}_{i,j} + (1-\theta) \Delta t f^{n}_{i,j}\tp
 \end{align*}
 Recall that $p=m(i,j)=j(N_x+1)+j$ in this expression.
 
@@ -387,7 +387,7 @@ def solver_dense(
     Fy = a*dt/dy**2
 ```
 
-The $u^{n+1}**{i,j}$ and $u^n**{i,j}$ mesh functions are represented
+The $u^{n+1}_{i,j}$ and $u^n_{i,j}$ mesh functions are represented
 by their spatial values at the mesh points:
 
 ```python
@@ -494,10 +494,9 @@ Another advantage of using `scipy.linalg` over numpy.linalg is that it is always
 Therefore, unless you don't want to add SciPy as a dependency to your NumPy program, use `scipy.linalg` instead of `numpy.linalg`.
 :::
 
-The code shown above is available in the `solver_dense` function
-in the file [`diffu2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_u0.py), differing only
-in the boundary conditions, which in the code can be an arbitrary function along
-each side of the domain.
+The Devito implementation is available in
+[`diffu2D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_devito.py).
+See @sec-diffu-devito for the complete 2D diffusion implementation using Devito.
 
 We do not bother to look at vectorized versions of filling `A` since
 a dense matrix is just used of pedagogical reasons for the very first
@@ -664,9 +663,9 @@ where $p$ can be arbitrary. The required source term is
 $$
 f = (\dfc(k_x^2 + k_y^2) - p)\uex\tp
 $$
-The function `convergence_rates` in
-[`diffu2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_u0.py) implements a convergence
-rate test. Two potential difficulties are important to be aware of:
+A convergence rate test can be implemented using the Devito solver in
+[`diffu2D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_devito.py).
+Two potential difficulties are important to be aware of:
 
  1. The error formula is assumed to be
    correct when $h\rightarrow 0$, so for coarse meshes the estimated rate
@@ -923,9 +922,9 @@ version of Gaussian elimination suited for matrices described by
 diagonals.  The algorithm is known as *sparse Gaussian elimination*,
 and `spsolve` calls up a well-tested C code called [SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/).
 
-The complete code utilizing `spsolve`
-is found in the `solver_sparse` function in the file
-[`diffu2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_u0.py).
+For reference, the Devito implementation automatically handles
+sparse matrix operations internally. See
+[`diffu2D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_devito.py).
 
 ### Verification
 
@@ -1011,7 +1010,7 @@ $$ {#eq-diffu-2D-Jacobi}
 
 We start the iteration with the computed values at the previous time level:
 $$
-u^{n+1,0}**{i,j} = u^{n}**{i,j},\quad i=0,\ldots,N_x,\ j=0,\ldots,N_y\tp
+u^{n+1,0}_{i,j} = u^{n}_{i,j},\quad i=0,\ldots,N_x,\ j=0,\ldots,N_y\tp
 $$ {#eq-diffu-2D-iter-startvector}
 
 ### Relaxation
@@ -1022,7 +1021,7 @@ approximation as suggested by the algorithm and the previous approximation.
 Naming the quantity on the left-hand side of (@eq-diffu-2D-Jacobi)
 as $u^{n+1,*}_{i,j}$, a new approximation based on relaxation reads
 $$
-u^{n+1,r+1} = \omega u^{n+1,*}**{i,j} + (1-\omega) u^{n+1,r}**{i,j}\tp
+u^{n+1,r+1} = \omega u^{n+1,*}_{i,j} + (1-\omega) u^{n+1,r}_{i,j}\tp
 $$ {#eq-diffu-2D-iter-relaxation}
 Under-relaxation means $\omega < 1$, while over-relaxation has
 $\omega > 1$.
@@ -1031,12 +1030,12 @@ $\omega > 1$.
 The iteration can be stopped when the change from one iteration to the
 next is sufficiently small ($\leq \epsilon$), using either an infinity norm,
 $$
-\max_{i,j}\left\vert u^{n+1,r+1}**{i,j}-u^{n+1,r}**{i,j}
+\max_{i,j}\left\vert u^{n+1,r+1}_{i,j}-u^{n+1,r}_{i,j}
 \right\vert \leq \epsilon,
 $$
 or an $L^2$ norm,
 $$
-\left(\Delta x\Delta y\sum_{i,j} (u^{n+1,r+1}**{i,j}-u^{n+1,r}**{i,j})^2
+\left(\Delta x\Delta y\sum_{i,j} (u^{n+1,r+1}_{i,j}-u^{n+1,r}_{i,j})^2
 \right)^{\half} \leq \epsilon\tp
 $$
 Another widely used criterion measures how well the equations are solved
@@ -1062,9 +1061,9 @@ $$
 ### Code-friendly notation
 To make the mathematics as close as possible to what we will write in
 a computer program, we may introduce some new notation: $u_{i,j}$ is a
-short notation for $u^{n+1,r+1}**{i,j}$, $u^{-}**{i,j}$ is a short
-notation for $u^{n+1,r}**{i,j}$, and $u^{(s)}**{i,j}$ denotes
-$u^{n+1-s}**{i,j}$.  That is, $u**{i,j}$ is the unknown, $u^{-}_{i,j}$
+short notation for $u^{n+1,r+1}_{i,j}$, $u^{-}_{i,j}$ is a short
+notation for $u^{n+1,r}_{i,j}$, and $u^{(s)}_{i,j}$ denotes
+$u^{n+1-s}_{i,j}$.  That is, $u_{i,j}$ is the unknown, $u^{-}_{i,j}$
 is its most recently computed approximation, and $s$ counts time
 levels backwards in time. The Jacobi method
 (@eq-diffu-2D-Jacobi)) takes the following form with the new
@@ -1103,7 +1102,7 @@ F_y(u^{(1)}_{i,j-1}-2u^{(1)}_{i,j} + u^{(1)}_{i,j+1})))\tp
 $$ {#eq-diffu-2D-Jacobi3}
 The final update of $u$ applies relaxation:
 $$
-u_{i,j} = \omega u^{*}**{i,j} + (1-\omega)u^{-}**{i,j}\tp
+u_{i,j} = \omega u^{*}_{i,j} + (1-\omega)u^{-}_{i,j}\tp
 $$
 ## Implementation of the Jacobi method {#sec-diffu-2D-Jacobi-impl}
 
@@ -1263,8 +1262,8 @@ two consecutive approximations, which is not exactly the error
 due to the iteration, but it is a kind of measure, and it should
 have about the same size as $E_i$.
 
-The function `demo_classic_iterative` in [`diffu2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_u0.py) implements the idea above (also for the
-methods in Section @sec-diffu-2D-SOR). The value of $E_i$ is in
+These iterative methods are described here for pedagogical purposes. The Devito
+implementation in [`diffu2D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_devito.py) handles these cases automatically. The value of $E_i$ is in
 particular printed at each time level. By changing the tolerance in
 the convergence criterion of the Jacobi method, we can see that $E_i$
 is of the same order of magnitude as the prescribed tolerance in the
@@ -1348,9 +1347,9 @@ especially the SOR method, which is treated next.
 If we update the mesh points according to the Jacobi method
 (@eq-diffu-2D-Jacobi0) for a Backward Euler discretization with a
 loop over $i=1,\ldots,N_x-1$ and $j=1,\ldots,N_y-1$, we realize that
-when $u^{n+1,r+1}**{i,j}$ is computed, $u^{n+1,r+1}**{i-1,j}$ and
+when $u^{n+1,r+1}_{i,j}$ is computed, $u^{n+1,r+1}_{i-1,j}$ and
 $u^{n+1,r+1}_{i,j-1}$ are already computed, so these new values can be
-used rather than $u^{n+1,r}**{i-1,j}$ and $u^{n+1,r}**{i,j-1}$
+used rather than $u^{n+1,r}_{i-1,j}$ and $u^{n+1,r}_{i,j-1}$
 (respectively) in the formula for $u^{n+1,r+1}_{i,j}$.  This idea
 gives rise to the *Gauss-Seidel* iteration method, which
 mathematically is just a small adjustment of (@eq-diffu-2D-Jacobi0):
@@ -1672,11 +1671,10 @@ c = slice(1,-1)
 u[c,c] = omega*u_new[c,c] + (1-omega)*u_[c,c]
 ```
 
-The function `solver_classic_iterative` in
-[`diffu2D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_u0.py)
-contains a unified implementation of the relaxed Jacobi and SOR
-methods in scalar and vectorized versions using the techniques
-explained above.
+The Devito implementation in
+[`diffu2D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu2D_devito.py)
+provides an efficient solver that handles these cases. For explicit schemes,
+Devito's automatic code generation replaces manual iterative implementations.
 
 ## Direct versus iterative methods
 ### Direct methods {#sec-diffu-2D-direct-vs-iter}

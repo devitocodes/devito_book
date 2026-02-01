@@ -519,7 +519,7 @@ wave equation. First, multiply (@eq-wave-app-sw-2D-ueq) and
 (@eq-wave-app-sw-2D-veq) by $H$, differentiate (@eq-wave-app-sw-2D-ueq))
 with respect to $x$ and (@eq-wave-app-sw-2D-veq) with respect to $y$.
 Second, differentiate (@eq-wave-app-sw-2D-eeq) with respect to $t$
-and use that $(Hu)_{xt}=(Hu_t)**x$ and $(Hv)**{yt}=(Hv_t)_y$ when $H$
+and use that $(Hu)_{xt}=(Hu_t)_x$ and $(Hv)_{yt}=(Hv_t)_y$ when $H$
 is independent of $t$. Third, eliminate $(Hu_t)_x$ and $(Hv_t)_y$
 with the aid of the other two differentiated equations. These manipulations
 result in a standard, linear wave equation for $\eta$:
@@ -543,7 +543,7 @@ of (@eq-wave-app-sw-2D-eeq). A moving bottom is best described by
 introducing $z=H_0$ as the still-water level, $z=B(x,y,t)$ as
 the time- and space-varying bottom topography, so that $H=H_0-B(x,y,t)$.
 In the elimination of $u$ and $v$ one may assume that the dependence of
-$H$ on $t$ can be neglected in the terms $(Hu)**{xt}$ and $(Hv)**{yt}$.
+$H$ on $t$ can be neglected in the terms $(Hu)_{xt}$ and $(Hv)_{yt}$.
 We then end up with a source term in (@eq-wave-app-sw-2D-eta-2ndoeq),
 because of the moving (accelerating) bottom:
 $$
@@ -554,7 +554,7 @@ The reduction of (@eq-wave-app-sw-2D-eta-2ndoeq-Ht) to 1D, for long waves
 in a straight channel, or for approximately plane waves in the ocean, is
 trivial by assuming no change in $y$ direction ($\partial/\partial y=0$):
 $$
-\eta_{tt} = (gH\eta_x)**x + B**{tt} \tp
+\eta_{tt} = (gH\eta_x)_x + B_{tt} \tp
 $$ {#eq-wave-app-sw-1D-eta-2ndoeq-Ht}
 
 ### Wind drag on the surface

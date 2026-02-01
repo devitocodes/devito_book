@@ -42,22 +42,9 @@ and @sec-wave-pde2-var-c.
 ## A solver function
 
 The general initial-boundary value problem
-solved by finite difference methods can be implemented as shown in
-the following `solver` function (taken from the
-file [`wave1D_dn_vc.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_dn_vc.py)).
-This function builds on
-simpler versions described in
-@sec-wave-pde1-impl, @sec-wave-pde1-impl-vec,
-@sec-wave-pde2-Neumann, and @sec-wave-pde2-var-c.
-There are several quite advanced
-constructs that will be commented upon later.
-The code is lengthy, but that is because we provide a lot of
-flexibility with respect to input arguments,
-boundary conditions, and optimization
-(scalar versus vectorized loops).
-
-```{.python include="../../../src/wave/wave1D/wave1D_dn_vc.py" start-after="def solver" end-before="def test_quadratic"}
-```
+solved by finite difference methods. For modern implementations using
+Devito, see @sec-wave-devito. This section covers software engineering
+principles that apply broadly to scientific computing.
 
 ## Storing simulation data in files {#sec-softeng2-wave1D-filestorage}
 
@@ -442,9 +429,8 @@ The returned sequence `r` should converge to 2 since the error
 analysis in @sec-wave-pde1-analysis predicts various error measures to behave
 like $\Oof{\Delta t^2} + \Oof{\Delta x^2}$. We can easily run
 the case with standing waves and the analytical solution
-$u(x,t) = \cos(\frac{2\pi}{L}t)\sin(\frac{2\pi}{L}x)$. The call will
-be very similar to the one provided in the `test_convrate_sincos` function
-in @sec-wave-pde1-impl-verify-rate, see the file `src/wave/wave1D/wave1D_dn_vc.py` for details.
+$u(x,t) = \cos(\frac{2\pi}{L}t)\sin(\frac{2\pi}{L}x)$. See @sec-wave-devito-convergence
+for details on convergence rate testing with Devito.
 
 Many who know about class programming prefer to organize their software
 in terms of classes. This gives a richer application programming interface
@@ -1221,9 +1207,7 @@ The `wave2D_u0.py` file contains a `solver` function, which calls an
 in time.  The function `advance_scalar` applies standard Python loops
 to implement the scheme, while `advance_vectorized` performs
 corresponding vectorized arithmetics with array slices. The statements
-of this solver are explained in @sec-wave-2D3D-impl, in
-particular @sec-wave2D3D-impl-scalar and
-@sec-wave2D3D-impl-vectorized.
+of this solver are explained in @sec-wave-2D3D-models.
 
 Although vectorization can bring down the CPU time dramatically
 compared with scalar code, there is still some factor 5-10 to win in
@@ -1506,9 +1490,8 @@ to a single index.
 
 We write a Fortran subroutine `advance` in a file
 [`wave2D_u0_loop_f77.f`](https://github.com/devitocodes/devito_book/tree/main/src/softeng2/wave2D_u0_loop_f77.f)
-for implementing the updating formula
-(@eq-wave-2D3D-impl1-2Du0-ueq-discrete) and setting the solution to zero
-at the boundaries:
+for implementing the updating formula (@eq-wave-2D3D-models-unp1) and
+setting the solution to zero at the boundaries:
 
 ```fortran
 subroutine advance(u, u_1, u_2, f, Cx2, Cy2, dt2, Nx, Ny)

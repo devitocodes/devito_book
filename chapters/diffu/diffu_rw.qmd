@@ -282,7 +282,7 @@ ways: either coming in from the left from $(i-1,n)$ or from the
 right ($i+1,n)$. Each has probability $\half$ (if we assume
 $p=q=\half$). The fundamental equation for $P^{n+1}_i$ is
 $$
-P^{n+1}**i = \half P^{n}**{i-1} + \half P^{n}_{i+1}\tp
+P^{n+1}_i = \half P^{n}_{i-1} + \half P^{n}_{i+1}\tp
 $$ {#eq-diffu-randomwalk-1D-pde-Markov}
 (This equation is easiest to understand if one looks at the random walk
 as a Markov process and applies the transition probabilities, but this is
@@ -291,7 +291,7 @@ beyond scope of the present text.)
 Subtracting $P^{n}_i$ from (@eq-diffu-randomwalk-1D-pde-Markov) results
 in
 $$
-P^{n+1}_i - P^{n}**i = \half (P^{n}**{i-1} -2P^{n}**i + \half P^{n}**{i+1})\tp
+P^{n+1}_i - P^{n}_i = \half (P^{n}_{i-1} -2P^{n}_i + \half P^{n}_{i+1})\tp
 $$
 Readers who have seen the Forward Euler discretization of a 1D
 diffusion equation recognize this scheme as very close to such a
@@ -309,10 +309,10 @@ Similarly, we have
 
 \begin{align*}
 \frac{\partial^2}{\partial x^2}P(x_i,t_n) &=
-\frac{P^{n}_{i-1} -2P^{n}**i + \half P^{n}**{i+1}}{\Delta x^2}
+\frac{P^{n}_{i-1} -2P^{n}_i + \half P^{n}_{i+1}}{\Delta x^2}
 + \Oof{\Delta x^2},\\
 \frac{\partial^2}{\partial x^2}P(\bar x_i,\bar t_n) &\approx
-P^{n}_{i-1} -2P^{n}**i + \half P^{n}**{i+1}\tp
+P^{n}_{i-1} -2P^{n}_i + \half P^{n}_{i+1}\tp
 \end{align*}
 Equation (@eq-diffu-randomwalk-1D-pde-Markov) is therefore equivalent with
 the dimensionless diffusion equation

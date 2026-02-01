@@ -192,7 +192,7 @@ We also need to replace the derivative in the initial condition
 A centered difference of the type
 $$
 \frac{\partial}{\partial t} u(x_i,t_0)\approx
-\frac{u^1_i - u^{-1}**i}{2\Delta t} = [D**{2t} u]^0_i,
+\frac{u^1_i - u^{-1}_i}{2\Delta t} = [D_{2t} u]^0_i,
 $$
 seems appropriate. Writing out this equation and ordering the terms give
 $$
@@ -211,7 +211,7 @@ $i=0,\ldots,N_x$.  The only unknown quantity in
 solve for:
 $$
 u^{n+1}_i = -u^{n-1}_i + 2u^n_i + C^2
-\left(u^{n}**{i+1}-2u^{n}**{i} + u^{n}_{i-1}\right)\tp
+\left(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}\right)\tp
 $$ {#eq-wave-pde1-step4}
 We have here introduced the parameter
 $$
@@ -250,7 +250,7 @@ use the initial condition (@eq-wave-pde1-step3c) in combination with
 arrive at a special formula for $u_i^1$:
 $$
 u_i^1 = u^0_i - \half
-C^2\left(u^{0}**{i+1}-2u^{0}**{i} + u^{0}_{i-1}\right) \tp
+C^2\left(u^{0}_{i+1}-2u^{0}_{i} + u^{0}_{i-1}\right) \tp
 $$ {#eq-wave-pde1-step4-1}
 Figure @fig-wave-pde1-fig-stencil-u1 illustrates how (@eq-wave-pde1-step4-1)
 connects four instead of five points: $u^1_2$, $u_1^0$, $u_2^0$, and $u_3^0$.
@@ -299,15 +299,15 @@ for i in range(0, Nx+1):
 
 for i in range(1, Nx):
     u[i] = u_n[i] - \
-           0.5*C**2(u_n[i+1] - 2*u_n[i] + u_n[i-1])
+           0.5*C**2 * (u_n[i+1] - 2*u_n[i] + u_n[i-1])
 u[0] = 0;  u[Nx] = 0   # Enforce boundary conditions
 
 u_nm1[:], u_n[:] = u_n, u
 
 for n in range(1, Nt):
     for i in range(1, Nx):
-        u[i] = 2u_n[i] - u_nm1[i] - \
-               C**2(u_n[i+1] - 2*u_n[i] + u_n[i-1])
+        u[i] = 2*u_n[i] - u_nm1[i] - \
+               C**2 * (u_n[i+1] - 2*u_n[i] + u_n[i-1])
 
     u[0] = 0;  u[Nx] = 0
 
@@ -348,7 +348,7 @@ $$ {#eq-wave-pde2-fdop}
 Writing this out and solving for the unknown $u^{n+1}_i$ results in
 $$
 u^{n+1}_i = -u^{n-1}_i + 2u^n_i + C^2
-(u^{n}**{i+1}-2u^{n}**{i} + u^{n}_{i-1}) + \Delta t^2 f^n_i \tp
+(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}) + \Delta t^2 f^n_i \tp
 $$ {#eq-wave-pde2-step3b}
 
 The equation for the first time step must be rederived. The discretization
@@ -362,7 +362,7 @@ the special formula
 $$
 u^{1}_i = u^0_i - \Delta t V_i + {\half}
 C^2
-\left(u^{0}**{i+1}-2u^{0}**{i} + u^{0}_{i-1}\right) + \half\Delta t^2 f^0_i \tp
+\left(u^{0}_{i+1}-2u^{0}_{i} + u^{0}_{i-1}\right) + \half\Delta t^2 f^0_i \tp
 $$ {#eq-wave-pde2-step3c}
 
 ## Using an analytical solution of physical significance {#sec-wave-pde2-fd-standing-waves}
@@ -497,10 +497,10 @@ An alternative error measure is to use a spatial norm at one time step
 only, e.g., the end time $T$ ($n=N_t$):
 
 \begin{align}
-E &= ||e^n_i||**{\ell^2} = \left( \Delta x\sum**{i=0}^{N_x}
+E &= ||e^n_i||_{\ell^2} = \left( \Delta x\sum_{i=0}^{N_x}
 (e^n_i)^2\right)^{\half},\quad e^n_i = \uex(x_i,t_n)-u^n_i,
 \\
-E &= ||e^n_i||**{\ell^\infty} = \max**{0\leq i\leq N_x} |e^{n}_i|\tp
+E &= ||e^n_i||_{\ell^\infty} = \max_{0\leq i\leq N_x} |e^{n}_i|\tp
 \end{align}
 The important point is that the error measure ($E$) for the simulation is represented by a single number.
 
