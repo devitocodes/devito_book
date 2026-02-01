@@ -90,7 +90,7 @@ Figure @fig-wave-pde1-fig-Neumann-stencil visualizes this equation
 for computing $u^3_0$ in terms of $u^2_0$, $u^1_0$, and
 $u^2_1$.
 
-![Modified stencil at a boundary with a Neumann condition.](fig/stencil_n_left){#fig-wave-pde1-fig-Neumann-stencil width="500px"}
+![Modified stencil at a boundary with a Neumann condition. The ghost point $u_{-1}^n$ is eliminated using $u_{-1}^n = u_1^n$.](fig/stencil_n_left){#fig-wave-pde1-fig-Neumann-stencil width="500px"}
 
 Similarly, (@eq-wave-pde1-Neumann-0) applied at $x=L$
 is discretized by a central difference

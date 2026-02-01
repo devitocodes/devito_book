@@ -35,7 +35,7 @@ in the forthcoming text by finite difference methods.
 ## Simulation of waves on a string {#sec-wave-string}
 
 We begin our study of wave equations by simulating one-dimensional
-waves on a string, say on a guitar or violin.
+waves on a string, such as those found on stringed instruments.
 Let the string in the undeformed state
 coincide with the interval
 $[0,L]$ on the $x$ axis, and let $u(x,t)$ be the displacement at
@@ -184,7 +184,7 @@ a typical stencil is illustrated in Figure
 equations as *discrete equations*, *(finite) difference equations* or
 a *finite difference scheme*.
 
-![Mesh in space and time. The circles show points connected in a finite difference equation.](fig/stencil_n_interior){#fig-wave-pde1-fig-mesh width="500px"}
+![Mesh in space and time. Filled circles represent known values from previous time steps; the empty circle is the unknown to be computed.](fig/stencil_n_interior){#fig-wave-pde1-fig-mesh width="500px"}
 
 ### Algebraic version of the initial conditions
 We also need to replace the derivative in the initial condition
@@ -255,7 +255,7 @@ $$ {#eq-wave-pde1-step4-1}
 Figure @fig-wave-pde1-fig-stencil-u1 illustrates how (@eq-wave-pde1-step4-1)
 connects four instead of five points: $u^1_2$, $u_1^0$, $u_2^0$, and $u_3^0$.
 
-![Modified stencil for the first time step.](fig/stencil_n0_interior){#fig-wave-pde1-fig-stencil-u1 width="500px"}
+![Modified stencil for the first time step. Only values at $n=0$ (initial condition) are needed since there is no $n-1$ level yet.](fig/stencil_n0_interior){#fig-wave-pde1-fig-stencil-u1 width="500px"}
 
 We can now summarize the computational algorithm:
 

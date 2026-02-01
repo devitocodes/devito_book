@@ -216,8 +216,8 @@ $$ {#eq-wave-app-elastic-membrane-eq}
 This is nothing but a wave equation in $w(x,y,t)$, which needs the usual
 initial conditions on $w$ and $w_t$ as well as a boundary condition $w=0$.
 When computing the stress in the membrane, one needs to split $\stress$
-into a constant high-stress component due to the fact that all membranes are
-normally pre-stressed, plus a component proportional to the displacement and
+into a constant high-stress component (since all membranes are
+normally pre-stressed) plus a component proportional to the displacement and
 governed by the wave motion.
 
 ## The acoustic model for seismic waves {#sec-wave-app-acoustic-seismic}

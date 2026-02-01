@@ -458,8 +458,7 @@ governed by the [Cable equation](http://en.wikipedia.org/wiki/Cable_equation):
 $$
 c_m \frac{\partial V}{\partial t} =
 \frac{1}{r_l}\frac{\partial^2 V}{\partial x^2} - \frac{1}{r_m}V
-label{}
-$$
+$$ {#eq-diffu-app-cable}
 where $V(x,t)$ is the voltage to be determined,
 $c_m$ is capacitance of the neuronal fiber, while
 $r_l$ and $r_m$ are measures of the resistance.

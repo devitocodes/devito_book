@@ -66,7 +66,7 @@ F_x = \frac{\dfc\Delta t}{\Delta x^2},\quad F_y = \frac{\dfc\Delta t}{\Delta y^2
 $$
 are the Fourier numbers in $x$ and $y$ direction, respectively.
 
-![3x2 2D mesh.](fig/mesh3x2){#fig-diffu-2D-fig-mesh3x2 width="500px"}
+![A 2D mesh with $N_x=3$ and $N_y=2$ cells, showing interior and boundary points.](fig/mesh3x2){#fig-diffu-2D-fig-mesh3x2 width="500px"}
 
 ## Numbering of mesh points versus equations and unknowns {#sec-diffu-2D-numbering}
 
@@ -262,7 +262,7 @@ p = (j-1)(N_x-1) + i,
 $$
 for $i=1,\ldots,N_x-1$, $j=1,\ldots,N_y-1$.
 
-![4x3 2D mesh.](fig/mesh4x3){#fig-diffu-2D-fig-mesh4x3 width="700px"}
+![A 2D mesh with $N_x=4$ and $N_y=3$ cells, illustrating the unknown numbering scheme.](fig/mesh4x3){#fig-diffu-2D-fig-mesh4x3 width="700px"}
 
 We can continue with illustrating a bit larger mesh, $N_x=4$ and $N_y=3$,
 see Figure @fig-diffu-2D-fig-mesh4x3. The corresponding coefficient matrix

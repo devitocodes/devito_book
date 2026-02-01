@@ -41,6 +41,93 @@ format:
     number-depth: 3
     crossref:
       chapters: true
+    include-in-header:
+      text: |
+        <script>
+        MathJax = {
+          tex: {
+            macros: {
+              half: "\\frac{1}{2}",
+              halfi: "{1/2}",
+              tp: "\\thinspace .",
+              uex: "u_{\\mbox{\\footnotesize e}}",
+              uexd: ["u_{\\mbox{\\footnotesize e}, #1}", 1],
+              vex: "v_{\\mbox{\\footnotesize e}}",
+              Vex: "V_{\\mbox{\\footnotesize e}}",
+              vexd: ["v_{\\mbox{\\footnotesize e}, #1}", 1],
+              Aex: "A_{\\mbox{\\footnotesize e}}",
+              wex: "w_{\\mbox{\\footnotesize e}}",
+              Ddt: ["\\frac{D #1}{dt}", 1],
+              E: ["\\hbox{E}\\lbrack #1 \\rbrack", 1],
+              Var: ["\\hbox{Var}\\lbrack #1 \\rbrack", 1],
+              Std: ["\\hbox{Std}\\lbrack #1 \\rbrack", 1],
+              xpoint: "\\boldsymbol{x}",
+              normalvec: "\\boldsymbol{n}",
+              Oof: ["\\mathcal{O}(#1)", 1],
+              x: "\\boldsymbol{x}",
+              X: "\\boldsymbol{X}",
+              uu: "\\boldsymbol{u}",
+              vv: "\\boldsymbol{v}",
+              w: "\\boldsymbol{w}",
+              acc: "\\boldsymbol{a}",
+              rpos: "\\boldsymbol{r}",
+              V: "\\boldsymbol{V}",
+              e: "\\boldsymbol{e}",
+              f: "\\boldsymbol{f}",
+              F: "\\boldsymbol{F}",
+              stress: "\\boldsymbol{\\sigma}",
+              strain: "\\boldsymbol{\\varepsilon}",
+              stressc: "{\\sigma}",
+              strainc: "{\\varepsilon}",
+              I: "\\boldsymbol{I}",
+              T: "\\boldsymbol{T}",
+              U: "\\boldsymbol{U}",
+              q: "\\boldsymbol{q}",
+              g: "\\boldsymbol{g}",
+              dfc: "\\alpha",
+              ii: "\\boldsymbol{i}",
+              jj: "\\boldsymbol{j}",
+              kk: "\\boldsymbol{k}",
+              ir: "\\boldsymbol{i}_r",
+              ith: "\\boldsymbol{i}_{\\theta}",
+              iz: "\\boldsymbol{i}_z",
+              Ix: "\\mathcal{I}_x",
+              Iy: "\\mathcal{I}_y",
+              Iz: "\\mathcal{I}_z",
+              It: "\\mathcal{I}_t",
+              If: "\\mathcal{I}_s",
+              Ifd: "{I_d}",
+              Ifb: "{I_b}",
+              setb: ["#1^0", 1],
+              sete: ["#1^{-1}", 1],
+              setl: ["#1^-", 1],
+              setr: ["#1^+", 1],
+              seti: ["#1^i", 1],
+              sequencei: ["\\left\\{ {#1}_i \\right\\}_{i\\in\\If}", 1],
+              sequencej: ["\\left\\{ {#1}_j \\right\\}_{j\\in\\If}", 1],
+              stepzero: "*",
+              stephalf: "***",
+              stepone: "**",
+              basphi: "\\varphi",
+              baspsi: "\\psi",
+              refphi: "\\tilde\\basphi",
+              psib: "\\boldsymbol{\\psi}",
+              sinL: ["\\sin\\left((#1+1)\\pi\\frac{x}{L}\\right)", 1],
+              xno: ["x_{#1}", 1],
+              Xno: ["X_{(#1)}", 1],
+              yno: ["y_{#1}", 1],
+              Yno: ["Y_{(#1)}", 1],
+              xdno: ["\\boldsymbol{x}_{#1}", 1],
+              dX: "\\, \\mathrm{d}X",
+              dx: "\\, \\mathrm{d}x",
+              ds: "\\, \\mathrm{d}s",
+              Real: "\\mathbb{R}",
+              Integerp: "\\mathbb{N}",
+              Integer: "\\mathbb{Z}"
+            }
+          }
+        };
+        </script>
   pdf:
     documentclass: scrbook
     classoption:

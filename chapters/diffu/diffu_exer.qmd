@@ -965,9 +965,9 @@ time steps.
 
 Running the `investigate` function, we get the following plots:
 
-![FIGURE: [fig-diffu/welding_gamma0_2, width=800 frac=1]](fig/welding_gamma0_025){width="100%"}
+![Temperature distribution for $\gamma = 0.025$: the heat source moves very slowly on the diffusion time scale.](fig/welding_gamma0_025){width="100%"}
 
-![FIGURE: [fig-diffu/welding_gamma5, width=800 frac=1]](fig/welding_gamma1){width="100%"}
+![Temperature distribution for $\gamma = 1$: the two scaling approaches give identical results.](fig/welding_gamma1){width="100%"}
 
 ![For $\gamma\ll 1$ as in $\gamma = 0.025$, the heat source moves very
 slowly on the diffusion time scale and has hardly entered the medium,

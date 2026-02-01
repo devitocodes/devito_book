@@ -778,8 +778,7 @@ user will not notice a change to properties.
 
 The only argument against direct attribute access in class `Mesh`
 is that the attributes are read-only so we could avoid offering
-a set function. Instead, we rely on the user that she does not
-assign new values to the attributes.
+a set function. Instead, we rely on the user not to assign new values to the attributes.
 :::
 
 ## Class Function

@@ -619,7 +619,7 @@ d_1 &= f(u^-_1)\tp
 Other entries are as in the $2\times 2$ system.
 
 ### Newton's method
-The Jacobian must be derived in order to use Newton's method. Here it means
+Using Newton's method requires deriving the Jacobian. Here it means
 that we need to differentiate $F(u)=A(u)u - b(u)$ with respect to
 the unknown parameters
 $u_0,u_1,\ldots,u_m$ ($m=N_x$ or $m=N_x-1$, depending on whether the
