@@ -1705,7 +1705,7 @@ We are interested in the accumulated global error, which can be taken
 as the $\ell^2$ norm of $e^n$.  The norm is simply computed by summing
 contributions from all mesh points:
 $$
-||e^n||**{\ell^2}^2 = \Delta t\sum**{n=0}^{N_t} \frac{1}{24^2}n^2\omega^6\Delta t^6
+||e^n||_{\ell^2}^2 = \Delta t\sum_{n=0}^{N_t} \frac{1}{24^2}n^2\omega^6\Delta t^6
 =\frac{1}{24^2}\omega^6\Delta t^7 \sum_{n=0}^{N_t} n^2\tp
 $$
 The sum $\sum_{n=0}^{N_t} n^2$ is approximately equal to
@@ -2388,7 +2388,7 @@ approximation to $u^{\prime}$: $u^{\prime}(t_n)\approx [D_{2t}u]^n$.
 A useful norm of the mesh function $e_E^n$ for the discrete mechanical
 energy can be the maximum absolute value of $e_E^n$:
 $$
-||e_E^n||**{\ell^\infty} = \max**{1\leq n <N_t} |e_E^n|\tp
+||e_E^n||_{\ell^\infty} = \max_{1\leq n <N_t} |e_E^n|\tp
 $$
 Alternatively, we can compute other norms involving integration over
 all mesh points, but we are often interested in worst case deviation

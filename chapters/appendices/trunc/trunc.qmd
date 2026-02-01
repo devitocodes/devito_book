@@ -1644,12 +1644,12 @@ $[D_xD_x (D_tD_t u)]^n_i$ gives
 
 \begin{align*}
 \frac{1}{\Delta t^2}\biggl(
-&\frac{u^{n+1}**{i+1} - 2u^{n}**{i+1} + u^{n-1}_{i+1}}{\Delta x^2} -2\\
-&\frac{u^{n+1}**{i} - 2u^{n}**{i} + u^{n-1}_{i}}{\Delta x^2} +
-&\frac{u^{n+1}**{i-1} - 2u^{n}**{i-1} + u^{n-1}_{i-1}}{\Delta x^2}
+&\frac{u^{n+1}_{i+1} - 2u^{n}_{i+1} + u^{n-1}_{i+1}}{\Delta x^2} -2\\
+&\frac{u^{n+1}_{i} - 2u^{n}_{i} + u^{n-1}_{i}}{\Delta x^2} +
+&\frac{u^{n+1}_{i-1} - 2u^{n}_{i-1} + u^{n-1}_{i-1}}{\Delta x^2}
 \biggr)
 \end{align*}
-Now the unknown values $u^{n+1}**{i+1}$, $u^{n+1}**{i}$,
+Now the unknown values $u^{n+1}_{i+1}$, $u^{n+1}_{i}$,
 and $u^{n+1}_{i-1}$ are *coupled*, and we must solve a tridiagonal
 system to find them. This is in principle straightforward, but it
 results in an implicit finite difference scheme, while we had

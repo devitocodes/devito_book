@@ -279,9 +279,9 @@ is maximum $\Oof{\Delta t^2}$ for Strange splitting,
 otherwise it is just $\Oof{\Delta t}$. Higher-order methods for ODEs will
 therefore be a waste of work. The 2nd-order Adams-Bashforth method reads
 $$
-u^{\stepone,n+1}**{i,j} = u^{\stepone,n}**{i,j} +
+u^{\stepone,n+1}_{i,j} = u^{\stepone,n}_{i,j} +
 \half\Delta t\left( 3f(u^{\stepone, n}_{i,j}, t_n) -
-f(u^{\stepone, n-1}**{i,j}, t**{n-1})
+f(u^{\stepone, n-1}_{i,j}, t_{n-1})
 \right) \tp
 $$
 We can use a Forward Euler step to start the method, i.e, compute
