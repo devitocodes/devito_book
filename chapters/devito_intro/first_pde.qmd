@@ -69,10 +69,21 @@ u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
 **Initial conditions:**
 ```python
 u.data[0, :] = ...  # u at t=0
-u.data[1, :] = ...  # u at t=dt (for zero initial velocity, same as t=0)
+u.data[1, :] = ...  # u at t=dt (computed from u_t(x,0)=0)
 ```
 The `data` attribute provides direct access to the underlying NumPy arrays.
 Index 0 and 1 represent the two most recent time levels.
+
+For the 2nd-order wave scheme, “zero initial velocity” does **not** mean
+`u.data[1, :] = u.data[0, :]` if you want to keep 2nd-order accuracy at the first step.
+Instead, the included (tested) snippet computes the first time level using the spatial
+second derivative at `t=0`:
+
+```python
+u1 = u0 + 0.5 * dt**2 * c**2 * u_xx_0
+```
+
+and enforces the fixed-end boundary conditions at that first step.
 
 **Update equation:**
 ```python

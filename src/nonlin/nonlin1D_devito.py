@@ -477,9 +477,10 @@ def solve_nonlinear_diffusion_picard(
 
     Note
     ----
-    This implementation uses explicit Forward Euler for the inner Picard
-    iteration, which is a simplified approach. A full implicit scheme would
-    require solving a linear system at each Picard iteration.
+    This implementation uses a *Jacobi* fixed-point iteration to approximately
+    solve the linear system that arises at each Picard step (with lagged
+    diffusion coefficient). This avoids an explicit sparse linear solve while
+    still behaving like an implicit time step.
     """
     # Default initial condition
     if I is None:
@@ -496,10 +497,13 @@ def solve_nonlinear_diffusion_picard(
     # Grid setup
     dx = L / Nx
     Nt = int(round(T / dt))
+    if Nt == 0:
+        Nt = 1
     actual_T = Nt * dt
 
     # Create Devito grid and functions
     grid = Grid(shape=(Nx + 1,), extent=(L,))
+    (x_dim,) = grid.dimensions
     t_dim = grid.stepping_dim
 
     u = TimeFunction(name="u", grid=grid, time_order=1, space_order=2)
@@ -511,11 +515,22 @@ def solve_nonlinear_diffusion_picard(
     u.data[0, :] = I(x_coords)
     u.data[1, :] = I(x_coords)
 
-    # Picard iteration operator
-    # Simplified: use lagged D but still explicit in time
-    # u^{k+1} = u^n + dt * D(u^k) * u_xx^k
+    # Picard/Jacobi iteration operator
+    #
+    # Nonlinear diffusion (1D):
+    #     u_t = (D(u) u_x)_x  ≈ D(u) u_xx   (for this simplified model)
+    #
+    # Backward Euler with lagged D in Picard:
+    #     u^{n+1} - dt * D(u^{n+1,k}) * u_xx^{n+1} = u^n
+    #
+    # For fixed D, the BE step is a tridiagonal linear system. We apply one
+    # Jacobi sweep per Picard iteration using the neighbor values from the
+    # current iterate u^k.
     dt_const = Constant(name="dt", value=dt)
-    stencil = u_old + dt_const * D * u.dx2
+    r = dt_const * D / (x_dim.spacing**2)
+    u_plus = u.subs(x_dim, x_dim + x_dim.spacing)
+    u_minus = u.subs(x_dim, x_dim - x_dim.spacing)
+    stencil = (u_old + r * (u_plus + u_minus)) / (1.0 + 2.0 * r)
     update = Eq(u.forward, stencil, subdomain=grid.interior)
 
     bc_left = Eq(u[t_dim + 1, 0], 0.0)

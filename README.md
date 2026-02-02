@@ -16,7 +16,8 @@ Based on *Finite Difference Computing with Partial Differential Equations* by Ha
 Devito is a domain-specific language (DSL) embedded in Python for solving PDEs using finite differences. Instead of manually implementing stencil operations, you write mathematical expressions symbolically and Devito generates optimized C code:
 
 ```python
-from devito import Grid, TimeFunction, Eq, Operator
+import numpy as np
+from devito import Constant, Eq, Grid, Operator, TimeFunction, solve
 
 # Define computational grid
 grid = Grid(shape=(101,), extent=(1.0,))
@@ -24,12 +25,21 @@ grid = Grid(shape=(101,), extent=(1.0,))
 # Create field with time derivative capability
 u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
 
-# Write the wave equation symbolically
-eq = Eq(u.dt2, c**2 * u.dx2)
+# Wave speed parameter (passed at runtime)
+c = Constant(name="c")
+
+# Set an initial condition (Gaussian pulse)
+x = np.linspace(0.0, 1.0, 101)
+u.data[0, :] = np.exp(-((x - 0.5) ** 2) / (2 * 0.1**2))
+u.data[1, :] = u.data[0, :]  # zero initial velocity (demo)
+
+# Write the wave equation symbolically and derive an explicit update stencil
+pde = Eq(u.dt2, c**2 * u.dx2)
+update = Eq(u.forward, solve(pde, u.forward))
 
 # Devito generates optimized C code automatically
-op = Operator([eq])
-op.apply(time_M=100, dt=0.001)
+op = Operator([update])
+op.apply(time_M=100, dt=0.001, c=1.0)
 ```
 
 ## Quick Start

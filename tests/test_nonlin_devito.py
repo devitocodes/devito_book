@@ -252,9 +252,17 @@ class TestNonlinearDiffusionPicard:
 
     def test_basic_run(self):
         """Test basic solver execution."""
+        import warnings
+
         from src.nonlin import solve_nonlinear_diffusion_picard
 
-        result = solve_nonlinear_diffusion_picard(L=1.0, Nx=50, T=0.01, dt=0.001)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "error",
+                message=".*invalid value encountered.*",
+                category=RuntimeWarning,
+            )
+            result = solve_nonlinear_diffusion_picard(L=1.0, Nx=50, T=0.01, dt=0.001)
 
         assert result.u.shape == (51,)
         assert result.x.shape == (51,)
@@ -262,13 +270,66 @@ class TestNonlinearDiffusionPicard:
 
     def test_boundary_conditions(self):
         """Test that boundary conditions are satisfied."""
+        import warnings
+
         from src.nonlin import solve_nonlinear_diffusion_picard
 
-        result = solve_nonlinear_diffusion_picard(L=1.0, Nx=50, T=0.01, dt=0.001)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "error",
+                message=".*invalid value encountered.*",
+                category=RuntimeWarning,
+            )
+            result = solve_nonlinear_diffusion_picard(L=1.0, Nx=50, T=0.01, dt=0.001)
 
         # Dirichlet BCs
         assert result.u[0] == pytest.approx(0.0, abs=1e-10)
         assert result.u[-1] == pytest.approx(0.0, abs=1e-10)
+
+    def test_matches_numpy_picard_jacobi_reference(self):
+        """Compare Devito implementation to a NumPy reference for the same iteration."""
+        from src.nonlin import solve_nonlinear_diffusion_picard
+
+        L, Nx, dt, T = 1.0, 40, 0.001, 0.01
+        dx = L / Nx
+        Nt = int(round(T / dt))
+        if Nt == 0:
+            Nt = 1
+
+        x = np.linspace(0.0, L, Nx + 1)
+        u = np.sin(np.pi * x / L)
+
+        picard_tol = 1e-8
+        picard_max_iter = 200
+
+        for _ in range(Nt):
+            u_old = u.copy()
+            u_k = u.copy()
+
+            for _k in range(picard_max_iter):
+                D = 1.0 + u_k
+                r = dt * D / (dx**2)
+
+                u_new = u_k.copy()
+                u_new[1:-1] = (u_old[1:-1] + r[1:-1] * (u_k[0:-2] + u_k[2:])) / (
+                    1.0 + 2.0 * r[1:-1]
+                )
+                u_new[0] = 0.0
+                u_new[-1] = 0.0
+
+                diff = np.max(np.abs(u_new - u_k))
+                u_k = u_new
+                if diff < picard_tol:
+                    break
+
+            u = u_k
+
+        devito = solve_nonlinear_diffusion_picard(
+            L=L, Nx=Nx, T=T, dt=dt, picard_tol=picard_tol, picard_max_iter=picard_max_iter
+        )
+
+        assert np.all(np.isfinite(devito.u))
+        assert np.max(np.abs(devito.u - u)) < 5e-4
 
 
 class TestReactionFunctions:

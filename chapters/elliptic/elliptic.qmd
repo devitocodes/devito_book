@@ -235,7 +235,7 @@ its neighbor, yielding a centered difference of zero.
 We iterate until the solution stops changing appreciably. The L1 norm
 measures the relative change between iterations:
 $$
-L_1 = \frac{\sum_{i,j} |p_{i,j}^{(k+1)}| - |p_{i,j}^{(k)}|}{\sum_{i,j} |p_{i,j}^{(k)}|}
+L_1 = \frac{\sum_{i,j} \left|p_{i,j}^{(k+1)} - p_{i,j}^{(k)}\right|}{\sum_{i,j} \left|p_{i,j}^{(k)}\right| + \epsilon}
 $$ {#eq-elliptic-l1norm}
 
 When $L_1$ drops below a tolerance (e.g., $10^{-4}$), we consider
@@ -267,8 +267,8 @@ while l1norm > l1norm_target:
     op(p=p, pn=pn)
 
     # Compute L1 norm
-    l1norm = (np.sum(np.abs(p.data[:]) - np.abs(pn.data[:])) /
-              np.sum(np.abs(pn.data[:])))
+    l1norm = (np.sum(np.abs(p.data[:] - pn.data[:])) /
+              (np.sum(np.abs(pn.data[:])) + 1.0e-16))
 
 print(f"Converged with L1 norm = {l1norm:.2e}")
 ```
