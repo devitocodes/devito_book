@@ -186,6 +186,14 @@ $$
 
 ## Making a solver function {#sec-vib-impl1}
 
+::: {.callout-note}
+## Source Files
+
+The solver functions presented in this section are implemented in
+`src/vib/vib_undamped.py`. The source file includes a built-in test
+function `test_three_steps()` that verifies correctness.
+:::
+
 The algorithm from the previous section is readily translated to
 a complete Python function for computing and returning
 $u^0,u^1,\ldots,u^{N_t}$ and $t_0,t_1,\ldots,t_{N_t}$, given the

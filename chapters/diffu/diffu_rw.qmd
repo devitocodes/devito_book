@@ -36,6 +36,15 @@ derivation of the models is provided by Hjorth-Jensen [@hjorten].
 
 ## Random walk in 1D {#sec-diffu-randomwalk-1D}
 
+::: {.callout-note}
+## Source Files
+
+The random walk implementations presented in this chapter are available as
+tested modules in `src/diffu/random_walk.py`. The source file includes
+vectorized implementations, multi-dimensional walkers, and test functions.
+The chapter shows the evolution of the code from simple to optimized versions.
+:::
+
 Imagine that we have some particles that perform random moves, either
 to the right or to the left. We may flip a coin to decide the movement
 of each particle, say head implies movement to the right and tail

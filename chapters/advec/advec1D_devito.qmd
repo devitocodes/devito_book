@@ -70,46 +70,11 @@ $$
 u^{n+1}_i = u^n_i - C(u^n_i - u^n_{i-1})
 $$ {#eq-advec-upwind-update}
 
-In Devito, we express this using shifted indexing:
+In Devito, we express this using shifted indexing. The key technique is
+using `u.subs(x_dim, x_dim - x_dim.spacing)` to create a reference to
+$u^n_{i-1}$:
 
-```python
-from devito import Grid, TimeFunction, Eq, Operator, Constant
-import numpy as np
-
-def solve_advection_upwind(L, c, Nx, T, C, I):
-    """Upwind scheme for 1D advection."""
-    # Grid setup
-    dx = L / Nx
-    dt = C * dx / c
-
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
-    x_dim, = grid.dimensions
-
-    u = TimeFunction(name='u', grid=grid, time_order=1, space_order=1)
-
-    # Set initial condition
-    x_coords = np.linspace(0, L, Nx + 1)
-    u.data[0, :] = I(x_coords)
-
-    # Courant number as constant
-    courant = Constant(name='C', value=C)
-
-    # Upwind stencil: u^{n+1} = u - C*(u - u[x-dx])
-    u_minus = u.subs(x_dim, x_dim - x_dim.spacing)
-    stencil = u - courant * (u - u_minus)
-    update = Eq(u.forward, stencil)
-
-    op = Operator([update])
-    # ... time stepping loop
-```
-
-The key line is:
-```python
-u_minus = u.subs(x_dim, x_dim - x_dim.spacing)
-```
-
-This creates a reference to $u^n_{i-1}$ by substituting `x_dim - x_dim.spacing`
-for `x_dim` in the `TimeFunction` `u`.
+{{< include snippets/advec_upwind.qmd >}}
 
 ### Lax-Wendroff Scheme Implementation
 
@@ -120,36 +85,11 @@ $$
 u^{n+1}_i = u^n_i - \frac{C}{2}(u^n_{i+1} - u^n_{i-1}) + \frac{C^2}{2}(u^n_{i+1} - 2u^n_i + u^n_{i-1})
 $$
 
-This can be written using Devito's derivative operators:
+This can be written using Devito's built-in derivative operators where
+`u.dx` computes the centered first derivative and `u.dx2` computes the
+centered second derivative:
 
-```python
-def solve_advection_lax_wendroff(L, c, Nx, T, C, I):
-    """Lax-Wendroff scheme for 1D advection."""
-    dx = L / Nx
-    dt = C * dx / c
-
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
-    u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
-
-    x_coords = np.linspace(0, L, Nx + 1)
-    u.data[0, :] = I(x_coords)
-
-    courant = Constant(name='C', value=C)
-
-    # Lax-Wendroff: u - (C/2)*dx*u.dx + (C²/2)*dx²*u.dx2
-    # u.dx  = centered first derivative
-    # u.dx2 = centered second derivative
-    stencil = u - 0.5*courant*dx*u.dx + 0.5*courant**2*dx**2*u.dx2
-    update = Eq(u.forward, stencil)
-
-    op = Operator([update])
-    # ... time stepping loop
-```
-
-Here we use Devito's built-in derivative operators:
-
-- `u.dx` computes the centered first derivative $(u_{i+1} - u_{i-1})/(2\Delta x)$
-- `u.dx2` computes the centered second derivative $(u_{i+1} - 2u_i + u_{i-1})/\Delta x^2$
+{{< include snippets/advec_lax_wendroff.qmd >}}
 
 ### Lax-Friedrichs Scheme Implementation
 

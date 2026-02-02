@@ -65,29 +65,7 @@ This **mixed discretization** uses:
 Devito's `first_derivative` function allows explicit control over
 the finite difference order and stencil direction:
 
-```python
-from devito import Grid, TimeFunction, first_derivative, Eq, Operator
-from devito.types import left
-
-# Create grid and velocity fields
-grid = Grid(shape=(Nx, Ny), extent=(Lx, Ly))
-x, y = grid.dimensions
-
-u = TimeFunction(name='u', grid=grid, time_order=1, space_order=2)
-v = TimeFunction(name='v', grid=grid, time_order=1, space_order=2)
-
-# First-order backward differences for advection
-# fd_order=1 gives first-order accuracy
-# side=left gives backward difference: (u[x] - u[x-dx]) / dx
-u_dx = first_derivative(u, dim=x, side=left, fd_order=1)
-u_dy = first_derivative(u, dim=y, side=left, fd_order=1)
-v_dx = first_derivative(v, dim=x, side=left, fd_order=1)
-v_dy = first_derivative(v, dim=y, side=left, fd_order=1)
-
-# Print to see the stencil
-print(f"u_dx = {u_dx}")
-# Output: u(t, x, y)/h_x - u(t, x - h_x, y)/h_x
-```
+{{< include snippets/burgers_first_derivative.qmd >}}
 
 The key parameters are:
 
@@ -97,56 +75,14 @@ The key parameters are:
 | `side` | Stencil direction | `left` (backward) |
 | `fd_order` | Finite difference order | `1` for first-order |
 
-### Building the Burgers Equations
+### Building the Burgers Equations and Boundary Conditions
 
-With the explicit derivatives defined, we write the equations:
+With the explicit derivatives defined, we write the equations and
+boundary conditions. The `subdomain=grid.interior` ensures the stencil
+is only applied away from boundaries, where we set Dirichlet conditions
+separately:
 
-```python
-from devito import Constant, solve
-
-# Viscosity as symbolic constant
-nu = Constant(name='nu')
-
-# Burgers equations with backward advection and centered diffusion
-# u_t + u*u_x + v*u_y = nu * laplace(u)
-eq_u = Eq(u.dt + u*u_dx + v*u_dy, nu*u.laplace, subdomain=grid.interior)
-eq_v = Eq(v.dt + u*v_dx + v*v_dy, nu*v.laplace, subdomain=grid.interior)
-
-# Solve for the update expressions
-stencil_u = solve(eq_u, u.forward)
-stencil_v = solve(eq_v, v.forward)
-
-update_u = Eq(u.forward, stencil_u)
-update_v = Eq(v.forward, stencil_v)
-```
-
-The `subdomain=grid.interior` ensures the stencil is only applied
-away from boundaries, where we set Dirichlet conditions separately.
-
-### Boundary Conditions
-
-Dirichlet boundary conditions require explicit equations for each
-boundary:
-
-```python
-t = grid.stepping_dim
-bc_value = 1.0  # Boundary condition value
-
-# u boundary conditions
-bc_u = [Eq(u[t+1, 0, y], bc_value)]        # left
-bc_u += [Eq(u[t+1, Nx-1, y], bc_value)]    # right
-bc_u += [Eq(u[t+1, x, 0], bc_value)]       # bottom
-bc_u += [Eq(u[t+1, x, Ny-1], bc_value)]    # top
-
-# v boundary conditions (similar)
-bc_v = [Eq(v[t+1, 0, y], bc_value)]        # left
-bc_v += [Eq(v[t+1, Nx-1, y], bc_value)]    # right
-bc_v += [Eq(v[t+1, x, 0], bc_value)]       # bottom
-bc_v += [Eq(v[t+1, x, Ny-1], bc_value)]    # top
-
-# Create operator with updates and boundary conditions
-op = Operator([update_u, update_v] + bc_u + bc_v)
-```
+{{< include snippets/burgers_equations_bc.qmd >}}
 
 ### Alternative: VectorTimeFunction Approach
 

@@ -41,6 +41,20 @@ and @sec-wave-pde2-var-c.
 
 ## A solver function
 
+::: {.callout-note}
+## Source Files
+
+The software engineering patterns presented in this appendix (classes like
+`Storage`, `Parameters`, `Problem`, `Mesh`, `Function`, `Solver`) are
+implemented in `src/softeng2/`. Key files include:
+
+- `src/softeng2/Storage.py` - Data persistence with joblib
+- `src/softeng2/wave1D_oo.py` - Object-oriented wave solver with `Parameters` class
+- `src/softeng2/wave2D_u0.py` - 2D wave implementations
+
+These serve as reference implementations for the patterns discussed.
+:::
+
 The general initial-boundary value problem
 solved by finite difference methods. For modern implementations using
 Devito, see @sec-wave-devito. This section covers software engineering

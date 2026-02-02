@@ -1,0 +1,7 @@
+::: {.callout-note title="Snippet (tested)"}
+This code is included from `src/book_snippets/verification_convergence_wave.py` and exercised by `pytest` (see `tests/test_book_snippets.py`).
+:::
+
+```python
+{{< include ../../src/book_snippets/verification_convergence_wave.py >}}
+```

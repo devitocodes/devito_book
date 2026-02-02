@@ -34,6 +34,14 @@ in the forthcoming text by finite difference methods.
 
 ## Simulation of waves on a string {#sec-wave-string}
 
+::: {.callout-note}
+## Devito Implementation
+
+After understanding the finite difference discretization in this section,
+see @sec-wave-devito for the Devito-based implementation. The tested solver
+is available in `src/wave/wave1D_devito.py` with tests in `tests/test_wave_devito.py`.
+:::
+
 We begin our study of wave equations by simulating one-dimensional
 waves on a string, such as those found on stringed instruments.
 Let the string in the undeformed state

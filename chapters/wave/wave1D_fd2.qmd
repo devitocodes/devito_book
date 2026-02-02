@@ -1,5 +1,14 @@
 ## Neumann boundary conditions {#sec-wave-pde2-Neumann}
 
+::: {.callout-note}
+## Source Files
+
+The verification and convergence testing functions presented in this chapter
+(`test_plug`, `convergence_rates`, `PlotAndStoreSolution`) demonstrate
+important software engineering practices. For Devito-based wave solvers with
+comprehensive tests, see `src/wave/wave1D_devito.py` and `tests/test_wave_devito.py`.
+:::
+
 The boundary condition $u=0$ in a wave equation reflects the wave, but
 $u$ changes sign at the boundary, while the condition $u_x=0$ reflects
 the wave as a mirror and preserves the sign.

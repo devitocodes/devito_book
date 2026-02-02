@@ -1,5 +1,14 @@
 ## Diffusion in 2D {#sec-diffu-2D}
 
+::: {.callout-note}
+## Source Files
+
+This chapter presents matrix-based solvers (`solver_dense`, `solver_sparse`)
+for implicit diffusion schemes. For Devito-based implementations that handle
+multi-dimensional diffusion with automatic code generation, see
+`src/diffu/diffu2D_devito.py` with tests in `tests/test_diffu_devito.py`.
+:::
+
 We now address diffusion in two space dimensions:
 
 \begin{align}

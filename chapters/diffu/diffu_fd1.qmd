@@ -51,6 +51,14 @@ as additional material on the topic.
 
 ## An explicit method for the 1D diffusion equation {#sec-diffu-pde1-FEsec}
 
+::: {.callout-note}
+## Devito Implementation
+
+After understanding the finite difference discretization in this section,
+see @sec-diffu-devito for the Devito-based implementation. The tested solver
+is available in `src/diffu/diffu1D_devito.py` with tests in `tests/test_diffu_devito.py`.
+:::
+
 Explicit finite difference methods for the wave equation $u_{tt}=c^2u_{xx}$
 can be used, with small modifications, for solving $u_t = \dfc u_{xx}$
 as well.

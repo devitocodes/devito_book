@@ -110,6 +110,14 @@ we retain over the convergence process.
 
 ## The Laplace Equation {#sec-elliptic-laplace}
 
+::: {.callout-note}
+## Tested Source Files
+
+The solvers presented in this section have been implemented as tested modules
+in `src/elliptic/laplace_devito.py` and `src/elliptic/poisson_devito.py`.
+The test suite in `tests/test_elliptic_devito.py` validates these implementations.
+:::
+
 The Laplace equation models steady-state phenomena where the field
 variable reaches equilibrium with its surroundings. We solve:
 $$
