@@ -436,8 +436,36 @@ where we have a more elegant solution in terms of a class: the `error`
 variable is not a class attribute and there is no need for a global
 error (which is always considered an advantage).
 
-```{.python include="../../../src/wave/wave1D/wave1D_dn_vc.py" start-after="def convergence_rates" end-before="def test_convrate_sincos"}
+```python
+def convergence_rates(
+    u_exact,                 # Function for exact solution
+    I, V, f, c, L,          # Problem parameters
+    dt_values,               # List of dt values to test
+    solver_function,         # Solver to test
+):
+    """
+    Compute convergence rates for a wave equation solver.
+    Returns list of observed convergence rates.
+    """
+    E_values = []
+    for dt in dt_values:
+        # Run solver and compute error
+        u, x, t = solver_function(I, V, f, c, L, dt, ...)
+        u_e = u_exact(x, t[-1])
+        E = np.sqrt(dt * np.sum((u_e - u) ** 2))
+        E_values.append(E)
+
+    # Compute convergence rates
+    r = [np.log(E_values[i] / E_values[i-1]) /
+         np.log(dt_values[i] / dt_values[i-1])
+         for i in range(1, len(dt_values))]
+    return r
 ```
+
+::: {.callout-note}
+For a complete, tested implementation of convergence rate testing with Devito,
+see `src/wave/wave1D_devito.py` and `tests/test_wave_devito.py`.
+:::
 
 The returned sequence `r` should converge to 2 since the error
 analysis in @sec-wave-pde1-analysis predicts various error measures to behave
