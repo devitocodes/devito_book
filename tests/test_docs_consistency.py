@@ -41,11 +41,22 @@ def test_elliptic_l1norm_is_relative_change():
     """Ensure elliptic chapter uses a standard relative-change criterion."""
     text = open("chapters/elliptic/elliptic.qmd", encoding="utf-8").read()
     assert "p_{i,j}^{(k+1)} - p_{i,j}^{(k)}" in text
-    assert "np.abs(p.data[:] - pn.data[:])" in text
 
-    # Guard against the previous cancellation-prone definition.
-    assert "np.abs(p.data[:]) - np.abs(pn.data[:])" not in text
+    # Correct pattern: np.abs(VAR.data[:] - VAR.data[:])
+    correct_pattern = re.compile(r"np\.abs\(\w+\.data\[:\]\s*-\s*\w+\.data\[:\]\)")
+    assert correct_pattern.search(text), "Chapter must use np.abs(a.data[:] - b.data[:])"
 
+    # Guard against the previous cancellation-prone definition:
+    # np.abs(VAR.data[:]) - np.abs(VAR.data[:])
+    wrong_pattern = re.compile(r"np\.abs\(\w+\.data\[:\]\)\s*-\s*np\.abs\(\w+\.data\[:\]\)")
+    assert not wrong_pattern.search(text), "Chapter must NOT use np.abs(a.data[:]) - np.abs(b.data[:])"
+
+    # Also check source file
+    src_text = open("src/elliptic/laplace_devito.py", encoding="utf-8").read()
+    assert correct_pattern.search(src_text), "Source must use np.abs(a.data[:] - b.data[:])"
+    assert not wrong_pattern.search(src_text), "Source must NOT use np.abs(a.data[:]) - np.abs(b.data[:])"
+
+    # Numerical proof that old formula is wrong
     p_prev = np.array([1.0, 1.0])
     p_curr = np.array([-1.0, 1.0])
     old = np.sum(np.abs(p_curr) - np.abs(p_prev)) / np.sum(np.abs(p_prev))

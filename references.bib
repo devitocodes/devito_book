@@ -563,16 +563,6 @@
   doi = {10.1145/3374916}
 }
 
-@article{devito-compiler,
-  author = {Fabio Luporini and Michael Lange and Mathias Louboutin and Navjot Kukreja and Jan H{\"u}ckelheim and Charles Yount and Philipp Witte and Paul H. J. Kelly and Gerard J. Gorman and Felix J. Herrmann},
-  title = {{Architecture and Performance of Devito, a System for Automated Stencil Computation}},
-  journal = {Geoscientific Model Development},
-  year = {2019},
-  volume = {12},
-  pages = {1165--1187},
-  doi = {10.5194/gmd-12-1165-2019}
-}
-
 @misc{devito-github,
   author = {{Devito Development Team}},
   title = {{Devito}: Symbolic Finite Difference Computation},
@@ -588,4 +578,204 @@
   volume = {12},
   pages = {1165--1187},
   doi = {10.5194/gmd-12-1165-2019}
+}
+
+% =============================================================================
+% Electromagnetics / FDTD References
+% =============================================================================
+
+@article{yee1966,
+  author = {K. S. Yee},
+  title = {Numerical solution of initial boundary value problems involving {Maxwell's} equations in isotropic media},
+  journal = {IEEE Transactions on Antennas and Propagation},
+  year = {1966},
+  volume = {14},
+  number = {3},
+  pages = {302--307},
+  doi = {10.1109/TAP.1966.1138693}
+}
+
+@article{taflove_brodwin1975,
+  author = {A. Taflove and M. E. Brodwin},
+  title = {Numerical solution of steady-state electromagnetic scattering problems using the time-dependent {Maxwell's} equations},
+  journal = {IEEE Transactions on Microwave Theory and Techniques},
+  year = {1975},
+  volume = {23},
+  number = {8},
+  pages = {623--630},
+  doi = {10.1109/TMTT.1975.1128640}
+}
+
+@article{taflove1980,
+  author = {A. Taflove},
+  title = {Application of the finite-difference time-domain method to sinusoidal steady-state electromagnetic-penetration problems},
+  journal = {IEEE Transactions on Electromagnetic Compatibility},
+  year = {1980},
+  volume = {22},
+  number = {3},
+  pages = {191--202},
+  doi = {10.1109/TEMC.1980.303879}
+}
+
+@book{taflove2005,
+  author = {A. Taflove and S. C. Hagness},
+  title = {Computational Electrodynamics: The Finite-Difference Time-Domain Method},
+  publisher = {Artech House},
+  year = {2005},
+  edition = {third}
+}
+
+@article{berenger1994,
+  author = {J.-P. Berenger},
+  title = {A perfectly matched layer for the absorption of electromagnetic waves},
+  journal = {Journal of Computational Physics},
+  year = {1994},
+  volume = {114},
+  pages = {185--200},
+  doi = {10.1006/jcph.1994.1159}
+}
+
+@article{roden_gedney2000,
+  author = {J. A. Roden and S. D. Gedney},
+  title = {Convolution {PML} ({CPML}): An efficient {FDTD} implementation of the {CFS-PML} for arbitrary media},
+  journal = {Microwave and Optical Technology Letters},
+  year = {2000},
+  volume = {27},
+  number = {5},
+  pages = {334--339},
+  doi = {10.1002/1098-2760(20001205)27:5<334::AID-MOP14>3.0.CO;2-A}
+}
+
+@article{monk_suli1994,
+  author = {P. Monk and E. S\"uli},
+  title = {Error estimates for {Yee's} method on non-uniform grids},
+  journal = {IEEE Transactions on Magnetics},
+  year = {1994},
+  volume = {30},
+  number = {5},
+  pages = {3200--3203},
+  doi = {10.1109/20.312618}
+}
+
+@article{trefethen1982,
+  author = {L. N. Trefethen},
+  title = {Group velocity in finite difference schemes},
+  journal = {SIAM Review},
+  year = {1982},
+  volume = {24},
+  number = {2},
+  pages = {113--136},
+  doi = {10.1137/1024038}
+}
+
+@book{sullivan2020,
+  author = {D. M. Sullivan},
+  title = {Electromagnetic Simulation Using the {FDTD} Method with {Python}},
+  publisher = {Wiley-IEEE Press},
+  year = {2020},
+  edition = {third}
+}
+
+@book{inan_marshall2011,
+  author = {U. S. Inan and R. A. Marshall},
+  title = {Numerical Electromagnetics: The {FDTD} Method},
+  publisher = {Cambridge University Press},
+  year = {2011}
+}
+
+@book{griffiths_electrodynamics,
+  author = {D. J. Griffiths},
+  title = {Introduction to Electrodynamics},
+  publisher = {Cambridge University Press},
+  year = {2017},
+  edition = {fourth}
+}
+
+@book{roache2009,
+  author = {P. J. Roache},
+  title = {Fundamentals of Verification and Validation},
+  publisher = {Hermosa Publishers},
+  year = {2009}
+}
+
+@book{bohren_huffman1983,
+  author = {C. F. Bohren and D. R. Huffman},
+  title = {Absorption and Scattering of Light by Small Particles},
+  publisher = {Wiley},
+  year = {1983}
+}
+
+@article{warren2016_gprmax,
+  author = {C. Warren and A. Giannopoulos and I. Giannakis},
+  title = {{gprMax}: Open source software to simulate electromagnetic wave propagation for Ground Penetrating Radar},
+  journal = {Computer Physics Communications},
+  year = {2016},
+  volume = {209},
+  pages = {163--170},
+  doi = {10.1016/j.cpc.2016.08.020}
+}
+
+@article{giannopoulos2005_gprmax,
+  author = {A. Giannopoulos},
+  title = {Modelling ground penetrating radar by {GprMax}},
+  journal = {Construction and Building Materials},
+  year = {2005},
+  volume = {19},
+  number = {10},
+  pages = {755--762},
+  doi = {10.1016/j.conbuildmat.2005.06.007}
+}
+
+@article{yefet_petropoulos2001,
+  author = {A. Yefet and P. G. Petropoulos},
+  title = {A staggered fourth-order accurate explicit finite difference scheme for the time-domain {Maxwell's} equations},
+  journal = {Journal of Computational Physics},
+  year = {2001},
+  volume = {168},
+  number = {2},
+  pages = {286--315},
+  doi = {10.1006/jcph.2001.6691}
+}
+
+% Clayton-Engquist and Higdon ABC references
+@article{clayton_engquist1977,
+  author = {R. Clayton and B. Engquist},
+  title = {Absorbing boundary conditions for acoustic and elastic wave equations},
+  journal = {Bulletin of the Seismological Society of America},
+  year = {1977},
+  volume = {67},
+  number = {6},
+  pages = {1529--1540}
+}
+
+@article{enquist_majda1977,
+  author = {B. Engquist and A. Majda},
+  title = {Absorbing boundary conditions for the numerical simulation of waves},
+  journal = {Mathematics of Computation},
+  year = {1977},
+  volume = {31},
+  pages = {629--651},
+  doi = {10.1090/S0025-5718-1977-0436612-4}
+}
+
+@article{higdon1986,
+  author = {R. L. Higdon},
+  title = {Absorbing boundary conditions for difference approximations to the multi-dimensional wave equation},
+  journal = {Mathematics of Computation},
+  year = {1986},
+  volume = {47},
+  number = {176},
+  pages = {437--459},
+  doi = {10.1090/S0025-5718-1986-0856696-4}
+}
+
+@article{higdon1987,
+  author = {R. L. Higdon},
+  title = {Numerical absorbing boundary conditions for the wave equation},
+  journal = {Mathematics of Computation},
+  year = {1987},
+  volume = {49},
+  number = {179},
+  pages = {65--90},
+  doi = {10.1090/S0025-5718-1987-0890254-1}
 }

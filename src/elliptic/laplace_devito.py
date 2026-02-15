@@ -269,9 +269,9 @@ def solve_laplace_2d(
         # Compute L1 norm for convergence check
         denom = np.sum(np.abs(_pn.data[:]))
         if denom > 1e-15:
-            l1norm = np.sum(np.abs(_p.data[:]) - np.abs(_pn.data[:])) / denom
+            l1norm = np.sum(np.abs(_p.data[:] - _pn.data[:])) / denom
         else:
-            l1norm = np.sum(np.abs(_p.data[:]) - np.abs(_pn.data[:]))
+            l1norm = np.sum(np.abs(_p.data[:] - _pn.data[:]))
 
         l1norm = abs(l1norm)
         iteration += 1
@@ -505,9 +505,9 @@ def solve_laplace_2d_with_copy(
         # Compute L1 norm
         denom = np.sum(np.abs(pn.data[:]))
         if denom > 1e-15:
-            l1norm = np.sum(np.abs(p.data[:]) - np.abs(pn.data[:])) / denom
+            l1norm = np.sum(np.abs(p.data[:] - pn.data[:])) / denom
         else:
-            l1norm = np.sum(np.abs(p.data[:]) - np.abs(pn.data[:]))
+            l1norm = np.sum(np.abs(p.data[:] - pn.data[:]))
 
         l1norm = abs(l1norm)
         iteration += 1
@@ -534,10 +534,10 @@ def exact_laplace_linear(
 
     For the boundary conditions:
         p = 0 at x = 0
-        p = y at x = Lx
+        p = 1 at x = Lx
         dp/dy = 0 at y = 0 and y = Ly
 
-    The exact solution is p(x, y) = x * y / Lx
+    The exact solution is p(x, y) = x / Lx
 
     Parameters
     ----------
@@ -555,7 +555,7 @@ def exact_laplace_linear(
     np.ndarray
         Exact solution at (x, y)
     """
-    return X * Y / Lx
+    return X / Lx
 
 
 def convergence_test_laplace_2d(
@@ -591,7 +591,7 @@ def convergence_test_laplace_2d(
             Lx=Lx, Ly=Ly,
             Nx=N, Ny=N,
             bc_left=0.0,
-            bc_right=lambda y: y,
+            bc_right=1.0,
             bc_bottom="neumann",
             bc_top="neumann",
             tol=tol,
