@@ -1,7 +1,10 @@
 import re
+from pathlib import Path
 
 import numpy as np
 import pytest
+
+ROOT = Path(__file__).resolve().parent.parent
 
 
 def _devito_importable() -> bool:
@@ -63,3 +66,72 @@ def test_elliptic_l1norm_is_relative_change():
     new = np.sum(np.abs(p_curr - p_prev)) / (np.sum(np.abs(p_prev)) + 1.0e-16)
     assert old == pytest.approx(0.0)
     assert new > 0.0
+
+
+# ============================================================================
+# Include directive and citation consistency tests
+# ============================================================================
+
+def _collect_qmd_files():
+    """Collect all .qmd files under chapters/."""
+    return sorted(ROOT.glob("chapters/**/*.qmd"))
+
+
+def _parse_bib_keys(bib_path):
+    """Extract all citation keys from a .bib file."""
+    text = bib_path.read_text(encoding="utf-8")
+    return set(re.findall(r"@\w+\{(\w[\w:.-]*)", text))
+
+
+def test_include_directives_resolve():
+    """Every {{< include ... >}} directive in chapter .qmd files must resolve.
+
+    Only checks top-level chapter files (not snippet .qmd files that are
+    themselves included, since Quarto resolves nested includes differently).
+    """
+    include_re = re.compile(r"\{\{<\s*include\s+(.*?)\s*>\}\}")
+    missing = []
+    for qmd in _collect_qmd_files():
+        # Skip snippet files — they are nested includes resolved by Quarto
+        # from the parent chapter's directory, not their own.
+        if "/snippets/" in str(qmd):
+            continue
+        text = qmd.read_text(encoding="utf-8")
+        for m in include_re.finditer(text):
+            target = m.group(1).strip().strip('"').strip("'")
+            # Try resolving relative to the file's directory
+            resolved = (qmd.parent / target).resolve()
+            # Also try resolving relative to project root (Quarto behavior)
+            resolved_root = (ROOT / target).resolve()
+            if not resolved.exists() and not resolved_root.exists():
+                missing.append(f"{qmd.relative_to(ROOT)}:{target}")
+    assert not missing, "Broken include directives:\n" + "\n".join(missing)
+
+
+def test_citation_keys_exist_in_bib():
+    """Every [@key] used in chapters must exist in references.bib."""
+    bib_keys = _parse_bib_keys(ROOT / "references.bib")
+    cite_re = re.compile(r"\[@([\w:.-]+)")
+    missing = []
+    for qmd in _collect_qmd_files():
+        text = qmd.read_text(encoding="utf-8")
+        for m in cite_re.finditer(text):
+            key = m.group(1)
+            # Skip cross-reference prefixes (sec-, eq-, fig-, tbl-)
+            if key.startswith(("sec-", "eq-", "fig-", "tbl-")):
+                continue
+            if key not in bib_keys:
+                missing.append(f"{qmd.relative_to(ROOT)}: @{key}")
+    assert not missing, "Citation keys not in references.bib:\n" + "\n".join(missing)
+
+
+def test_devito_primary_papers_cited():
+    """The Devito primary papers must appear in at least one chapter."""
+    cite_re = re.compile(r"\[@[\w:.-]*devito-api[\w:.-]*")
+    found = False
+    for qmd in _collect_qmd_files():
+        text = qmd.read_text(encoding="utf-8")
+        if cite_re.search(text):
+            found = True
+            break
+    assert found, "devito-api is never cited in any chapter"

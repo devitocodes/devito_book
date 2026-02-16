@@ -22,7 +22,8 @@ we construct a series of linear equations, which we know how to solve,
 and hope that the solutions of the linear equations converge to a
 solution of the nonlinear equation we want to solve.
 Typical methods for nonlinear algebraic equation equations are
-Newton's method, the Bisection method, and the Secant method.
+Newton's method, the Bisection method, and the Secant method
+[@Kelley_1995; @Grief_Ascher_2011].
 
 ### Differential equations
 
@@ -286,11 +287,11 @@ $$
 F(u)\approx\hat F(u) = au^{-}u + bu + c = 0\tp
 $$
 Since the equation $\hat F=0$ is only approximate, the solution $u$
-does not equal the exact solution $\uex$ of the exact
-equation $F(\uex)=0$, but we can hope that $u$ is closer to
-$\uex$ than $u^{-}$ is, and hence it makes sense to repeat the
+does not equal the exact solution $u_{\text{e}}$ of the exact
+equation $F(u_{\text{e}})=0$, but we can hope that $u$ is closer to
+$u_{\text{e}}$ than $u^{-}$ is, and hence it makes sense to repeat the
 procedure, i.e., set $u^{-}=u$ and solve $\hat F(u)=0$ again.
-There is no guarantee that $u$ is closer to $\uex$ than $u^{-}$,
+There is no guarantee that $u$ is closer to $u_{\text{e}}$ than $u^{-}$,
 but this approach has proven to be effective in a wide range of
 applications.
 
@@ -967,7 +968,7 @@ $$
 Rearranging the terms demonstrates the difference from the system
 solved in each Picard iteration:
 $$
-\underbrace{A(u^{-})(u^{-}+\delta u) - b(u^{-})}_{\hbox{Picard system}}
+\underbrace{A(u^{-})(u^{-}+\delta u) - b(u^{-})}_{\text{Picard system}}
 +\, \gamma (A^{\prime}(u^{-})u^{-} + b^{\prime}(u^{-}))\delta u
 = 0\tp
 $$
@@ -1033,9 +1034,9 @@ the change in solution with a test on the maximum number
 of iterations, can be expressed as
 $$
 ||F(u)|| \leq \epsilon_{rr} ||F(u_0)|| + \epsilon_{ra}
-\quad\hbox{or}\quad
+\quad\text{or}\quad
 ||\delta u|| \leq \epsilon_{ur} ||u_0|| + \epsilon_{ua}
-\quad\hbox{or}\quad
+\quad\text{or}\quad
 k>k_{\max}\tp
 $$
 ## Example: A nonlinear ODE model from epidemiology {#sec-nonlin-systems-alg-SI}

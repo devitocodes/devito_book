@@ -1,6 +1,6 @@
 ## Verification and Convergence Testing {#sec-devito-intro-verification}
 
-How do we know our numerical solution is correct? Verification is the
+How do we know our numerical solution is correct? Verification [@roache2009] is the
 process of confirming that our code correctly solves the mathematical
 equations we intended. This section introduces key verification techniques.
 

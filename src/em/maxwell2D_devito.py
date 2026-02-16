@@ -13,8 +13,9 @@ The Yee scheme uses a staggered grid (Yee cell) where:
     - H_x is at cell edges: (i, j+1/2)
     - H_y is at cell edges: (i+1/2, j)
 
-This module includes a simple graded-conductivity absorbing layer that can be
-used as a basic "PML-like" boundary treatment for pedagogical purposes.
+Two absorbing boundary implementations are available:
+    - 'conductivity': Graded-conductivity absorbing layer (simple, pedagogical)
+    - 'cpml': Convolutional PML with recursive convolution (production-quality)
 
 References
 ----------
@@ -24,6 +25,10 @@ References
 
 .. [2] J.-P. Berenger, "A perfectly matched layer for the absorption of
        electromagnetic waves," J. Compute. Phys., vol. 114, pp. 185-200, 1994.
+
+.. [3] J. A. Roden and S. D. Gedney, "Convolution PML (CPML): An efficient
+       FDTD implementation of the CFS-PML for arbitrary media," Microwave
+       Opt. Technol. Lett., vol. 27, no. 5, pp. 334-339, 2000.
 """
 
 from collections.abc import Callable
@@ -129,6 +134,78 @@ def create_pml_profile(
     return sigma
 
 
+def _create_cpml_coefficients(
+    N: int,
+    pml_width: int,
+    dt: float,
+    sigma_max: float,
+    order: int = 3,
+    kappa_max: float = 1.0,
+    alpha_max: float = 0.0,
+    dtype: np.dtype = np.float64,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Compute CPML recursive convolution coefficients.
+
+    Uses the CFS-PML (Complex Frequency-Shifted PML) formulation
+    from Roden & Gedney (2000). The stretching function is:
+        s(d) = kappa(d) + sigma(d) / (alpha(d) + j*omega)
+
+    Returns b and a coefficients for the recursive update:
+        Psi^{n+1} = b * Psi^n + a * (spatial derivative)
+
+    Parameters
+    ----------
+    N : int
+        Total number of grid points in this dimension
+    pml_width : int
+        Width of PML region in grid points
+    dt : float
+        Time step [s]
+    sigma_max : float
+        Maximum PML conductivity
+    order : int
+        Polynomial grading order
+    kappa_max : float
+        Maximum kappa (coordinate stretching factor). 1.0 = no stretching.
+    alpha_max : float
+        Maximum alpha for CFS (improves absorption of evanescent waves)
+    dtype : np.dtype
+        Floating-point precision
+
+    Returns
+    -------
+    b : np.ndarray
+        Recursive coefficient b, shape (N,)
+    a : np.ndarray
+        Recursive coefficient a, shape (N,)
+    kappa : np.ndarray
+        Coordinate stretching factor, shape (N,)
+    """
+    sigma = np.zeros(N, dtype=dtype)
+    kappa = np.ones(N, dtype=dtype)
+    alpha = np.zeros(N, dtype=dtype)
+
+    for i in range(pml_width):
+        d = (pml_width - i) / pml_width
+        sigma[i] = sigma_max * (d ** order)
+        kappa[i] = 1.0 + (kappa_max - 1.0) * (d ** order)
+        alpha[i] = alpha_max * (1.0 - d)
+
+    for i in range(N - pml_width, N):
+        d = (i - (N - pml_width - 1)) / pml_width
+        sigma[i] = sigma_max * (d ** order)
+        kappa[i] = 1.0 + (kappa_max - 1.0) * (d ** order)
+        alpha[i] = alpha_max * (1.0 - d)
+
+    # CPML coefficients: b = exp(-(sigma/kappa + alpha)*dt)
+    denom = kappa * (sigma + kappa * alpha)
+    b = np.exp(-(sigma / kappa + alpha) * dt)
+    a = np.zeros_like(denom)
+    np.divide(sigma * (b - 1.0), denom, out=a, where=denom != 0)
+
+    return b, a, kappa
+
+
 def solve_maxwell_2d(
     Lx: float = 1.0,
     Ly: float = 1.0,
@@ -144,11 +221,12 @@ def solve_maxwell_2d(
     source_position: tuple | None = None,
     pml_width: int = 0,
     pml_sigma_max: float = None,
+    pml_type: str = 'cpml',
     save_history: bool = False,
     save_every: int = 10,
     dtype: np.dtype = np.float64,
 ) -> MaxwellResult2D:
-    """Solve 2D Maxwell's equations (TE mode) using FDTD.
+    """Solve 2D Maxwell's equations (TM mode) using FDTD.
 
     Parameters
     ----------
@@ -181,6 +259,9 @@ def solve_maxwell_2d(
         Width of PML region in grid cells. 0 for no PML (PEC boundaries).
     pml_sigma_max : float, optional
         Maximum PML conductivity. Default: computed from optimal formula.
+    pml_type : str
+        PML implementation: 'conductivity' (graded sigma, simple) or
+        'cpml' (Convolutional PML with recursive convolution, default).
     save_history : bool
         If True, save solution history.
     save_every : int
@@ -245,10 +326,17 @@ def solve_maxwell_2d(
     else:
         sigma_arr = np.full((Nx + 1, Ny + 1), sigma, dtype=dtype)
 
+    # Validate pml_type
+    if pml_type not in ('conductivity', 'cpml'):
+        raise ValueError(
+            f"pml_type must be 'conductivity' or 'cpml', got '{pml_type}'"
+        )
+
     # PML setup
-    if pml_width > 0:
+    use_cpml = pml_width > 0 and pml_type == 'cpml'
+
+    if pml_width > 0 and pml_type == 'conductivity':
         if pml_sigma_max is None:
-            # Optimal sigma_max formula
             pml_sigma_max = 0.8 * (3 + 1) / (const.eta0 * dx)
 
         sigma_x = create_pml_profile(Nx + 1, pml_width, pml_sigma_max)
@@ -260,6 +348,44 @@ def solve_maxwell_2d(
         for j in range(Ny + 1):
             sigma_arr[:, j] += sigma_y[j]
 
+    # CPML setup: compute recursive convolution coefficients
+    if use_cpml:
+        if pml_sigma_max is None:
+            pml_sigma_max = 0.8 * (3 + 1) / (const.eta0 * dx)
+
+        # Coefficients for E-field updates (at integer grid points)
+        bx_e, ax_e, kx_e = _create_cpml_coefficients(
+            Nx + 1, pml_width, dt, pml_sigma_max, dtype=dtype)
+        by_e, ay_e, ky_e = _create_cpml_coefficients(
+            Ny + 1, pml_width, dt, pml_sigma_max, dtype=dtype)
+
+        # Coefficients for H-field updates (at half-integer points)
+        # Use averaged values between integer grid points
+        bx_h = np.zeros(Nx, dtype=dtype)
+        ax_h = np.zeros(Nx, dtype=dtype)
+        kx_h = np.ones(Nx, dtype=dtype)
+        for i in range(Nx):
+            bx_h[i] = 0.5 * (bx_e[i] + bx_e[i + 1])
+            ax_h[i] = 0.5 * (ax_e[i] + ax_e[i + 1])
+            kx_h[i] = 0.5 * (kx_e[i] + kx_e[i + 1])
+
+        by_h = np.zeros(Ny, dtype=dtype)
+        ay_h = np.zeros(Ny, dtype=dtype)
+        ky_h = np.ones(Ny, dtype=dtype)
+        for j in range(Ny):
+            by_h[j] = 0.5 * (by_e[j] + by_e[j + 1])
+            ay_h[j] = 0.5 * (ay_e[j] + ay_e[j + 1])
+            ky_h[j] = 0.5 * (ky_e[j] + ky_e[j + 1])
+
+        # CPML auxiliary (Psi) fields
+        # For H_x update: Psi_Hx_y at (i, j+1/2)
+        Psi_Hx_y = np.zeros((Nx + 1, Ny), dtype=dtype)
+        # For H_y update: Psi_Hy_x at (i+1/2, j)
+        Psi_Hy_x = np.zeros((Nx, Ny + 1), dtype=dtype)
+        # For E_z update: Psi_Ez_x at (i, j), Psi_Ez_y at (i, j)
+        Psi_Ez_x = np.zeros((Nx + 1, Ny + 1), dtype=dtype)
+        Psi_Ez_y = np.zeros((Nx + 1, Ny + 1), dtype=dtype)
+
     # Update coefficients for E_z
     # E_z^{n+1} = Ca * E_z^n + Cb * (dH_y/dx - dH_x/dy)
     denom = 1.0 + sigma_arr * dt / (2 * eps_arr)
@@ -268,7 +394,6 @@ def solve_maxwell_2d(
     Cb_y = (dt / eps_arr / dy) / denom
 
     # Update coefficients for H fields
-    # Simple lossless update for H (can be extended for magnetic losses)
     Ch_x = dt / (mu_arr[:, :-1] * dy)  # For H_x update
     Ch_y = dt / (mu_arr[:-1, :] * dx)  # For H_y update
 
@@ -303,20 +428,64 @@ def solve_maxwell_2d(
     for n in range(Nt):
         t_n = n * dt
 
-        # Update H_x: H_x -= Ch * dE_z/dy
-        # H_x(i, j+1/2) uses E_z(i, j+1) and E_z(i, j)
-        H_x[:, :] = H_x[:, :] - Ch_x * (E_z[:, 1:] - E_z[:, :-1])
+        # ---- H-field updates ----
+        # dE_z/dy for H_x update
+        dEz_dy = (E_z[:, 1:] - E_z[:, :-1]) / dy
+        # dE_z/dx for H_y update
+        dEz_dx = (E_z[1:, :] - E_z[:-1, :]) / dx
 
-        # Update H_y: H_y += Ch * dE_z/dx
-        # H_y(i+1/2, j) uses E_z(i+1, j) and E_z(i, j)
-        H_y[:, :] = H_y[:, :] + Ch_y * (E_z[1:, :] - E_z[:-1, :])
+        if use_cpml:
+            # Update CPML Psi for H fields
+            for j in range(Ny):
+                Psi_Hx_y[:, j] = by_h[j] * Psi_Hx_y[:, j] + ay_h[j] * dEz_dy[:, j]
+            for i in range(Nx):
+                Psi_Hy_x[i, :] = bx_h[i] * Psi_Hy_x[i, :] + ax_h[i] * dEz_dx[i, :]
 
-        # Update E_z: E_z = Ca*E_z + Cb*(dH_y/dx - dH_x/dy)
-        E_z[1:-1, 1:-1] = (
-            Ca[1:-1, 1:-1] * E_z[1:-1, 1:-1]
-            + Cb_x[1:-1, 1:-1] * (H_y[1:, 1:-1] - H_y[:-1, 1:-1])
-            - Cb_y[1:-1, 1:-1] * (H_x[1:-1, 1:] - H_x[1:-1, :-1])
-        )
+            # H_x update with CPML correction
+            for j in range(Ny):
+                H_x[:, j] -= Ch_x[:, j] * dy * (dEz_dy[:, j] / ky_h[j] + Psi_Hx_y[:, j])
+            # H_y update with CPML correction
+            for i in range(Nx):
+                H_y[i, :] += Ch_y[i, :] * dx * (dEz_dx[i, :] / kx_h[i] + Psi_Hy_x[i, :])
+        else:
+            # Standard H update (with conductivity-based PML if active)
+            H_x[:, :] -= Ch_x * (E_z[:, 1:] - E_z[:, :-1])
+            H_y[:, :] += Ch_y * (E_z[1:, :] - E_z[:-1, :])
+
+        # ---- E-field update ----
+        # Curl H components
+        dHy_dx = (H_y[1:, 1:-1] - H_y[:-1, 1:-1]) / dx
+        dHx_dy = (H_x[1:-1, 1:] - H_x[1:-1, :-1]) / dy
+
+        if use_cpml:
+            # Update CPML Psi for E field
+            for i in range(1, Nx):
+                Psi_Ez_x[i, 1:-1] = (bx_e[i] * Psi_Ez_x[i, 1:-1]
+                                      + ax_e[i] * dHy_dx[i - 1, :])
+            for j in range(1, Ny):
+                Psi_Ez_y[1:-1, j] = (by_e[j] * Psi_Ez_y[1:-1, j]
+                                      + ay_e[j] * dHx_dy[:, j - 1])
+
+            # E_z update with CPML correction
+            curl_H_x = np.zeros_like(E_z[1:-1, 1:-1])
+            curl_H_y = np.zeros_like(E_z[1:-1, 1:-1])
+            for i in range(1, Nx):
+                curl_H_x[i - 1, :] = dHy_dx[i - 1, :] / kx_e[i] + Psi_Ez_x[i, 1:-1]
+            for j in range(1, Ny):
+                curl_H_y[:, j - 1] = dHx_dy[:, j - 1] / ky_e[j] + Psi_Ez_y[1:-1, j]
+
+            E_z[1:-1, 1:-1] = (
+                Ca[1:-1, 1:-1] * E_z[1:-1, 1:-1]
+                + Cb_x[1:-1, 1:-1] * dx * curl_H_x
+                - Cb_y[1:-1, 1:-1] * dy * curl_H_y
+            )
+        else:
+            # Standard E update
+            E_z[1:-1, 1:-1] = (
+                Ca[1:-1, 1:-1] * E_z[1:-1, 1:-1]
+                + Cb_x[1:-1, 1:-1] * (H_y[1:, 1:-1] - H_y[:-1, 1:-1])
+                - Cb_y[1:-1, 1:-1] * (H_x[1:-1, 1:] - H_x[1:-1, :-1])
+            )
 
         # Inject source
         if source_func is not None:
@@ -494,6 +663,7 @@ def convergence_test_maxwell_2d(
 
 __all__ = [
     "MaxwellResult2D",
+    "_create_cpml_coefficients",
     "convergence_test_maxwell_2d",
     "create_pml_profile",
     "gaussian_source_2d",

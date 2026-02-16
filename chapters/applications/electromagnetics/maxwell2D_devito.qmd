@@ -1,0 +1,275 @@
+## 2D FDTD Implementation {#sec-em-2d-devito}
+
+Extending to two dimensions introduces new challenges: the 2D Yee cell has
+three field components arranged on cell edges and centers, and the stability
+condition becomes more restrictive. Most importantly, we need absorbing
+boundary conditions that work at oblique incidence angles.
+
+### TE and TM Modes in 2D
+
+In 2D simulations, we have two independent polarizations:
+
+**TE Mode** (Transverse Electric): $E_x$, $E_y$, $H_z$
+
+- Electric field lies in the $xy$-plane
+- Magnetic field is normal to the plane
+
+**TM Mode** (Transverse Magnetic): $H_x$, $H_y$, $E_z$
+
+- Magnetic field lies in the $xy$-plane
+- Electric field is normal to the plane
+
+We implement the TM mode (a single out-of-plane electric component). The governing equations are:
+$$
+\frac{\partial H_x}{\partial t} = -\frac{1}{\mu}\frac{\partial E_z}{\partial y}
+$$ {#eq-em-2d-Hx}
+$$
+\frac{\partial H_y}{\partial t} = \frac{1}{\mu}\frac{\partial E_z}{\partial x}
+$$ {#eq-em-2d-Hy}
+$$
+\frac{\partial E_z}{\partial t} = \frac{1}{\varepsilon}\left(\frac{\partial H_y}{\partial x} - \frac{\partial H_x}{\partial y}\right)
+$$ {#eq-em-2d-Ez}
+
+### The 2D Solver
+
+The `src.em.maxwell2D_devito` module provides a 2D TM-mode solver
+using Devito [@devito-api]:
+
+```python
+from src.em import solve_maxwell_2d, gaussian_source_2d
+import numpy as np
+
+# Gaussian initial condition at domain center
+def E_init(X, Y):
+    return gaussian_source_2d(X, Y, x0=0.5, y0=0.5, sigma=0.05)
+
+result = solve_maxwell_2d(
+    Lx=1.0, Ly=1.0,  # Domain size [m]
+    Nx=100, Ny=100,   # Grid points
+    T=3e-9,           # Simulation time [s]
+    CFL=0.5,          # Courant number (<= 1/sqrt(2) for stability)
+    E_init=E_init,
+    pml_width=15,     # PML absorbing boundary (grid cells)
+    save_history=True,
+)
+```
+
+### 2D CFL Condition
+
+The stability limit in 2D is more restrictive than 1D:
+$$
+c \Delta t \leq \frac{1}{\sqrt{\frac{1}{\Delta x^2} + \frac{1}{\Delta y^2}}}
+$$ {#eq-em-cfl-2d-detailed}
+
+For a uniform grid ($\Delta x = \Delta y = h$):
+$$
+c \Delta t \leq \frac{h}{\sqrt{2}} \approx 0.707 h
+$$
+
+This means the maximum Courant number is $1/\sqrt{2} \approx 0.707$, compared
+to 1.0 in 1D. The solver enforces this:
+
+```python
+>>> from src.em import solve_maxwell_2d
+>>> solve_maxwell_2d(Lx=1.0, Ly=1.0, Nx=100, Ny=100, T=1e-9, CFL=0.9)
+ValueError: CFL=0.9 > 1/sqrt(2) ~ 0.707 violates 2D stability condition
+```
+
+### Perfectly Matched Layer (PML) {#sec-em-pml}
+
+Simple ABCs like Mur's condition work poorly in 2D because waves approach
+boundaries at various angles. The **Perfectly Matched Layer** (PML),
+introduced by Berenger in 1994 [@berenger1994], provides a much more
+effective solution.
+
+The key insight is to create an absorbing region with:
+
+1. **Matched impedance**: No reflection at the interface (for any angle)
+2. **Exponential decay**: Waves attenuate as they propagate into the PML
+
+Mathematically, this is achieved through **complex coordinate stretching**:
+$$
+\tilde{x} = x + \frac{j}{\omega}\int_0^x \sigma_x(x') dx'
+$$
+
+This makes the wave "see" a lossy medium while maintaining impedance matching.
+For the acoustic wave equation, an efficient PML formulation is given
+by @grote_sim2010. The Convolutional PML (CPML) variant [@roden_gedney2000]
+offers improved stability for anisotropic and dispersive media.
+
+### PML Implementation
+
+Our solver supports two PML implementations, selectable via the
+`pml_type` parameter:
+
+**Graded-conductivity absorbing layer** (`pml_type='conductivity'`).
+The simplest approach adds a spatially varying conductivity to the
+update equations. The conductivity increases polynomially from zero
+at the PML interface to $\sigma_{\max}$ at the outer boundary:
+
+```python
+def create_pml_profile(N, pml_width, sigma_max, order=3):
+    """Create polynomial PML conductivity profile."""
+    sigma = np.zeros(N)
+    for i in range(pml_width):
+        d = (pml_width - i) / pml_width
+        sigma[i] = sigma_max * (d ** order)  # Left PML
+    for i in range(N - pml_width, N):
+        d = (i - (N - pml_width - 1)) / pml_width
+        sigma[i] = sigma_max * (d ** order)  # Right PML
+    return sigma
+```
+
+**Convolutional PML** (`pml_type='cpml'`, default). The CPML
+[@roden_gedney2000] uses the complex frequency-shifted (CFS)
+stretching function and implements the PML via recursive
+convolution. The key update for the auxiliary $\Psi$ fields is:
+$$
+\Psi_x^{n+1} = b_x \Psi_x^n + a_x \frac{\partial E_z}{\partial x}\bigg|^n,
+$$ {#eq-em-cpml-psi}
+where the coefficients $b_x$ and $a_x$ are derived from the CFS-PML
+parameters:
+$$
+b_x = e^{-(\sigma_x/\kappa_x + \alpha_x)\Delta t}, \quad
+a_x = \frac{\sigma_x}{\kappa_x(\sigma_x + \kappa_x \alpha_x)}(b_x - 1).
+$$
+
+The CPML modifies the spatial derivatives in both the H and E updates:
+$$
+\left.\frac{\partial E_z}{\partial x}\right|_{\text{PML}}
+= \frac{1}{\kappa_x}\frac{\partial E_z}{\partial x} + \Psi_x.
+$$
+
+This approach is superior to the simple conductivity method because:
+
+- It provides true impedance matching at the PML interface
+- It handles evanescent waves (with $\alpha > 0$)
+- It is stable for long-time simulations and dispersive media
+
+Typical parameters:
+
+- `pml_width`: 10--20 grid cells
+- `order`: 3--4 (polynomial order for $\sigma$ grading)
+- `sigma_max`: Computed from optimal formula
+
+The optimal $\sigma_{\max}$ minimizes total reflection (numerical + PML):
+$$
+\sigma_{\max} = \frac{(m+1)}{150\pi \Delta x}
+$$ {#eq-em-pml-sigma}
+
+where $m$ is the polynomial order.
+
+### Visualizing 2D Propagation
+
+```python
+import matplotlib.pyplot as plt
+from src.em import solve_maxwell_2d, gaussian_source_2d
+import numpy as np
+
+# Point source excitation
+def source(t):
+    from src.em import ricker_wavelet
+    return ricker_wavelet(np.array([t]), f0=1e9)[0]
+
+result = solve_maxwell_2d(
+    Lx=0.5, Ly=0.5, Nx=200, Ny=200, T=2e-9, CFL=0.5,
+    source_func=source,
+    source_position=(0.25, 0.25),
+    pml_width=20,
+    save_history=True,
+    save_every=10,
+)
+
+# Plot snapshots
+fig, axes = plt.subplots(2, 3, figsize=(12, 8))
+for ax, i in zip(axes.flat, range(0, len(result.E_history), len(result.E_history)//6)):
+    im = ax.imshow(result.E_history[i].T, origin='lower',
+                   extent=[0, 0.5, 0, 0.5], cmap='RdBu',
+                   vmin=-1, vmax=1)
+    ax.set_title(f't = {result.t_history[i]*1e9:.2f} ns')
+    ax.set_xlabel('x [m]')
+    ax.set_ylabel('y [m]')
+plt.tight_layout()
+```
+
+The simulation shows:
+
+1. **Circular wavefront**: Expanding from the point source
+2. **No visible reflections**: PML absorbs outgoing waves
+3. **Correct propagation speed**: Wavefront radius = $c \times t$
+
+### Scattering from Objects
+
+A classic FDTD application is computing scattering from objects. We can
+embed a dielectric or conducting scatterer:
+
+```python
+from src.em.materials import create_cylinder_model_2d, GLASS
+
+# Create cylinder scatterer
+eps_r, sigma = create_cylinder_model_2d(
+    Nx=200, Ny=200, Lx=0.5, Ly=0.5,
+    center=(0.25, 0.25),
+    radius=0.03,
+    cylinder_material=GLASS,
+)
+
+result = solve_maxwell_2d(
+    Lx=0.5, Ly=0.5, Nx=200, Ny=200, T=2e-9,
+    eps_r=eps_r,
+    source_func=source,
+    source_position=(0.1, 0.25),  # Source to left of cylinder
+    pml_width=20,
+    save_history=True,
+)
+```
+
+The scattered field shows:
+
+- **Reflection** from the front surface
+- **Transmission** through the cylinder
+- **Diffraction** around the edges
+- **Internal resonances** for certain sizes
+
+### Connection to Wave Chapter ABCs
+
+The PML can be viewed as a sophisticated extension of the absorbing boundary
+conditions discussed for the scalar wave equation (@sec-wave-abc). Compare:
+
+| Method | Principle | Angle Dependence | Complexity |
+|--------|-----------|------------------|------------|
+| First-order ABC | One-way wave equation | Normal incidence only | Simple |
+| Higher-order ABC | Multiple angles | Improved | Moderate |
+| **PML** | Impedance matching | All angles | Higher |
+
+The PML achieves angle-independent absorption through the impedance matching
+condition, which ensures zero reflection at the PML interface regardless of
+incidence angle.
+
+### Practical Considerations
+
+**Grid Resolution**:
+
+The rule of thumb is 10-20 grid points per wavelength for acceptable accuracy.
+For a 1 GHz signal in vacuum:
+$$
+\lambda = \frac{c}{f} = \frac{3 \times 10^8}{10^9} = 0.3 \text{ m}
+$$
+
+So we need $\Delta x \leq 0.03$ m (30 mm) for 10 points per wavelength.
+
+**Computational Cost**:
+
+2D FDTD scales as $O(N_x \times N_y \times N_t)$. For a $200 \times 200$ grid
+with 1000 time steps, this is 40 million field updates. Each requires only
+a few floating-point operations, making FDTD very efficient.
+
+**Memory**:
+
+We need to store 3 field arrays ($E_x$, $E_y$, $H_z$) plus material property
+arrays. For a $200 \times 200$ grid in double precision:
+$$
+\text{Memory} \approx 6 \times 200 \times 200 \times 8 \text{ bytes} \approx 2 \text{ MB}
+$$
+
+This is modest by modern standards, allowing much larger simulations.

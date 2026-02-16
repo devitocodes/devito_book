@@ -1,6 +1,6 @@
 ## What is Devito? {#sec-devito-intro-what}
 
-Devito is a Python-based domain-specific language (DSL) for expressing
+Devito [@devito-api] is a Python-based domain-specific language (DSL) for expressing
 and solving partial differential equations using finite difference methods.
 Rather than writing low-level loops that update arrays at each time step,
 you write the mathematical equations symbolically and let Devito generate
@@ -93,7 +93,7 @@ Common applications include:
 - Wave propagation (acoustic, elastic, electromagnetic)
 - Heat conduction and diffusion
 - Computational fluid dynamics
-- Seismic imaging (reverse time migration, full waveform inversion)
+- Seismic imaging (reverse time migration, full waveform inversion) [@devito-seismic]
 
 ### Installation
 

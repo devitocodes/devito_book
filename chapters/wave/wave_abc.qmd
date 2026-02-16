@@ -1,0 +1,352 @@
+## Absorbing Boundary Conditions {#sec-wave-abc}
+
+When we simulate wave propagation in unbounded or semi-infinite domains,
+we must truncate the computational domain to a finite region. The
+artificial boundaries introduced by this truncation cause spurious
+reflections that contaminate the solution. **Absorbing boundary
+conditions** (ABCs) are techniques designed to minimize these reflections,
+allowing outgoing waves to leave the domain as if the boundary were not
+there.
+
+This section surveys the main ABC approaches, compares their
+effectiveness, and provides Devito [@devito-seismic] implementations for each. The
+treatment applies to the scalar acoustic wave equation
+$$
+\frac{\partial^2 u}{\partial t^2} = c^2 \nabla^2 u,
+$$ {#eq-wave-abc-pde}
+but the ideas extend to elastic waves and electromagnetics (see
+@sec-em-pml for the electromagnetic case).
+
+### The Problem of Artificial Boundaries {#sec-wave-abc-problem}
+
+Consider a point source radiating in an infinite 2D domain. The
+exact solution consists of an outward-propagating circular wavefront
+that never returns. If we truncate the domain to a rectangle and
+impose Dirichlet conditions $u = 0$ on all boundaries, the outgoing
+wave reflects back into the interior as if it hit a rigid wall.
+
+The ideal boundary condition is the **Sommerfeld radiation condition**:
+$$
+\lim_{r \to \infty} \sqrt{r} \left( \frac{\partial u}{\partial r} - \frac{1}{c}\frac{\partial u}{\partial t} \right) = 0,
+$$ {#eq-wave-sommerfeld}
+which states that at large distances from the source, the solution
+behaves as an outgoing wave. This is a condition *at infinity* --- it
+cannot be directly applied at a finite boundary.
+
+All practical ABCs are approximations of the Sommerfeld condition
+[@enquist_majda1977]. The key metric for evaluating them is the
+**reflection coefficient** $R$: the ratio of reflected to incident
+wave amplitude. An ideal ABC has $R = 0$; Dirichlet boundaries have
+$R = 1$ (total reflection with sign change).
+
+### First-Order Absorbing BC {#sec-wave-abc-first-order}
+
+The simplest ABC is the **first-order radiation condition**
+[@clayton_engquist1977]:
+$$
+\frac{\partial u}{\partial t} + c \frac{\partial u}{\partial n} = 0
+\quad \text{on } \Gamma,
+$$ {#eq-wave-abc-first-order}
+where $\partial/\partial n$ is the outward normal derivative on the
+boundary $\Gamma$. This condition is exact for plane waves at
+normal incidence: substituting $u = f(x - ct)$ into
+(@eq-wave-abc-first-order) gives $-cf' + cf' = 0$.
+
+**Discretization.** At the right boundary $x = L_x$ (grid point $i = N_x$),
+we use forward difference in time and backward difference in space:
+$$
+\frac{u_{N_x}^{n+1} - u_{N_x}^n}{\Delta t}
++ c \frac{u_{N_x}^n - u_{N_x-1}^n}{\Delta x} = 0,
+$$
+giving the explicit update:
+$$
+u_{N_x}^{n+1} = u_{N_x}^n - \frac{c \Delta t}{\Delta x}
+\left( u_{N_x}^n - u_{N_x-1}^n \right).
+$$ {#eq-wave-abc-first-order-discrete}
+
+Similar formulas apply to the other three boundaries (left, top, bottom),
+with appropriate sign changes for the normal direction.
+
+**Limitations in 2D.** The first-order ABC is exact only for waves
+arriving at normal incidence ($\theta = 0$). For a plane wave arriving
+at angle $\theta$ to the normal, the reflection coefficient is:
+$$
+R(\theta) \approx \frac{1 - \cos\theta}{1 + \cos\theta}.
+$$
+At $\theta = 45°$, this gives $R \approx 0.17$ (17% reflection),
+and as $\theta \to 90°$ (grazing incidence), $R \to 1$. For a
+point source producing waves at all angles, the first-order ABC
+provides only moderate improvement over Dirichlet boundaries.
+
+**Devito implementation.** The first-order ABC on all four boundaries
+of a 2D domain:
+
+```python
+from devito import Grid, TimeFunction, Eq, Operator, Constant, solve
+
+grid = Grid(shape=(Nx+1, Ny+1), extent=(Lx, Ly))
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+c_sq = Constant(name='c_sq')
+c_val = Constant(name='c_val')
+
+# Interior PDE
+pde = u.dt2 - c_sq * u.laplace
+stencil = Eq(u.forward, solve(pde, u.forward),
+             subdomain=grid.interior)
+
+# First-order ABC on each boundary
+t = grid.stepping_dim
+x_dim, y_dim = grid.dimensions
+dx_s, dy_s = grid.spacing
+
+# Right boundary: u_t + c*u_x = 0
+bc_right = Eq(u[t+1, Nx, y_dim],
+    u[t, Nx, y_dim]
+    - c_val * dt / dx_s * (u[t, Nx, y_dim] - u[t, Nx-1, y_dim]))
+
+# Left boundary: u_t - c*u_x = 0
+bc_left = Eq(u[t+1, 0, y_dim],
+    u[t, 0, y_dim]
+    + c_val * dt / dx_s * (u[t, 1, y_dim] - u[t, 0, y_dim]))
+
+# Similar for top and bottom...
+```
+
+### Damping Layers (Sponge Zones) {#sec-wave-abc-damping}
+
+Instead of modifying the boundary condition, **damping layers**
+(also called **sponge zones**) add a dissipative term to the PDE
+in a region near the boundary [@cerjan1985; @sochacki1987]. The
+modified equation is:
+$$
+\frac{\partial^2 u}{\partial t^2}
++ \gamma(\mathbf{x}) \frac{\partial u}{\partial t}
+= c^2 \nabla^2 u,
+$$ {#eq-wave-abc-damping-pde}
+where $\gamma(\mathbf{x})$ is a damping coefficient that is zero in
+the interior domain and ramps up smoothly in the absorbing layer:
+$$
+\gamma(d) = \sigma_{\max} \left(\frac{d}{W}\right)^p,
+\quad 0 \le d \le W,
+$$ {#eq-wave-abc-damping-profile}
+with $d$ being the distance into the absorbing layer, $W$ the layer
+width, $p$ the polynomial order (typically 2--3), and $\sigma_{\max}$
+the maximum damping value.
+
+The damping term $\gamma u_t$ removes energy from the wave as it
+propagates through the sponge layer. The key design parameters are:
+
+- **Layer width $W$**: Wider layers absorb more but increase
+  computational cost. Typical values are 10--40 grid cells.
+- **Maximum damping $\sigma_{\max}$**: Too large causes reflections
+  at the layer interface; too small allows waves to pass through.
+  A good starting value is $\sigma_{\max} \approx 3c/W$.
+- **Polynomial order $p$**: Higher order gives a smoother transition.
+  $p = 3$ is a common choice.
+
+**Devito implementation.** The damping layer is straightforward to
+implement using a `Function` for the damping profile:
+
+{{< include snippets/damping_layer_2d_wave.qmd >}}
+
+The damping profile is zero in the interior and increases toward
+the boundary following (@eq-wave-abc-damping-profile). The `solve`
+function in Devito automatically handles the modified PDE, producing
+the correct time-stepping stencil including the damping term.
+
+**Effectiveness.** With a 20-cell layer and $p = 3$, damping layers
+typically achieve 90--95% reflection reduction compared to Dirichlet
+boundaries [@dolci2022]. The main advantage is simplicity: the method
+requires only adding one term to the PDE and defining the damping
+profile. The main disadvantage is the relatively wide layer needed
+for good absorption.
+
+### Perfectly Matched Layer (PML) {#sec-wave-abc-pml}
+
+The **Perfectly Matched Layer** (PML), introduced by Berenger
+[@berenger1994], achieves superior absorption through **complex
+coordinate stretching**. The fundamental idea is to replace the
+real coordinate $x$ with a complex-valued stretched coordinate:
+$$
+\tilde{x} = x + \frac{1}{j\omega} \int_0^x \sigma_x(x')\, dx',
+$$ {#eq-wave-abc-pml-stretching}
+where $\sigma_x(x')$ is a conductivity profile and $\omega$ is the
+angular frequency. This transformation makes plane waves decay
+exponentially in the PML region while ensuring **zero reflection**
+at the PML interface for any angle of incidence and any frequency.
+
+**Auxiliary-field formulation.** For implementation, the complex
+coordinate stretching leads to a modified PDE with auxiliary fields.
+For the 2D acoustic wave equation, the PML-modified system is:
+\begin{align}
+\frac{\partial^2 u}{\partial t^2}
++ (\sigma_x + \sigma_y) \frac{\partial u}{\partial t}
++ \sigma_x \sigma_y\, u
+&= c^2 \nabla^2 u
++ \frac{\partial p_x}{\partial t}
++ \frac{\partial p_y}{\partial t}, \label{eq:pml-main} \\
+\frac{\partial p_x}{\partial t}
+&= -\sigma_x p_x + (\sigma_y - \sigma_x)\, c^2 \frac{\partial^2 u}{\partial x^2}, \label{eq:pml-px} \\
+\frac{\partial p_y}{\partial t}
+&= -\sigma_y p_y + (\sigma_x - \sigma_y)\, c^2 \frac{\partial^2 u}{\partial y^2}, \label{eq:pml-py}
+\end{align}
+where $p_x$ and $p_y$ are auxiliary fields that are nonzero only in
+the PML region, and $\sigma_x(x)$, $\sigma_y(y)$ are conductivity
+profiles following (@eq-wave-abc-damping-profile). In the interior
+where $\sigma_x = \sigma_y = 0$, the system reduces to the standard
+wave equation.
+
+**Devito implementation.** For the second-order acoustic wave equation,
+a practical PML implementation uses the same damping equation as
+@sec-wave-abc-damping but with $\sigma_{\max}$ chosen from PML theory
+to achieve a target reflection coefficient $R$:
+$$
+\sigma_{\max} = \frac{(p+1)\, c\, \ln(1/R)}{2W},
+$$ {#eq-wave-abc-pml-sigma}
+where $p$ is the polynomial order and $W$ is the layer width. This
+ensures impedance matching at the PML interface.
+
+{{< include snippets/pml_wave_2d.qmd >}}
+
+**Effectiveness.** With optimally chosen parameters per
+(@eq-wave-abc-pml-sigma), the PML achieves approximately 95%
+reflection reduction with a layer of only 10--15 cells [@dolci2022],
+making it more efficient per grid cell than simple damping layers
+with heuristic parameters.
+
+The **Convolutional PML** (CPML) variant [@roden_gedney2000] offers
+improved stability for certain media types by using a recursive
+convolution formulation. The efficient wave-equation PML of
+@grote_sim2010 provides further optimizations for acoustic
+applications.
+
+### Higher-Order ABCs and Hybrid Methods {#sec-wave-abc-habc}
+
+Higher-order ABCs improve on the first-order condition by absorbing
+waves at multiple angles simultaneously. Higdon [@higdon1986;
+@higdon1987] proposed a product formula:
+$$
+\prod_{j=1}^{P} \left(
+\frac{\partial}{\partial t} - c_j \frac{\partial}{\partial n}
+\right) u = 0 \quad \text{on } \Gamma,
+$$ {#eq-wave-abc-higdon}
+where $c_j = c / \cos\theta_j$ and $\theta_j$ are chosen angles
+of incidence. The order-$P$ Higdon condition exactly absorbs plane
+waves arriving at any of the $P$ specified angles.
+
+For example, with $P = 2$ and angles $\theta_1 = 0°, \theta_2 = 45°$:
+$$
+\left(\frac{\partial}{\partial t} - c \frac{\partial}{\partial n}\right)
+\left(\frac{\partial}{\partial t} - \frac{c}{\cos 45°}
+\frac{\partial}{\partial n}\right) u = 0.
+$$
+
+This absorbs both normally incident and 45° waves exactly, with
+reduced reflection at intermediate angles.
+
+**Hybrid approach.** The most effective strategy combines a Higdon
+ABC at the boundary with a thin damping layer (2--5 cells) just
+inside the boundary. The damping layer smooths numerical errors from
+the ABC discretization, while the ABC provides the primary absorption.
+@dolci2022 show that this **HABC-Higdon** approach achieves up to
+99% reflection reduction with only 2--5 cells of absorbing layer ---
+the most cost-effective method in their comparison.
+
+**Implementation note.** A full 2D Higdon HABC implementation
+requires careful treatment of corners and uses Devito SubDomains for
+the boundary region. This is left as an advanced exercise
+(@sec-wave-abc-exercises). The interested reader is referred to
+@dolci2022 for complete implementation details.
+
+### Comparison and Practical Recommendations {#sec-wave-abc-comparison}
+
+The following table summarizes the ABC methods covered in this section.
+Performance numbers are representative for a 2D point-source test
+problem with constant velocity [@dolci2022; @liu_sen2018].
+
+| Method | Layer width | Reflection reduction | Extra memory | Complexity |
+|--------|:-----------:|:--------------------:|:------------:|:----------:|
+| Dirichlet | 0 | 0% (baseline) | None | Trivial |
+| First-order ABC | 0 | ~50--70% | None | Simple |
+| Damping layer | 20--40 cells | ~90--95% | $\gamma$ profile | Simple |
+| PML | 10--15 cells | ~95% | Auxiliary fields | Moderate |
+| HABC-Higdon + damping | 2--5 cells | ~99% | Minimal | Complex |
+
+: Comparison of absorbing boundary conditions for the 2D wave equation. {#tbl-abc-comparison}
+
+**Practical recommendations:**
+
+1. **For pedagogical use and prototyping**: Start with the first-order
+   ABC. It is easy to implement and provides a noticeable improvement
+   over Dirichlet boundaries.
+
+2. **For general-purpose simulation**: Use a damping layer with
+   20 cells and cubic polynomial ramp ($p = 3$). This provides good
+   absorption with minimal implementation effort.
+
+3. **For production-quality results**: Use PML with 10--15 cells.
+   The extra implementation complexity pays off in smaller computational
+   domains for the same accuracy.
+
+4. **For research and large-scale applications**: Consider the hybrid
+   HABC-Higdon approach. The 2--5 cell layer thickness can
+   significantly reduce computational cost in 3D simulations where
+   the absorbing region is a substantial fraction of the domain.
+
+5. **Always verify**: Compare your ABC solution against a reference
+   computed on a larger domain to ensure reflections are acceptably
+   small. The `measure_reflection` function in `src.wave.abc_methods`
+   automates this comparison.
+
+### Exercises {#sec-wave-abc-exercises}
+
+**Exercise 1: First-order ABC in 2D.**
+Implement the first-order absorbing boundary condition
+(@eq-wave-abc-first-order-discrete) on all four boundaries of a 2D
+domain using Devito. Use a Gaussian point source at the center and
+run the simulation long enough for the wavefront to reach all
+boundaries. Compare the solution to one with Dirichlet boundaries
+by plotting snapshots at the same time. Measure the reflection
+coefficient using the energy in the interior after the wavefront
+has passed.
+
+**Exercise 2: Damping layer parameter study.**
+Using the damping layer implementation from @sec-wave-abc-damping,
+investigate the effect of:
+
+a) Layer width: $W = 5, 10, 20, 40$ cells
+b) Polynomial order: $p = 1, 2, 3, 4$
+c) Maximum damping: $\sigma_{\max} = 10, 50, 100, 500$
+
+For each parameter, measure the reflection coefficient and plot
+the results. Which parameter has the strongest effect? What is
+the minimum layer width that achieves less than 5% reflection?
+
+**Exercise 3: PML vs. damping comparison.**
+Implement both the PML (@sec-wave-abc-pml) and damping layer
+(@sec-wave-abc-damping) methods on the same test problem. For a
+fair comparison, use the same total layer width (e.g., 15 cells)
+for both methods. Compare:
+
+a) The reflection coefficient
+b) The total computational time
+c) The memory usage (number of grid functions)
+
+Discuss when the PML's superior per-cell absorption justifies
+its additional complexity.
+
+**Exercise 4 (Advanced): Second-order Higdon ABC.**
+Implement a second-order Higdon ABC (@eq-wave-abc-higdon) with
+$P = 2$ using angles $\theta_1 = 0°$ and $\theta_2 = 60°$. The
+discrete form at the right boundary requires expanding the product
+of two first-order operators:
+$$
+\left(\frac{\partial}{\partial t} + c \frac{\partial}{\partial x}\right)
+\left(\frac{\partial}{\partial t} + \frac{c}{\cos 60°}
+\frac{\partial}{\partial x}\right) u = 0.
+$$
+
+Discretize this using centered differences and solve for
+$u_{N_x}^{n+1}$. Compare the reflection at various angles against
+the first-order ABC. How much improvement do you observe at
+$\theta = 45°$ and $\theta = 60°$?
