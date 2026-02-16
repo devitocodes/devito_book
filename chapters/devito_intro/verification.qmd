@@ -33,6 +33,48 @@ $$
 If the measured rate matches the theoretical order, we have strong
 evidence the implementation is correct.
 
+### Floating-Point Precision and Convergence Testing {#sec-verification-fp64}
+
+Convergence rate testing requires measuring how the error $E(\Delta x)$
+decreases across several grid refinements. The total error has two components:
+$$
+E_{\text{total}} = C \Delta x^p + E_{\text{roundoff}}
+$$ {#eq-verification-total-error}
+As $\Delta x \to 0$, the discretization term $C \Delta x^p$ shrinks but
+eventually reaches the **round-off error floor** set by the floating-point
+precision. The machine epsilon for single precision (FP32) is approximately
+$1.2 \times 10^{-7}$, while for double precision (FP64) it is approximately
+$2.2 \times 10^{-16}$.
+
+For a second-order scheme ($p=2$), the discretization error is $O(\Delta x^2)$.
+Consider the number of useful refinement levels before round-off dominates:
+
+| Grid points | $\Delta x$ | $O(\Delta x^2)$ | FP32 resolved? | FP64 resolved? |
+|:-----------:|:----------:|:----------------:|:--------------:|:--------------:|
+| 10          | $10^{-1}$  | $10^{-2}$        | Yes            | Yes            |
+| 100         | $10^{-2}$  | $10^{-4}$        | Yes            | Yes            |
+| 1000        | $10^{-3}$  | $10^{-6}$        | Marginal       | Yes            |
+| 10000       | $10^{-4}$  | $10^{-8}$        | No             | Yes            |
+
+: Grid refinement levels resolvable in single vs double precision for a second-order scheme. {#tbl-fp-refinement}
+
+With FP32, only 2--3 useful refinement levels are available before round-off
+noise corrupts the convergence rate estimate. With FP64, 5--7 levels are
+available --- enough to robustly establish the asymptotic convergence rate.
+Roy [@roy2005] emphasises that the observed order of accuracy is only meaningful
+when the solution is in the **asymptotic range**, where higher-order error terms
+are negligible. FP32 often lacks the headroom to both reach the asymptotic
+range and have sufficient refinement levels before hitting the round-off floor.
+
+::: {.callout-important}
+## Default precision for verification
+
+All solver functions in this book default to `dtype=np.float64` (double
+precision) because code verification requires measuring errors across
+many orders of magnitude. Users may pass `dtype=np.float32` for
+production runs where throughput matters more than verification precision.
+:::
+
 ### Implementing a Convergence Test
 
 {{< include snippets/verification_convergence_wave.qmd >}}
