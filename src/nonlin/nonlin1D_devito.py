@@ -38,6 +38,7 @@ def solve_nonlinear_diffusion_explicit(
     I: Callable | None = None,
     D_func: Callable | None = None,
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> NonlinearResult:
     """
     Solve nonlinear diffusion equation with explicit time stepping.
@@ -96,7 +97,7 @@ def solve_nonlinear_diffusion_explicit(
     actual_T = Nt * dt
 
     # Create Devito grid and functions
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    grid = Grid(shape=(Nx + 1,), extent=(L,), dtype=dtype)
     (x_dim,) = grid.dimensions
     t_dim = grid.stepping_dim
 
@@ -168,6 +169,7 @@ def solve_reaction_diffusion_splitting(
     R_func: Callable | None = None,
     splitting: str = "strang",
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> NonlinearResult:
     """
     Solve reaction-diffusion equation using operator splitting.
@@ -228,7 +230,7 @@ def solve_reaction_diffusion_splitting(
     actual_T = Nt * dt
 
     # Create Devito grid and function
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    grid = Grid(shape=(Nx + 1,), extent=(L,), dtype=dtype)
     (x_dim,) = grid.dimensions
     t_dim = grid.stepping_dim
 
@@ -312,6 +314,7 @@ def solve_burgers_equation(
     C: float = 0.5,
     I: Callable | None = None,
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> NonlinearResult:
     """
     Solve 1D viscous Burgers' equation using explicit time stepping.
@@ -366,7 +369,7 @@ def solve_burgers_equation(
     actual_T = Nt * dt
 
     # Create Devito grid and functions
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    grid = Grid(shape=(Nx + 1,), extent=(L,), dtype=dtype)
     (x_dim,) = grid.dimensions
     t_dim = grid.stepping_dim
 
@@ -378,8 +381,8 @@ def solve_burgers_equation(
     u.data[1, :] = u_init
 
     # Time step and viscosity as Devito Constants
-    dt_const = Constant(name="dt", value=np.float32(dt))
-    nu_const = Constant(name="nu", value=np.float32(nu))
+    dt_const = Constant(name="dt", value=dtype(dt))
+    nu_const = Constant(name="nu", value=dtype(nu))
 
     # Neighbor values using explicit shifted indexing
     u_plus = u.subs(x_dim, x_dim + x_dim.spacing)
@@ -440,6 +443,7 @@ def solve_nonlinear_diffusion_picard(
     picard_tol: float = 1e-6,
     picard_max_iter: int = 100,
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> NonlinearResult:
     """
     Solve nonlinear diffusion with Picard iteration (implicit).
@@ -502,7 +506,7 @@ def solve_nonlinear_diffusion_picard(
     actual_T = Nt * dt
 
     # Create Devito grid and functions
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    grid = Grid(shape=(Nx + 1,), extent=(L,), dtype=dtype)
     (x_dim,) = grid.dimensions
     t_dim = grid.stepping_dim
 

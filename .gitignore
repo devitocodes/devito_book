@@ -53,6 +53,24 @@ doc/pub/
 /_book/
 **/*.quarto_ipynb
 
+# Root-level TeX artifacts (Quarto/Pandoc intermediates)
+/*.tex
+
+# Quarto HTML render artifacts
+**/*_files/
+
+# Review and planning documents
+book-review.md
+codex-review.md
+codex-reviewer.md
+review.md
+review-2.md
+review-3.md
+review-4.md
+ianmgdev_review.txt
+*.docx
+Proposed Extension Roadmap*.md
+
 # Coverage
 .coverage
 coverage.xml

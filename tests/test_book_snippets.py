@@ -89,6 +89,42 @@ def test_absorbing_bc_right_wave_runs_and_bounded():
     assert 0.0 < max_u < 10.0
 
 
+def test_damping_layer_2d_wave_absorbs():
+    import runpy
+
+    ns = runpy.run_path("src/book_snippets/damping_layer_2d_wave.py")
+    max_u = ns["RESULT"]
+    # After damping, interior should have small residual
+    assert 0.0 <= max_u < 1.0
+
+
+def test_pml_wave_2d_absorbs():
+    import runpy
+
+    ns = runpy.run_path("src/book_snippets/pml_wave_2d.py")
+    max_u = ns["RESULT"]
+    # After PML absorption, interior should have small residual
+    assert 0.0 <= max_u < 1.0
+
+
+def test_higdon_abc_2d_wave_absorbs():
+    import runpy
+
+    ns = runpy.run_path("src/book_snippets/higdon_abc_2d_wave.py")
+    max_u = ns["RESULT"]
+    # After Higdon ABC, interior should have small residual
+    assert 0.0 <= max_u < 1.0
+
+
+def test_habc_wave_2d_absorbs():
+    import runpy
+
+    ns = runpy.run_path("src/book_snippets/habc_wave_2d.py")
+    max_u = ns["RESULT"]
+    # After HABC, interior should have small residual
+    assert 0.0 <= max_u < 1.0
+
+
 def test_periodic_bc_advection_1d_matches_endpoints():
     import runpy
 

@@ -1,0 +1,221 @@
+## Application: Dielectric Waveguides {#sec-em-waveguide}
+
+Dielectric waveguides confine and guide electromagnetic waves through
+total internal reflection. They are fundamental to optical fibers,
+integrated photonics, and laser resonators. This section demonstrates
+how FDTD can simulate waveguide modes and compare with analytical solutions.
+
+### Waveguide Physics
+
+A **dielectric slab waveguide** consists of a high-index core surrounded
+by lower-index cladding:
+
+```
+       n_clad (cladding)
+    ========================
+       n_core (core)         d = core thickness
+    ========================
+       n_clad (cladding)
+```
+
+Guided modes exist when light undergoes total internal reflection at the
+core-cladding interface. This requires:
+
+1. $n_{core} > n_{clad}$ (core has higher refractive index)
+2. Incidence angle exceeds the critical angle: $\theta > \theta_c = \arcsin(n_{clad}/n_{core})$
+
+### Analytical Mode Solutions
+
+For TE modes in a symmetric slab waveguide, the **eigenvalue equation** is:
+$$
+\tan\left(\frac{k_x d}{2}\right) = \frac{\gamma}{k_x} \quad \text{(symmetric modes)}
+$$ {#eq-em-wg-eigenvalue}
+$$
+\cot\left(\frac{k_x d}{2}\right) = -\frac{\gamma}{k_x} \quad \text{(antisymmetric modes)}
+$$
+
+where:
+
+- $k_x = k_0\sqrt{n_{core}^2 - n_{eff}^2}$ is the transverse wavenumber in core
+- $\gamma = k_0\sqrt{n_{eff}^2 - n_{clad}^2}$ is the decay constant in cladding
+- $k_0 = 2\pi/\lambda_0$ is the free-space wavenumber
+- $n_{eff}$ is the **effective index** of the mode
+
+The effective index satisfies $n_{clad} < n_{eff} < n_{core}$. Waves with
+$n_{eff}$ below this range are not guided (radiation modes).
+
+### Using the Waveguide Module
+
+The `src.em.waveguide` module provides tools for computing analytical modes:
+
+```python
+from src.em import SlabWaveguide, cutoff_wavelength
+import numpy as np
+
+# Silicon nitride waveguide in silica
+waveguide = SlabWaveguide(
+    n_core=2.0,        # Silicon nitride
+    n_clad=1.45,       # Silica cladding
+    thickness=0.4e-6,  # 400 nm core
+    wavelength=1.55e-6 # Telecom wavelength
+)
+
+print(f"V-number: {waveguide.V:.2f}")
+print(f"Max modes: ~{waveguide.max_modes}")
+
+# Find guided modes
+modes = waveguide.find_modes()
+for mode in modes:
+    print(f"Mode {mode.mode_number}: n_eff = {mode.n_eff:.4f}, "
+          f"type = {mode.symmetry}")
+```
+
+### Mode Profiles
+
+Each mode has a characteristic transverse field profile:
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Coordinate across the waveguide
+x = np.linspace(-1e-6, 1e-6, 500)  # +/-1 micron
+
+fig, ax = plt.subplots(figsize=(8, 5))
+
+for mode in modes[:3]:  # First three modes
+    profile = waveguide.mode_profile(mode, x)
+    ax.plot(x * 1e6, profile, label=f"Mode {mode.mode_number}")
+
+# Show core region
+ax.axvline(-waveguide.thickness/2 * 1e6, color='gray', linestyle='--')
+ax.axvline(waveguide.thickness/2 * 1e6, color='gray', linestyle='--')
+ax.fill_betweenx([-1.5, 1.5],
+                 -waveguide.thickness/2 * 1e6,
+                 waveguide.thickness/2 * 1e6,
+                 alpha=0.2, label='Core')
+
+ax.set_xlabel('Position [um]')
+ax.set_ylabel('E-field (normalized)')
+ax.set_title('Waveguide Mode Profiles')
+ax.legend()
+ax.set_xlim(-1, 1)
+```
+
+Key observations:
+
+- **Fundamental mode** (mode 0): Symmetric, single peak in core
+- **Higher-order modes**: More oscillations, wider extent
+- **Evanescent tails**: Field decays exponentially in cladding
+
+### FDTD Simulation of Waveguide
+
+We can verify the analytical solutions using FDTD. The approach:
+
+1. Create a 2D grid with the waveguide structure
+2. Launch a wave at one end
+3. Observe mode confinement and propagation
+4. Measure effective index from propagation phase
+
+```python
+from src.em import solve_maxwell_2d
+from src.em.materials import DielectricMaterial, create_layered_model
+import numpy as np
+
+# Waveguide parameters (scaled for FDTD)
+n_core = 2.0
+n_clad = 1.45
+core_thickness = 0.4e-6
+wavelength = 1.55e-6
+
+# Grid setup
+Lx = 10e-6   # 10 um propagation length
+Ly = 3e-6   # 3 um transverse
+Nx = 400
+Ny = 120
+
+# Create material model
+eps_r = np.ones((Nx + 1, Ny + 1)) * n_clad**2
+# Core region
+y = np.linspace(0, Ly, Ny + 1)
+core_mask = np.abs(y - Ly/2) < core_thickness/2
+for i in range(Nx + 1):
+    eps_r[i, core_mask] = n_core**2
+
+# Initial condition: Gaussian beam at input
+def E_init(X, Y):
+    sigma_y = core_thickness / 2
+    return np.exp(-((Y - Ly/2)**2) / (2*sigma_y**2)) * \
+           np.exp(-((X - 0.5e-6)**2) / (0.2e-6)**2)
+
+# Run simulation
+result = solve_maxwell_2d(
+    Lx=Lx, Ly=Ly, Nx=Nx, Ny=Ny,
+    T=50e-15,  # 50 fs
+    CFL=0.5,
+    eps_r=eps_r,
+    E_init=E_init,
+    pml_width=15,
+    save_history=True,
+    save_every=5,
+)
+```
+
+### Measuring Effective Index
+
+The effective index can be measured from the FDTD simulation by tracking
+the phase of the propagating mode:
+
+```python
+# Extract field along propagation direction at core center
+y_center = Ny // 2
+E_along_x = result.E_z[:, y_center]
+
+# Find phase velocity from interference pattern
+# (requires CW excitation or Fourier analysis of pulse)
+
+# Alternative: Compare with analytical mode profile
+mode = modes[0]  # Fundamental mode
+print(f"Analytical n_eff: {mode.n_eff:.4f}")
+print(f"Confinement factor: {waveguide.confinement_factor(mode):.2%}")
+```
+
+### Single-Mode Condition
+
+For telecommunications, single-mode operation is often desired. The cutoff
+condition is given by the **V-number**:
+$$
+V = \frac{\pi d}{\lambda_0} \sqrt{n_{core}^2 - n_{clad}^2} < \frac{\pi}{2}
+$$ {#eq-em-single-mode}
+
+```python
+from src.em import single_mode_condition
+
+# Maximum core thickness for single-mode at 1.55 um
+d_max = single_mode_condition(n_core=2.0, n_clad=1.45, wavelength=1.55e-6)
+print(f"Max single-mode thickness: {d_max*1e9:.1f} nm")
+
+# Cutoff wavelength for our 400 nm core
+lambda_c = cutoff_wavelength(n_core=2.0, n_clad=1.45,
+                             thickness=0.4e-6, mode_number=1)
+print(f"First higher-order mode cutoff: {lambda_c*1e9:.1f} nm")
+```
+
+### Bending Loss
+
+When a waveguide bends, the outer edge must travel faster than the speed
+of light in the cladding, causing radiation loss. FDTD naturally captures
+this effect by including curved waveguide geometries.
+
+### Summary
+
+This application demonstrates:
+
+1. **Analytical foundation**: Eigenvalue equations for guided modes
+2. **FDTD verification**: Numerical simulation confirms analytical results
+3. **Practical parameters**: Effective index, confinement factor, cutoff
+4. **Physical insight**: Mode profiles show field confinement
+
+The waveguide analysis techniques extend to more complex structures like
+photonic crystal waveguides, ring resonators, and directional couplers,
+all of which can be simulated with FDTD.

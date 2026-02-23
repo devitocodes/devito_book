@@ -82,6 +82,7 @@ def solve_diffusion_1d(
     I: Callable[[np.ndarray], np.ndarray] | None = None,
     f: Callable[[np.ndarray, float], np.ndarray] | None = None,
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> DiffusionResult:
     """Solve the 1D diffusion equation using Devito (Forward Euler).
 
@@ -166,7 +167,7 @@ def solve_diffusion_1d(
     F_actual = a * dt / dx**2
 
     # Create Devito grid
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    grid = Grid(shape=(Nx + 1,), extent=(L,), dtype=dtype)
 
     # Create time function with time_order=1 for diffusion equation
     # (first-order time derivative, second-order spatial)

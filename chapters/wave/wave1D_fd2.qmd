@@ -282,7 +282,7 @@ is no longer an exact solution
 of the discrete equations if a Neumann condition is implemented on
 the boundary. A linear solution does not help since we only have
 homogeneous Neumann conditions, and we are
-consequently left with testing just a constant solution: $u=\hbox{const}$.
+consequently left with testing just a constant solution: $u=\text{const}$.
 
 The quadratic solution is very useful for testing, but it requires
 Dirichlet conditions at both ends.
@@ -357,7 +357,7 @@ $u_{-1}^n$ and $u_{N_x+1}^n$, are called *ghost values*.
 The important idea is
 to ensure that we always have
 $$
-u_{-1}^n = u_{1}^n\hbox{ and } u_{N_x+1}^n = u_{N_x-1}^n,
+u_{-1}^n = u_{1}^n\text{ and } u_{N_x+1}^n = u_{N_x-1}^n,
 $$
 because then
 the application of the standard scheme at a boundary point $i=0$ or $i=N_x$
@@ -634,15 +634,15 @@ particular interest in this context:
 q_{i+\half} &\approx
 \half\left( q_{i} + q_{i+1}\right) =
 [\overline{q}^{x}]_i
-\quad &\hbox{(arithmetic mean)}
+\quad &\text{(arithmetic mean)}
 \\
 q_{i+\half} &\approx
 2\left( \frac{1}{q_{i}} + \frac{1}{q_{i+1}}\right)^{-1}
-\quad &\hbox{(harmonic mean)}
+\quad &\text{(harmonic mean)}
 \\
 q_{i+\half} &\approx
 \left(q_{i}q_{i+1}\right)^{1/2}
-\quad &\hbox{(geometric mean)}
+\quad &\text{(geometric mean)}
 \end{alignat}
 ```
 The arithmetic mean is by
@@ -738,7 +738,7 @@ q_i + \left(\frac{dq}{dx}\right)_i \Delta x
 +\nonumber\\
 &\quad q_i - \left(\frac{dq}{dx}\right)_i \Delta x
 + \left(\frac{d^2q}{dx^2}\right)_i \Delta x^2 + \cdots\nonumber\\
-&= 2q_i + 2\left(\frac{d^2q}{dx^2}\right)_i \Delta x^2 + {\cal O}(\Delta x^4)
+&= 2q_i + 2\left(\frac{d^2q}{dx^2}\right)_i \Delta x^2 + \Oof{\Delta x^4}
 \nonumber\\
 &\approx 2q_i
 \end{align} \tp
@@ -749,7 +749,7 @@ $q_{n-\half}$ and $q_{n+\half}$ in
 $$
 (q_i + \half(q_{i+1}+q_{i-1}))(u_{i-1}^n-u_i^n)\tp
 $$
-Since $\half(q_{i+1}+q_{i-1}) = q_i + {\cal O}(\Delta x^2)$,
+Since $\half(q_{i+1}+q_{i-1}) = q_i + \Oof{\Delta x^2}$,
 we can approximate with $2q_i(u_{i-1}^n-u_i^n)$ for $i=N_x$ and
 get the same term as we did above.
 
@@ -901,10 +901,10 @@ $$
 u_t(x,0) = V(t),\quad x\in [0,L]
 $$
 $$
-u(0,t) = U_0(t)\hbox{ or } u_x(0,t)=0,\quad t\in (0,T]
+u(0,t) = U_0(t)\text{ or } u_x(0,t)=0,\quad t\in (0,T]
 $$
 $$
-u(L,t) = U_L(t)\hbox{ or } u_x(L,t)=0,\quad t\in (0,T]
+u(L,t) = U_L(t)\text{ or } u_x(L,t)=0,\quad t\in (0,T]
 $$
 
 The only new feature here is the time-dependent Dirichlet conditions, but
@@ -1238,7 +1238,7 @@ A starting point is the standing wave solution $u = A \sin(k x) \cos(\omega t)$.
 include a damping term $e^{-\beta t}$ and also have both a sine and cosine
 component in time:
 $$
-\uex(x,t) =  e^{-\beta t}
+u_{\text{e}}(x,t) =  e^{-\beta t}
 \sin kx \left( A\cos\omega t
 - B\sin\omega t\right) \tp
 $$
@@ -1325,7 +1325,7 @@ where constants $c$, $A$, $b$ and $k$, as well as $I(x)$, are prescribed.
 
 The solution to the problem is then given as
 $$
-\uex(x,t) =  e^{-\beta t}
+u_{\text{e}}(x,t) =  e^{-\beta t}
 \sin kx \left( A\cos\omega t
 - B\sin\omega t\right) \tp
 $$
@@ -1342,7 +1342,7 @@ Consider the simple "plug" wave where $\Omega = [-L,L]$ and
 $$
 I(x) = \left\lbrace\begin{array}{ll}
 1, & x\in [-\delta, \delta],\\
-0, & \hbox{otherwise}
+0, & \text{otherwise}
 \end{array}\right.
 $$
 for some number $0 < \delta < L$. The other initial condition is
@@ -1575,11 +1575,14 @@ To enable a wave to leave the computational domain and travel
 undisturbed through
 the boundary $x=L$, one can in a one-dimensional problem impose the
 following condition, called a *radiation condition* or
-*open boundary condition*:
+*open boundary condition* [@enquist_majda1977; @clayton_engquist1977]:
 $$
 \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0\tp
 $$ {#eq-wave-app-exer-radiationBC-eq}
 The parameter $c$ is the wave velocity.
+Higher-order absorbing boundary conditions [@higdon1986] can handle
+oblique incidence in multiple dimensions; see @sec-wave-abc for a
+comprehensive treatment.
 
 Show that (@eq-wave-app-exer-radiationBC-eq) accepts
 a solution $u = g_R(x-ct)$ (right-going wave),
@@ -1629,7 +1632,7 @@ at $x=L$, and an initial disturbance in the middle
 of the domain, e.g., a plug profile like
 $$
 u(x,0) = \left\lbrace\begin{array}{ll} 1,& L/2-\ell \leq x \leq  L/2+\ell,\\
-0,\hbox{otherwise}\end{array}\right.
+0,\text{otherwise}\end{array}\right.
 $$
 Observe that the initial wave is split in two, the left-going wave
 is reflected at $x=0$, and both waves travel out of $x=L$,

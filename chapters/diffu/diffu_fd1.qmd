@@ -1016,7 +1016,7 @@ Two initial conditions will be tested: a discontinuous plug,
 $$
 I(x) = \left\lbrace\begin{array}{ll}
 0, & |x-L/2| > 0.1\\
-1, & \hbox{otherwise}
+1, & \text{otherwise}
 \end{array}\right.
 $$
 and a smooth Gaussian function,

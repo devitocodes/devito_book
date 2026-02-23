@@ -57,69 +57,69 @@ derivative at the point $t_{n+\theta}=\theta t_{n+1} + (1-\theta) t_{n}$.
 
 $$
 \begin{split}
-\uex'(t_n) &=
-[D_t\uex]^n + R^n = \frac{\uex^{n+\half} - \uex^{n-\half}}{\Delta t} +R^n,\\
-R^n &= -\frac{1}{24}\uex'''(t_n)\Delta t^2 + {\cal O}(\Delta t^4)
+u_{\text{e}}'(t_n) &=
+[D_tu_{\text{e}}]^n + R^n = \frac{u_{\text{e}}^{n+\half} - u_{\text{e}}^{n-\half}}{\Delta t} +R^n,\\
+R^n &= -\frac{1}{24}u_{\text{e}}'''(t_n)\Delta t^2 + \Oof{\Delta t^4}
 \end{split}
 $$
 $$
 \begin{split}
-\uex'(t_n) &=
-[D_{2t}\uex]^n +R^n = \frac{\uex^{n+1} - \uex^{n-1}}{2\Delta t} +
+u_{\text{e}}'(t_n) &=
+[D_{2t}u_{\text{e}}]^n +R^n = \frac{u_{\text{e}}^{n+1} - u_{\text{e}}^{n-1}}{2\Delta t} +
 R^n,\\
-R^n &= -\frac{1}{6}\uex'''(t_n)\Delta t^2 + {\cal O}(\Delta t^4)
+R^n &= -\frac{1}{6}u_{\text{e}}'''(t_n)\Delta t^2 + \Oof{\Delta t^4}
 \end{split}
 $$
 $$
 \begin{split}
-\uex'(t_n) &=
-[D_t^-\uex]^n +R^n = \frac{\uex^{n} - \uex^{n-1}}{\Delta t}
+u_{\text{e}}'(t_n) &=
+[D_t^-u_{\text{e}}]^n +R^n = \frac{u_{\text{e}}^{n} - u_{\text{e}}^{n-1}}{\Delta t}
 +R^n,\\
-R^n &= -\half\uex''(t_n)\Delta t + {\cal O}(\Delta t^2)
+R^n &= -\half u_{\text{e}}''(t_n)\Delta t + \Oof{\Delta t^2}
 \end{split}
 $$
 $$
 \begin{split}
-\uex'(t_n) &=
-[D_t^+\uex]^n +R^n = \frac{\uex^{n+1} - \uex^{n}}{\Delta t}
+u_{\text{e}}'(t_n) &=
+[D_t^+u_{\text{e}}]^n +R^n = \frac{u_{\text{e}}^{n+1} - u_{\text{e}}^{n}}{\Delta t}
 +R^n,\\
-R^n &= \half\uex''(t_n)\Delta t + {\cal O}(\Delta t^2)
+R^n &= \half u_{\text{e}}''(t_n)\Delta t + \Oof{\Delta t^2}
 \end{split}
 $$
 $$
 \begin{split}
-\uex'(t_{n+\theta}) &=
-[\bar D_t\uex]^{n+\theta} +R^{n+\theta} = \frac{\uex^{n+1} - \uex^{n}}{\Delta t}
+u_{\text{e}}'(t_{n+\theta}) &=
+[\bar D_tu_{\text{e}}]^{n+\theta} +R^{n+\theta} = \frac{u_{\text{e}}^{n+1} - u_{\text{e}}^{n}}{\Delta t}
 +R^{n+\theta},\\
-R^{n+\theta} &= -\half(1-2\theta)\uex''(t_{n+\theta})\Delta t +
-\frac{1}{6}((1 - \theta)^3 - \theta^3)\uex'''(t_{n+\theta})\Delta t^2 +
+R^{n+\theta} &= -\half(1-2\theta)u_{\text{e}}''(t_{n+\theta})\Delta t +
+\frac{1}{6}((1 - \theta)^3 - \theta^3)u_{\text{e}}'''(t_{n+\theta})\Delta t^2 +
 \\
-&\quad {\cal O}(\Delta t^3)
+&\quad \Oof{\Delta t^3}
 \end{split}
 $$
 $$
 \begin{split}
-\uex'(t_n) &=
-[D_t^{2-}\uex]^n +R^n = \frac{3\uex^{n} - 4\uex^{n-1} + \uex^{n-2}}{2\Delta t}
+u_{\text{e}}'(t_n) &=
+[D_t^{2-}u_{\text{e}}]^n +R^n = \frac{3u_{\text{e}}^{n} - 4u_{\text{e}}^{n-1} + u_{\text{e}}^{n-2}}{2\Delta t}
 +R^n,\\
-R^n &= \frac{1}{3}\uex'''(t_n)\Delta t^2 + {\cal O}(\Delta t^3)
+R^n &= \frac{1}{3}u_{\text{e}}'''(t_n)\Delta t^2 + \Oof{\Delta t^3}
 \end{split}
 $$
 $$
 \begin{split}
-\uex''(t_n) &=
-[D_tD_t \uex]^n +R^n = \frac{\uex^{n+1} - 2\uex^{n} + \uex^{n-1}}{\Delta t^2}
+u_{\text{e}}''(t_n) &=
+[D_tD_t u_{\text{e}}]^n +R^n = \frac{u_{\text{e}}^{n+1} - 2u_{\text{e}}^{n} + u_{\text{e}}^{n-1}}{\Delta t^2}
 +R^n,\\
-R^n &= -\frac{1}{12}\uex''''(t_n)\Delta t^2 + {\cal O}(\Delta t^4)
+R^n &= -\frac{1}{12}u_{\text{e}}''''(t_n)\Delta t^2 + \Oof{\Delta t^4}
 \end{split}
 $$ {#eq-form-trunc-fd1-center}
 
 $$
 \begin{split}
-\uex(t_{n+\theta}) &= [\overline{\uex}^{t,\theta}]^{n+\theta} +R^{n+\theta}
-= \theta \uex^{n+1} + (1-\theta)\uex^n +R^{n+\theta},\\
-R^{n+\theta} &= -\half\uex''(t_{n+\theta})\Delta t^2\theta (1-\theta) +
-{\cal O}(\Delta t^3)\tp
+u_{\text{e}}(t_{n+\theta}) &= [\overline{u_{\text{e}}}^{t,\theta}]^{n+\theta} +R^{n+\theta}
+= \theta u_{\text{e}}^{n+1} + (1-\theta)u_{\text{e}}^n +R^{n+\theta},\\
+R^{n+\theta} &= -\half u_{\text{e}}''(t_{n+\theta})\Delta t^2\theta (1-\theta) +
+\Oof{\Delta t^3}\tp
 \end{split}
 $$ {#eq-form-trunc-avg-theta}
 

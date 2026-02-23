@@ -11,7 +11,7 @@ The general wave equation in $d$ space dimensions, with constant
 wave velocity $c$,
 can be written in the compact form
 $$
-\frac{\partial^2 u}{\partial t^2} = c^2\nabla^2 u\hbox{ for }\xpoint\in\Omega\subset\Real^d,\ t\in (0,T] ,
+\frac{\partial^2 u}{\partial t^2} = c^2\nabla^2 u\text{ for }\xpoint\in\Omega\subset\Real^d,\ t\in (0,T] ,
 $$ {#eq-wave-2D3D-model1}
 where
 $$
@@ -28,7 +28,7 @@ in three space dimensions ($d=3$).
 Many applications involve variable coefficients, and the general
 wave equation in $d$ dimensions is in this case written as
 $$
-\varrho\frac{\partial^2 u}{\partial t^2} = \nabla\cdot (q\nabla u) + f\hbox{ for }\xpoint\in\Omega\subset\Real^d,\ t\in (0,T],
+\varrho\frac{\partial^2 u}{\partial t^2} = \nabla\cdot (q\nabla u) + f\text{ for }\xpoint\in\Omega\subset\Real^d,\ t\in (0,T],
 $$ {#eq-wave-2D3D-model2}
 which in, e.g.,  2D becomes
 $$
@@ -99,9 +99,9 @@ convenient approach). On a rectangle- or box-shaped domain, mesh
 points are introduced separately in the various space directions:
 
 \begin{align*}
-&x_0 < x_1 < \cdots < x_{N_x}  \hbox{ in the }x \hbox{ direction},\\
-&y_0 < y_1 < \cdots < y_{N_y}  \hbox{ in the }y \hbox{ direction},\\
-&z_0 < z_1 < \cdots < z_{N_z}  \hbox{ in the }z \hbox{ direction}\tp
+&x_0 < x_1 < \cdots < x_{N_x}  \text{ in the }x \text{ direction},\\
+&y_0 < y_1 < \cdots < y_{N_y}  \text{ in the }y \text{ direction},\\
+&z_0 < z_1 < \cdots < z_{N_z}  \text{ in the }z \text{ direction}\tp
 \end{align*}
 We can write a general mesh point as $(x_i,y_j,z_k,t_n)$, with
 $i\in\Ix$, $j\in\Iy$, $k\in\Iz$, and $n\in\It$.

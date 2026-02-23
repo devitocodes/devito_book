@@ -79,7 +79,7 @@ displacement gradients $\Delta u_i/\Delta x$. For small $g=\Delta u_i/\Delta x$
 we have that
 $$
 \Delta s_i = \sqrt{\Delta u_i^2 + \Delta x^2} = \Delta x\sqrt{1 + g^2}
-+ \Delta x (1 + {\half}g^2 + {\cal O}(g^4)) \approx \Delta x \tp
++ \Delta x (1 + {\half}g^2 + \mathcal{O}(g^4)) \approx \Delta x \tp
 $$
 Equation (@eq-wave-app-string-hcomp) is then simply the identity $T=T$, while
 (@eq-wave-app-string-vcomp) can be written as
@@ -719,7 +719,7 @@ Taking the curl of the two last equations and using the
 mathematical identity
 $$
 \nabla\times (\nabla\times \pmb{E}) = \nabla(\nabla \cdot \pmb{E})
-+ \nabla^2\pmb{E} = - \nabla^2\pmb{E}\hbox{ when }\nabla\cdot\pmb{E}=0,
++ \nabla^2\pmb{E} = - \nabla^2\pmb{E}\text{ when }\nabla\cdot\pmb{E}=0,
 $$
 gives the wave equation governing the electric and magnetic field:
 \begin{align}

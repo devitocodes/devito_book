@@ -819,7 +819,7 @@ where $s$ is a [Bernoulli variable](https://en.wikipedia.org/wiki/Bernoulli_dist
 taking on the two values $s=-1$ and $s=1$
 with equal probability:
 $$
-\hbox{P}(s=1)=\half,\quad \hbox{P}(s=-1)=\half\tp
+\text{P}(s=1)=\half,\quad \text{P}(s=-1)=\half\tp
 $$
 The $s$ variable in a step is independent of the $s$ variable in other steps.
 

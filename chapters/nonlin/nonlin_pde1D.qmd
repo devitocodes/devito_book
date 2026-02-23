@@ -107,11 +107,11 @@ of PDEs have, strictly
 speaking, a somewhat sloppy notation, but it is much used and convenient
 to read. A more precise notation must
 distinguish clearly between the exact solution of the PDE problem,
-here denoted $\uex(\x,t)$, and the exact solution of the spatial
+here denoted $u_{\text{e}}(\x,t)$, and the exact solution of the spatial
 problem, arising after time discretization at each time level,
 where (@eq-nonlin-pdelevel-pde-BE) is an example. The latter
 is here represented as $u^n(\x)$ and is an approximation to
-$\uex(\x,t_n)$. Then we have another approximation $u^{n,k}(\x)$
+$u_{\text{e}}(\x,t_n)$. Then we have another approximation $u^{n,k}(\x)$
 to $u^n(\x)$ when solving the nonlinear PDE problem for
 $u^n$ by iteration methods, as in (@eq-nonlin-pdelevel-pde-BE-Picard-k).
 
@@ -120,7 +120,7 @@ a synonym for $u^{n-1}$, inspired by what are natural variable names
 in a code.
 We will usually state the PDE problem in terms of $u$ and
 quickly redefine the symbol $u$ to mean the numerical approximation,
-while $\uex$ is not explicitly introduced unless we need to talk about
+while $u_{\text{e}}$ is not explicitly introduced unless we need to talk about
 the exact solution and the approximate solution at the same time.
 :::
 

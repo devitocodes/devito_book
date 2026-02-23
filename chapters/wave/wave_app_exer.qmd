@@ -361,7 +361,7 @@ which they often are.
 
 **a)**
 
-Show that under the assumption of $a=\hbox{const}$,
+Show that under the assumption of $a=\text{const}$,
 $$
 u(x,t) = I(x - ct)
 $$ {#eq-wave-app-exer-advec1D-uexact}
@@ -653,7 +653,7 @@ $$
 I(x) = \left\lbrace
 \begin{array}{ll}
 ax/x_0, & x < x_0,\\
-a(L-x)/(L-x_0), & \hbox{otherwise}
+a(L-x)/(L-x_0), & \text{otherwise}
 \end{array}\right.
 $$
 

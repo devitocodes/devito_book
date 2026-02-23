@@ -1,0 +1,213 @@
+## Stability and Dispersion Analysis {#sec-em-analysis}
+
+The Yee scheme shares fundamental properties with the centered-difference
+scheme for the scalar wave equation. This section analyzes stability and
+numerical dispersion, drawing parallels to the wave equation analysis in
+@sec-wave-pde1-analysis.
+
+### Von Neumann Stability Analysis
+
+Following the approach in @sec-wave-pde1-stability, we insert a plane wave
+ansatz into the discrete equations:
+$$
+E_z|_i^n = \hat{E} e^{j(kx_i - \tilde\omega t_n)}, \quad
+H_y|_{i+1/2}^{n+1/2} = \hat{H} e^{j(kx_{i+1/2} - \tilde\omega t_{n+1/2})}
+$$
+
+where $\tilde\omega$ is the numerical angular frequency (which may differ
+from the physical $\omega = ck$).
+
+Substituting into the update equations @eq-em-Hy-update and @eq-em-Ez-update
+and simplifying yields the **numerical dispersion relation**:
+$$
+\left(\frac{\sin(\tilde\omega \Delta t/2)}{\Delta t/2}\right)^2 =
+c^2 \left(\frac{\sin(k\Delta x/2)}{\Delta x/2}\right)^2
+$$ {#eq-em-disprel-1d}
+
+This can be rewritten as:
+$$
+\sin(\tilde\omega \Delta t/2) = C \sin(k\Delta x/2)
+$$ {#eq-em-disprel-simple}
+
+where $C = c\Delta t/\Delta x$ is the Courant number.
+
+**Stability Condition**: For $\tilde\omega$ to be real (non-growing solutions),
+we need:
+$$
+|C \sin(k\Delta x/2)| \leq 1 \quad \text{for all } k
+$$
+
+The maximum occurs at $k\Delta x = \pi$, requiring $|C| \leq 1$, which gives
+the CFL condition @eq-em-cfl-1d.
+
+### Numerical Phase Velocity
+
+The numerical phase velocity is:
+$$
+\tilde{v}_p = \frac{\tilde\omega}{k}
+$$
+
+From @eq-em-disprel-simple:
+$$
+\tilde\omega = \frac{2}{\Delta t}\arcsin\left(C \sin\frac{k\Delta x}{2}\right)
+$$
+
+The **phase velocity error** is:
+$$
+\frac{\tilde{v}_p - c}{c} = \frac{\tilde\omega}{kc} - 1
+$$ {#eq-em-phase-error}
+
+This error depends on:
+
+1. **Courant number** $C$
+2. **Points per wavelength** $N_\lambda = \lambda/\Delta x = 2\pi/(k\Delta x)$
+
+### The "Magic" Time Step
+
+A remarkable property of the 1D Yee scheme: at $C = 1$, the dispersion
+vanishes exactly. From @eq-em-disprel-simple with $C = 1$:
+$$
+\sin(\tilde\omega \Delta t/2) = \sin(k\Delta x/2)
+$$
+
+With $c\Delta t = \Delta x$ (i.e., $C = 1$):
+$$
+\tilde\omega = \frac{2}{\Delta t}\arcsin\left(\sin\frac{k\Delta x}{2}\right) = \frac{k\Delta x}{\Delta t} = kc
+$$
+
+This is the exact dispersion relation! Waves of all frequencies travel at
+exactly the correct speed.
+
+::: {.callout-note}
+## Why "Magic"?
+
+The magic time step $C = 1$ makes the numerical scheme exact (in 1D for
+uniform media). This is the same phenomenon observed for the scalar wave
+equation in @sec-wave-pde1-num-dispersion. It arises because the centered
+difference stencil, when $C = 1$, samples the wave at exactly the points
+where information propagates.
+:::
+
+### Dispersion in 2D/3D
+
+In higher dimensions, the dispersion becomes **anisotropic**---it depends
+on the propagation direction. For 2D with $\Delta x = \Delta y = h$:
+$$
+\sin^2\left(\frac{\tilde\omega \Delta t}{2}\right) =
+S_x^2 \sin^2\left(\frac{k_x h}{2}\right) +
+S_y^2 \sin^2\left(\frac{k_y h}{2}\right)
+$$ {#eq-em-disprel-2d}
+
+where $S_x = c\Delta t/\Delta x$ and $S_y = c\Delta t/\Delta y$.
+
+The phase velocity error varies with angle $\theta$ (where $k_x = k\cos\theta$,
+$k_y = k\sin\theta$). For a given resolution, dispersion is:
+
+- **Minimum** along grid axes ($\theta = 0, 90^\circ$)
+- **Maximum** along diagonals ($\theta = 45^\circ$)
+
+This **grid anisotropy** is inherent to the Cartesian Yee grid. It can be
+reduced by using finer grids or higher-order schemes.
+
+### Quantifying Dispersion Error
+
+The `src.em.analysis.dispersion_maxwell` module provides tools for computing
+dispersion errors:
+
+```python
+from src.em.analysis import compute_dispersion_error, phase_velocity_error_1d
+import numpy as np
+
+# Error vs. points per wavelength for various Courant numbers
+N_lambda = np.array([5, 10, 20, 40, 80])
+
+for C in [0.5, 0.9, 1.0]:
+    error = compute_dispersion_error(N_lambda, courant_number=C, dim=1)
+    print(f"C = {C}:")
+    for n, e in zip(N_lambda, error):
+        print(f"  N_lambda = {n:2d}: error = {100*e:+.3f}%")
+```
+
+Typical output:
+```
+C = 0.5:
+  N_lambda =  5: error = -2.467%
+  N_lambda = 10: error = -0.617%
+  N_lambda = 20: error = -0.154%
+  N_lambda = 40: error = -0.039%
+  N_lambda = 80: error = -0.010%
+C = 0.9:
+  N_lambda =  5: error = -0.449%
+  N_lambda = 10: error = -0.112%
+  N_lambda = 20: error = -0.028%
+  N_lambda = 40: error = -0.007%
+  N_lambda = 80: error = -0.002%
+C = 1.0:
+  N_lambda =  5: error = +0.000%
+  N_lambda = 10: error = +0.000%
+  N_lambda = 20: error = +0.000%
+  N_lambda = 40: error = +0.000%
+  N_lambda = 80: error = +0.000%
+```
+
+### Practical Implications
+
+**Resolution Requirements**:
+
+The rule of thumb is 10-20 points per minimum wavelength. With $N_\lambda = 10$:
+
+- At $C = 0.5$: ~0.6% phase error per wavelength traveled
+- At $C = 0.9$: ~0.1% phase error per wavelength traveled
+
+For a wave traveling 100 wavelengths, these accumulate to 60% and 10%
+total phase error, respectively. Long-distance propagation requires either
+higher resolution or $C$ closer to 1.
+
+**Broadband Signals**:
+
+Signals with multiple frequency components (like the Ricker wavelet in GPR)
+disperse because different frequencies travel at different speeds. The pulse
+broadens and develops oscillatory tails. Higher resolution mitigates this.
+
+**Grid Design**:
+
+When possible, design the grid so that the primary propagation direction
+aligns with grid axes (lower dispersion). For problems with waves traveling
+in all directions (e.g., scattering), use sufficient resolution to keep
+anisotropy acceptable.
+
+### Comparison with Wave Equation
+
+The dispersion relation @eq-em-disprel-1d is identical to that for the scalar
+wave equation discretized with central differences (compare with
+@sec-wave-pde1-num-dispersion). This is not coincidental---the Yee scheme
+can be viewed as a first-order system reformulation of the second-order wave
+equation, and both share the same dispersion properties.
+
+| Property | Scalar Wave | Maxwell (Yee) |
+|----------|-------------|---------------|
+| Order of accuracy | 2nd in space and time | 2nd in space and time |
+| CFL limit (1D) | $C \leq 1$ | $C \leq 1$ |
+| CFL limit (2D) | $C \leq 1/\sqrt{2}$ | $C \leq 1/\sqrt{2}$ |
+| Magic time step | $C = 1$ (exact) | $C = 1$ (exact) |
+| Grid anisotropy | Yes (2D/3D) | Yes (2D/3D) |
+
+The key difference is that Maxwell's equations preserve both $\mathbf{E}$
+and $\mathbf{H}$ fields, which is essential for computing quantities like
+the Poynting vector and handling material interfaces correctly.
+
+### Group Velocity
+
+The **group velocity** determines how wave packets (pulses) propagate:
+$$
+v_g = \frac{\partial\omega}{\partial k}
+$$
+
+From the numerical dispersion relation:
+$$
+\tilde{v}_g = c \frac{\cos(k\Delta x/2)}{\sqrt{1 - C^2\sin^2(k\Delta x/2)}}
+$$ {#eq-em-group-velocity}
+
+For $C = 1$, $\tilde{v}_g = c\cos(k\Delta x/2)$, which is less than $c$
+for finite wavelengths. This means even at the magic time step, pulses
+experience some dispersion due to their finite bandwidth.

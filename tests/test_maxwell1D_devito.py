@@ -95,8 +95,8 @@ class TestMaxwell1DWaveSpeed:
             E_initial = result.E_history[0]
             E_final = result.E_history[-1]
             correlation = np.corrcoef(E_initial, E_final)[0, 1]
-            # Should be highly correlated (same shape)
-            assert correlation > 0.9, f"Correlation {correlation:.3f} < 0.9"
+            # Should be highly correlated (same shape, minimal dispersion)
+            assert correlation > 0.999, f"Correlation {correlation:.6f} < 0.999"
 
 
 class TestMaxwell1DExactSolution:
@@ -126,8 +126,8 @@ class TestMaxwell1DExactSolution:
         E_exact = np.sin(np.pi * result.x_E / L) * np.cos(omega * result.t)
         error = np.sqrt(np.mean((result.E_z - E_exact)**2))
 
-        # Error should be small
-        assert error < 0.1, f"Error {error:.4f} exceeds threshold"
+        # Yee scheme with Nx=200 (dx=0.005): O(dx^2) ~ 2.5e-5 bound
+        assert error < 1e-4, f"Error {error:.2e} exceeds threshold"
 
 
 class TestMaxwell1DConvergence:
@@ -183,7 +183,7 @@ class TestRickerWavelet:
         """Ricker wavelet peak should be 1 (default amplitude)."""
         t = np.linspace(0, 10e-9, 1000)
         wavelet = ricker_wavelet(t, f0=500e6)
-        assert abs(np.max(wavelet) - 1.0) < 0.01
+        assert abs(np.max(wavelet) - 1.0) < 0.005
 
 
 class TestMaxwell1DHistory:

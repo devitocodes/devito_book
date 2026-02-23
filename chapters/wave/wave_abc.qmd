@@ -112,6 +112,15 @@ bc_left = Eq(u[t+1, 0, y_dim],
 # Similar for top and bottom...
 ```
 
+**Corner treatment.** In 2D, corner grid points belong to two boundaries
+simultaneously (e.g., the point $(0, 0)$ lies on both the left and bottom
+boundaries). The equations above update corners twice --- once for each
+boundary --- with the last-applied equation overwriting the first. For
+first-order ABCs this double-update is acceptable because both boundary
+operators produce similar values at corners. Higher-order methods such as
+HABC (@sec-wave-abc-habc) require explicit corner treatment to maintain
+accuracy and stability.
+
 ### Damping Layers (Sponge Zones) {#sec-wave-abc-damping}
 
 Instead of modifying the boundary condition, **damping layers**
@@ -196,17 +205,22 @@ profiles following (@eq-wave-abc-damping-profile). In the interior
 where $\sigma_x = \sigma_y = 0$, the system reduces to the standard
 wave equation.
 
-**Devito implementation.** For the second-order acoustic wave equation,
-a practical PML implementation uses the same damping equation as
-@sec-wave-abc-damping but with $\sigma_{\max}$ chosen from PML theory
-to achieve a target reflection coefficient $R$:
+**Devito implementation.** The PML is implemented using the Grote-Sim
+formulation with separate directional damping profiles $\sigma_x(x)$
+and $\sigma_y(y)$, plus auxiliary `TimeFunction` fields `phi_x` and
+`phi_y`. The maximum damping is chosen from PML theory to achieve a
+target reflection coefficient $R$:
 $$
 \sigma_{\max} = \frac{(p+1)\, c\, \ln(1/R)}{2W},
 $$ {#eq-wave-abc-pml-sigma}
-where $p$ is the polynomial order and $W$ is the layer width. This
-ensures impedance matching at the PML interface.
+where $p$ is the polynomial order and $W$ is the layer width.
 
 {{< include snippets/pml_wave_2d.qmd >}}
+
+The auxiliary fields vanish in the interior (where $\sigma_x = \sigma_y = 0$)
+and are updated with forward Euler in the PML region. The key advantage
+of the split-field approach is that each direction is damped
+independently, providing angle-independent absorption.
 
 **Effectiveness.** With optimally chosen parameters per
 (@eq-wave-abc-pml-sigma), the PML achieves approximately 95%
@@ -220,7 +234,7 @@ convolution formulation. The efficient wave-equation PML of
 @grote_sim2010 provides further optimizations for acoustic
 applications.
 
-### Higher-Order ABCs and Hybrid Methods {#sec-wave-abc-habc}
+### Second-Order Higdon ABC {#sec-wave-abc-higdon}
 
 Higher-order ABCs improve on the first-order condition by absorbing
 waves at multiple angles simultaneously. Higdon [@higdon1986;
@@ -234,29 +248,87 @@ where $c_j = c / \cos\theta_j$ and $\theta_j$ are chosen angles
 of incidence. The order-$P$ Higdon condition exactly absorbs plane
 waves arriving at any of the $P$ specified angles.
 
-For example, with $P = 2$ and angles $\theta_1 = 0°, \theta_2 = 45°$:
+**Derivation for $P = 2$.** With angles $\theta_1 = 0°$ and
+$\theta_2 = 45°$, the product of two first-order operators gives:
 $$
-\left(\frac{\partial}{\partial t} - c \frac{\partial}{\partial n}\right)
-\left(\frac{\partial}{\partial t} - \frac{c}{\cos 45°}
+\left(\frac{\partial}{\partial t} + c \frac{\partial}{\partial n}\right)
+\left(\frac{\partial}{\partial t} + \frac{c}{\cos 45°}
 \frac{\partial}{\partial n}\right) u = 0.
 $$
+Expanding and discretizing with the averaging parameters $a = b = 0.5$
+(centered in time and space), this yields a nine-point stencil
+involving $u$ at three time levels ($n-1, n, n+1$) and three spatial
+points (boundary, +1, +2 interior). Solving for the boundary value
+$u_0^{n+1}$ gives an explicit update formula.
 
-This absorbs both normally incident and 45° waves exactly, with
-reduced reflection at intermediate angles.
+The stencil coefficients for each first-order factor are:
+\begin{align}
+g_{j1} &= \cos\theta_j \cdot (1-a)/\Delta t, \quad
+g_{j2} = \cos\theta_j \cdot a/\Delta t, \label{eq:higdon-g12}\\
+g_{j3} &= \cos\theta_j \cdot (1-b) \cdot c/\Delta h, \quad
+g_{j4} = \cos\theta_j \cdot b \cdot c/\Delta h, \label{eq:higdon-g34}
+\end{align}
+where $\Delta h$ is the grid spacing normal to the boundary. These
+combine into four coefficients per factor:
+$c_{j1} = g_{j1} + g_{j3}$, $c_{j2} = -g_{j1} + g_{j4}$,
+$c_{j3} = g_{j2} - g_{j3}$, $c_{j4} = -g_{j2} - g_{j4}$.
 
-**Hybrid approach.** The most effective strategy combines a Higdon
-ABC at the boundary with a thin damping layer (2--5 cells) just
-inside the boundary. The damping layer smooths numerical errors from
-the ABC discretization, while the ABC provides the primary absorption.
-@dolci2022 show that this **HABC-Higdon** approach achieves up to
-99% reflection reduction with only 2--5 cells of absorbing layer ---
-the most cost-effective method in their comparison.
+The boundary value is then:
+$$
+u_0^{n+1} = \frac{1}{c_{11} c_{21}} \sum_{k} \alpha_k \cdot u_k,
+$$
+where the sum runs over the eight remaining stencil contributions
+from the product $c_{1\cdot} \otimes c_{2\cdot}$.
 
-**Implementation note.** A full 2D Higdon HABC implementation
-requires careful treatment of corners and uses Devito SubDomains for
-the boundary region. This is left as an advanced exercise
-(@sec-wave-abc-exercises). The interested reader is referred to
-@dolci2022 for complete implementation details.
+**Devito implementation.** The Higdon ABC is applied as a
+post-processing step after the interior wave equation update.
+The Devito operator solves the standard wave equation with Dirichlet
+placeholder BCs, then the Higdon stencil overwrites boundary values:
+
+{{< include snippets/higdon_abc_2d_wave.qmd >}}
+
+### Hybrid Absorbing Boundary Conditions (HABC) {#sec-wave-abc-habc}
+
+The most effective strategy combines a Higdon ABC at the boundary
+with a thin weighted absorption layer just inside the boundary
+[@dolci2022; @liu_sen2018]. The **HABC** uses a non-linear weight
+function $w(k)$ that blends the Higdon correction with the wave
+equation solution:
+$$
+u_k^{n+1} = (1 - w_k)\, u_k^{\text{wave}} + w_k\, u_k^{\text{Higdon}},
+$$ {#eq-wave-abc-habc-blend}
+where $k$ is the distance from the boundary in grid cells,
+$u^{\text{wave}}$ is the standard wave equation update, and
+$u^{\text{Higdon}}$ is the Higdon boundary value extrapolated
+into the layer.
+
+The weight function has three regions:
+
+1. **Flat region** ($k \le P$): $w_k = 1$ --- the Higdon correction
+   is applied in full strength at and near the boundary.
+2. **Decay region** ($P < k < W$): $w_k = \left(\frac{W - k}{W - P}\right)^\alpha$
+   --- polynomial decay toward the interior.
+3. **Interior** ($k = W$): $w_k = 0$ --- no correction applied.
+
+The exponent $\alpha = 1 + 0.15(W - P)$ controls how quickly the
+correction fades. This non-linear blending smooths the transition
+from the ABC to the interior, avoiding the artificial interface
+reflections that plague simple damping layers.
+
+**Corner treatment.** At corners where x- and y-layer corrections
+overlap, the HABC takes the more absorptive value (minimum absolute
+value) to avoid over-correction artifacts.
+
+**Devito implementation.** Like the Higdon ABC, the HABC is applied
+as a post-processing step. The key difference is that the correction
+extends into the absorption layer with decreasing weight:
+
+{{< include snippets/habc_wave_2d.qmd >}}
+
+@dolci2022 show that the HABC achieves up to 99% reflection
+reduction with only 5--10 cells of absorbing layer --- significantly
+more cost-effective than simple damping layers that require 20--40
+cells for comparable performance.
 
 ### Comparison and Practical Recommendations {#sec-wave-abc-comparison}
 
@@ -269,8 +341,9 @@ problem with constant velocity [@dolci2022; @liu_sen2018].
 | Dirichlet | 0 | 0% (baseline) | None | Trivial |
 | First-order ABC | 0 | ~50--70% | None | Simple |
 | Damping layer | 20--40 cells | ~90--95% | $\gamma$ profile | Simple |
-| PML | 10--15 cells | ~95% | Auxiliary fields | Moderate |
-| HABC-Higdon + damping | 2--5 cells | ~99% | Minimal | Complex |
+| PML (split-field) | 10--15 cells | ~95% | $\phi_x, \phi_y$ fields | Moderate |
+| Higdon $P{=}2$ | 0 | ~80--90% | None | Moderate |
+| HABC (Higdon + weights) | 5--10 cells | ~99% | Weight array | Complex |
 
 : Comparison of absorbing boundary conditions for the 2D wave equation. {#tbl-abc-comparison}
 

@@ -125,3 +125,35 @@ def test_time_dependent_bc_units_consistent(ureg):
 
     bc = A * 0.0  # sin(...) is dimensionless; use placeholder for units.
     assert bc.dimensionality == U.dimensionality
+
+
+def test_maxwell_fdtd_units_consistent(ureg):
+    # 1D Maxwell (Yee) updates:
+    #   E^{n+1} = E^n + (dt/eps) * dH/dx
+    #   H^{n+1/2} = H^{n-1/2} + (dt/mu) * dE/dx
+    E = 1.0 * (ureg.volt / ureg.meter)
+    H = 1.0 * (ureg.ampere / ureg.meter)
+    eps = 1.0 * (ureg.farad / ureg.meter)
+    mu = 1.0 * (ureg.henry / ureg.meter)
+
+    dx = 0.01 * ureg.meter
+    dt = 1e-10 * ureg.second
+
+    dH_dx = H / ureg.meter
+    dE_dx = E / ureg.meter
+
+    e_update_term = (dt / eps) * dH_dx
+    h_update_term = (dt / mu) * dE_dx
+
+    assert e_update_term.dimensionality == E.dimensionality
+    assert h_update_term.dimensionality == H.dimensionality
+
+
+def test_maxwell_cfl_number_dimensionless(ureg):
+    # CFL: C = c dt / dx
+    c = 3e8 * (ureg.meter / ureg.second)
+    dx = 0.01 * ureg.meter
+    dt = 0.9 * dx / c
+
+    _assert_dimensionless(c * dt / dx)
+    assert (c * dt / dx).to_base_units().magnitude == pytest.approx(0.9)

@@ -67,8 +67,8 @@ class TestDiffusion1DSolver:
         u_exact = exact_diffusion_sine(result.x, result.t, L=1.0, a=1.0)
         error = np.max(np.abs(result.u - u_exact))
 
-        # With Nx=100 and second-order spatial discretization
-        assert error < 0.01
+        # Second-order scheme with Nx=100 (dx=0.01): O(dx^2) ~ 1e-4 bound
+        assert error < 1e-4
 
     def test_convergence_second_order(self):
         """Test that spatial convergence is second order."""
@@ -229,8 +229,9 @@ class TestDiffusion2DSolver:
         u_exact = exact_diffusion_2d(X, Y, result.t, 1.0, 1.0, 1.0)
         error = np.max(np.abs(result.u - u_exact))
 
-        # With Nx=Ny=40 and second-order spatial discretization
-        assert error < 0.01
+        # Second-order scheme with Nx=Ny=40 (dx=0.025): O(dx^2) ~ 6e-4
+        # Tolerance 2e-3 gives ~3x safety margin
+        assert error < 2e-3
 
     def test_convergence_second_order(self):
         """Test that spatial convergence is second order."""

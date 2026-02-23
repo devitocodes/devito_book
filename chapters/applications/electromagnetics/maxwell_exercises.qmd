@@ -1,0 +1,192 @@
+## Exercises {#sec-em-exercises}
+
+### Derivation Exercises
+
+::: {#exr-em-derive-1d}
+## Derive 1D FDTD Update Equations
+
+Starting from the 1D Maxwell equations @eq-em-1d-Ez and @eq-em-1d-Hy,
+derive the discrete update equations @eq-em-Hy-update and @eq-em-Ez-update.
+Show that the staggered grid arrangement leads to centered differences
+in both space and time.
+:::
+
+::: {#exr-em-cfl-2d}
+## CFL Condition in 2D
+
+Show that the 2D stability condition @eq-em-cfl-2d-uniform reduces to the
+1D condition when $\Delta x = \Delta y$ and one of the wavenumber
+components is zero (wave traveling along a grid axis).
+:::
+
+::: {#exr-em-dispersion}
+## Numerical Phase Velocity
+
+Starting from the dispersion relation @eq-em-disprel-simple, derive an
+expression for the relative phase velocity error as a function of the
+Courant number $C$ and points per wavelength $N_\lambda = \lambda/\Delta x$.
+Verify that the error vanishes when $C = 1$.
+:::
+
+### Implementation Exercises
+
+::: {#exr-em-soft-source}
+## Soft Source Implementation
+
+Modify the 1D solver to implement a soft source (additive source term)
+at an interior point. Verify that waves propagate in both directions
+from the source. Compare with a hard source (field value directly set).
+:::
+
+::: {#exr-em-lossy}
+## Lossy Material Implementation
+
+Add a lossy material ($\sigma \neq 0$) to the 1D solver using the
+update coefficients @eq-em-lossy-coeff. Verify that:
+
+a) The wave amplitude decays exponentially with distance
+b) The decay rate matches the analytical skin depth
+:::
+
+::: {#exr-em-mur-abc}
+## Mur's First-Order ABC
+
+Implement Mur's first-order absorbing boundary condition for the 1D solver:
+$$
+E^{n+1}_0 = E^n_1 + \frac{c\Delta t - \Delta x}{c\Delta t + \Delta x}(E^{n+1}_1 - E^n_0)
+$$
+
+Compare its performance (reflection coefficient) against:
+
+a) Simple PEC boundary
+b) The simple ABC already in the solver
+:::
+
+### Analysis Exercises
+
+::: {#exr-em-dispersion-plot}
+## Dispersion Error Visualization
+
+Plot the phase velocity error as a function of:
+
+a) Points per wavelength $N_\lambda$ (for fixed $C = 0.9$)
+b) Courant number $C$ (for fixed $N_\lambda = 10$)
+
+Use the `src.em.analysis.dispersion_maxwell` module. What practical
+guideline would you recommend for choosing $N_\lambda$?
+:::
+
+::: {#exr-em-magic-timestep}
+## Magic Time Step Investigation
+
+Numerically verify the "magic time step" property by running a plane wave
+simulation with $C = 1$ exactly. Measure the phase error after the wave
+has traveled 100 wavelengths. Compare with $C = 0.9$ and $C = 0.5$.
+:::
+
+::: {#exr-em-convergence}
+## Convergence Rate Study
+
+Run a grid refinement study for the 1D Maxwell solver with grid sizes
+$N = 50, 100, 200, 400, 800$. Plot the L2 error versus $\Delta x$ on a
+log-log scale and verify second-order convergence. What happens at very
+fine grids (floating-point precision limits)?
+:::
+
+### Application Exercises
+
+::: {#exr-em-fabry-perot}
+## 1D Fabry-P\'erot Resonator
+
+Simulate a 1D Fabry-P\'erot resonator: two PEC boundaries separated by
+distance $L$. Excite the system with a broadband pulse and observe the
+resonant modes. Verify that the resonant frequencies are $f_n = nc/(2L)$.
+:::
+
+::: {#exr-em-dielectric-interface}
+## Reflection at Dielectric Interface
+
+Simulate a plane wave normally incident on an interface between two
+dielectrics. Measure the reflection and transmission coefficients and
+compare with the analytical Fresnel equations:
+$$
+R = \left(\frac{\sqrt{\varepsilon_1} - \sqrt{\varepsilon_2}}{\sqrt{\varepsilon_1} + \sqrt{\varepsilon_2}}\right)^2
+$$
+
+Test for $\varepsilon_2/\varepsilon_1 = 2, 4, 9$.
+:::
+
+::: {#exr-em-gpr-depth}
+## GPR Depth Estimation
+
+Using the `src.em.gpr` module, simulate a GPR survey over a buried pipe.
+From the resulting B-scan, extract the hyperbolic diffraction pattern
+and use the `fit_hyperbola` function to estimate:
+
+a) The pipe depth
+b) The soil velocity
+
+Compare with the known values used in the simulation.
+:::
+
+### Advanced Exercises
+
+::: {#exr-em-2d-scattering}
+## 2D Scattering from Cylinder
+
+Simulate 2D scattering of a plane wave from a dielectric cylinder.
+For a cylinder much larger than the wavelength, the shadow region and
+diffraction fringes should be visible. Compare qualitatively with
+Mie theory predictions.
+:::
+
+::: {#exr-em-pml-optimization}
+## PML Parameter Optimization
+
+Investigate the effect of PML parameters on reflection:
+
+a) Vary the PML width from 5 to 30 cells
+b) Vary the polynomial order from 2 to 5
+c) Vary $\sigma_{\max}$ from $0.5\times$ to $2\times$ the optimal value
+
+Plot the maximum reflection coefficient versus each parameter and
+determine the optimal configuration.
+:::
+
+::: {#exr-em-waveguide-bend}
+## Waveguide Bend Loss
+
+Using 2D FDTD, simulate a $90^\circ$ bend in a dielectric waveguide. Measure
+the transmitted power as a function of bend radius. At what radius does
+the loss become acceptable (<3 dB)?
+:::
+
+### Project Exercises
+
+::: {#exr-em-antenna}
+## Simple Dipole Antenna
+
+Extend the 2D solver to model a simple dipole antenna:
+
+1. Use a line current source
+2. Compute the near-field pattern
+3. Use a large PML-bounded domain to approximate far-field conditions
+4. Extract the radiation pattern (field vs. angle)
+:::
+
+::: {#exr-em-photonic-crystal}
+## Photonic Crystal Waveguide
+
+Design a 2D photonic crystal by arranging dielectric cylinders in a
+triangular lattice. Introduce a line defect to create a waveguide.
+Demonstrate wave guiding through the defect channel.
+:::
+
+::: {#exr-em-gpr-ml}
+## GPR with Machine Learning
+
+Generate a dataset of GPR B-scans using the simulator with random
+buried target positions and depths. Train a simple neural network to
+detect and locate targets from the B-scan images. Evaluate detection
+accuracy and localization error.
+:::

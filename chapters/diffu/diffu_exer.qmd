@@ -147,8 +147,8 @@ $$
 - \int_\Omega \alpha \nabla u\cdot\nabla u\dx
 - \int_{\partial\Omega} u \alpha\frac{\partial u}{\partial n},
 $$
-where $\frac{\partial u}{\partial n} = \bm{n}\cdot\nabla u$,
-$\bm{n}$ being the outward unit normal to the boundary $\partial\Omega$
+where $\frac{\partial u}{\partial n} = \boldsymbol{n}\cdot\nabla u$,
+$\boldsymbol{n}$ being the outward unit normal to the boundary $\partial\Omega$
 of the domain $\Omega$.
 :::
 
@@ -157,9 +157,9 @@ of the domain $\Omega$.
 
 Now we also consider the multi-dimensional PDE $u_t =
 \nabla\cdot (\alpha \nabla u)$. Integrate both sides over $\Omega$
-and use Gauss' divergence theorem, $\int_\Omega \nabla\cdot\bm{q}\dx
-= \int_{\partial\Omega}\bm{q}\cdot\bm{n}\ds$ for a vector field
-$\bm{q}$. Show that if we have homogeneous Neumann conditions
+and use Gauss' divergence theorem, $\int_\Omega \nabla\cdot\boldsymbol{q}\dx
+= \int_{\partial\Omega}\boldsymbol{q}\cdot\boldsymbol{n}\ds$ for a vector field
+$\boldsymbol{q}$. Show that if we have homogeneous Neumann conditions
 on the boundary, $\partial u/\partial n=0$, area under the
 $u$ surface remains constant in time and
 $$
@@ -307,7 +307,7 @@ solution that fulfills the PDE and the boundary condition at $\bar x
 =0$ (this is the solution we will experience as $\bar
 t\rightarrow\infty$ and $L\rightarrow\infty$).  Conclude that an
 appropriate domain for $x$ is $[0,4]$ if a damping $e^{-4}\approx
-0.18$ is appropriate for implementing $\bar u\approx\hbox{const}$;
+0.18$ is appropriate for implementing $\bar u\approx\text{const}$;
 increasing to $[0,6]$ damps $\bar u$ to 0.0025.
 
 

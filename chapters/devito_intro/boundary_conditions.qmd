@@ -2,7 +2,19 @@
 
 Properly implementing boundary conditions is crucial for accurate PDE
 solutions. Devito provides several approaches, each suited to different
-situations.
+situations. Boundary conditions fall into two broad categories:
+
+| Category | Type | Description | Typical use |
+|----------|------|-------------|-------------|
+| **Physical** | Dirichlet | Prescribed value $u = g$ | Fixed ends, walls |
+| | Neumann | Prescribed flux $\partial u/\partial n = h$ | Insulation, symmetry |
+| | Mixed/Robin | $\alpha u + \beta \partial u/\partial n = g$ | Convective heat transfer |
+| | Periodic | $u(0) = u(L)$ | Infinite domains, wrapping |
+| **Computational** | First-order ABC | $u_t + c\, u_n = 0$ | Open boundaries (1D) |
+| | Damping layer | Sponge zone with $\gamma u_t$ | Open boundaries (2D/3D) |
+| | PML | Complex coordinate stretching | High-accuracy open boundaries |
+
+: Classification of boundary conditions. {#tbl-bc-taxonomy}
 
 ### Dirichlet Boundary Conditions
 
@@ -61,20 +73,43 @@ For boundaries that vary in time, use the time index:
 
 {{< include snippets/time_dependent_bc_sine.qmd >}}
 
-### Absorbing Boundary Conditions
+### Absorbing / Open Boundary Conditions
 
-For wave equations, we often want waves to exit the domain without
-reflection. A simple first-order absorbing condition is:
+For wave equations on truncated domains, we need boundaries that
+absorb outgoing waves without spurious reflections. Several
+approaches exist, ranging from simple to sophisticated:
+
+**First-order ABC** [@enquist_majda1977; @clayton_engquist1977].
+Based on the one-way wave equation:
 $$
 \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0 \quad \text{at } x = L
 $$
 
-This can be discretized as:
+This is exact for normally incident waves but reflects oblique
+waves in 2D/3D. It can be discretized as:
 
 {{< include snippets/absorbing_bc_right_wave.qmd >}}
 
-More sophisticated absorbing conditions use damping layers (sponges)
-near the boundaries. This is covered in detail in @sec-wave-1d-absorbing.
+**Damping layers (sponge zones)** [@cerjan1985; @sochacki1987].
+Add a dissipative term $\gamma(\mathbf{x})\, u_t$ to the PDE in a
+region near the boundary. The damping coefficient ramps from zero
+in the interior to a maximum at the boundary. Effective with
+20--40 cells of absorbing layer.
+
+**Perfectly Matched Layer (PML)** [@berenger1994]. Uses complex
+coordinate stretching to create a layer with zero theoretical
+reflection at any angle and frequency. Requires auxiliary field
+variables but achieves excellent absorption with only 10--15 cells.
+The CPML variant [@roden_gedney2000] improves stability.
+
+**Higher-order ABCs** [@higdon1986; @higdon1987]. Generalize the
+first-order condition to absorb waves at multiple angles
+simultaneously. Combined with a thin damping layer, the hybrid
+HABC-Higdon method achieves up to 99% reflection reduction
+[@dolci2022].
+
+For detailed implementations and comparisons of all these methods,
+see @sec-wave-abc.
 
 ### Periodic Boundary Conditions
 
@@ -104,6 +139,10 @@ copy for periodicity.
 
 4. **Test with known solutions**: Use problems with analytical solutions
    to verify boundary condition implementation
+
+5. **Verify ABC effectiveness**: For absorbing boundaries, always compare
+   against a reference solution on a larger domain to confirm that
+   reflections are below an acceptable threshold (see @sec-wave-abc-comparison)
 
 ### Example: Complete Wave Equation Solver
 

@@ -80,6 +80,7 @@ def solve_wave_1d(
     I: Callable[[np.ndarray], np.ndarray] | None = None,
     V: Callable[[np.ndarray], np.ndarray] | None = None,
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> WaveResult:
     """Solve the 1D wave equation using Devito.
 
@@ -158,7 +159,7 @@ def solve_wave_1d(
     C_actual = c * dt / dx
 
     # Create Devito grid
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    grid = Grid(shape=(Nx + 1,), extent=(L,), dtype=dtype)
     x_dim = grid.dimensions[0]
 
     # Create time function with time_order=2 for wave equation

@@ -456,7 +456,7 @@ u(x,0) = Ae^{-\half\left(\frac{x-L/10}{\sigma}\right)^2},
 $$
 $$
 u(x,0) = A\cos\left(\frac{5\pi}{L}\left( x - \frac{L}{10}\right)\right),\quad
-x < \frac{L}{5} \hbox{ else } 0\tp
+x < \frac{L}{5} \text{ else } 0\tp
 $$ {#eq-advec-1D-case_gaussian}
 The parameter $A$ is the maximum value of the initial condition.
 
@@ -723,16 +723,16 @@ A general solution may be viewed as a collection of long and
 short waves with different amplitudes. Algebraically, the work
 simplifies if we introduce the complex Fourier component
 $$
-u(x,t)=\Aex e^{ikx},
+u(x,t)=A_{\text{e}} e^{ikx},
 $$
 with
 $$
-\Aex=Be^{-ikv\Delta t} = Be^{-iCk\Delta x}\tp
+A_{\text{e}}=Be^{-ikv\Delta t} = Be^{-iCk\Delta x}\tp
 $$
-Note that $|\Aex| \leq 1$.
+Note that $|A_{\text{e}}| \leq 1$.
 
 It turns out that many schemes also allow a Fourier wave component as
-solution, and we can use the numerically computed values of $\Aex$
+solution, and we can use the numerically computed values of $A_{\text{e}}$
 (denoted $A$) to learn about the
 quality of the scheme. Hence, to analyze the difference scheme we have just
 implemented, we look at how it treats the Fourier component
@@ -862,7 +862,7 @@ A = -iC\sin p \pm \sqrt{1-C^2\sin^2 p},
 $$
 and is to be compared to the exact amplification factor
 $$
-\Aex = e^{-ikv\Delta t} = e^{-ikC\Delta x} = e^{-iCp}\tp
+A_{\text{e}} = e^{-ikv\Delta t} = e^{-ikC\Delta x} = e^{-iCp}\tp
 $$
 Section @sec-advec-1D-disprel compares numerical amplification factors
 of many schemes with the exact expression.
@@ -995,7 +995,7 @@ is constant:
 \end{align*}
 as long as $u(0)=u(L)=0$. We can therefore use the property
 $$
-\int_0^L u(x,t)dx = \hbox{const}
+\int_0^L u(x,t)dx = \text{const}
 $$
 as a partial verification during the simulation. Now, any numerical method
 with $C\neq 1$ will deviate from the constant, expected value, so
@@ -1469,7 +1469,7 @@ reason why this model problem has been so successful in designing and
 investigating numerical methods for mixed convection/advection and
 diffusion.  The exact solution reads
 $$
-\uex (x) = \frac{e^{x/\epsilon} - 1}{e^{1/\epsilon} - 1}\tp
+u_{\text{e}} (x) = \frac{e^{x/\epsilon} - 1}{e^{1/\epsilon} - 1}\tp
 $$
 The forthcoming plots illustrate this function for various values of
 $\epsilon$.

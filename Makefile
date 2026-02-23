@@ -3,7 +3,7 @@
 .PHONY: pdf html all preview clean test test-devito test-no-devito lint format check help
 
 # Default target
-all: pdf
+all: pdf html
 
 # Build targets
 pdf:

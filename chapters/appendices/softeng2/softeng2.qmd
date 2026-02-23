@@ -16,10 +16,10 @@ $$
 u_t(x,0) = V(t),\quad x\in [0,L]
 $$
 $$
-u(0,t) = U_0(t)\hbox{ or } u_x(0,t)=0,\quad t\in (0,T]
+u(0,t) = U_0(t)\text{ or } u_x(0,t)=0,\quad t\in (0,T]
 $$
 $$
-u(L,t) = U_L(t)\hbox{ or } u_x(L,t)=0,\quad t\in (0,T]
+u(L,t) = U_L(t)\text{ or } u_x(L,t)=0,\quad t\in (0,T]
 $$ {#eq-wave-pde2-software-ueq2}
 We allow variable wave velocity $c^2(x)=q(x)$, and Dirichlet or homogeneous
 Neumann conditions at the boundaries.
