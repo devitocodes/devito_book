@@ -211,7 +211,10 @@ The transmitted wave has larger amplitude but carries the same energy
 
 For open-domain problems, we want waves to leave without reflecting
 from artificial boundaries. A simple approach is a **sponge layer**
-that gradually damps the solution near boundaries:
+(or damping layer) that gradually damps the solution near boundaries
+[@cerjan1985; @sochacki1987]. For a comprehensive treatment of
+absorbing boundary conditions including damping layers, PML, and
+higher-order methods, see @sec-wave-abc.
 
 ```python
 from devito import Function
@@ -220,9 +223,12 @@ from devito import Function
 damp = Function(name='damp', grid=grid)
 
 pad = 20  # Width of sponge layer
+sigma_max = 3.0 * c / (pad * dx)  # Theory-based choice
 damp_profile = np.zeros(Nx + 1)
-damp_profile[:pad] = 0.1 * (1 - np.linspace(0, 1, pad))
-damp_profile[-pad:] = 0.1 * np.linspace(0, 1, pad)
+for i in range(pad):
+    d = (pad - i) / pad
+    damp_profile[i] = sigma_max * d**3        # Left ramp
+    damp_profile[Nx - i] = sigma_max * d**3   # Right ramp
 damp.data[:] = damp_profile
 
 # Modified PDE with damping term
@@ -230,7 +236,9 @@ pde_damped = u.dt2 + damp * u.dt - c**2 * u.dx2
 ```
 
 The damping term $\gamma u_t$ removes energy from the wave as it
-enters the sponge layer.
+enters the sponge layer. The cubic polynomial ramp and the choice
+$\sigma_{\max} = 3c/W$ ensure a smooth impedance transition; see
+@sec-wave-abc-damping for a detailed treatment in 2D.
 
 ### Summary
 

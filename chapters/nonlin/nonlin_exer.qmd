@@ -555,7 +555,7 @@ methods for nonlinear differential equations.
 The problem (@eq-nonlin-exer-1D-fu-discretize-fd-pde) has an
 exact solution
 $$
-\uex(x) = -2\ln\left(\frac{\cosh((x-\half)\theta/2)}{\cosh(\theta/4)}\right),
+u_{\text{e}}(x) = -2\ln\left(\frac{\cosh((x-\half)\theta/2)}{\cosh(\theta/4)}\right),
 $$
 where $\theta$ solves
 $$
@@ -592,7 +592,7 @@ Plot the error as a function of $x$ in each iteration.
 
 Investigate whether Newton's method gives second-order convergence
 by computing
-$|| \uex - u||/||\uex - u^{-}||^2$
+$|| u_{\text{e}} - u||/||u_{\text{e}} - u^{-}||^2$
 in each iteration, where $u$ is solution in the current iteration and
 $u^{-}$ is the solution in the previous iteration.
 

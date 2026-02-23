@@ -32,19 +32,35 @@ from .wave2D_devito import (
     exact_standing_wave_2d,
     solve_wave_2d,
 )
+from .abc_methods import (
+    ABCResult,
+    compare_abc_methods,
+    create_damping_profile,
+    create_directional_damping_profiles,
+    create_habc_weights,
+    measure_reflection,
+    solve_wave_2d_abc,
+)
 
 __all__ = [
+    'ABCResult',
     'Wave2DResult',
     'WaveResult',
+    'compare_abc_methods',
     'convergence_test_wave_1d',
     'convergence_test_wave_2d',
+    'create_damping_profile',
+    'create_directional_damping_profiles',
+    'create_habc_weights',
     'exact_standing_wave',
     'exact_standing_wave_2d',
     'gaussian_derivative',
     'gaussian_pulse',
     'get_source_spectrum',
+    'measure_reflection',
     'ricker_wavelet',
     'sinc_wavelet',
     'solve_wave_1d',
     'solve_wave_2d',
+    'solve_wave_2d_abc',
 ]

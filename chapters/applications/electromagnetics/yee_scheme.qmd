@@ -1,0 +1,257 @@
+## The Yee Scheme {#sec-em-yee}
+
+The Finite-Difference Time-Domain (FDTD) method was introduced by Kane Yee
+in 1966 [@yee1966]. Its key innovation is the **staggered grid**, where
+electric and magnetic field components are offset by half a grid cell in
+both space and time. This arrangement, known as the **Yee cell**, naturally
+represents the curl operations in Maxwell's equations.
+
+### The Staggered Grid Concept
+
+Unlike the collocated grid used for the scalar wave equation in @sec-ch-wave,
+where all quantities are defined at the same grid points, the Yee scheme
+places $E$ and $H$ at different locations:
+
+**1D Staggered Grid**:
+
+- $E_z$ is defined at integer grid points: $x_i = i \cdot \Delta x$
+- $H_y$ is defined at half-integer points: $x_{i+1/2} = (i + 1/2) \cdot \Delta x$
+
+```
+    E_z[0]    E_z[1]    E_z[2]    E_z[3]    E_z[4]
+      |         |         |         |         |
+      *---------*---------*---------*---------*
+          H_y[0]    H_y[1]    H_y[2]    H_y[3]
+```
+
+Similarly for time:
+
+- $E_z$ is computed at integer time steps: $t^n = n \cdot \Delta t$
+- $H_y$ is computed at half-integer times: $t^{n+1/2} = (n + 1/2) \cdot \Delta t$
+
+This staggering means that every derivative in Maxwell's equations becomes
+a **centered difference**, achieving second-order accuracy automatically.
+
+### Leapfrog Time Integration
+
+The time stepping alternates between updating $E$ and $H$ fields:
+
+1. Use $H^{n-1/2}$ to compute $E^n$
+2. Use $E^n$ to compute $H^{n+1/2}$
+3. Use $H^{n+1/2}$ to compute $E^{n+1}$
+4. Repeat...
+
+This is a **leapfrog** scheme where each field "leaps over" the other in
+time. The method is:
+
+- **Explicit**: No linear system to solve
+- **Non-dissipative**: Energy is conserved (in lossless media)
+- **Second-order accurate**: In both space and time
+
+Compare this with the leapfrog scheme for the wave equation in @sec-wave-string-alg,
+which also achieves second-order accuracy through centered differences.
+
+### 1D FDTD Discretization
+
+Starting from the 1D Maxwell equations @eq-em-1d-Ez and @eq-em-1d-Hy:
+
+**$H_y$ update** (from $t^{n-1/2}$ to $t^{n+1/2}$):
+
+Using Faraday's law $\partial H_y/\partial t = (1/\mu) \partial E_z/\partial x$:
+$$
+\frac{H_y|_{i+1/2}^{n+1/2} - H_y|_{i+1/2}^{n-1/2}}{\Delta t} =
+\frac{1}{\mu} \frac{E_z|_{i+1}^{n} - E_z|_{i}^{n}}{\Delta x}
+$$ {#eq-em-Hy-fd}
+
+Solving for the new value:
+$$
+H_y|_{i+1/2}^{n+1/2} = H_y|_{i+1/2}^{n-1/2} +
+\frac{\Delta t}{\mu \Delta x}\left(E_z|_{i+1}^{n} - E_z|_{i}^{n}\right)
+$$ {#eq-em-Hy-update}
+
+**$E_z$ update** (from $t^{n}$ to $t^{n+1}$):
+
+Using Amp\`ere's law $\partial E_z/\partial t = (1/\varepsilon) \partial H_y/\partial x$:
+$$
+\frac{E_z|_{i}^{n+1} - E_z|_{i}^{n}}{\Delta t} =
+\frac{1}{\varepsilon} \frac{H_y|_{i+1/2}^{n+1/2} - H_y|_{i-1/2}^{n+1/2}}{\Delta x}
+$$ {#eq-em-Ez-fd}
+
+Solving for the new value:
+$$
+E_z|_{i}^{n+1} = E_z|_{i}^{n} +
+\frac{\Delta t}{\varepsilon \Delta x}\left(H_y|_{i+1/2}^{n+1/2} - H_y|_{i-1/2}^{n+1/2}\right)
+$$ {#eq-em-Ez-update}
+
+::: {.callout-important}
+## Update Order Matters
+
+The $H_y$ update @eq-em-Hy-update uses $E_z^n$ (known from previous step).
+The $E_z$ update @eq-em-Ez-update uses $H_y^{n+1/2}$ (just computed).
+This ordering is essential for the leapfrog scheme to work correctly.
+:::
+
+### Update Coefficients
+
+For uniform materials, we can precompute the update coefficients:
+$$
+C_h = \frac{\Delta t}{\mu \Delta x}, \quad
+C_e = \frac{\Delta t}{\varepsilon \Delta x}
+$$ {#eq-em-update-coeff}
+
+The update equations become:
+$$
+H_y|_{i+1/2}^{n+1/2} = H_y|_{i+1/2}^{n-1/2} + C_h \left(E_z|_{i+1}^{n} - E_z|_{i}^{n}\right)
+$$
+$$
+E_z|_{i}^{n+1} = E_z|_{i}^{n} + C_e \left(H_y|_{i+1/2}^{n+1/2} - H_y|_{i-1/2}^{n+1/2}\right)
+$$
+
+For spatially varying materials, $C_h$ and $C_e$ become arrays indexed by
+position.
+
+### Lossy Media Update
+
+For media with conductivity $\sigma$, the $E_z$ update becomes:
+$$
+E_z|_{i}^{n+1} = C_a E_z|_{i}^{n} +
+C_b \left(H_y|_{i+1/2}^{n+1/2} - H_y|_{i-1/2}^{n+1/2}\right)
+$$ {#eq-em-Ez-lossy-update}
+
+where:
+$$
+C_a = \frac{1 - \sigma\Delta t/(2\varepsilon)}{1 + \sigma\Delta t/(2\varepsilon)}, \quad
+C_b = \frac{\Delta t/(\varepsilon\Delta x)}{1 + \sigma\Delta t/(2\varepsilon)}
+$$ {#eq-em-lossy-coeff}
+
+This semi-implicit treatment of the loss term maintains second-order accuracy.
+
+### The 2D Yee Cell
+
+In two dimensions, a common pedagogical choice is the **TM polarization**
+(with $E_z$, $H_x$, $H_y$), where the electric field is out of the simulation
+plane. This reduces the field update to a single electric component and two
+magnetic components, which is convenient for introductory FDTD and matches
+the implementation in `src.em.maxwell2D_devito`.
+
+```
+          H_y[i,j]        H_y[i,j+1]
+            |               |
+            |     E_z       |
+    --------|------ * ------|--------
+            |    [i,j]      |
+    H_x[i,j]|               |H_x[i+1,j]
+            |               |
+    --------|---------------|--------
+            |               |
+          H_y[i+1,j]      H_y[i+1,j+1]
+```
+
+The field components are located at:
+
+- $E_z$: cell centers $(i, j)$
+- $H_x$: cell edges parallel to $x$-axis $(i+1/2, j)$
+- $H_y$: cell edges parallel to $y$-axis $(i, j+1/2)$
+
+This arrangement ensures that the discrete curl terms are built from centered
+differences between staggered components.
+
+### 2D Update Equations (TM Mode)
+
+**$H_x$ update**:
+$$
+H_x|_{i,j}^{n+1/2} = H_x|_{i,j}^{n-1/2} -
+\frac{\Delta t}{\mu}\frac{E_z|_{i,j+1}^{n} - E_z|_{i,j}^{n}}{\Delta y}
+$$ {#eq-em-2d-Hx-update}
+
+**$H_y$ update**:
+$$
+H_y|_{i,j}^{n+1/2} = H_y|_{i,j}^{n-1/2} +
+\frac{\Delta t}{\mu}\frac{E_z|_{i+1,j}^{n} - E_z|_{i,j}^{n}}{\Delta x}
+$$ {#eq-em-2d-Hy-update}
+
+**$E_z$ update**:
+$$
+E_z|_{i,j}^{n+1} = E_z|_{i,j}^{n} +
+\frac{\Delta t}{\varepsilon}\left(
+\frac{H_y|_{i,j}^{n+1/2} - H_y|_{i-1,j}^{n+1/2}}{\Delta x} -
+\frac{H_x|_{i,j}^{n+1/2} - H_x|_{i,j-1}^{n+1/2}}{\Delta y}
+\right)
+$$ {#eq-em-2d-Ez-update}
+
+### CFL Stability Condition
+
+The Yee scheme is **conditionally stable**. Von Neumann analysis (similar
+to @sec-wave-pde1-stability) yields the CFL condition:
+
+**1D**:
+$$
+c \Delta t \leq \Delta x
+$$ {#eq-em-cfl-1d}
+
+**2D**:
+$$
+c \Delta t \leq \frac{1}{\sqrt{\frac{1}{\Delta x^2} + \frac{1}{\Delta y^2}}}
+$$ {#eq-em-cfl-2d}
+
+For a uniform grid with $\Delta x = \Delta y$:
+$$
+c \Delta t \leq \frac{\Delta x}{\sqrt{2}}
+$$ {#eq-em-cfl-2d-uniform}
+
+**3D**:
+$$
+c \Delta t \leq \frac{1}{\sqrt{\frac{1}{\Delta x^2} + \frac{1}{\Delta y^2} + \frac{1}{\Delta z^2}}}
+$$ {#eq-em-cfl-3d}
+
+::: {.callout-note}
+## Historical Note
+
+Yee's original 1966 paper [@yee1966] contained an error in the stability
+condition for 3D. The correct condition was established by Taflove and
+Brodwin in 1975 [@taflove_brodwin1975].
+:::
+
+### Boundary Conditions
+
+**Perfect Electric Conductor (PEC)**:
+
+For $E_z = 0$ at a PEC boundary, we simply set $E_z = 0$ at the boundary
+grid points. No special stencil is needed.
+
+**Perfect Magnetic Conductor (PMC)**:
+
+For $H_y = 0$ at a PMC boundary (normal $H$ component vanishes), we set the
+$H_y$ values at the boundary to zero.
+
+**Absorbing Boundaries**:
+
+For open-domain problems, simple boundary conditions cause spurious
+reflections. Options include:
+
+1. **First-order ABC** (Mur) [@mur1981]: $E^{n+1}_0 = E^n_1 + \frac{c\Delta t - \Delta x}{c\Delta t + \Delta x}(E^{n+1}_1 - E^n_0)$
+2. **Perfectly Matched Layer (PML)** [@berenger1994]: A specially designed absorbing region
+   (see @sec-em-2d-devito)
+
+### Connection to Scalar Wave Equation
+
+The Yee scheme for Maxwell's equations can be viewed as a first-order
+splitting of the second-order wave equation. If we define:
+$$
+u = E_z, \quad v = \eta H_y
+$$
+where $\eta = \sqrt{\mu/\varepsilon}$ is the wave impedance, the 1D Maxwell
+equations become:
+$$
+\frac{\partial u}{\partial t} = c \frac{\partial v}{\partial x}, \quad
+\frac{\partial v}{\partial t} = c \frac{\partial u}{\partial x}
+$$
+
+This is a symmetric hyperbolic system. Eliminating $v$:
+$$
+\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
+$$
+
+The centered differences in the Yee scheme correspond to the standard
+second-order scheme for the wave equation, explaining why both achieve
+the same accuracy and stability properties.

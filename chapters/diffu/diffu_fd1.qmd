@@ -51,6 +51,14 @@ as additional material on the topic.
 
 ## An explicit method for the 1D diffusion equation {#sec-diffu-pde1-FEsec}
 
+::: {.callout-note}
+## Devito Implementation
+
+After understanding the finite difference discretization in this section,
+see @sec-diffu-devito for the Devito-based implementation. The tested solver
+is available in `src/diffu/diffu1D_devito.py` with tests in `tests/test_diffu_devito.py`.
+:::
+
 Explicit finite difference methods for the wave equation $u_{tt}=c^2u_{xx}$
 can be used, with small modifications, for solving $u_t = \dfc u_{xx}$
 as well.
@@ -195,10 +203,10 @@ Section @sec-diffu-pde1-analysis.
 
 ## Implementation {#sec-diffu-pde1-FE-code}
 
-The file [`diffu1D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_u0.py)
-contains a complete function `solver_FE_simple`
-for solving the 1D diffusion equation with $u=0$ on the boundary
-as specified in the algorithm above:
+The file [`diffu1D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_devito.py)
+contains a complete Devito implementation for solving the 1D diffusion equation
+with $u=0$ on the boundary. See @sec-diffu-devito for the complete Devito implementation.
+The algorithm above can be expressed as:
 
 ```python
 import numpy as np
@@ -1008,15 +1016,15 @@ Two initial conditions will be tested: a discontinuous plug,
 $$
 I(x) = \left\lbrace\begin{array}{ll}
 0, & |x-L/2| > 0.1\\
-1, & \hbox{otherwise}
+1, & \text{otherwise}
 \end{array}\right.
 $$
 and a smooth Gaussian function,
 $$
 I(x) = e^{-\frac{1}{2\sigma^2}(x-L/2)^2}\tp
 $$
-The functions `plug` and `gaussian` in [`diffu1D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_u0.py) run the two cases,
-respectively:
+The Devito implementation in [`diffu1D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_devito.py) can run these test cases.
+Example functions for both cases:
 
 ```python
 def plug(scheme="FE", F=0.5, Nx=50):
@@ -1106,8 +1114,8 @@ $F$: $F=0.5$. This resolution corresponds to
 $N_x=50$. A possible terminal command is
 
 ```bash
-Terminal> python -c 'from diffu1D_u0 import gaussian
-          gaussian("solver_FE", F=0.5, dt=0.0002)'
+Terminal> python -c 'from diffu1D_devito import solver_FE
+          solver_FE(L=1, Nx=50, F=0.5, T=0.1)'
 ```
 
 The $u(x,t)$ curve as a function of $x$ is shown in Figure
@@ -1168,7 +1176,7 @@ $$
 $$ {#eq-diffu-pde1-step3aBE}
 which written out reads
 $$
-\frac{u^{n}_i-u^{n-1}**i}{\Delta t} = \dfc\frac{u^{n}**{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} + f_i^n\tp
+\frac{u^{n}_i-u^{n-1}_i}{\Delta t} = \dfc\frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2} + f_i^n\tp
 $$ {#eq-diffu-pde1-step3bBE}
 Now we assume $u^{n-1}_i$ is already computed, but that all quantities at the "new"
 time level $n$ are unknown. This time it is not possible to solve
@@ -1177,15 +1185,15 @@ in space, $u^n_{i-1}$ and $u^n_{i+1}$, which are also unknown.
 Let us examine this fact for the case when $N_x=3$. Equation (@eq-diffu-pde1-step3bBE) written for $i=1,\ldots,Nx-1= 1,2$ becomes
 
 \begin{align}
-\frac{u^{n}_1-u^{n-1}**1}{\Delta t} &= \dfc\frac{u^{n}**{2} - 2u^n_1 + u^n_{0}}{\Delta x^2} + f_1^n\\
-\frac{u^{n}_2-u^{n-1}**2}{\Delta t} &= \dfc\frac{u^{n}**{3} - 2u^n_2 + u^n_{1}}{\Delta x^2} + f_2^n
+\frac{u^{n}_1-u^{n-1}_1}{\Delta t} &= \dfc\frac{u^{n}_{2} - 2u^n_1 + u^n_{0}}{\Delta x^2} + f_1^n\\
+\frac{u^{n}_2-u^{n-1}_2}{\Delta t} &= \dfc\frac{u^{n}_{3} - 2u^n_2 + u^n_{1}}{\Delta x^2} + f_2^n
 \end{align}
 The boundary values $u^n_0$ and $u^n_3$ are known as zero. Collecting the
 unknown new values $u^n_1$ and $u^n_2$ on the left-hand side and multiplying
 by $\Delta t$ gives
 
 \begin{align}
-\left(1+  2F\right) u^{n}**1 - F u^{n}**{2}    &= u^{n-1}_1 + \Delta t f_1^n,\\
+\left(1+  2F\right) u^{n}_1 - F u^{n}_{2}    &= u^{n-1}_1 + \Delta t f_1^n,\\
 - F u^{n}_{1} + \left(1+  2F\right) u^{n}_2  &= u^{n-1}_2 + \Delta t f_2^n\tp
 \end{align}
 This is a coupled $2\times 2$ system of algebraic equations for
@@ -1232,7 +1240,7 @@ all the unknown $u^n_i$ at the interior spatial points $i=1,\ldots,N_x-1$.
 Collecting the unknowns on the left-hand side,
 (@eq-diffu-pde1-step3bBE) can be written
 $$
-- F u^n_{i-1} + \left(1+  2F \right) u^{n}**i - F u^n**{i+1} =
+- F u^n_{i-1} + \left(1+  2F \right) u^{n}_i - F u^n_{i+1} =
 u_{i-1}^{n-1},
 $$ {#eq-diffu-pde1-step4BE}
 for $i=1,\ldots,N_x-1$.
@@ -1409,9 +1417,9 @@ The `scipy.sparse.linalg.spsolve` function utilizes the sparse storage
 structure of `A` and performs, in this case, a very efficient Gaussian
 elimination solve.
 
-The program [`diffu1D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_u0.py)
-contains a function `solver_BE`, which implements the Backward Euler scheme
-sketched above.
+The program [`diffu1D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_devito.py)
+contains Devito implementations of both Forward and Backward Euler schemes
+as described in @sec-diffu-devito.
 As mentioned in Section @sec-diffu-pde1-FE,
 the functions `plug` and `gaussian`
 run the case with $I(x)$ as a discontinuous plug or a smooth
@@ -1437,14 +1445,14 @@ $$
 $$
 On the right-hand side we get an expression
 $$
-\frac{1}{\Delta x^2}\left(u^{n+\half}_{i-1} - 2u^{n+\half}**i + u^{n+\half}**{i+1}\right) + f_i^{n+\half}\tp
+\frac{1}{\Delta x^2}\left(u^{n+\half}_{i-1} - 2u^{n+\half}_i + u^{n+\half}_{i+1}\right) + f_i^{n+\half}\tp
 $$
 This expression is problematic since $u^{n+\half}_i$ is not one of
 the unknowns we compute. A possibility is to replace $u^{n+\half}_i$
 by an arithmetic average:
 $$
 u^{n+\half}_i\approx
-\half\left(u^{n}**i +u^{n+1}**{i}\right)\tp
+\half\left(u^{n}_i +u^{n+1}_{i}\right)\tp
 $$
 In the compact notation, we can use the arithmetic average
 notation $\overline{u}^t$:
@@ -1459,13 +1467,13 @@ After writing out the differences and average, multiplying by $\Delta t$,
 and collecting all unknown terms on the left-hand side, we get
 
 \begin{align}
-u^{n+1}**i - \half F(u^{n+1}**{i-1} - 2u^{n+1}**i + u^{n+1}**{i+1})
-&= u^{n}**i + \half F(u^{n}**{i-1} - 2u^{n}**i + u^{n}**{i+1})\nonumber\\
+u^{n+1}_i - \half F(u^{n+1}_{i-1} - 2u^{n+1}_i + u^{n+1}_{i+1})
+&= u^{n}_i + \half F(u^{n}_{i-1} - 2u^{n}_i + u^{n}_{i+1})\nonumber\\
 &\qquad + \half f_i^{n+1} + \half f_i^n\tp
 \end{align}
 
 Also here, as in the Backward Euler scheme, the new unknowns
-$u^{n+1}**{i-1}$, $u^{n+1}**{i}$, and $u^{n+1}_{i+1}$ are coupled
+$u^{n+1}_{i-1}$, $u^{n+1}_{i}$, and $u^{n+1}_{i+1}$ are coupled
 in a linear system $AU=b$, where $A$ has the same structure
 as in (@eq-diffu-pde1-matrix-sparsity), but with slightly
 different entries:
@@ -1540,7 +1548,7 @@ Applied to the 1D diffusion problem, the $\theta$-rule gives
 
 \begin{align*}
 \frac{u^{n+1}_i-u^n_i}{\Delta t} &=
-\dfc\left( \theta \frac{u^{n+1}_{i+1} - 2u^{n+1}**i + u^{n+1}**{i-1}}{\Delta x^2}
+\dfc\left( \theta \frac{u^{n+1}_{i+1} - 2u^{n+1}_i + u^{n+1}_{i-1}}{\Delta x^2}
 + (1-\theta) \frac{u^{n}_{i+1} - 2u^n_i + u^n_{i-1}}{\Delta x^2}\right)\\
 &\qquad + \theta f_i^{n+1} + (1-\theta)f_i^n
 \end{align*} \tp
@@ -1614,7 +1622,7 @@ by just taking one large time step:
 $\Delta t\rightarrow\infty$. In the limit, the Backward Euler
 scheme gives
 $$
--\frac{u^{n+1}_{i+1} - 2u^{n+1}**i + u^{n+1}**{i-1}}{\Delta x^2} = f^{n+1}_i,
+-\frac{u^{n+1}_{i+1} - 2u^{n+1}_i + u^{n+1}_{i-1}}{\Delta x^2} = f^{n+1}_i,
 $$
 which is nothing but the discretization $[-D_xD_x u = f]^{n+1}_i=0$ of
 $-u_{xx}=f$.

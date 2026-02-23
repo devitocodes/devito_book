@@ -273,7 +273,7 @@ stationary fluid flow are lines tangential to the flow.
 The [stream function](https://en.wikipedia.org/wiki/Stream_function)
 $\psi$ is often introduced in two-dimensional flow
 such that its contour
-lines, $\psi = \hbox{const}$, gives the streamlines. The relation
+lines, $\psi = \text{const}$, gives the streamlines. The relation
 between $\psi$ and the velocity field $\vv=(u,v)$ is
 $$
 u = \frac{\partial\psi}{\partial y},\quad v = -
@@ -294,27 +294,27 @@ if the vorticity $\omega$ is known.
 
 ### The potential of an electric field
 Under the assumption of time independence, Maxwell's equations
-for the electric field $\bm{E}$ become
+for the electric field $\boldsymbol{E}$ become
 
 \begin{align*}
-\nabla\cdot\bm{E} &= \frac{\rho}{\epsilon_0},\\
-\nabla\times\bm{E} &= 0,
+\nabla\cdot\boldsymbol{E} &= \frac{\rho}{\epsilon_0},\\
+\nabla\times\boldsymbol{E} &= 0,
 \end{align*}
 where $\rho$ is the electric charge density and $\epsilon_0$ is
 the electric permittivity of free space (i.e., vacuum).
-Since $\nabla\times\bm{E}=0$, $\bm{E}$ can be derived from a potential
-$\varphi$, $\bm{E} = -\nabla\varphi$. The electric field potential is
+Since $\nabla\times\boldsymbol{E}=0$, $\boldsymbol{E}$ can be derived from a potential
+$\varphi$, $\boldsymbol{E} = -\nabla\varphi$. The electric field potential is
 therefore governed by the Poisson equation
 $$
 \nabla^2\varphi = -\frac{\rho}{\epsilon_0}\tp
 $$
-If the medium is heterogeneous, $\rho$ will depend on the spatial location $\bm{r}$.
+If the medium is heterogeneous, $\rho$ will depend on the spatial location $\boldsymbol{r}$.
 Also, $\epsilon_0$ must be exchanged with an electric permittivity function
-$\epsilon(\bm{r})$.
+$\epsilon(\boldsymbol{r})$.
 
 Each point of the boundary must be accompanied by, either a Dirichlet condition
-$\varphi(\bm{r}) = \varphi_D(\bm{r})$, or a Neumann condition
-$\frac{\partial\varphi(\bm{r})}{\partial n} = \varphi_N(\bm{r})$.
+$\varphi(\boldsymbol{r}) = \varphi_D(\boldsymbol{r})$, or a Neumann condition
+$\frac{\partial\varphi(\boldsymbol{r})}{\partial n} = \varphi_N(\boldsymbol{r})$.
 
 [sl: is this what you were thinking of?]
 
@@ -458,8 +458,7 @@ governed by the [Cable equation](http://en.wikipedia.org/wiki/Cable_equation):
 $$
 c_m \frac{\partial V}{\partial t} =
 \frac{1}{r_l}\frac{\partial^2 V}{\partial x^2} - \frac{1}{r_m}V
-label{}
-$$
+$$ {#eq-diffu-app-cable}
 where $V(x,t)$ is the voltage to be determined,
 $c_m$ is capacitance of the neuronal fiber, while
 $r_l$ and $r_m$ are measures of the resistance.

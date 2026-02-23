@@ -36,11 +36,11 @@ Written out, this becomes
 \begin{align*}
 \frac{u^{n+1}_i-u^{n}_i}{\Delta t} &=
 \theta\frac{1}{\Delta x^2}
-(\dfc_{i+\half}(u^{n+1}**{i+1} - u^{n+1}**{i})
-- \dfc_{i-\half}(u^{n+1}**i - u^{n+1}**{i-1})) +\\
+(\dfc_{i+\half}(u^{n+1}_{i+1} - u^{n+1}_{i})
+- \dfc_{i-\half}(u^{n+1}_i - u^{n+1}_{i-1})) +\\
 &\quad (1-\theta)\frac{1}{\Delta x^2}
-(\dfc_{i+\half}(u^{n}**{i+1} - u^{n}**{i})
-- \dfc_{i-\half}(u^{n}**i - u^{n}**{i-1})) +\\
+(\dfc_{i+\half}(u^{n}_{i+1} - u^{n}_{i})
+- \dfc_{i-\half}(u^{n}_i - u^{n}_{i-1})) +\\
 &\quad \theta f_i^{n+1} + (1-\theta)f_i^{n},
 \end{align*}
 where, e.g., an arithmetic mean can to be used for $\dfc_{i+\half}$:
@@ -108,7 +108,8 @@ def solver_theta(I, a, L, Nx, D, T, theta=0.5, u_L=1, u_R=0,
         u_n, u = u, u_n
 ```
 
-The code is found in the file [`diffu1D_vc.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_vc.py).
+The Devito implementation is found in [`diffu1D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/diffu/diffu1D_devito.py).
+See @sec-diffu-devito for the complete implementation.
 
 ## Stationary solution {#sec-diffu-varcoeff-stationary}
 
@@ -362,7 +363,7 @@ is discretized in the usual way.
 $$
 2\dfc\frac{\partial^2}{\partial r^2}u(r_0,t_n) \approx
 [2\dfc D_rD_r u]^n_0 =
-2\dfc \frac{u^{n}_{1} - 2u^{n}**0 + u^n**{-1}}{\Delta r^2}\tp
+2\dfc \frac{u^{n}_{1} - 2u^{n}_0 + u^n_{-1}}{\Delta r^2}\tp
 $$
 The fictitious value $u^n_{-1}$ can be eliminated using the discrete
 symmetry condition

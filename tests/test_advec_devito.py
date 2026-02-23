@@ -33,7 +33,7 @@ class TestAdvectionUpwind:
 
         assert result.u.shape == (51,)
         assert result.x.shape == (51,)
-        assert result.t == pytest.approx(0.1, rel=0.1)
+        assert result.t == pytest.approx(0.1, rel=0.05)
         assert result.C <= 1.0
 
     def test_initial_condition_preserved_at_t0(self):
@@ -115,7 +115,7 @@ class TestAdvectionLaxWendroff:
 
         assert result.u.shape == (51,)
         assert result.x.shape == (51,)
-        assert result.t == pytest.approx(0.1, rel=0.1)
+        assert result.t == pytest.approx(0.1, rel=0.05)
 
     def test_courant_number_violation_raises(self):
         """Test that |C| > 1 raises ValueError."""
@@ -360,5 +360,5 @@ class TestSolutionProperties:
         integral_start = dx * np.sum(result.u_history[0])
         integral_end = dx * np.sum(result.u_history[-1])
 
-        # Should be approximately conserved (within numerical error)
-        np.testing.assert_allclose(integral_start, integral_end, rtol=0.1)
+        # Lax-Wendroff with periodic BCs conserves mass to high accuracy
+        np.testing.assert_allclose(integral_start, integral_end, rtol=1e-3)

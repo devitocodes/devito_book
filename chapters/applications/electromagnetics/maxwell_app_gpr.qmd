@@ -1,0 +1,254 @@
+## Application: Ground Penetrating Radar {#sec-em-gpr}
+
+Ground Penetrating Radar (GPR) is a geophysical method that uses
+electromagnetic pulses to image subsurface structures. FDTD is widely used
+for GPR simulation, enabling interpretation of field data and system design.
+
+### GPR Fundamentals
+
+A GPR system consists of:
+
+1. **Transmitter**: Emits short EM pulses (typically 100 MHz - 2 GHz)
+2. **Receiver**: Records reflected signals
+3. **Controller**: Triggers pulses and records data
+
+The transmitted pulse propagates into the ground and reflects from:
+
+- Soil layer interfaces
+- Buried objects (pipes, voids, artifacts)
+- Water table
+- Bedrock
+
+### EM Properties of Soil
+
+Unlike free space, soil is a **lossy dielectric** with:
+
+- **Relative permittivity** $\varepsilon_r$: 3-40 (depends on water content)
+- **Conductivity** $\sigma$: 0.001-0.1 S/m (causes attenuation)
+
+The wave velocity in soil is:
+$$
+v = \frac{c}{\sqrt{\varepsilon_r}} \approx 0.1-0.15 \text{ m/ns (typical)}
+$$
+
+Topp's empirical equation relates permittivity to volumetric water content $\theta$:
+$$
+\varepsilon_r = 3.03 + 9.3\theta + 146\theta^2 - 76.7\theta^3
+$$ {#eq-em-topp}
+
+```python
+from src.em.materials import topp_equation
+import numpy as np
+
+water_content = np.linspace(0, 0.5, 50)
+eps_r = [topp_equation(w) for w in water_content]
+
+# At 20% water content
+print(f"eps_r at 20% water: {topp_equation(0.2):.1f}")
+```
+
+### Attenuation in Lossy Media
+
+The electric field attenuates as:
+$$
+E(z) = E_0 e^{-\alpha z}
+$$
+
+where the attenuation coefficient is:
+$$
+\alpha = \omega\sqrt{\frac{\mu\varepsilon}{2}\left(\sqrt{1 + \left(\frac{\sigma}{\omega\varepsilon}\right)^2} - 1\right)}
+$$
+
+The **skin depth** $\delta = 1/\alpha$ is the depth at which the field
+decays to $1/e$ of its surface value.
+
+```python
+from src.em.materials import DielectricMaterial
+
+# Wet clay
+wet_clay = DielectricMaterial(name="Wet clay", eps_r=25, sigma=0.05)
+skin_depth = wet_clay.skin_depth(frequency=500e6)
+print(f"Skin depth at 500 MHz: {skin_depth:.2f} m")
+```
+
+### GPR Source Wavelets
+
+GPR transmitters emit short pulses. The **Ricker wavelet** (Mexican hat)
+is commonly used:
+
+```python
+from src.em.gpr import ricker_wavelet, wavelet_spectrum
+import numpy as np
+
+t = np.linspace(0, 20e-9, 1000)  # 20 ns window
+f0 = 500e6  # 500 MHz center frequency
+
+wavelet = ricker_wavelet(t, f0=f0)
+
+# Analyze spectrum
+freq, spectrum = wavelet_spectrum(wavelet, t[1] - t[0])
+```
+
+Other common wavelets include:
+
+- **Gaussian derivative**: Broader bandwidth
+- **Blackman-Harris**: Lower sidelobes
+
+### 1D GPR Simulation
+
+A simple 1D simulation models vertical propagation:
+
+```python
+from src.em.gpr import run_gpr_1d, two_way_travel_time
+from src.em.materials import DRY_SAND
+
+# Simulate GPR over dry sand with a buried reflector
+result = run_gpr_1d(
+    depth=2.0,            # 2 m total depth
+    eps_r_soil=4.0,       # Dry sand
+    sigma_soil=0.001,     # Low loss
+    frequency=500e6,      # 500 MHz
+    target_depth=1.0,     # Reflector at 1 m
+    target_eps_r=1.0,     # Air void
+)
+
+# Expected travel time to 1 m depth
+expected_twtt = two_way_travel_time(depth=1.0, eps_r=4.0)
+print(f"Expected TWTT: {expected_twtt*1e9:.2f} ns")
+```
+
+### B-Scan Radargram
+
+A **B-scan** is a 2D image showing reflections along a survey line:
+
+- Horizontal axis: Antenna position
+- Vertical axis: Two-way travel time (depth)
+- Color/intensity: Reflection amplitude
+
+Buried objects create characteristic **hyperbolic diffraction** patterns.
+
+```python
+from src.em.gpr import run_gpr_bscan_2d, hyperbola_travel_time
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Simulate B-scan over buried pipe
+result = run_gpr_bscan_2d(
+    Lx=2.0, Ly=1.5,           # 2 m survey line, 1.5 m depth
+    eps_r_background=9.0,      # Wet sand
+    sigma_background=0.02,
+    frequency=500e6,
+    n_traces=50,
+    target_center=(1.0, 0.5),  # Pipe at center, 50 cm depth
+    target_radius=0.05,        # 10 cm diameter pipe
+)
+
+if result.bscan is not None:
+    plt.figure(figsize=(10, 6))
+    plt.imshow(result.bscan, aspect='auto',
+               extent=[result.positions[0], result.positions[-1],
+                       result.t[-1]*1e9, 0],
+               cmap='gray')
+    plt.xlabel('Position [m]')
+    plt.ylabel('Two-way travel time [ns]')
+    plt.title('GPR B-scan')
+    plt.colorbar(label='Amplitude')
+```
+
+### Hyperbolic Reflections
+
+A point scatterer creates a hyperbolic pattern because the travel time is:
+$$
+t(x) = \frac{2}{v}\sqrt{(x - x_0)^2 + z_0^2}
+$$
+
+where $(x_0, z_0)$ is the scatterer position. The apex of the hyperbola
+indicates the target location; the shape can be used to estimate velocity.
+
+```python
+from src.em.gpr import fit_hyperbola
+import numpy as np
+
+# If we extract the hyperbola apex times from the B-scan:
+# x_positions = np.linspace(0.5, 1.5, 20)
+# travel_times = [pick times from radargram]
+# x0, z0, v = fit_hyperbola(x_positions, travel_times)
+```
+
+### Comparison with gprMax
+
+**gprMax** [@warren2016_gprmax] is a widely-used open-source GPR simulator.
+Our implementation can be validated against gprMax results:
+
+```python
+# Key benchmark: Buried cylinder B-scan
+# Compare:
+# 1. Direct wave arrival time
+# 2. Reflection hyperbola shape
+# 3. Peak amplitude ratios
+
+# Expected results from gprMax:
+# - Direct wave at t = d_antenna / c
+# - Hyperbola apex at t = 2*depth / v_soil
+# - Amplitude ratio depends on reflection coefficient
+```
+
+### Layered Earth Model
+
+Real soils often have distinct layers:
+
+```python
+from src.em.materials import create_layered_model, DielectricMaterial
+
+# Three-layer model: topsoil, clay, sand
+layers = [
+    (0.3, DielectricMaterial("Topsoil", eps_r=12, sigma=0.01)),
+    (0.5, DielectricMaterial("Clay", eps_r=25, sigma=0.05)),
+    (1.2, DielectricMaterial("Sand", eps_r=5, sigma=0.001)),
+]
+
+eps_r, sigma = create_layered_model(layers, Nx=200, L=2.0)
+```
+
+Each interface produces a reflection with amplitude determined by the
+**Fresnel coefficient**:
+$$
+R = \frac{\sqrt{\varepsilon_1} - \sqrt{\varepsilon_2}}{\sqrt{\varepsilon_1} + \sqrt{\varepsilon_2}}
+$$
+
+### Practical Considerations
+
+**Frequency Selection**:
+
+| Frequency | Resolution | Depth Penetration |
+|-----------|------------|-------------------|
+| 100 MHz | ~1 m | 10-30 m |
+| 500 MHz | ~0.2 m | 2-5 m |
+| 1 GHz | ~0.1 m | 0.5-2 m |
+| 2 GHz | ~0.05 m | <0.5 m |
+
+Higher frequencies provide better resolution but attenuate faster.
+
+**Clutter and Noise**:
+
+Real GPR data contains:
+
+- Surface reflections (antenna-ground interface)
+- Multiples (repeated bounces)
+- Lateral waves
+- System ringing
+
+FDTD simulations help distinguish target responses from clutter.
+
+### Summary
+
+GPR simulation with FDTD enables:
+
+1. **System design**: Optimize frequency, antenna spacing
+2. **Data interpretation**: Understand complex radargrams
+3. **Forward modeling**: Create synthetic data for inversion
+4. **Training**: Generate labeled data for ML-based detection
+
+The `src.em.gpr` module provides a starting point; production GPR simulation
+codes like gprMax [@warren2016_gprmax] offer additional features like
+dispersive media, antenna models, and parallel computation.

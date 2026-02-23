@@ -86,6 +86,7 @@ def solve_diffusion_2d(
     F: float = 0.25,
     I: Callable[[np.ndarray, np.ndarray], np.ndarray] | None = None,
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> Diffusion2DResult:
     """Solve the 2D diffusion equation using Devito (Forward Euler).
 
@@ -178,7 +179,7 @@ def solve_diffusion_2d(
     F_actual = a * dt / h**2
 
     # Create Devito 2D grid
-    grid = Grid(shape=(Nx + 1, Ny + 1), extent=(Lx, Ly))
+    grid = Grid(shape=(Nx + 1, Ny + 1), extent=(Lx, Ly), dtype=dtype)
     x_dim, y_dim = grid.dimensions
 
     # Create time function

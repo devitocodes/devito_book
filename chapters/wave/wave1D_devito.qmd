@@ -235,3 +235,117 @@ The key advantages of using Devito for wave equations:
 The explicit time-stepping loop remains visible to the user for
 educational purposes, but Devito handles the spatial discretization
 and can generate highly optimized code for the inner loop.
+
+### Neumann Boundary Conditions {#sec-wave-devito-neumann}
+
+For Neumann boundary conditions $\partial u/\partial x = 0$ at the
+boundaries, Devito can use ghost points or modified stencils. The
+ghost point approach extends the grid with extra points outside the
+domain:
+
+```python
+from devito import Grid, TimeFunction, Eq, solve, Operator
+
+# Grid with ghost points for Neumann BCs
+Nx = 100
+grid = Grid(shape=(Nx + 3,), extent=(1.0,))  # Extra points at each end
+u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
+
+# PDE for interior points
+pde = u.dt2 - c**2 * u.dx2
+stencil = Eq(u.forward, solve(pde, u.forward))
+
+# Neumann BCs: u[0] = u[2] and u[-1] = u[-3]
+bc_left = Eq(u.forward[0], u.forward[2])
+bc_right = Eq(u.forward[Nx+2], u.forward[Nx])
+
+op = Operator([stencil, bc_left, bc_right])
+```
+
+The symmetry condition $u_{-1} = u_1$ effectively implements the
+zero-derivative condition at the boundary.
+
+### Verification with Exact Solutions {#sec-wave-devito-verification}
+
+The most rigorous verification approach uses solutions that the
+numerical method should reproduce exactly. For the wave equation,
+a quadratic polynomial in space and linear in time works:
+
+$$
+u_{\text{exact}}(x, t) = x(L-x)(1 + t/2)
+$$
+
+This satisfies:
+- Boundary conditions: $u(0,t) = u(L,t) = 0$
+- Initial condition: $I(x) = x(L-x)$
+- Initial velocity: $V(x) = \frac{1}{2}x(L-x)$
+
+The source term $f(x,t)$ is found by substitution into the PDE:
+$$
+f(x,t) = 2c^2(1 + t/2)
+$$
+
+Since the finite difference truncation error involves fourth-order
+derivatives (which vanish for polynomials of degree 3 or less), the
+numerical solution should match the exact solution to machine precision:
+
+```python
+import numpy as np
+
+def test_quadratic_solution():
+    """Verify solver with exact polynomial solution."""
+    L, c = 2.5, 1.5
+    C = 0.75
+    Nx = 20
+    T = 2.0
+
+    def u_exact(x, t):
+        return x * (L - x) * (1 + 0.5 * t)
+
+    def I(x):
+        return u_exact(x, 0)
+
+    def V(x):
+        return 0.5 * x * (L - x)
+
+    def f(x, t):
+        return 2 * c**2 * (1 + 0.5 * t)
+
+    result = solve_wave_1d(L=L, c=c, Nx=Nx, T=T, C=C, I=I, V=V, f=f)
+
+    error = np.abs(result.u - u_exact(result.x, T)).max()
+    assert error < 1e-12, f"Error {error} exceeds tolerance"
+```
+
+### Convergence Rate Testing {#sec-wave-devito-convergence}
+
+For more general solutions, we verify the expected $O(\Delta x^2 + \Delta t^2)$
+convergence rate by running simulations on successively refined meshes:
+
+```python
+def compute_convergence_rate(errors, h_values):
+    """Compute convergence rate from error sequence."""
+    rates = []
+    for i in range(1, len(errors)):
+        rate = np.log(errors[i-1] / errors[i]) / np.log(h_values[i-1] / h_values[i])
+        rates.append(rate)
+    return rates
+
+# Run with mesh refinement
+grid_sizes = [20, 40, 80, 160, 320]
+errors = []
+
+for Nx in grid_sizes:
+    result = solve_wave_1d(L=1.0, c=1.0, Nx=Nx, T=0.5, C=0.9, I=I)
+    error = np.abs(result.u - u_exact(result.x, 0.5)).max()
+    errors.append(error)
+
+rates = compute_convergence_rate(errors, [1.0/Nx for Nx in grid_sizes])
+print(f"Observed rates: {rates}")  # Should approach 2.0
+```
+
+:::{.callout-note title="Automatic Optimization"}
+Devito generates optimized C code with cache-efficient loops and
+parallelization. This replaces manual NumPy vectorization while
+achieving better performance on modern hardware.
+:::

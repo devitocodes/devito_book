@@ -1,0 +1,248 @@
+## 1D FDTD Implementation {#sec-em-1d-devito}
+
+We now implement the 1D Yee scheme in Python. Unlike the scalar wave equation
+where we could use Devito's automatic differentiation directly, the staggered
+grid requires more careful handling of the half-integer offsets.
+
+### The Staggered Grid Challenge
+
+Devito's `TimeFunction` places all values on a collocated grid. For the Yee
+scheme, we need:
+
+- $E_z$ at positions $x_i = i \cdot \Delta x$ for $i = 0, 1, \ldots, N_x$
+- $H_y$ at positions $x_{i+1/2} = (i + 0.5) \cdot \Delta x$ for $i = 0, 1, \ldots, N_x - 1$
+
+We handle this by interpreting the $H_y$ array with shifted indices: `H_y[i]`
+represents $H_y$ at location $x_{i+1/2}$.
+
+### The Solver Module
+
+The `src.em.maxwell1D_devito` module provides a complete 1D FDTD solver:
+
+```python
+from src.em import solve_maxwell_1d, MaxwellResult1D
+import numpy as np
+
+# Gaussian pulse initial condition
+def gaussian_pulse(x, x0=0.5, sigma=0.05):
+    return np.exp(-((x - x0)**2) / (2 * sigma**2))
+
+# Solve 1D Maxwell equations
+result = solve_maxwell_1d(
+    L=1.0,           # Domain length [m]
+    Nx=200,          # Number of grid cells
+    T=5e-9,          # Simulation time [s]
+    CFL=0.9,         # Courant number
+    E_init=gaussian_pulse,
+    save_history=True,
+)
+
+print(f"Wave speed: {result.c:.2e} m/s")
+print(f"Time step: {result.dt:.2e} s")
+print(f"Grid spacing: {result.dx:.2e} m")
+```
+
+### Understanding the Implementation
+
+The core of the solver implements the update equations @eq-em-Hy-update and
+@eq-em-Ez-update. Here is a simplified version:
+
+```python
+# Update coefficients
+Ch = dt / (mu * dx)  # H update coefficient
+Ce = dt / (eps * dx)  # E update coefficient
+
+# Time stepping loop
+for n in range(Nt):
+    # Update H_y (uses current E_z)
+    # H_y[i] represents H_y at x_{i+1/2}
+    H_y[:] = H_y[:] + Ch * (E_z[1:] - E_z[:-1])
+
+    # Update E_z (uses new H_y)
+    E_z[1:-1] = E_z[1:-1] + Ce * (H_y[1:] - H_y[:-1])
+
+    # Apply boundary conditions
+    E_z[0] = 0.0   # PEC at left
+    E_z[-1] = 0.0  # PEC at right
+```
+
+Note how the array slicing naturally handles the staggered indexing:
+
+- `E_z[1:] - E_z[:-1]` computes $E_z|_{i+1} - E_z|_{i}$ for all $i$
+- `H_y[1:] - H_y[:-1]` computes $H_y|_{i+1/2} - H_y|_{i-1/2}$ for interior points
+
+### Visualizing Wave Propagation
+
+Let's simulate a Gaussian pulse propagating and reflecting from PEC boundaries:
+
+```python
+import matplotlib.pyplot as plt
+from src.em import solve_maxwell_1d
+
+# Initial Gaussian pulse
+def gaussian(x):
+    return np.exp(-((x - 0.3)**2) / (0.02**2))
+
+result = solve_maxwell_1d(
+    L=1.0, Nx=400, T=8e-9, CFL=0.9,
+    E_init=gaussian,
+    save_history=True,
+)
+
+# Plot snapshots
+fig, axes = plt.subplots(2, 3, figsize=(12, 6))
+times_idx = [0, 20, 40, 60, 80, 100]
+
+for ax, idx in zip(axes.flat, times_idx):
+    if idx < len(result.E_history):
+        ax.plot(result.x_E, result.E_history[idx])
+        ax.set_title(f't = {result.t_history[idx]*1e9:.2f} ns')
+        ax.set_xlabel('x [m]')
+        ax.set_ylabel('E_z [V/m]')
+        ax.set_ylim(-1.2, 1.2)
+
+plt.tight_layout()
+```
+
+### Material Interfaces
+
+One of FDTD's strengths is handling material interfaces. The update
+coefficients simply use the local material properties:
+
+```python
+# Two-layer medium: vacuum (eps_r=1) and glass (eps_r=4)
+eps_r = np.ones(Nx + 1)
+eps_r[Nx//2:] = 4.0  # Glass in second half
+
+result = solve_maxwell_1d(
+    L=1.0, Nx=400, T=8e-9,
+    eps_r=eps_r,
+    E_init=gaussian,
+    save_history=True,
+)
+```
+
+At the interface, the wave partially reflects and partially transmits.
+The **reflection coefficient** for normal incidence is:
+$$
+R = \frac{\eta_2 - \eta_1}{\eta_2 + \eta_1} = \frac{\sqrt{\varepsilon_1} - \sqrt{\varepsilon_2}}{\sqrt{\varepsilon_1} + \sqrt{\varepsilon_2}}
+$$
+
+For our vacuum/glass interface:
+$$
+R = \frac{1 - 2}{1 + 2} = -\frac{1}{3}
+$$
+
+The negative sign indicates a phase reversal upon reflection.
+
+### Source Injection
+
+For many applications, we inject a source rather than using initial conditions.
+The **soft source** adds to the existing field:
+
+```python
+from src.em import ricker_wavelet
+
+# Ricker wavelet source at 500 MHz
+def source(t):
+    return ricker_wavelet(np.array([t]), f0=500e6)[0]
+
+result = solve_maxwell_1d(
+    L=1.0, Nx=400, T=10e-9,
+    source_func=source,
+    source_position=0.1,  # 10 cm from left boundary
+    bc_left="abc",        # Absorbing BC to prevent reflection
+    bc_right="abc",
+    save_history=True,
+)
+```
+
+The Ricker wavelet (Mexican hat) is commonly used in GPR and seismic modeling:
+$$
+r(t) = \left(1 - 2\pi^2 f_0^2 (t - t_0)^2\right) e^{-\pi^2 f_0^2 (t - t_0)^2}
+$$ {#eq-em-ricker}
+
+### Absorbing Boundary Conditions
+
+Simple PEC boundaries cause total reflection. For open-domain problems,
+we need absorbing boundaries. The simplest approach uses a first-order ABC:
+
+```python
+# At right boundary: wave traveling in +x direction
+# One-way wave equation: dE/dt + c*dE/dx = 0
+# Discretized: E[N]^{n+1} = E[N-1]^n + (C-1)/(C+1) * (E[N-1]^{n+1} - E[N]^n)
+```
+
+This works well for normal incidence but becomes less effective at oblique
+angles. The 2D implementation in @sec-em-2d-devito introduces the more
+robust Perfectly Matched Layer.
+
+### Field Relationship Verification
+
+A key verification is that $E_z$ and $H_y$ maintain the correct amplitude
+ratio. For a plane wave:
+$$
+\frac{|E_z|}{|H_y|} = \eta = \sqrt{\frac{\mu}{\varepsilon}}
+$$
+
+In free space, $\eta_0 \approx 377\ \Omega$. We can verify this:
+
+```python
+from src.em import verify_units, EMConstants
+
+const = EMConstants()
+E_max = np.max(np.abs(result.E_z))
+H_max = np.max(np.abs(result.H_y))
+
+ratio = E_max / H_max
+expected = const.eta0
+
+print(f"E/H ratio: {ratio:.1f} Ohm")
+print(f"Expected:  {expected:.1f} Ohm")
+print(f"Error:     {100*abs(ratio-expected)/expected:.2f}%")
+```
+
+### Complete Example: Plane Wave Verification
+
+Here is a complete example that verifies our implementation against the
+exact plane wave solution:
+
+```python
+from src.em import solve_maxwell_1d, exact_plane_wave_1d
+import numpy as np
+
+# Physical parameters
+L = 1.0  # Domain length [m]
+Nx = 200
+wavelength = 0.1  # [m]
+k = 2 * np.pi / wavelength
+
+# Initial plane wave
+def E_init(x):
+    return np.cos(k * x)
+
+def H_init(x):
+    from src.em import EMConstants
+    return np.cos(k * x) / EMConstants().eta0
+
+# Run short simulation (avoid boundary effects)
+T = 1e-9  # 1 ns
+result = solve_maxwell_1d(
+    L=L, Nx=Nx, T=T, CFL=0.9,
+    E_init=E_init, H_init=H_init,
+    bc_left="abc", bc_right="abc",
+)
+
+# Compare with exact solution
+E_exact, H_exact = exact_plane_wave_1d(
+    result.x_E, result.t,
+    amplitude=1.0, k=k
+)
+
+error = np.sqrt(np.mean((result.E_z - E_exact)**2))
+print(f"L2 error: {error:.2e}")
+```
+
+The error should be small for short simulation times, limited mainly by
+the ABC's inability to perfectly absorb non-normal components of the
+numerical dispersion.

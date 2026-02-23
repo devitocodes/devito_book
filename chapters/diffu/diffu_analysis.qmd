@@ -29,23 +29,23 @@ that depend on $\eta = (x-c)/\sqrt{4\dfc t}$ for a given value
 of $c$. One particular solution
 is
 $$
-u(x,t) = a\,\mbox{erf}(\eta) + b,
+u(x,t) = a\,\operatorname{erf}(\eta) + b,
 $$ {#eq-diffu-pdf1-erf-sol}
 where
 $$
-\mbox{erf}(\eta) = \frac{2}{\sqrt{\pi}}\int_0^\eta e^{-\zeta^2}d\zeta,
+\operatorname{erf}(\eta) = \frac{2}{\sqrt{\pi}}\int_0^\eta e^{-\zeta^2}d\zeta,
 $$ {#eq-diffu-analysis-erf-def}
 is the *error function*, and $a$ and $b$ are arbitrary constants.
 The error function lies in $(-1,1)$, is odd around $\eta =0$, and
 goes relatively quickly to $\pm 1$:
 
 \begin{align*}
-\lim_{\eta\rightarrow -\infty}\mbox{erf}(\eta) &=-1,\\
-\lim_{\eta\rightarrow \infty}\mbox{erf}(\eta) &=1,\\
-\mbox{erf}(\eta) &= -\mbox{erf}(-\eta),\\
-\mbox{erf}(0) &=0,\\
-\mbox{erf}(2) &=0.99532227,\\
-\mbox{erf}(3) &=0.99997791
+\lim_{\eta\rightarrow -\infty}\operatorname{erf}(\eta) &=-1,\\
+\lim_{\eta\rightarrow \infty}\operatorname{erf}(\eta) &=1,\\
+\operatorname{erf}(\eta) &= -\operatorname{erf}(-\eta),\\
+\operatorname{erf}(0) &=0,\\
+\operatorname{erf}(2) &=0.99532227,\\
+\operatorname{erf}(3) &=0.99997791
 \end{align*} \tp
 
 As $t\rightarrow 0$, the error function approaches a step function centered
@@ -54,19 +54,19 @@ we may choose the step at $x=1/2$ (meaning $c=1/2$), $a=-1/2$, $b=1/2$.
 Then
 $$
 u(x,t) = \half\left(1 -
-\mbox{erf}\left(\frac{x-\half}{\sqrt{4\dfc t}}\right)\right) =
-\half\mbox{erfc}\left(\frac{x-\half}{\sqrt{4\dfc t}}\right),
+\operatorname{erf}\left(\frac{x-\half}{\sqrt{4\dfc t}}\right)\right) =
+\half\operatorname{erfc}\left(\frac{x-\half}{\sqrt{4\dfc t}}\right),
 $$ {#eq-diffu-analysis-pde1-step-erf-sol}
 where we have introduced the *complementary error function*
-$\mbox{erfc}(\eta) = 1-\mbox{erf}(\eta)$.
+$\operatorname{erfc}(\eta) = 1-\operatorname{erf}(\eta)$.
 The solution (@eq-diffu-analysis-pde1-step-erf-sol)
 implies the boundary conditions
 
 $$
-u(0,t) = \half\left(1 - \mbox{erf}\left(\frac{-1/2}{\sqrt{4\dfc t}}\right)\right),
+u(0,t) = \half\left(1 - \operatorname{erf}\left(\frac{-1/2}{\sqrt{4\dfc t}}\right)\right),
 $$ {#eq-diffu-analysis-pde1-p1-erf-uL}
 $$
-u(1,t) = \half\left(1 - \mbox{erf}\left(\frac{1/2}{\sqrt{4\dfc t}}\right)\right)\tp
+u(1,t) = \half\left(1 - \operatorname{erf}\left(\frac{1/2}{\sqrt{4\dfc t}}\right)\right)\tp
 $$ {#eq-diffu-analysis-pde1-p1-erf-uR}
 For small enough $t$, $u(0,t)\approx 1$ and $u(1,t)\approx 0$, but as
 $t\rightarrow\infty$, $u(x,t)\rightarrow 1/2$ on $[0,1]$.
@@ -169,7 +169,7 @@ t)}\exp{(ikx)}$ is treated by the numerical scheme. It appears that
 such wave components are also solutions of the schemes, but the
 damping factor $\exp{(-\dfc k^2 t)}$ varies among the schemes.  To
 ease the forthcoming algebra, we write the damping factor as
-$A^n$. The exact amplification factor corresponding to $A$ is $\Aex =
+$A^n$. The exact amplification factor corresponding to $A$ is $A_{\text{e}} =
 \exp{(-\dfc k^2\Delta t)}$.
 
 ## Analysis of the finite difference schemes {#sec-diffu-pde1-analysis-details}
@@ -195,7 +195,7 @@ denotes $u$ at time $t_n$.
 
 ### Stability
 
-The exact amplification factor is $\Aex=\exp{(-\dfc^2 k^2\Delta t)}$.
+The exact amplification factor is $A_{\text{e}}=\exp{(-\dfc^2 k^2\Delta t)}$.
 We should therefore require $|A| < 1$ to have a decaying numerical
 solution as well. If
 $-1\leq A<0$, $A^n$ will change sign from time level to
@@ -207,10 +207,10 @@ solutions that are not present in the exact solution.
 To determine how accurately a finite difference scheme treats one
 wave component (@eq-diffu-pde1-analysis-uni), we see that the basic
 deviation from the exact solution is reflected in how well
-$A^n$ approximates $\Aex^n$,
-or how well $A$ approximates $\Aex$.
-We can plot $\Aex$ and the various expressions for $A$, and we can
-make Taylor expansions of $A/\Aex$ to see the error more analytically.
+$A^n$ approximates $A_{\text{e}}^n$,
+or how well $A$ approximates $A_{\text{e}}$.
+We can plot $A_{\text{e}}$ and the various expressions for $A$, and we can
+make Taylor expansions of $A/A_{\text{e}}$ to see the error more analytically.
 
 ### Truncation error
 
@@ -283,17 +283,17 @@ The method hence becomes very expensive for fine spatial meshes.
 ### Accuracy
 
 Since $A$ is expressed in terms of $F$ and the parameter we now call
-$p=k\Delta x/2$, we should also express $\Aex$ by $F$ and $p$. The exponent
-in $\Aex$ is $-\dfc k^2\Delta t$, which equals $-F k^2\Delta x^2=-F4p^2$.
+$p=k\Delta x/2$, we should also express $A_{\text{e}}$ by $F$ and $p$. The exponent
+in $A_{\text{e}}$ is $-\dfc k^2\Delta t$, which equals $-F k^2\Delta x^2=-F4p^2$.
 Consequently,
 $$
-\Aex = \exp{(-\dfc k^2\Delta t)} = \exp{(-4Fp^2)} \tp
+A_{\text{e}} = \exp{(-\dfc k^2\Delta t)} = \exp{(-4Fp^2)} \tp
 $$
-All our $A$ expressions as well as $\Aex$ are now functions of the two
+All our $A$ expressions as well as $A_{\text{e}}$ are now functions of the two
 dimensionless parameters $F$ and $p$.
 
 Computing
-the Taylor series expansion of $A/\Aex$ in terms of $F$
+the Taylor series expansion of $A/A_{\text{e}}$ in terms of $F$
 can easily be done with aid of `sympy`:
 
 ```python
@@ -310,11 +310,11 @@ print A_err_FE.series(F, 0, 6)
 ```
 The result is
 $$
-\frac{A}{\Aex} = 1 - 4 F \sin^{2}p + 2F p^{2} - 16F^{2} p^{2} \sin^{2}p + 8 F^{2} p^{4} + \cdots
+\frac{A}{A_{\text{e}}} = 1 - 4 F \sin^{2}p + 2F p^{2} - 16F^{2} p^{2} \sin^{2}p + 8 F^{2} p^{4} + \cdots
 $$
 Recalling that $F=\dfc\Delta t/\Delta x^2$, $p=k\Delta x/2$, and that
 $\sin^2p\leq 1$, we
-realize that the dominating terms in $A/\Aex$ are at most
+realize that the dominating terms in $A/A_{\text{e}}$ are at most
 $$
 1 - 4\dfc \frac{\Delta t}{\Delta x^2} +
 \dfc\Delta t - 4\dfc^2\Delta t^2
@@ -330,7 +330,7 @@ the residual. The details are documented in
 $$
 R^n_i = \Oof{\Delta t} + \Oof{\Delta x^2}\tp
 $$
-Although this is not the true error $\uex(x_i,t_n) - u^n_i$, it indicates
+Although this is not the true error $u_{\text{e}}(x_i,t_n) - u^n_i$, it indicates
 that the true error is of the form
 $$
 E = C_t\Delta t + C_x\Delta x^2
@@ -737,10 +737,10 @@ One idea is to simply set $u(L,t)=0$ since this will be an
 accurate approximation before the diffused pulse reaches $x=L$
 and even thereafter it might be a satisfactory condition if the exact $u$ has
 a small value.
-Let $\uex$ be the exact solution and let $u$ be the solution
+Let $u_{\text{e}}$ be the exact solution and let $u$ be the solution
 of $u_t=\dfc u_{xx}$ with an initial Gaussian pulse and
 the boundary conditions $u_x(0,t)=u(L,t)=0$. Derive a diffusion
-problem for the error $e=\uex - u$. Solve this problem
+problem for the error $e=u_{\text{e}} - u$. Solve this problem
 numerically using an exact Dirichlet condition at $x=L$.
 Animate the evolution of the error and make a curve plot of
 the error measure
@@ -785,7 +785,7 @@ qualitatively wrong for large $t$.)
 Develop a diffusion problem for the error in the solution using
 (@eq-diffu-pde1-Gaussian-xL-cooling) as boundary condition.
 Assume one can take $u_S=0$ "outside the domain" since
-$\uex\rightarrow 0$ as $x\rightarrow\infty$.
+$u_{\text{e}}\rightarrow 0$ as $x\rightarrow\infty$.
 Find a function $q=q(t)$ such that the exact solution
 obeys the condition (@eq-diffu-pde1-Gaussian-xL-cooling).
 Test some constant values of $q$ and animate how the corresponding

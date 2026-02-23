@@ -1,0 +1,69 @@
+# Computational Electromagnetics {#sec-ch-em}
+
+Electromagnetic waves govern a remarkable range of phenomena: radio
+communication, radar systems, optical fibers, photonic devices, medical
+imaging, and even the light by which we see. This chapter shows how the
+finite difference techniques developed throughout this book apply to
+Maxwell's equations, the fundamental laws governing electromagnetic fields.
+
+We focus on the Finite-Difference Time-Domain (FDTD) method, introduced by
+Kane Yee in 1966 [@yee1966]. The FDTD method is distinguished by its use of
+a *staggered grid* (the Yee cell) where electric and magnetic field
+components are offset by half a grid cell in both space and time. This
+elegant arrangement naturally satisfies the divergence conditions and
+produces a stable, non-dissipative scheme.
+
+The chapter is organized as follows:
+
+1. **Maxwell's Equations** (@sec-em-maxwell): We introduce the governing
+   equations and derive the wave equation for electromagnetic fields,
+   connecting to the scalar wave equation from @sec-ch-wave.
+
+2. **The Yee Scheme** (@sec-em-yee): We present the staggered grid
+   discretization and leapfrog time stepping that form the core of FDTD.
+
+3. **1D Implementation** (@sec-em-1d-devito): We implement a 1D FDTD solver
+   in Devito, demonstrating plane wave propagation and material interfaces.
+
+4. **2D Implementation** (@sec-em-2d-devito): We extend to 2D and introduce
+   Perfectly Matched Layer (PML) absorbing boundary conditions.
+
+5. **Stability and Dispersion** (@sec-em-analysis): We analyze the CFL
+   condition and numerical dispersion, showing connections to the wave
+   equation analysis from @sec-wave-pde1-analysis.
+
+6. **Verification** (@sec-em-verification): We verify our implementations
+   using manufactured solutions and convergence testing.
+
+7. **Applications**: We present two practical applications:
+   - **Dielectric Waveguides** (@sec-em-waveguide): Guided wave propagation
+     in optical structures
+   - **Ground Penetrating Radar** (@sec-em-gpr): Subsurface imaging with
+     electromagnetic pulses
+
+## Prerequisites
+
+This chapter assumes familiarity with:
+
+- Finite difference methods for the wave equation (@sec-ch-wave)
+- Stability analysis and CFL conditions (@sec-wave-pde1-stability)
+- Numerical dispersion (@sec-wave-pde1-num-dispersion)
+- Devito programming patterns (@sec-ch-devito-intro)
+
+{{< include maxwell_equations.qmd >}}
+
+{{< include yee_scheme.qmd >}}
+
+{{< include maxwell1D_devito.qmd >}}
+
+{{< include maxwell2D_devito.qmd >}}
+
+{{< include maxwell_analysis.qmd >}}
+
+{{< include maxwell_verification.qmd >}}
+
+{{< include maxwell_app_waveguide.qmd >}}
+
+{{< include maxwell_app_gpr.qmd >}}
+
+{{< include maxwell_exercises.qmd >}}

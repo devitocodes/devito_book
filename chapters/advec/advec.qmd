@@ -72,7 +72,7 @@ u(i\Delta x, (n+1)\Delta t) &= I(i\Delta x - v(n+1)\Delta t) \nonumber \\
 provided $v = \Delta x/\Delta t$. So, whenever we see a scheme that
 collapses to
 $$
-u^{n+1}**i = u**{i-1}^n,
+u^{n+1}_i = u_{i-1}^n,
 $$ {#eq-advec-1D-pde1-uprop2}
 for the PDE in question, we have in fact a scheme that reproduces the
 analytical solution, and many of the schemes to be presented possess
@@ -456,7 +456,7 @@ u(x,0) = Ae^{-\half\left(\frac{x-L/10}{\sigma}\right)^2},
 $$
 $$
 u(x,0) = A\cos\left(\frac{5\pi}{L}\left( x - \frac{L}{10}\right)\right),\quad
-x < \frac{L}{5} \hbox{ else } 0\tp
+x < \frac{L}{5} \text{ else } 0\tp
 $$ {#eq-advec-1D-case_gaussian}
 The parameter $A$ is the maximum value of the initial condition.
 
@@ -723,16 +723,16 @@ A general solution may be viewed as a collection of long and
 short waves with different amplitudes. Algebraically, the work
 simplifies if we introduce the complex Fourier component
 $$
-u(x,t)=\Aex e^{ikx},
+u(x,t)=A_{\text{e}} e^{ikx},
 $$
 with
 $$
-\Aex=Be^{-ikv\Delta t} = Be^{-iCk\Delta x}\tp
+A_{\text{e}}=Be^{-ikv\Delta t} = Be^{-iCk\Delta x}\tp
 $$
-Note that $|\Aex| \leq 1$.
+Note that $|A_{\text{e}}| \leq 1$.
 
 It turns out that many schemes also allow a Fourier wave component as
-solution, and we can use the numerically computed values of $\Aex$
+solution, and we can use the numerically computed values of $A_{\text{e}}$
 (denoted $A$) to learn about the
 quality of the scheme. Hence, to analyze the difference scheme we have just
 implemented, we look at how it treats the Fourier component
@@ -771,11 +771,12 @@ $$
 $$
 which results in the updating formula
 $$
-u^{n+1}_i = u^{n-1}**i - C(u**{i+1}^n-u_{i-1}^n)\tp
+u^{n+1}_i = u^{n-1}_i - C(u_{i+1}^n-u_{i-1}^n)\tp
 $$
 A special scheme is needed to compute $u^1$, but we leave that problem for
-now. Anyway, this special scheme can be found in
-[`advec1D.py`](https://github.com/devitocodes/devito_book/tree/main/src/advec/advec1D.py).
+now. The Devito implementation handles this automatically; see
+[`advec1D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/advec/advec1D_devito.py)
+and @sec-advec-devito for details.
 
 ### Implementation
 We now need to work with three time levels and must modify our solver a bit:
@@ -861,7 +862,7 @@ A = -iC\sin p \pm \sqrt{1-C^2\sin^2 p},
 $$
 and is to be compared to the exact amplification factor
 $$
-\Aex = e^{-ikv\Delta t} = e^{-ikC\Delta x} = e^{-iCp}\tp
+A_{\text{e}} = e^{-ikv\Delta t} = e^{-ikC\Delta x} = e^{-iCp}\tp
 $$
 Section @sec-advec-1D-disprel compares numerical amplification factors
 of many schemes with the exact expression.
@@ -888,7 +889,7 @@ $$
 $$ {#eq-advec-1D-upwind}
 written out as
 $$
-u^{n+1}_i = u^n_i - C(u^{n}**{i}-u^{n}**{i-1}),
+u^{n+1}_i = u^n_i - C(u^{n}_{i}-u^{n}_{i-1}),
 $$
 gives a generally popular and robust scheme that is stable if $C\leq 1$.
 As with the Leapfrog scheme, it becomes exact if $C=1$, exactly as shown in
@@ -929,7 +930,7 @@ $$
 $$
 by a forward difference in time and centered differences in space,
 $$
-D^+**t u + vD**{2x} u = \nu D_xD_x u]^n_i,
+D^+_t u + vD_{2x} u = \nu D_xD_x u]^n_i,
 $$
 actually gives the upwind scheme (@eq-advec-1D-upwind) if
 $\nu = v\Delta x/2$. That is, solving the PDE $u_t + vu_x=0$
@@ -994,7 +995,7 @@ is constant:
 \end{align*}
 as long as $u(0)=u(L)=0$. We can therefore use the property
 $$
-\int_0^L u(x,t)dx = \hbox{const}
+\int_0^L u(x,t)dx = \text{const}
 $$
 as a partial verification during the simulation. Now, any numerical method
 with $C\neq 1$ will deviate from the constant, expected value, so
@@ -1170,30 +1171,31 @@ def run(scheme='UP', case='gaussian', C=1, dt=0.01):
         os.system(cmd)
     print 'Integral of u:', integral.max(), integral.min()
 ```
-The complete code is found in the file
-[`advec1D.py`](https://github.com/devitocodes/devito_book/tree/main/src/advec/advec1D.py).
+The Devito implementation is found in
+[`advec1D_devito.py`](https://github.com/devitocodes/devito_book/tree/main/src/advec/advec1D_devito.py).
+See @sec-advec-devito for the complete implementation.
 
 ## A Crank-Nicolson discretization in time and centered differences in space {#sec-advec-1D-CN}
 
 Another obvious candidate for time discretization is the Crank-Nicolson
 method combined with centered differences in space:
 $$
-[D_t u]^n_i + v\half([D_{2x} u]^{n+1}**i + [D**{2x} u]^{n}_i) = 0\tp
+[D_t u]^n_i + v\half([D_{2x} u]^{n+1}_i + [D_{2x} u]^{n}_i) = 0\tp
 $$
 It can be nice to include the Backward Euler scheme too, via the
 $\theta$-rule,
 $$
-[D_t u]^n_i + v\theta [D_{2x} u]^{n+1}**i + v(1-\theta)[D**{2x} u]^{n}_i = 0\tp
+[D_t u]^n_i + v\theta [D_{2x} u]^{n+1}_i + v(1-\theta)[D_{2x} u]^{n}_i = 0\tp
 $$
 When $\theta$ is different from zero, this gives rise to an *implicit* scheme,
 $$
-u^{n+1}**i + \frac{\theta}{2} C (u^{n+1}**{i+1} - u^{n+1}_{i-1})
-= u^n_i - \frac{1-\theta}{2} C (u^{n}**{i+1} - u^{n}**{i-1})
+u^{n+1}_i + \frac{\theta}{2} C (u^{n+1}_{i+1} - u^{n+1}_{i-1})
+= u^n_i - \frac{1-\theta}{2} C (u^{n}_{i+1} - u^{n}_{i-1})
 $$
 for $i=1,\ldots,N_x-1$. At the boundaries we set $u=0$ and simulate just to
 the point of time when the signal hits the boundary (and gets reflected).
 $$
-u^{n+1}**0 = u^{n+1}**{N_x} = 0\tp
+u^{n+1}_0 = u^{n+1}_{N_x} = 0\tp
 $$
 The elements on the diagonal in the matrix become:
 $$
@@ -1208,7 +1210,7 @@ And finally, the right-hand side becomes
 
 \begin{align*}
 b_0 &= u^n_{N_x}\\
-b_i &= u^n_i - \frac{1-\theta}{2} C (u^{n}**{i+1} - u^{n}**{i-1}),\quad i=1,\ldots,N_x-1\\
+b_i &= u^n_i - \frac{1-\theta}{2} C (u^{n}_{i+1} - u^{n}_{i-1}),\quad i=1,\ldots,N_x-1\\
 b_{N_x} &= u^n_0
 \end{align*}
 
@@ -1273,7 +1275,7 @@ u^{n+1}_i = u^n_i -v \Delta t [D_{2x} u]^n_i
 $$
 or written out,
 $$
-u^{n+1}_i = u^n_i - \frac{1}{2} C (u^{n}**{i+1} - u^{n}**{i-1})
+u^{n+1}_i = u^n_i - \frac{1}{2} C (u^{n}_{i+1} - u^{n}_{i-1})
 + \frac{1}{2} C^2 (u^{n}_{i+1}-2u^n_i+u^n_{i-1})\tp
 $$
 This is the explicit Lax-Wendroff scheme.
@@ -1467,7 +1469,7 @@ reason why this model problem has been so successful in designing and
 investigating numerical methods for mixed convection/advection and
 diffusion.  The exact solution reads
 $$
-\uex (x) = \frac{e^{x/\epsilon} - 1}{e^{1/\epsilon} - 1}\tp
+u_{\text{e}} (x) = \frac{e^{x/\epsilon} - 1}{e^{1/\epsilon} - 1}\tp
 $$
 The forthcoming plots illustrate this function for various values of
 $\epsilon$.
@@ -1576,15 +1578,15 @@ is the dominating term, collect its information in the flow direction, i.e.,
 upstream or upwind of the point in question. So, instead of using a
 centered difference
 $$
-\frac{du}{dx}**i\approx \frac{u**{i+1}-u_{i-1}}{2\Delta x},
+\frac{du}{dx}_i\approx \frac{u_{i+1}-u_{i-1}}{2\Delta x},
 $$
 we use the one-sided *upwind* difference
 $$
-\frac{du}{dx}**i\approx \frac{u**{i}-u_{i-1}}{\Delta x},
+\frac{du}{dx}_i\approx \frac{u_{i}-u_{i-1}}{\Delta x},
 $$
 in case $v>0$. For $v<0$ we set
 $$
-\frac{du}{dx}**i\approx \frac{u**{i+1}-u_{i}}{\Delta x},
+\frac{du}{dx}_i\approx \frac{u_{i+1}-u_{i}}{\Delta x},
 $$
 On compact operator notation form, our upwind scheme can be expressed
 as

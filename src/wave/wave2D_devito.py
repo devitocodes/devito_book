@@ -84,6 +84,7 @@ def solve_wave_2d(
     I: Callable[[np.ndarray, np.ndarray], np.ndarray] | None = None,
     V: Callable[[np.ndarray, np.ndarray], np.ndarray] | None = None,
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> Wave2DResult:
     """Solve the 2D wave equation using Devito.
 
@@ -180,7 +181,7 @@ def solve_wave_2d(
 
     # Create Devito grid - Note: Devito uses (y, x) ordering internally
     # but we use extent and shape consistently
-    grid = Grid(shape=(Nx + 1, Ny + 1), extent=(Lx, Ly))
+    grid = Grid(shape=(Nx + 1, Ny + 1), extent=(Lx, Ly), dtype=dtype)
 
     # Create time function with time_order=2 for wave equation
     u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)

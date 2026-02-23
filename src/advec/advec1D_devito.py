@@ -45,6 +45,7 @@ def solve_advection_upwind(
     I: Callable | None = None,
     periodic_bc: bool = True,
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> AdvectionResult:
     """
     Solve 1D advection equation using upwind scheme.
@@ -102,7 +103,7 @@ def solve_advection_upwind(
     actual_T = Nt * dt
 
     # Create Devito grid and function
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    grid = Grid(shape=(Nx + 1,), extent=(L,), dtype=dtype)
     (x_dim,) = grid.dimensions
     t_dim = grid.stepping_dim
 
@@ -171,6 +172,7 @@ def solve_advection_lax_wendroff(
     I: Callable | None = None,
     periodic_bc: bool = True,
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> AdvectionResult:
     """
     Solve 1D advection equation using Lax-Wendroff scheme.
@@ -227,7 +229,7 @@ def solve_advection_lax_wendroff(
     actual_T = Nt * dt
 
     # Create Devito grid and function
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    grid = Grid(shape=(Nx + 1,), extent=(L,), dtype=dtype)
     (x_dim,) = grid.dimensions
     t_dim = grid.stepping_dim
 
@@ -302,6 +304,7 @@ def solve_advection_lax_friedrichs(
     I: Callable | None = None,
     periodic_bc: bool = True,
     save_history: bool = False,
+    dtype: np.dtype = np.float64,
 ) -> AdvectionResult:
     """
     Solve 1D advection equation using Lax-Friedrichs scheme.
@@ -356,7 +359,7 @@ def solve_advection_lax_friedrichs(
     actual_T = Nt * dt
 
     # Create Devito grid and function
-    grid = Grid(shape=(Nx + 1,), extent=(L,))
+    grid = Grid(shape=(Nx + 1,), extent=(L,), dtype=dtype)
     (x_dim,) = grid.dimensions
     t_dim = grid.stepping_dim
 

@@ -43,52 +43,7 @@ for $C \le 1$.
 
 Let's implement this step by step:
 
-```python
-from devito import Grid, TimeFunction, Eq, Operator
-import numpy as np
-
-# Problem parameters
-L = 1.0       # Domain length
-c = 1.0       # Wave speed
-T = 1.0       # Final time
-Nx = 100      # Number of grid points
-C = 0.5       # Courant number (for stability)
-
-# Derived parameters
-dx = L / Nx
-dt = C * dx / c
-Nt = int(T / dt)
-
-# Create the computational grid
-grid = Grid(shape=(Nx + 1,), extent=(L,))
-
-# Create a time-varying field
-# time_order=2 because we have second derivative in time
-# space_order=2 for standard second-order accuracy
-u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
-
-# Set initial condition: a Gaussian pulse
-x = grid.dimensions[0]
-x_coord = 0.5 * L  # Center of domain
-sigma = 0.1        # Width of pulse
-u.data[0, :] = np.exp(-((np.linspace(0, L, Nx+1) - x_coord)**2) / (2*sigma**2))
-u.data[1, :] = u.data[0, :]  # Zero initial velocity
-
-# Define the update equation
-# u.forward is u at time n+1, u is at time n, u.backward is at time n-1
-# u.dx2 is the second spatial derivative
-eq = Eq(u.forward, 2*u - u.backward + (c*dt)**2 * u.dx2)
-
-# Create the operator
-op = Operator([eq])
-
-# Run the simulation
-op(time=Nt, dt=dt)
-
-# The solution is now in u.data
-print(f"Simulation complete: {Nt} time steps")
-print(f"Max amplitude at t={T}: {np.max(np.abs(u.data[0, :])):.6f}")
-```
+{{< include snippets/first_pde_wave1d.qmd >}}
 
 ### Understanding the Code
 
@@ -114,10 +69,21 @@ u = TimeFunction(name='u', grid=grid, time_order=2, space_order=2)
 **Initial conditions:**
 ```python
 u.data[0, :] = ...  # u at t=0
-u.data[1, :] = ...  # u at t=dt (for zero initial velocity, same as t=0)
+u.data[1, :] = ...  # u at t=dt (computed from u_t(x,0)=0)
 ```
 The `data` attribute provides direct access to the underlying NumPy arrays.
 Index 0 and 1 represent the two most recent time levels.
+
+For the 2nd-order wave scheme, “zero initial velocity” does **not** mean
+`u.data[1, :] = u.data[0, :]` if you want to keep 2nd-order accuracy at the first step.
+Instead, the included (tested) snippet computes the first time level using the spatial
+second derivative at `t=0`:
+
+```python
+u1 = u0 + 0.5 * dt**2 * c**2 * u_xx_0
+```
+
+and enforces the fixed-end boundary conditions at that first step.
 
 **Update equation:**
 ```python

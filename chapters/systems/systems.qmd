@@ -1,0 +1,693 @@
+## Introduction to PDE Systems {#sec-systems-intro}
+
+So far in this book, we have focused on solving single PDEs: the wave
+equation, diffusion equation, advection equation, and nonlinear extensions.
+In many physical applications, however, we encounter *systems* of coupled
+PDEs where multiple unknowns evolve together, with each equation depending
+on several fields.
+
+### Conservation Laws
+
+Many important physical systems are described by *conservation laws*,
+which express the fundamental principle that certain quantities (mass,
+momentum, energy) cannot be created or destroyed, only transported.
+The general form of a conservation law in one dimension is:
+
+$$
+\frac{\partial \mathbf{U}}{\partial t} + \frac{\partial \mathbf{F}(\mathbf{U})}{\partial x} = \mathbf{S}
+$$ {#eq-conservation-law}
+
+where:
+
+- $\mathbf{U}$ is the vector of conserved quantities
+- $\mathbf{F}(\mathbf{U})$ is the flux function (how quantities move through space)
+- $\mathbf{S}$ is a source/sink term
+
+In two dimensions, this extends to:
+
+$$
+\frac{\partial \mathbf{U}}{\partial t} + \frac{\partial \mathbf{F}}{\partial x} + \frac{\partial \mathbf{G}}{\partial y} = \mathbf{S}
+$$ {#eq-conservation-law-2d}
+
+### Coupling Between Equations
+
+When we have multiple coupled PDEs, the unknowns in each equation depend
+on the solutions of other equations. This creates computational challenges:
+
+1. **Temporal coupling**: The time derivative in one equation involves
+   terms from equations that have not yet been updated.
+
+2. **Spatial coupling**: Spatial derivatives may involve multiple fields
+   at the same location.
+
+3. **Nonlinear coupling**: The coupling terms are often nonlinear,
+   requiring careful treatment of products of unknowns.
+
+### Hyperbolic Systems
+
+The shallow water equations we study in this chapter form a *hyperbolic
+system* of PDEs. Hyperbolic systems have the property that information
+propagates at finite speeds, similar to the wave equation. This is in
+contrast to parabolic systems (like coupled diffusion equations) where
+information spreads instantaneously.
+
+For hyperbolic systems, the CFL stability condition becomes:
+
+$$
+\Delta t \leq \frac{\Delta x}{\max|\lambda_i|}
+$$
+
+where $\lambda_i$ are the eigenvalues of the flux Jacobian matrix. For
+shallow water, these eigenvalues correspond to wave speeds.
+
+## The Shallow Water Equations {#sec-swe}
+
+The 2D Shallow Water Equations (SWE) are a fundamental model in
+computational geophysics and coastal engineering. They are derived from
+the Navier-Stokes equations under the assumption that horizontal
+length scales are much larger than the water depth.
+
+### Physical Setup
+
+Consider a body of water with:
+
+- $h(x, y)$: bathymetry (depth from mean sea level to seafloor, static)
+- $\eta(x, y, t)$: surface elevation above mean sea level (dynamic)
+- $D = h + \eta$: total water column depth
+- $u(x, y, t)$, $v(x, y, t)$: depth-averaged horizontal velocities
+
+The shallow water approximation assumes that:
+
+1. Horizontal length scales $L$ are much larger than depth $H$: $L \gg H$
+2. Vertical accelerations are negligible compared to gravity
+3. The pressure is hydrostatic: $p = \rho g (\eta - z)$
+
+### Governing Equations
+
+The 2D Shallow Water Equations consist of three coupled PDEs:
+
+**Continuity equation (mass conservation):**
+
+$$
+\frac{\partial \eta}{\partial t} + \frac{\partial M}{\partial x} + \frac{\partial N}{\partial y} = 0
+$$ {#eq-swe-continuity}
+
+**x-Momentum equation:**
+
+$$
+\frac{\partial M}{\partial t} + \frac{\partial}{\partial x}\left(\frac{M^2}{D}\right) + \frac{\partial}{\partial y}\left(\frac{MN}{D}\right) + gD\frac{\partial \eta}{\partial x} + \frac{g\alpha^2}{D^{7/3}}M\sqrt{M^2+N^2} = 0
+$$ {#eq-swe-xmom}
+
+**y-Momentum equation:**
+
+$$
+\frac{\partial N}{\partial t} + \frac{\partial}{\partial x}\left(\frac{MN}{D}\right) + \frac{\partial}{\partial y}\left(\frac{N^2}{D}\right) + gD\frac{\partial \eta}{\partial y} + \frac{g\alpha^2}{D^{7/3}}N\sqrt{M^2+N^2} = 0
+$$ {#eq-swe-ymom}
+
+### Discharge Fluxes
+
+Rather than solving for velocities $(u, v)$ directly, the SWE are typically
+formulated in terms of *discharge fluxes* $M$ and $N$:
+
+$$
+\begin{aligned}
+M &= \int_{-h}^{\eta} u\, dz = uD \\
+N &= \int_{-h}^{\eta} v\, dz = vD
+\end{aligned}
+$$ {#eq-discharge-flux}
+
+The discharge flux has units of $[\text{m}^2/\text{s}]$ and represents
+the volume of water flowing per unit width per unit time. This formulation
+has numerical advantages:
+
+1. Mass conservation becomes linear in $M$ and $N$
+2. The flux form handles moving shorelines better
+3. Boundary conditions are more naturally expressed
+
+### Physical Interpretation of Terms
+
+Each term in the momentum equations has a physical meaning:
+
+| Term | Physical Meaning |
+|------|------------------|
+| $\partial M/\partial t$ | Local acceleration |
+| $\partial(M^2/D)/\partial x$ | Advection of x-momentum in x |
+| $\partial(MN/D)/\partial y$ | Advection of x-momentum in y |
+| $gD\partial\eta/\partial x$ | Pressure gradient (hydrostatic) |
+| $g\alpha^2 M\sqrt{M^2+N^2}/D^{7/3}$ | Bottom friction |
+
+### Manning's Roughness Coefficient
+
+The friction term uses Manning's formula for open channel flow. The
+Manning's roughness coefficient $\alpha$ depends on the seafloor:
+
+| Surface Type | $\alpha$ |
+|--------------|----------|
+| Smooth concrete | 0.010 - 0.013 |
+| Natural channels (good) | 0.020 - 0.030 |
+| Natural channels (poor) | 0.050 - 0.070 |
+| Vegetated floodplains | 0.100 - 0.200 |
+
+For tsunami modeling in the open ocean, $\alpha \approx 0.025$ is typical.
+
+### Applications
+
+The Shallow Water Equations are used to model:
+
+- **Tsunami propagation**: Large-scale ocean wave modeling
+- **Storm surges**: Coastal flooding from hurricanes/cyclones
+- **Dam breaks**: Sudden release of reservoir water
+- **Tidal flows**: Estuarine and coastal circulation
+- **River flooding**: Overbank flows and inundation
+
+## Devito Implementation {#sec-swe-devito}
+
+Implementing the Shallow Water Equations in Devito demonstrates several
+powerful features for coupled systems:
+
+1. **Multiple TimeFunction fields** for the three unknowns
+2. **Function for static fields** (bathymetry)
+3. **The solve() function** for isolating forward time terms
+4. **ConditionalDimension** for efficient snapshot saving
+
+### Setting Up the Grid and Fields
+
+We begin by creating the computational grid and the required fields:
+
+```python
+from devito import Grid, TimeFunction, Function
+
+# Create 2D grid
+grid = Grid(shape=(Ny, Nx), extent=(Ly, Lx), dtype=np.float32)
+
+# Three time-varying fields for the unknowns
+eta = TimeFunction(name='eta', grid=grid, space_order=2)  # wave height
+M = TimeFunction(name='M', grid=grid, space_order=2)      # x-discharge
+N = TimeFunction(name='N', grid=grid, space_order=2)      # y-discharge
+
+# Static fields
+h = Function(name='h', grid=grid)   # bathymetry
+D = Function(name='D', grid=grid)   # total depth (updated each step)
+```
+
+Note that `h` is a `Function` (not `TimeFunction`) because the bathymetry
+is static---it does not change during the simulation. The total depth
+`D` is also a `Function` but is updated at each time step as $D = h + \eta$.
+
+### Writing the PDEs Symbolically
+
+Devito allows us to write the PDEs in a form close to the mathematical
+notation. For the continuity equation:
+
+```python
+from devito import Eq, solve
+
+# Continuity: deta/dt + dM/dx + dN/dy = 0
+# Using centered differences in space (.dxc, .dyc)
+pde_eta = Eq(eta.dt + M.dxc + N.dyc)
+
+# Solve for eta.forward
+stencil_eta = solve(pde_eta, eta.forward)
+```
+
+The `.dxc` and `.dyc` operators compute centered finite differences:
+
+- `.dxc` $\approx \frac{u_{i+1,j} - u_{i-1,j}}{2\Delta x}$
+- `.dyc` $\approx \frac{u_{i,j+1} - u_{i,j-1}}{2\Delta y}$
+
+### The solve() Function for Coupled Stencils
+
+When we have nonlinear coupled equations, isolating the forward time
+term algebraically is tedious and error-prone. Devito's `solve()` function
+handles this automatically:
+
+```python
+from devito import sqrt
+
+# Friction term
+friction_M = g * alpha**2 * sqrt(M**2 + N**2) / D**(7./3.)
+
+# x-Momentum PDE
+pde_M = Eq(
+    M.dt
+    + (M**2 / D).dxc
+    + (M * N / D).dyc
+    + g * D * eta.forward.dxc
+    + friction_M * M
+)
+
+# solve() isolates M.forward algebraically
+stencil_M = solve(pde_M, M.forward)
+```
+
+The `solve()` function:
+
+1. Parses the equation for the target term (`M.forward`)
+2. Algebraically isolates it on the left-hand side
+3. Returns the right-hand side expression
+
+This is particularly valuable for the momentum equations where the
+forward terms appear in multiple places.
+
+### Update Equations with Subdomain
+
+The update equations apply only to interior points, avoiding boundary
+modifications:
+
+```python
+update_eta = Eq(eta.forward, stencil_eta, subdomain=grid.interior)
+update_M = Eq(M.forward, stencil_M, subdomain=grid.interior)
+update_N = Eq(N.forward, stencil_N, subdomain=grid.interior)
+```
+
+The `subdomain=grid.interior` restricts updates to interior points,
+leaving boundary values unchanged. For tsunami modeling, this effectively
+implements open (non-reflecting) boundaries as a first approximation.
+
+### Updating the Total Depth
+
+After updating $\eta$, we must update the total water depth:
+
+```python
+eq_D = Eq(D, eta.forward + h)
+```
+
+This equation is evaluated after the main updates, using the new value
+of $\eta$.
+
+### Complete Operator Construction
+
+The full operator combines all equations:
+
+```python
+from devito import Operator
+
+op = Operator([update_eta, update_M, update_N, eq_D])
+```
+
+### ConditionalDimension for Snapshots
+
+For visualization and analysis, we often want to save the solution at
+regular intervals without storing every time step (which would be
+memory-prohibitive). Devito's `ConditionalDimension` provides efficient
+subsampling:
+
+```python
+from devito import ConditionalDimension
+
+# Save every 'factor' time steps
+factor = round(Nt / nsnaps)
+time_subsampled = ConditionalDimension(
+    't_sub', parent=grid.time_dim, factor=factor
+)
+
+# Create TimeFunction that saves at reduced frequency
+eta_save = TimeFunction(
+    name='eta_save', grid=grid, space_order=2,
+    save=nsnaps, time_dim=time_subsampled
+)
+
+# Add saving equation to operator
+op = Operator([update_eta, update_M, update_N, eq_D, Eq(eta_save, eta)])
+```
+
+The `ConditionalDimension`:
+
+1. Creates a time dimension that only activates every `factor` steps
+2. Links it to a `TimeFunction` with `save=nsnaps` storage
+3. Automatically manages indexing and memory allocation
+
+### Running the Simulation
+
+With all components in place, we run the simulation:
+
+```python
+# Apply operator for Nt time steps
+op.apply(eta=eta, M=M, N=N, D=D, h=h, time=Nt-2, dt=dt)
+```
+
+The `time=Nt-2` specifies the number of iterations (Devito uses 0-based
+indexing for the time loop).
+
+## Example: Tsunami with Constant Depth {#sec-swe-constant-depth}
+
+Let us model tsunami propagation in an ocean with constant depth.
+This is the simplest case for understanding the basic wave behavior.
+
+### Problem Setup
+
+- Domain: $100 \times 100$ m
+- Grid: $401 \times 401$ points
+- Depth: $h = 50$ m (constant)
+- Gravity: $g = 9.81$ m/s$^2$
+- Manning's roughness: $\alpha = 0.025$
+- Simulation time: $T = 3$ s
+
+The initial condition is a Gaussian pulse at the center:
+
+$$
+\eta_0(x, y) = 0.5 \exp\left(-\frac{(x-50)^2}{10} - \frac{(y-50)^2}{10}\right)
+$$
+
+with initial discharge:
+
+$$
+M_0 = 100 \cdot \eta_0, \quad N_0 = 0
+$$
+
+### Devito Implementation
+
+```python
+from devito import Grid, TimeFunction, Function, Eq, Operator, solve, sqrt
+import numpy as np
+
+# Physical parameters
+Lx, Ly = 100.0, 100.0  # Domain size [m]
+Nx, Ny = 401, 401       # Grid points
+g = 9.81                # Gravity [m/s^2]
+alpha = 0.025           # Manning's roughness
+h0 = 50.0               # Constant depth [m]
+
+# Time stepping
+Tmax = 3.0
+dt = 1/4500
+Nt = int(Tmax / dt)
+
+# Create coordinate arrays
+x = np.linspace(0.0, Lx, Nx)
+y = np.linspace(0.0, Ly, Ny)
+X, Y = np.meshgrid(x, y)
+
+# Initial conditions
+eta0 = 0.5 * np.exp(-((X - 50)**2 / 10) - ((Y - 50)**2 / 10))
+M0 = 100.0 * eta0
+N0 = np.zeros_like(M0)
+h_array = h0 * np.ones_like(X)
+
+# Create Devito grid
+grid = Grid(shape=(Ny, Nx), extent=(Ly, Lx), dtype=np.float32)
+
+# Create fields
+eta = TimeFunction(name='eta', grid=grid, space_order=2)
+M = TimeFunction(name='M', grid=grid, space_order=2)
+N = TimeFunction(name='N', grid=grid, space_order=2)
+h = Function(name='h', grid=grid)
+D = Function(name='D', grid=grid)
+
+# Set initial data
+eta.data[0, :, :] = eta0
+M.data[0, :, :] = M0
+N.data[0, :, :] = N0
+h.data[:] = h_array
+D.data[:] = eta0 + h_array
+
+# Build equations
+friction_M = g * alpha**2 * sqrt(M**2 + N**2) / D**(7./3.)
+friction_N = g * alpha**2 * sqrt(M.forward**2 + N**2) / D**(7./3.)
+
+pde_eta = Eq(eta.dt + M.dxc + N.dyc)
+pde_M = Eq(M.dt + (M**2/D).dxc + (M*N/D).dyc
+           + g*D*eta.forward.dxc + friction_M*M)
+pde_N = Eq(N.dt + (M.forward*N/D).dxc + (N**2/D).dyc
+           + g*D*eta.forward.dyc + friction_N*N)
+
+stencil_eta = solve(pde_eta, eta.forward)
+stencil_M = solve(pde_M, M.forward)
+stencil_N = solve(pde_N, N.forward)
+
+update_eta = Eq(eta.forward, stencil_eta, subdomain=grid.interior)
+update_M = Eq(M.forward, stencil_M, subdomain=grid.interior)
+update_N = Eq(N.forward, stencil_N, subdomain=grid.interior)
+eq_D = Eq(D, eta.forward + h)
+
+# Create and run operator
+op = Operator([update_eta, update_M, update_N, eq_D])
+op.apply(eta=eta, M=M, N=N, D=D, h=h, time=Nt-2, dt=dt)
+```
+
+### Expected Behavior
+
+In constant depth, the tsunami propagates outward as a circular wave
+at the shallow water wave speed:
+
+$$
+c = \sqrt{gD} \approx \sqrt{9.81 \times 50} \approx 22.1 \text{ m/s}
+$$
+
+The wave maintains its circular shape but decreases in amplitude due to:
+
+1. Geometric spreading (energy distributed over larger circumference)
+2. Bottom friction (energy dissipation)
+
+## Example: Tsunami with Varying Bathymetry {#sec-swe-bathymetry}
+
+Real ocean bathymetry significantly affects tsunami propagation.
+As waves approach shallow water, they slow down, their wavelength
+decreases, and their amplitude increases---a process called *shoaling*.
+
+### Tanh Depth Profile
+
+A common test case uses a $\tanh$ profile to model a coastal transition:
+
+$$
+h(x, y) = h_{\text{deep}} - (h_{\text{deep}} - h_{\text{shallow}}) \cdot \frac{1 + \tanh((x - x_0)/w)}{2}
+$$
+
+This creates a smooth transition from deep water to shallow water.
+
+### Implementation
+
+```python
+# Tanh bathymetry: deep on left, shallow on right
+h_deep = 50.0   # Deep water depth [m]
+h_shallow = 5.0 # Shallow water depth [m]
+x_transition = 70.0  # Transition location
+width = 8.0     # Transition width
+
+h_array = h_deep - (h_deep - h_shallow) * (
+    0.5 * (1 + np.tanh((X - x_transition) / width))
+)
+
+# Tsunami source in deep water
+eta0 = 0.5 * np.exp(-((X - 30)**2 / 10) - ((Y - 50)**2 / 20))
+```
+
+### Physical Effects
+
+As the tsunami propagates from deep to shallow water:
+
+1. **Speed decreases**: $c = \sqrt{gh}$ drops from $\sim 22$ m/s to $\sim 7$ m/s
+2. **Wavelength shortens**: Waves compress as they slow
+3. **Amplitude increases**: Energy conservation requires higher waves
+4. **Wave steepening**: Front of wave catches up to back
+
+This shoaling effect is why tsunamis, barely noticeable in the open
+ocean, become devastating near the coast.
+
+## Example: Tsunami Interacting with a Seamount {#sec-swe-seamount}
+
+Underwater topographic features like seamounts cause wave diffraction
+and focusing effects.
+
+### Seamount Bathymetry
+
+A Gaussian seamount rising from a flat seafloor:
+
+$$
+h(x, y) = h_0 - A \exp\left(-\frac{(x-x_0)^2}{\sigma^2} - \frac{(y-y_0)^2}{\sigma^2}\right)
+$$
+
+where $A$ is the seamount height and $\sigma$ controls its width.
+
+### Implementation
+
+```python
+# Constant depth with Gaussian seamount
+h_base = 50.0    # Base depth [m]
+x_mount, y_mount = 50.0, 50.0  # Seamount center
+height = 45.0    # Height (leaves 5m above summit)
+sigma = 20.0     # Width parameter
+
+h_array = h_base * np.ones_like(X)
+h_array -= height * np.exp(
+    -((X - x_mount)**2 / sigma) - ((Y - y_mount)**2 / sigma)
+)
+
+# Tsunami source to the left of seamount
+eta0 = 0.5 * np.exp(-((X - 30)**2 / 5) - ((Y - 50)**2 / 5))
+```
+
+### Physical Effects
+
+When the tsunami encounters the seamount:
+
+1. **Wave focusing**: Waves refract around the shallow region
+2. **Energy concentration**: Waves converge behind the seamount
+3. **Shadow zone**: Reduced amplitude directly behind
+4. **Scattered waves**: Secondary circular waves radiate outward
+
+## Using the Module Interface {#sec-swe-module}
+
+The complete solver is available in `src/systems/swe_devito.py`.
+The high-level interface simplifies common use cases:
+
+```python
+from src.systems import solve_swe
+import numpy as np
+
+# Constant depth simulation
+result = solve_swe(
+    Lx=100.0, Ly=100.0,
+    Nx=201, Ny=201,
+    T=2.0,
+    dt=1/4000,
+    g=9.81,
+    alpha=0.025,
+    h0=50.0,
+    nsnaps=100  # Save 100 snapshots
+)
+
+# Access results
+print(f"Final max wave height: {result.eta.max():.4f} m")
+print(f"Snapshots shape: {result.eta_snapshots.shape}")
+```
+
+### Custom Bathymetry
+
+For non-constant bathymetry, pass an array:
+
+```python
+# Create coordinate arrays
+x = np.linspace(0, 100, 201)
+y = np.linspace(0, 100, 201)
+X, Y = np.meshgrid(x, y)
+
+# Custom bathymetry with seamount
+h_custom = 50.0 * np.ones_like(X)
+h_custom -= 45.0 * np.exp(-((X-50)**2/20) - ((Y-50)**2/20))
+
+# Solve with custom bathymetry
+result = solve_swe(
+    Lx=100.0, Ly=100.0,
+    Nx=201, Ny=201,
+    T=2.0,
+    dt=1/4000,
+    h0=h_custom,  # Pass array instead of scalar
+)
+```
+
+### Custom Initial Conditions
+
+Both initial wave height and discharge can be specified:
+
+```python
+# Two tsunami sources
+eta0 = 0.5 * np.exp(-((X-35)**2/10) - ((Y-35)**2/10))
+eta0 -= 0.5 * np.exp(-((X-65)**2/10) - ((Y-65)**2/10))
+
+# Directional initial discharge
+M0 = 100.0 * eta0
+N0 = 50.0 * eta0  # Also some y-component
+
+result = solve_swe(
+    Lx=100.0, Ly=100.0,
+    Nx=201, Ny=201,
+    T=3.0,
+    dt=1/4000,
+    eta0=eta0,
+    M0=M0,
+    N0=N0,
+)
+```
+
+### Helper Functions
+
+Utility functions for common scenarios:
+
+```python
+from src.systems.swe_devito import (
+    gaussian_tsunami_source,
+    seamount_bathymetry,
+    tanh_bathymetry
+)
+
+# Create coordinate grid
+x = np.linspace(0, 100, 201)
+y = np.linspace(0, 100, 201)
+X, Y = np.meshgrid(x, y)
+
+# Gaussian tsunami source
+eta0 = gaussian_tsunami_source(X, Y, x0=30, y0=50, amplitude=0.5)
+
+# Seamount bathymetry
+h = seamount_bathymetry(X, Y, h_base=50, height=45, sigma=20)
+
+# Or coastal profile
+h = tanh_bathymetry(X, Y, h_deep=50, h_shallow=5, x_transition=70)
+```
+
+## Stability and Accuracy Considerations {#sec-swe-stability}
+
+### CFL Condition
+
+The shallow water equations have a CFL condition based on the gravity
+wave speed:
+
+$$
+\Delta t \leq \frac{\min(\Delta x, \Delta y)}{\sqrt{g \cdot \max(D)}}
+$$
+
+For $g = 9.81$ m/s$^2$ and $D_{\max} = 50$ m:
+
+$$
+\sqrt{gD} \approx 22.1 \text{ m/s}
+$$
+
+With $\Delta x = 0.25$ m (for a 401-point grid over 100 m):
+
+$$
+\Delta t \leq \frac{0.25}{22.1} \approx 0.011 \text{ s}
+$$
+
+In practice, we use smaller time steps (e.g., $\Delta t = 1/4500 \approx 0.00022$ s)
+for accuracy and to handle nonlinear effects.
+
+### Grid Resolution
+
+The grid must resolve the relevant wavelengths. For tsunami modeling:
+
+- Open ocean wavelengths: 100--500 km (coarse grid acceptable)
+- Coastal wavelengths: 1--10 km (finer grid needed)
+- Near-shore: 10--100 m (very fine grid required)
+
+### Boundary Conditions
+
+The current implementation uses implicit open boundaries (values at
+boundaries remain unchanged). For more accurate modeling, consider:
+
+1. **Sponge layers**: Absorbing regions near boundaries
+2. **Characteristic boundary conditions**: Based on wave directions
+3. **Periodic boundaries**: For idealized studies
+
+## Key Takeaways {#sec-swe-summary}
+
+1. **Systems of PDEs** require careful treatment of coupling between
+   unknowns, both in time and space.
+
+2. **The Shallow Water Equations** are a fundamental hyperbolic system
+   used for tsunami, storm surge, and flood modeling.
+
+3. **Devito's solve() function** automatically isolates forward time
+   terms in coupled nonlinear equations.
+
+4. **Static fields** (like bathymetry) use `Function` instead of
+   `TimeFunction` to avoid unnecessary time indexing.
+
+5. **ConditionalDimension** enables efficient snapshot saving without
+   storing every time step.
+
+6. **Bathymetry effects** (shoaling, refraction, diffraction) are
+   captured automatically through the depth-dependent terms.
+
+7. **The friction term** using Manning's roughness accounts for
+   seafloor energy dissipation.

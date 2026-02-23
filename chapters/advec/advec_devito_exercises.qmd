@@ -170,7 +170,7 @@ plt.loglog(sizes_lf, err_lf, 'g-^', label=f'Lax-Friedrichs (rate={rate_lf:.2f})'
 # Reference slopes
 h = np.array(sizes_up)
 plt.loglog(h, err_up[0]*(h[0]/h), 'k--', alpha=0.5, label='O(h)')
-plt.loglog(h, err_lw[0]*(h[0]/h)**2, 'k:', alpha=0.5, label='O(h²)')
+plt.loglog(h, err_lw[0]*(h[0]/h)**2, 'k:', alpha=0.5, label='O(h^2)')
 
 plt.xlabel('Grid points')
 plt.ylabel('L2 Error')

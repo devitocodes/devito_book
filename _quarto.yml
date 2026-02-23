@@ -6,12 +6,16 @@ book:
   title: "Finite Difference Computing with PDEs"
   subtitle: "A Devito Approach"
   author:
-    - name: Hans Petter Langtangen
-    - name: Svein Linge
+    - name: Gerard J. Gorman
+      affiliation: Imperial College London
   date: today
   chapters:
     - index.qmd
     - chapters/preface/index.qmd
+    # Note: chapters/vib/ exists on disk but is excluded from the build.
+    # The vibration ODE content from the original Langtangen & Linge text
+    # has not yet been ported to the Devito approach. Readers interested
+    # in vibration ODEs can refer to Langtangen_deqbook_vib in the bibliography.
     - part: "Main Chapters"
       chapters:
         - chapters/devito_intro/index.qmd
@@ -19,6 +23,11 @@ book:
         - chapters/diffu/index.qmd
         - chapters/advec/index.qmd
         - chapters/nonlin/index.qmd
+        - chapters/elliptic/index.qmd
+        - chapters/systems/index.qmd
+    - part: "Applications"
+      chapters:
+        - chapters/applications/electromagnetics/index.qmd
     - part: "Appendices"
       chapters:
         - chapters/appendices/formulas/index.qmd
@@ -39,6 +48,86 @@ format:
     number-depth: 3
     crossref:
       chapters: true
+    include-in-header:
+      text: |
+        <script>
+        MathJax = {
+          tex: {
+            macros: {
+              half: "\\frac{1}{2}",
+              halfi: "{1/2}",
+              tp: "\\thinspace .",
+              Ddt: ["\\frac{D #1}{dt}", 1],
+              E: ["\\text{E}\\lbrack #1 \\rbrack", 1],
+              Var: ["\\text{Var}\\lbrack #1 \\rbrack", 1],
+              Std: ["\\text{Std}\\lbrack #1 \\rbrack", 1],
+              xpoint: "\\boldsymbol{x}",
+              normalvec: "\\boldsymbol{n}",
+              Oof: ["\\mathcal{O}(#1)", 1],
+              x: "\\boldsymbol{x}",
+              X: "\\boldsymbol{X}",
+              uu: "\\boldsymbol{u}",
+              vv: "\\boldsymbol{v}",
+              w: "\\boldsymbol{w}",
+              acc: "\\boldsymbol{a}",
+              rpos: "\\boldsymbol{r}",
+              V: "\\boldsymbol{V}",
+              e: "\\boldsymbol{e}",
+              f: "\\boldsymbol{f}",
+              F: "\\boldsymbol{F}",
+              stress: "\\boldsymbol{\\sigma}",
+              strain: "\\boldsymbol{\\varepsilon}",
+              stressc: "{\\sigma}",
+              strainc: "{\\varepsilon}",
+              I: "\\boldsymbol{I}",
+              T: "\\boldsymbol{T}",
+              U: "\\boldsymbol{U}",
+              q: "\\boldsymbol{q}",
+              g: "\\boldsymbol{g}",
+              dfc: "\\alpha",
+              ii: "\\boldsymbol{i}",
+              jj: "\\boldsymbol{j}",
+              kk: "\\boldsymbol{k}",
+              ir: "\\boldsymbol{i}_r",
+              ith: "\\boldsymbol{i}_{\\theta}",
+              iz: "\\boldsymbol{i}_z",
+              Ix: "\\mathcal{I}_x",
+              It: "\\mathcal{I}_y",
+              Iz: "\\mathcal{I}_z",
+              It: "\\mathcal{I}_t",
+              If: "\\mathcal{I}_s",
+              Ifd: "{I_d}",
+              Ifb: "{I_b}",
+              setb: ["#1^0", 1],
+              sete: ["#1^{-1}", 1],
+              setl: ["#1^-", 1],
+              setr: ["#1^+", 1],
+              seti: ["#1^i", 1],
+              sequencei: ["\\left\\{ {#1}_i \\right\\}_{i\\in\\If}", 1],
+              sequencej: ["\\left\\{ {#1}_j \\right\\}_{j\\in\\If}", 1],
+              stepzero: "*",
+              stephalf: "***",
+              stepone: "**",
+              basphi: "\\varphi",
+              baspsi: "\\psi",
+              refphi: "\\tilde\\basphi",
+              psib: "\\boldsymbol{\\psi}",
+              sinL: ["\\sin\\left((#1+1)\\pi\\frac{x}{L}\\right)", 1],
+              xno: ["x_{#1}", 1],
+              Xno: ["X_{(#1)}", 1],
+              yno: ["y_{#1}", 1],
+              Yno: ["Y_{(#1)}", 1],
+              xdno: ["\\boldsymbol{x}_{#1}", 1],
+              dX: "\\, \\mathrm{d}X",
+              dx: "\\, \\mathrm{d}x",
+              ds: "\\, \\mathrm{d}s",
+              Real: "\\mathbb{R}",
+              Integerp: "\\mathbb{N}",
+              Integer: "\\mathbb{Z}"
+            }
+          }
+        };
+        </script>
   pdf:
     documentclass: scrbook
     classoption:
@@ -63,6 +152,8 @@ format:
         \SetWatermarkColor[gray]{0.9}
 
         % Required packages
+        \usepackage[T1]{fontenc}  % Proper glyph support for accents and symbols
+        \usepackage{textcomp}     % Additional text symbols
         \usepackage{bm}  % For bold math symbols
 
         % Custom LaTeX macros from the book
@@ -70,19 +161,11 @@ format:
         \newcommand{\halfi}{{1/2}}
         \newcommand{\tp}{\thinspace .}
 
-        \newcommand{\uex}{u_{\mbox{\footnotesize e}}}
-        \newcommand{\uexd}[1]{u_{\mbox{\footnotesize e}, #1}}
-        \newcommand{\vex}{v_{\mbox{\footnotesize e}}}
-        \newcommand{\Vex}{V_{\mbox{\footnotesize e}}}
-        \newcommand{\vexd}[1]{v_{\mbox{\footnotesize e}, #1}}
-        \newcommand{\Aex}{A_{\mbox{\footnotesize e}}}
-        \newcommand{\wex}{w_{\mbox{\footnotesize e}}}
-
         % Operators
         \newcommand{\Ddt}[1]{\frac{D #1}{dt}}
-        \newcommand{\E}[1]{\hbox{E}\lbrack #1 \rbrack}
-        \newcommand{\Var}[1]{\hbox{Var}\lbrack #1 \rbrack}
-        \newcommand{\Std}[1]{\hbox{Std}\lbrack #1 \rbrack}
+        \newcommand{\E}[1]{\text{E}\lbrack #1 \rbrack}
+        \newcommand{\Var}[1]{\text{Var}\lbrack #1 \rbrack}
+        \newcommand{\Std}[1]{\text{Std}\lbrack #1 \rbrack}
 
         \newcommand{\xpoint}{\bm{x}}
         \newcommand{\normalvec}{\bm{n}}
@@ -169,8 +252,11 @@ src_diffu: "https://github.com/devitocodes/devito_book/tree/devito/src/diffu"
 src_nonlin: "https://github.com/devitocodes/devito_book/tree/devito/src/nonlin"
 src_trunc: "https://github.com/devitocodes/devito_book/tree/devito/src/trunc"
 src_advec: "https://github.com/devitocodes/devito_book/tree/devito/src/advec"
+src_elliptic: "https://github.com/devitocodes/devito_book/tree/devito/src/elliptic"
+src_systems: "https://github.com/devitocodes/devito_book/tree/devito/src/systems"
 src_formulas: "https://github.com/devitocodes/devito_book/tree/devito/src/formulas"
 src_softeng2: "https://github.com/devitocodes/devito_book/tree/devito/src/softeng2"
+src_em: "https://github.com/devitocodes/devito_book/tree/devito/src/em"
 
 crossref:
   eq-prefix: ""

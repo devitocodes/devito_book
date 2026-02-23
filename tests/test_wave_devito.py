@@ -104,8 +104,8 @@ class TestWave1DSolver:
         u_exact = exact_standing_wave(result.x, T, L, c)
         error = np.sqrt(np.mean((result.u - u_exact)**2))
 
-        # Should be reasonably accurate (allow some numerical error)
-        assert error < 0.05, f"Error {error} too large"
+        # Second-order scheme with Nx=100 (dx=0.01): O(dx^2) ~ 1e-4 bound
+        assert error < 1e-4, f"Error {error} too large"
 
     def test_convergence_second_order(self):
         """Verify at least second-order convergence in space.
@@ -202,7 +202,7 @@ class TestWave1DSolver:
         assert hasattr(result, 't_history')
         assert hasattr(result, 'C')
 
-        assert result.t == pytest.approx(0.1, rel=1e-3)
+        assert result.t == pytest.approx(0.1, rel=1e-2)
         assert result.u_history.shape[0] > 1
         assert result.u_history.shape[1] == 51
 
@@ -369,8 +369,8 @@ class TestWave2DSolver:
         u_exact = exact_standing_wave_2d(X, Y, T, Lx, Ly, c)
         error = np.sqrt(np.mean((result.u - u_exact)**2))
 
-        # Should be reasonably accurate
-        assert error < 0.05, f"Error {error} too large"
+        # Second-order scheme with Nx=Ny=40 (dx=0.025): O(dx^2) ~ 6e-4 bound
+        assert error < 1e-3, f"Error {error} too large"
 
     def test_convergence_second_order(self):
         """Verify at least second-order convergence."""

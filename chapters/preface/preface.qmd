@@ -1,14 +1,14 @@
-## About This Adaptation {.unnumbered}
+## About This Edition {.unnumbered}
 
-This book is an adaptation of *Finite Difference Computing with PDEs: A Modern Software Approach* by Hans Petter Langtangen and Svein Linge, originally published by Springer in 2017 under a [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
+This book is based on *Finite Difference Computing with PDEs: A Modern Software Approach* by Hans Petter Langtangen and Svein Linge, originally published by Springer in 2017 under a [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
 
 **Original Work:**
 
 > Langtangen, H.P., Linge, S. (2017). *Finite Difference Computing with PDEs: A Modern Software Approach*. Texts in Computational Science and Engineering, vol 16. Springer, Cham. [https://doi.org/10.1007/978-3-319-55456-3](https://doi.org/10.1007/978-3-319-55456-3)
 
-### What Has Changed
+### What's New in This Edition
 
-This edition has been substantially adapted to feature [Devito](https://www.devitoproject.org/), a domain-specific language for symbolic PDE specification and automatic code generation.
+This edition has been substantially rewritten to feature [Devito](https://www.devitoproject.org/), a domain-specific language for symbolic PDE specification and automatic code generation.
 
 **New Content:**
 
@@ -24,17 +24,24 @@ This edition has been substantially adapted to feature [Devito](https://www.devi
 - Continuous integration and testing infrastructure
 - Updated external links and references
 
-**Preserved Content:**
-
-- Mathematical derivations and theoretical foundations
-- Pedagogical structure and learning philosophy
-- Appendices on truncation errors and finite difference formulas
-
 ### Acknowledgment
 
-This adaptation was prepared by Gerard J. Gorman (Imperial College London) in collaboration with the Devito development team.
+I first encountered Hans Petter Langtangen's work through his book *A Primer on Scientific Programming with Python* [@Langtangen_2012], which I used to develop my first lecture course on Python programming for geoscientists. When I contacted him for advice on teaching introductory programming to domain scientists, he was remarkably generous and helpful, even providing his lecture slides to help me get started. His approach to teaching computational science has been formative in shaping my own teaching ever since.
 
-Professor Hans Petter Langtangen passed away in October 2016. His profound contributions to computational science education continue to benefit students and practitioners worldwide. This adaptation aims to honor his legacy by bringing his pedagogical approach to modern tools.
+Professor Langtangen passed away in October 2016. I am deeply grateful to both him and Svein Linge for their contributions to computational science education and their commitment to open-access publishing and open-source software. Their original work provided an excellent foundation for this edition.
+
+This work was prepared in collaboration with the Devito development team.
+
+### Use of Generative AI
+
+In keeping with principles of transparency and academic integrity, we acknowledge the use of generative AI tools in preparing this edition. Multiple AI assistants, including Claude (Anthropic), were used to support the following aspects of this work:
+
+- **Formatting and drafting**: AI tools assisted with document formatting, conversion between markup formats, and initial drafts of some explanatory sections.
+- **Code adaptation**: Initial rewrites of numerical examples from the original Python/NumPy implementations to Devito's domain-specific language, with subsequent manual review and verification.
+- **Test development**: Generation of unit tests and code verification tests to support reproducibility and ensure that all code examples compile and produce correct results.
+- **Editorial support**: Proofreading, consistency checking, and cross-reference verification.
+
+All AI-generated content was reviewed, edited, and verified by Gerard Gorman, who takes full responsibility for this edition.
 
 ---
 

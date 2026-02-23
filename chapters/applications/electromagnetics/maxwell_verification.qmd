@@ -1,0 +1,279 @@
+## Verification {#sec-em-verification}
+
+Verification ensures our implementation correctly solves the intended
+equations. We apply the techniques from @sec-devito-intro-verification:
+exact solutions, convergence testing, and the Method of Manufactured
+Solutions (MMS).
+
+### Verification Checklist
+
+A complete verification suite for the Maxwell solver should confirm:
+
+1. **Wave speed**: A pulse travels at $c = 1/\sqrt{\varepsilon\mu}$
+2. **PEC reflection**: Electric field vanishes at PEC boundaries
+3. **Impedance relation**: $|E|/|H| = \eta = \sqrt{\mu/\varepsilon}$
+4. **Convergence rate**: Second-order in space and time
+5. **Energy conservation**: Total EM energy is constant (lossless case)
+
+### Exact Solution: Plane Wave
+
+The simplest exact solution is a plane wave:
+$$
+E_z(x, t) = E_0 \cos(kx - \omega t), \quad
+H_y(x, t) = \frac{E_0}{\eta} \cos(kx - \omega t)
+$$ {#eq-em-plane-wave}
+
+where $\omega = kc$ and $\eta = \sqrt{\mu/\varepsilon}$.
+
+```python
+from src.em import solve_maxwell_1d, exact_plane_wave_1d, EMConstants
+import numpy as np
+
+const = EMConstants()
+L = 1.0
+Nx = 200
+wavelength = 0.1
+k = 2 * np.pi / wavelength
+
+# Initial condition from exact solution
+def E_init(x):
+    return np.cos(k * x)
+
+def H_init(x):
+    return np.cos(k * x) / const.eta0
+
+# Run simulation
+T = 0.5e-9  # Short time to avoid boundary effects
+result = solve_maxwell_1d(
+    L=L, Nx=Nx, T=T, CFL=0.9,
+    E_init=E_init, H_init=H_init,
+    bc_left="abc", bc_right="abc",
+)
+
+# Compare with exact
+E_exact, _ = exact_plane_wave_1d(result.x_E, result.t, k=k)
+error = np.sqrt(np.mean((result.E_z - E_exact)**2))
+print(f"L2 error: {error:.2e}")
+```
+
+### Wave Speed Verification
+
+To verify the wave travels at the correct speed, we track a pulse peak:
+
+```python
+from src.em.verification import verify_wave_speed, EMConstants
+import numpy as np
+
+const = EMConstants()
+
+# Gaussian pulse simulation
+result = solve_maxwell_1d(
+    L=1.0, Nx=400, T=3e-9, CFL=0.9,
+    E_init=lambda x: np.exp(-((x - 0.2)**2) / 0.01**2),
+    bc_left="abc", bc_right="abc",
+    save_history=True,
+)
+
+passed, measured_c = verify_wave_speed(
+    result.E_history,
+    result.x_E,
+    result.t_history,
+    expected_c=const.c0,
+    tolerance=0.05,
+)
+
+print(f"Expected speed: {const.c0:.3e} m/s")
+print(f"Measured speed: {measured_c:.3e} m/s")
+print(f"Verification: {'PASSED' if passed else 'FAILED'}")
+```
+
+### Convergence Testing
+
+The Yee scheme should exhibit second-order convergence. We verify this
+by running a grid refinement study:
+
+```python
+from src.em import convergence_test_maxwell_1d
+import numpy as np
+
+grid_sizes, errors, order = convergence_test_maxwell_1d(
+    grid_sizes=[50, 100, 200, 400],
+    T=0.5e-9,
+    CFL=0.5,
+    wavelength=0.1,
+)
+
+print("Grid refinement study:")
+print("-" * 40)
+for N, err in zip(grid_sizes, errors):
+    dx = 1.0 / N
+    print(f"Nx = {N:3d}, dx = {dx:.4f}, error = {err:.2e}")
+print("-" * 40)
+print(f"Observed order: {order:.2f}")
+print(f"Expected order: 2.00")
+print(f"Verification: {'PASSED' if 1.9 <= order <= 2.1 else 'FAILED'}")
+```
+
+Expected output:
+```
+Grid refinement study:
+----------------------------------------
+Nx =  50, dx = 0.0200, error = 2.34e-03
+Nx = 100, dx = 0.0100, error = 5.85e-04
+Nx = 200, dx = 0.0050, error = 1.46e-04
+Nx = 400, dx = 0.0025, error = 3.66e-05
+----------------------------------------
+Observed order: 2.00
+Expected order: 2.00
+Verification: PASSED
+```
+
+### Method of Manufactured Solutions
+
+MMS provides a systematic way to verify that the code solves the equations
+correctly, independent of the existence of analytical solutions.
+
+We choose a smooth manufactured solution:
+$$
+E_z^{mms}(x, t) = \sin(\pi x/L) \cos(\omega t) e^{-\alpha t}
+$$ {#eq-em-mms}
+
+This satisfies a modified PDE with a source term $f(x, t)$ that we compute
+symbolically. By running the solver with this source and comparing to the
+manufactured solution, we verify correctness.
+
+```python
+from src.em.verification import manufactured_solution_1d
+import numpy as np
+
+# Generate manufactured solution at t = 0.5e-9
+x = np.linspace(0, 1, 201)
+t = 0.5e-9
+E_mms, H_mms, source = manufactured_solution_1d(
+    x, t,
+    omega=2*np.pi*1e9,
+    alpha=1e8,
+)
+
+# The source term is what we'd need to add to the RHS
+# to make E_mms the exact solution
+print(f"Max manufactured E: {np.max(np.abs(E_mms)):.3e}")
+print(f"Max source term: {np.max(np.abs(source)):.3e}")
+```
+
+### Energy Conservation
+
+In lossless media, the total electromagnetic energy should be constant:
+$$
+U = \int \left(\frac{1}{2}\varepsilon E^2 + \frac{1}{2}\mu H^2\right) dx
+$$ {#eq-em-energy}
+
+```python
+from src.em.verification import verify_energy_conservation
+from src.em import solve_maxwell_1d, EMConstants
+import numpy as np
+
+const = EMConstants()
+
+# Run with PEC boundaries (closed system)
+result = solve_maxwell_1d(
+    L=1.0, Nx=200, T=5e-9, CFL=0.9,
+    E_init=lambda x: np.exp(-((x - 0.5)**2) / 0.02**2),
+    bc_left="pec", bc_right="pec",
+    save_history=True,
+)
+
+passed, max_change, energy = verify_energy_conservation(
+    result.E_history,
+    result.H_history,
+    result.dx,
+    const.eps0,
+    const.mu0,
+    tolerance=0.01,
+)
+
+print(f"Initial energy: {energy[0]:.6e} J")
+print(f"Final energy:   {energy[-1]:.6e} J")
+print(f"Max relative change: {100*max_change:.4f}%")
+print(f"Verification: {'PASSED' if passed else 'FAILED'}")
+```
+
+### Verification Against Published Results
+
+For additional confidence, we compare against published benchmarks.
+
+**Monk-S\"uli Convergence Rates** [@monk_suli1994]:
+
+The seminal paper by Monk and S\"uli proves that the Yee scheme achieves
+second-order convergence in the $L^2$ norm. Our tests should reproduce their
+Table 2 results.
+
+```python
+from src.em.verification import verify_monk_suli_convergence
+
+def test_function(N):
+    """Run solver and return (error, dx)."""
+    result = solve_maxwell_1d(
+        L=1.0, Nx=N, T=0.5e-9, CFL=0.5,
+        E_init=lambda x: np.sin(np.pi * x),
+        bc_left="pec", bc_right="pec",
+    )
+    # Compare with standing wave solution
+    E_exact = np.sin(np.pi * result.x_E) * np.cos(np.pi * const.c0 * result.t)
+    error = np.sqrt(np.mean((result.E_z - E_exact)**2))
+    return error, result.dx
+
+passed, order, errors = verify_monk_suli_convergence(
+    test_function,
+    grid_sizes=[25, 50, 100, 200],
+    expected_order=2.0,
+    tolerance=0.2,
+)
+
+print(f"Observed order: {order:.2f}")
+print(f"Monk-Suli expected: 2.0")
+print(f"Verification: {'PASSED' if passed else 'FAILED'}")
+```
+
+**Taflove Dispersion Formula** [@taflove1980]:
+
+We verify that our numerical dispersion matches the theoretical formula:
+
+```python
+from src.em.verification import taflove_dispersion_formula
+from src.em.analysis import numerical_dispersion_relation_1d
+import numpy as np
+
+# Test parameters
+c = EMConstants().c0
+dx = 0.01  # 1 cm grid
+dt = 0.9 * dx / c  # CFL = 0.9
+
+# Test at various wavenumbers
+for k_dx in [0.1, 0.5, 1.0, 2.0]:
+    k = k_dx / dx
+    omega = k * c  # Physical frequency
+
+    # Our implementation
+    omega_num = numerical_dispersion_relation_1d(k, c, dx, dt)
+
+    # Taflove's formula
+    ratio_taflove = taflove_dispersion_formula(omega, c, dx, dt)
+
+    print(f"k*dx = {k_dx:.1f}: omega_num/omega = {omega_num/omega:.6f}, "
+          f"Taflove = {ratio_taflove:.6f}")
+```
+
+### Summary of Verification Tests
+
+| Test | What it Verifies | Acceptance Criterion |
+|------|------------------|---------------------|
+| Plane wave | Correct wave speed | Error < 1% |
+| PEC reflection | Boundary conditions | $E_z = 0$ at boundary |
+| Impedance ratio | $E$-$H$ relationship | $\|E\|/\|H\| = \eta \pm 1\%$ |
+| Convergence | Order of accuracy | Rate = $2.0 \pm 0.1$ |
+| Energy | Conservation | Change < 1% |
+| Monk-S\"uli | Published results | Rate matches paper |
+
+Our test suite in `tests/test_maxwell*.py` implements all these checks,
+ensuring the solver remains correct as the code evolves.

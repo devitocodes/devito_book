@@ -1,5 +1,14 @@
 ## Neumann boundary conditions {#sec-wave-pde2-Neumann}
 
+::: {.callout-note}
+## Source Files
+
+The verification and convergence testing functions presented in this chapter
+(`test_plug`, `convergence_rates`, `PlotAndStoreSolution`) demonstrate
+important software engineering practices. For Devito-based wave solvers with
+comprehensive tests, see `src/wave/wave1D_devito.py` and `tests/test_wave_devito.py`.
+:::
+
 The boundary condition $u=0$ in a wave equation reflects the wave, but
 $u$ changes sign at the boundary, while the condition $u_x=0$ reflects
 the wave as a mirror and preserves the sign.
@@ -76,7 +85,7 @@ computed since the point is outside the mesh. However, if we combine
 (@eq-wave-pde1-Neumann-0-cd) with the scheme
 $$
 u^{n+1}_i = -u^{n-1}_i + 2u^n_i + C^2
-\left(u^{n}**{i+1}-2u^{n}**{i} + u^{n}_{i-1}\right),
+\left(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}\right),
 $$ {#eq-wave-pde1-Neumann-0-scheme}
 for $i=0$, we can eliminate the fictitious value $u_{-1}^n$. We see that
 $u_{-1}^n=u_1^n$ from (@eq-wave-pde1-Neumann-0-cd), which
@@ -84,13 +93,13 @@ can be used in (@eq-wave-pde1-Neumann-0-scheme) to
 arrive at a modified scheme for the boundary point $u_0^{n+1}$:
 $$
 u^{n+1}_i = -u^{n-1}_i  + 2u^n_i + 2C^2
-\left(u^{n}**{i+1}-u^{n}**{i}\right),\quad i=0 \tp
+\left(u^{n}_{i+1}-u^{n}_{i}\right),\quad i=0 \tp
 $$
 Figure @fig-wave-pde1-fig-Neumann-stencil visualizes this equation
 for computing $u^3_0$ in terms of $u^2_0$, $u^1_0$, and
 $u^2_1$.
 
-![Modified stencil at a boundary with a Neumann condition.](fig/stencil_n_left){#fig-wave-pde1-fig-Neumann-stencil width="500px"}
+![Modified stencil at a boundary with a Neumann condition. The ghost point $u_{-1}^n$ is eliminated using $u_{-1}^n = u_1^n$.](fig/stencil_n_left){#fig-wave-pde1-fig-Neumann-stencil width="500px"}
 
 Similarly, (@eq-wave-pde1-Neumann-0) applied at $x=L$
 is discretized by a central difference
@@ -101,7 +110,7 @@ Combined with the scheme for $i=N_x$ we get a modified scheme for
 the boundary value $u_{N_x}^{n+1}$:
 $$
 u^{n+1}_i = -u^{n-1}_i + 2u^n_i + 2C^2
-\left(u^{n}**{i-1}-u^{n}**{i}\right),\quad i=N_x \tp
+\left(u^{n}_{i-1}-u^{n}_{i}\right),\quad i=N_x \tp
 $$
 The modification of the scheme at the boundary is also required for
 the special formula for the first time step.
@@ -146,22 +155,10 @@ for i in range(0, Nx+1):
     u[i] = u_n[i] + C2*(u_n[im1] - 2*u_n[i] + u_n[ip1])
 ```
 
-The program [`wave1D_n0.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_n0.py)
-contains a complete implementation of the 1D wave equation with
-boundary conditions $u_x = 0$ at $x=0$ and $x=L$.
-
-It would be nice to modify the `test_quadratic` test case from the
-`wave1D_u0.py` with Dirichlet conditions, described in Section
-@sec-wave-pde1-impl-vec-verify-quadratic. However, the Neumann
-conditions require the polynomial variation in the $x$ direction to
-be of third degree, which causes challenging problems when
-designing a test where the numerical solution is known exactly.
-Exercise @sec-wave-fd2-exer-verify-cubic outlines ideas and code
-for this purpose. The only test in `wave1D_n0.py` is to start
-with a plug wave at rest and see that the initial condition is
-reached again perfectly after one period of motion, but such
-a test requires $C=1$ (so the numerical solution coincides with
-the exact solution of the PDE, see Section @sec-wave-pde1-num-dispersion).
+For a complete implementation of Neumann boundary conditions using Devito, see
+@sec-wave-devito in the wave equation chapter. Devito handles boundary
+conditions through SubDomains, which provide a clean separation between
+interior updates and boundary treatment.
 
 ## Index set notation {#sec-wave-indexset}
 
@@ -232,10 +229,10 @@ A finite difference scheme can with the index set notation be specified as
 
 \begin{align*}
 u_i^{n+1} &= u^n_i - \half
-C^2\left(u^{n}**{i+1}-2u^{n}**{i} + u^{n}_{i-1}\right),\quad,
+C^2\left(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}\right),\quad,
 i\in\seti{\Ix},\ n=0,\\
 u^{n+1}_i &= -u^{n-1}_i  + 2u^n_i + C^2
-\left(u^{n}**{i+1}-2u^{n}**{i}+u^{n}_{i-1}\right),
+\left(u^{n}_{i+1}-2u^{n}_{i}+u^{n}_{i-1}\right),
 \quad i\in\seti{\Ix},\ n\in\seti{\It},\\
 u_i^{n+1} &= 0,
 \quad i=\setb{\Ix},\ n\in\setl{\It},\\
@@ -256,19 +253,17 @@ for n in It[1:-1]:
     i = Ix[-1]; u[i] = 0
 ```
 
-:::{.callout-note title="The program [`wave1D_dn.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_dn.py)"}
-applies the index set notation and
-solves the 1D wave equation $u_{tt}=c^2u_{xx}+f(x,t)$ with
-quite general boundary and initial conditions:
+:::{.callout-note title="Boundary conditions in Devito"}
+The 1D wave equation $u_{tt}=c^2u_{xx}+f(x,t)$ with general boundary
+and initial conditions can be solved using Devito. See @sec-wave-devito
+for the implementation that handles:
 
   * $x=0$: $u=U_0(t)$ or $u_x=0$
   * $x=L$: $u=U_L(t)$ or $u_x=0$
   * $t=0$: $u=I(x)$
   * $t=0$: $u_t=V(x)$
 
-The program combines Dirichlet and Neumann conditions, scalar and vectorized
-implementation of schemes, and the index set notation into one piece of code.
-A lot of test examples are also included in the program:
+Common test cases include:
 
  * A rectangular plug-shaped initial condition. (For $C=1$ the solution
    will be a rectangle that jumps one cell per time step, making the case
@@ -276,83 +271,19 @@ A lot of test examples are also included in the program:
  * A Gaussian function as initial condition.
  * A triangular profile as initial condition, which resembles the
    typical initial shape of a guitar string.
- * A sinusoidal variation of $u$ at $x=0$ and either $u=0$ or
-   $u_x=0$ at $x=L$.
- * An analytical solution $u(x,t)=\cos(m\pi t/L)\sin({\half}m\pi x/L)$, which can be used for convergence rate tests.
 :::
 
 ## Verifying the implementation of Neumann conditions {#sec-wave-pde1-verify}
 
 How can we test that the Neumann conditions are correctly implemented?
-The `solver` function in the `wave1D_dn.py` program described in the
-box above accepts Dirichlet or Neumann conditions at $x=0$ and $x=L$.
 It is tempting to apply a quadratic solution as described in
-Sections @sec-wave-pde2-fd and @sec-wave-pde1-impl-verify-quadratic,
-but it turns out that this solution is no longer an exact solution
+@sec-wave-pde2-fd-verify-quadratic, but it turns out that this solution
+is no longer an exact solution
 of the discrete equations if a Neumann condition is implemented on
 the boundary. A linear solution does not help since we only have
-homogeneous Neumann conditions in `wave1D_dn.py`, and we are
-consequently left with testing just a constant solution: $u=\hbox{const}$.
+homogeneous Neumann conditions, and we are
+consequently left with testing just a constant solution: $u=\text{const}$.
 
-```python
-def test_constant():
-    """
-    Check the scalar and vectorized versions for
-    a constant u(x,t). We simulate in [0, L] and apply
-    Neumann and Dirichlet conditions at both ends.
-    """
-    u_const = 0.45
-    u_exact = lambda x, t: u_const
-    I = lambda x: u_exact(x, 0)
-    V = lambda x: 0
-    f = lambda x, t: 0
-
-    def assert_no_error(u, x, t, n):
-        u_e = u_exact(x, t[n])
-        diff = np.abs(u - u_e).max()
-        msg = "diff=%E, t_%d=%g" % (diff, n, t[n])
-        tol = 1e-13
-        assert diff < tol, msg
-
-    for U_0 in (None, lambda t: u_const):
-        for U_L in (None, lambda t: u_const):
-            L = 2.5
-            c = 1.5
-            C = 0.75
-            Nx = 3  # Very coarse mesh for this exact test
-            dt = C * (L / Nx) / c
-            T = 18  # long time integration
-
-            solver(
-                I,
-                V,
-                f,
-                c,
-                U_0,
-                U_L,
-                L,
-                dt,
-                C,
-                T,
-                user_action=assert_no_error,
-                version="scalar",
-            )
-            solver(
-                I,
-                V,
-                f,
-                c,
-                U_0,
-                U_L,
-                L,
-                dt,
-                C,
-                T,
-                user_action=assert_no_error,
-                version="vectorized",
-            )
-            print(U_0, U_L)
-```
 The quadratic solution is very useful for testing, but it requires
 Dirichlet conditions at both ends.
 
@@ -426,7 +357,7 @@ $u_{-1}^n$ and $u_{N_x+1}^n$, are called *ghost values*.
 The important idea is
 to ensure that we always have
 $$
-u_{-1}^n = u_{1}^n\hbox{ and } u_{N_x+1}^n = u_{N_x-1}^n,
+u_{-1}^n = u_{1}^n\text{ and } u_{N_x+1}^n = u_{N_x-1}^n,
 $$
 because then
 the application of the standard scheme at a boundary point $i=0$ or $i=N_x$
@@ -508,8 +439,8 @@ u[i+1] = u[i-1]
 The physical solution to be plotted is now in `u[1:-1]`, or
 equivalently `u[Ix[0]:Ix[-1]+1]`, so this slice is
 the quantity to be returned from a solver function.
-A complete implementation appears in the program
-[`wave1D_n0_ghost.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_n0_ghost.py).
+In Devito, ghost cells are handled automatically through the halo
+region mechanism. See @sec-wave-devito for the Devito implementation.
 
 :::{.callout-warning title="We have to be careful with how the spatial and temporal mesh"}
 points are stored. Say we let `x` be the physical mesh points,
@@ -703,15 +634,15 @@ particular interest in this context:
 q_{i+\half} &\approx
 \half\left( q_{i} + q_{i+1}\right) =
 [\overline{q}^{x}]_i
-\quad &\hbox{(arithmetic mean)}
+\quad &\text{(arithmetic mean)}
 \\
 q_{i+\half} &\approx
 2\left( \frac{1}{q_{i}} + \frac{1}{q_{i+1}}\right)^{-1}
-\quad &\hbox{(harmonic mean)}
+\quad &\text{(harmonic mean)}
 \\
 q_{i+\half} &\approx
 \left(q_{i}q_{i+1}\right)^{1/2}
-\quad &\hbox{(geometric mean)}
+\quad &\text{(geometric mean)}
 \end{alignat}
 ```
 The arithmetic mean is by
@@ -807,7 +738,7 @@ q_i + \left(\frac{dq}{dx}\right)_i \Delta x
 +\nonumber\\
 &\quad q_i - \left(\frac{dq}{dx}\right)_i \Delta x
 + \left(\frac{d^2q}{dx^2}\right)_i \Delta x^2 + \cdots\nonumber\\
-&= 2q_i + 2\left(\frac{d^2q}{dx^2}\right)_i \Delta x^2 + {\cal O}(\Delta x^4)
+&= 2q_i + 2\left(\frac{d^2q}{dx^2}\right)_i \Delta x^2 + \Oof{\Delta x^4}
 \nonumber\\
 &\approx 2q_i
 \end{align} \tp
@@ -818,7 +749,7 @@ $q_{n-\half}$ and $q_{n+\half}$ in
 $$
 (q_i + \half(q_{i+1}+q_{i-1}))(u_{i-1}^n-u_i^n)\tp
 $$
-Since $\half(q_{i+1}+q_{i-1}) = q_i + {\cal O}(\Delta x^2)$,
+Since $\half(q_{i+1}+q_{i-1}) = q_i + \Oof{\Delta x^2}$,
 we can approximate with $2q_i(u_{i-1}^n-u_i^n)$ for $i=N_x$ and
 get the same term as we did above.
 
@@ -946,7 +877,7 @@ gives the scheme
 $$
 u^{n+1}_i = (1 + {\half}b\Delta t)^{-1}(({\half}b\Delta t -1)
 u^{n-1}_i + 2u^n_i + C^2
-\left(u^{n}**{i+1}-2u^{n}**{i} + u^{n}_{i-1}\right) + \Delta t^2 f^n_i),
+\left(u^{n}_{i+1}-2u^{n}_{i} + u^{n}_{i-1}\right) + \Delta t^2 f^n_i),
 $$ {#eq-wave-pde3-fd2}
 for $i\in\seti{\Ix}$ and $n\geq 1$.
 New equations must be derived for $u^1_i$, and for boundary points in case
@@ -958,9 +889,7 @@ without damping relevant for a lot of applications.
 
 ## Building a general 1D wave equation solver {#sec-wave-pde2-software}
 
-The program [`wave1D_dn_vc.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_dn_vc.py)
-is a fairly general code for 1D wave propagation problems that
-targets the following initial-boundary value problem
+A general 1D wave propagation solver targets the following initial-boundary value problem
 
 $$
 u_{tt} = (c^2(x)u_x)_x + f(x,t),\quad x\in (0,L),\ t\in (0,T]
@@ -972,10 +901,10 @@ $$
 u_t(x,0) = V(t),\quad x\in [0,L]
 $$
 $$
-u(0,t) = U_0(t)\hbox{ or } u_x(0,t)=0,\quad t\in (0,T]
+u(0,t) = U_0(t)\text{ or } u_x(0,t)=0,\quad t\in (0,T]
 $$
 $$
-u(L,t) = U_L(t)\hbox{ or } u_x(L,t)=0,\quad t\in (0,T]
+u(L,t) = U_L(t)\text{ or } u_x(L,t)=0,\quad t\in (0,T]
 $$
 
 The only new feature here is the time-dependent Dirichlet conditions, but
@@ -989,37 +918,26 @@ i = Ix[-1] # x=L
 u[i] = U_L(t[n+1])
 ```
 
-The `solver` function is a natural extension of the simplest
-`solver` function in the initial `wave1D_u0.py` program,
-extended with Neumann boundary conditions ($u_x=0$),
-time-varying Dirichlet conditions, as well as
-a variable wave velocity. The different code segments needed
-to make these extensions have been shown and commented upon in the
-preceding text. We refer to the `solver` function in the
-`wave1D_dn_vc.py` file for all the details. Note in that
- `solver` function, however, that the technique of "hashing" is
-used to check whether a certain simulation has been run before, or not.
-This technique is further explained in Section @sec-softeng2-wave1D-filestorage-hash.
+For the Devito implementation of the 1D wave equation with general
+boundary conditions and variable wave velocity, see @sec-wave-devito.
+The Devito solver extends the basic solver with:
 
-The vectorization is only applied inside the time loop, not for the
-initial condition or the first time steps, since this initial work
-is negligible for long time simulations in 1D problems.
+- Neumann boundary conditions ($u_x=0$)
+- Time-varying Dirichlet conditions
+- Variable wave velocity $c(x)$
 
 The following sections explain various more advanced programming
-techniques applied in the general 1D wave equation solver.
+techniques for wave equation solvers.
 
 ## User action function as a class
-A useful feature in the `wave1D_dn_vc.py` program is the specification
-of the `user_action` function as a class. This part of the program may
-need some motivation and explanation. Although the `plot_u_st`
-function (and the `PlotMatplotlib` class) in the `wave1D_u0.viz`
-function remembers the local variables in the `viz` function, it is a
-cleaner solution to store the needed variables together with the
-function, which is exactly what a class offers.
+
+When building flexible solvers, it is useful to implement the
+callback function for visualization and data storage as a class.
+This provides a clean way to store state needed between calls.
 
 ### The code
-A class for flexible plotting, cleaning up files, making movie
-files, like the function `wave1D_u0.viz` did, can be coded as follows:
+A class for flexible plotting, cleaning up files, and making movie
+files can be coded as follows:
 
 ```python
 class PlotAndStoreSolution:
@@ -1122,10 +1040,9 @@ More details on storing the solution in files appear in
 
 ## Pulse propagation in two media
 
-The function `pulse` in `wave1D_dn_vc.py` demonstrates wave motion in
-heterogeneous media where $c$ varies. One can specify an interval
-where the wave velocity is decreased by a factor `slowness_factor`
-(or increased by making this factor less than one).
+Wave motion in heterogeneous media where $c$ varies is an important
+application. One can specify an interval where the wave velocity is
+decreased by a factor (or increased by making this factor less than one).
 Figure @fig-wave-pde1-fig-pulse1-two-media shows a typical simulation
 scenario.
 
@@ -1309,30 +1226,19 @@ value of $C$ (i.e., $\Delta x$ is varied when the
 Courant number varies).
 :::
 
-The reader is encouraged to play around with the `pulse` function:
-
-```python
->>> import wave1D_dn_vc as w
->>> w.pulse(Nx=50, loc='left', pulse_tp='cosinehat', slowness_factor=2)
-```
-To easily kill the graphics by Ctrl-C and restart a new simulation it might be
-easier to run the above two statements from the command line
-with
-
-```bash
-Terminal> python -c 'import wave1D_dn_vc as w; w.pulse(...)'
-```
+The reader is encouraged to experiment with pulse propagation using
+the Devito solver from @sec-wave-devito, which can be configured
+with different initial pulse shapes and variable wave velocities.
 
 ## Exercise: Find the analytical solution to a damped wave equation {#sec-wave-exer-standingwave-damped-uex}
 
 Consider the wave equation with damping (@eq-wave-pde3).
 The goal is to find an exact solution to a wave problem with damping and zero source term.
-A starting point is the standing wave solution from
-Exercise @sec-wave-exer-standingwave. It becomes necessary to
+A starting point is the standing wave solution $u = A \sin(k x) \cos(\omega t)$. It becomes necessary to
 include a damping term $e^{-\beta t}$ and also have both a sine and cosine
 component in time:
 $$
-\uex(x,t) =  e^{-\beta t}
+u_{\text{e}}(x,t) =  e^{-\beta t}
 \sin kx \left( A\cos\omega t
 - B\sin\omega t\right) \tp
 $$
@@ -1419,7 +1325,7 @@ where constants $c$, $A$, $b$ and $k$, as well as $I(x)$, are prescribed.
 
 The solution to the problem is then given as
 $$
-\uex(x,t) =  e^{-\beta t}
+u_{\text{e}}(x,t) =  e^{-\beta t}
 \sin kx \left( A\cos\omega t
 - B\sin\omega t\right) \tp
 $$
@@ -1436,7 +1342,7 @@ Consider the simple "plug" wave where $\Omega = [-L,L]$ and
 $$
 I(x) = \left\lbrace\begin{array}{ll}
 1, & x\in [-\delta, \delta],\\
-0, & \hbox{otherwise}
+0, & \text{otherwise}
 \end{array}\right.
 $$
 for some number $0 < \delta < L$. The other initial condition is
@@ -1484,24 +1390,13 @@ confirm that they are the same.
 
 
 ::: {.callout-tip collapse="true" title="Solution"}
-We can utilize the `wave1D_dn.py` code which allows Dirichlet and
-Neumann conditions. The `solver` and `viz` functions must take $x_0$
-and $x_L$ as parameters instead of just $L$ such that we can solve the
-wave equation in $[x_0, x_L]$. The we can call up `solver` for the two
-problems on $[-L,L]$ and $[0,L]$ with boundary conditions
-$u(-L,t)=u(L,t)=0$ and $u_x(0,t)=u(L,t)=0$, respectively.
+The approach is to solve the two problems: on $[-L,L]$ with boundary conditions
+$u(-L,t)=u(L,t)=0$, and on $[0,L]$ with boundary conditions
+$u_x(0,t)=0$ and $u(L,t)=0$. See @sec-wave-devito for
+the Devito implementation with Neumann boundary conditions.
 
-The original `wave1D_dn.py` code makes a movie by playing all the
-`.png` files in a browser.  It can then be wise to let the `viz`
-function create a movie directory and place all the frames and HTML
-player file in that directory.  Alternatively, one can just make
-some ordinary movie file (Ogg, WebM, MP4, Flash) with `avconv` or
-`ffmpeg` and give it a name. It is a point that the name is
-transferred to `viz` so it is easy to call `viz` twice and get two
-separate movie files or movie directories.
-
-The plots produced by the code (below) shows that the solutions indeed
-are the same.
+The solutions from the two formulations should be identical,
+demonstrating the validity of the symmetry approach.
 :::
 
 
@@ -1640,35 +1535,20 @@ def test_quadratic():
 
 ## Exercise: Send pulse waves through a layered medium {#sec-wave-app-exer-pulse1D}
 
-Use the `pulse` function in `wave1D_dn_vc.py` to investigate
-sending a pulse, located with its peak at $x=0$, through two
+Investigate sending a pulse, located with its peak at $x=0$, through two
 media with different wave velocities. The (scaled) velocity in
 the left medium is 1 while it is $\frac{1}{s_f}$ in the right medium.
 Report what happens with a Gaussian pulse, a "cosine hat" pulse,
 half a "cosine hat" pulse, and a plug pulse for resolutions
 $N_x=40,80,160$, and $s_f=2,4$. Simulate until $T=2$.
 
+Use the Devito solver from @sec-wave-devito with variable wave velocity.
+
 
 ::: {.callout-tip collapse="true" title="Solution"}
 In all cases, the change in velocity causes some of the wave to
 be reflected back (while the rest is let through). When the waves
 go from higher to lower velocity, the amplitude builds, and vice versa.
-
-```python
-import os
-import sys
-
-path = os.path.join(
-    os.pardir, os.pardir, os.pardir, os.pardir, "wave", "src-wave", "wave1D"
-)
-sys.path.insert(0, path)
-from wave1D_dn_vc import pulse
-
-pulse_tp = sys.argv[1]
-C = float(sys.argv[2])
-pulse(pulse_tp=pulse_tp, C=C, Nx=100, animate=False, slowness_factor=4)
-```
-
 :::
 
 
@@ -1695,11 +1575,14 @@ To enable a wave to leave the computational domain and travel
 undisturbed through
 the boundary $x=L$, one can in a one-dimensional problem impose the
 following condition, called a *radiation condition* or
-*open boundary condition*:
+*open boundary condition* [@enquist_majda1977; @clayton_engquist1977]:
 $$
 \frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0\tp
 $$ {#eq-wave-app-exer-radiationBC-eq}
 The parameter $c$ is the wave velocity.
+Higher-order absorbing boundary conditions [@higdon1986] can handle
+oblique incidence in multiple dimensions; see @sec-wave-abc for a
+comprehensive treatment.
 
 Show that (@eq-wave-app-exer-radiationBC-eq) accepts
 a solution $u = g_R(x-ct)$ (right-going wave),
@@ -1749,7 +1632,7 @@ at $x=L$, and an initial disturbance in the middle
 of the domain, e.g., a plug profile like
 $$
 u(x,0) = \left\lbrace\begin{array}{ll} 1,& L/2-\ell \leq x \leq  L/2+\ell,\\
-0,\hbox{otherwise}\end{array}\right.
+0,\text{otherwise}\end{array}\right.
 $$
 Observe that the initial wave is split in two, the left-going wave
 is reflected at $x=0$, and both waves travel out of $x=L$,
@@ -1761,8 +1644,8 @@ Because this simplified
 implementation of the open boundary condition works, there is no
 need to pursue the more complicated discretization in a).
 
-:::{.callout-tip title="Modify the solver function in"}
-[`wave1D_dn.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_dn.py).
+:::{.callout-tip title="Hint"}
+Modify the Devito solver from @sec-wave-devito to implement this condition.
 :::
 
 
@@ -1918,14 +1801,12 @@ a) or b).
 
 ## Exercise: Verification by a cubic polynomial in space {#sec-wave-fd2-exer-verify-cubic}
 
-The purpose of this exercise is to verify the implementation of the
-`solver` function in the program [`wave1D_n0.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_n0.py) by using an exact numerical solution
+The purpose of this exercise is to verify the implementation of a wave
+equation solver using an exact numerical solution
 for the wave equation $u_{tt}=c^2u_{xx} + f$ with Neumann boundary
-conditions $u_x(0,t)=u_x(L,t)=0$.
+conditions $u_x(0,t)=u_x(L,t)=0$. Use the Devito solver from @sec-wave-devito.
 
-A similar verification is used in the file [`wave1D_u0.py`](https://github.com/devitocodes/devito_book/tree/main/src/wave/wave1D/wave1D_u0.py), which solves the same PDE, but with
-Dirichlet boundary conditions $u(0,t)=u(L,t)=0$.  The idea of the
-verification test in function `test_quadratic` in `wave1D_u0.py` is to
+The idea of verification using a quadratic polynomial is to
 produce a solution that is a lower-order polynomial such that both the
 PDE problem, the boundary conditions, and all the discrete equations
 are exactly fulfilled. Then the `solver` function should reproduce
@@ -1978,7 +1859,7 @@ There are two different ways of determining the coefficients
 $a_0,\ldots,a_3$ such that both the discretized PDE and the
 discretized boundary conditions are fulfilled, under the
 constraint that we can specify a function $f(x,t)$ for the PDE to feed
-to the `solver` function in `wave1D_n0.py`. Both approaches
+to the solver function. Both approaches
 are explained in the subexercises.
 
 **a)**

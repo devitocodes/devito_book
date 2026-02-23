@@ -1,0 +1,182 @@
+## Maxwell's Equations {#sec-em-maxwell}
+
+Maxwell's equations describe how electric and magnetic fields are generated
+and altered by each other and by charges and currents. In their differential
+form, they are:
+
+### Faraday's Law
+
+A time-varying magnetic field induces an electric field:
+$$
+\nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t}
+$$ {#eq-em-faraday}
+
+### Amp\`ere's Law (with Maxwell's correction)
+
+A current or time-varying electric field produces a magnetic field:
+$$
+\nabla \times \mathbf{H} = \mathbf{J} + \frac{\partial \mathbf{D}}{\partial t}
+$$ {#eq-em-ampere}
+
+### Gauss's Laws
+
+$$
+\nabla \cdot \mathbf{D} = \rho, \quad \nabla \cdot \mathbf{B} = 0
+$$ {#eq-em-gauss}
+
+where $\mathbf{E}$ is the electric field [V/m], $\mathbf{H}$ is the magnetic
+field [A/m], $\mathbf{D}$ is the electric displacement [C/m$^2$], $\mathbf{B}$
+is the magnetic flux density [T], $\mathbf{J}$ is the current density [A/m$^2$],
+and $\rho$ is the charge density [C/m$^3$].
+
+### Constitutive Relations
+
+The fields are related through the material properties:
+$$
+\mathbf{D} = \varepsilon \mathbf{E}, \quad \mathbf{B} = \mu \mathbf{H}
+$$ {#eq-em-constitutive}
+
+where $\varepsilon$ is the permittivity [F/m] and $\mu$ is the permeability
+[H/m]. In free space:
+$$
+\varepsilon_0 = 8.854 \times 10^{-12} \text{ F/m}, \quad
+\mu_0 = 4\pi \times 10^{-7} \text{ H/m}
+$$
+
+The **speed of light** follows from these constants:
+$$
+c = \frac{1}{\sqrt{\varepsilon_0 \mu_0}} = 299{,}792{,}458 \text{ m/s}
+$$ {#eq-em-speed-of-light}
+
+In a material with relative permittivity $\varepsilon_r$ and relative
+permeability $\mu_r$, the wave speed is:
+$$
+v = \frac{c}{\sqrt{\varepsilon_r \mu_r}} = \frac{c}{n}
+$$ {#eq-em-wave-speed}
+
+where $n = \sqrt{\varepsilon_r \mu_r}$ is the refractive index.
+
+### Derivation of the Wave Equation
+
+To connect with the wave equation from @sec-ch-wave, we can eliminate
+either $\mathbf{E}$ or $\mathbf{H}$ from Maxwell's equations. Taking the
+curl of Faraday's law:
+$$
+\nabla \times (\nabla \times \mathbf{E}) = -\frac{\partial}{\partial t}(\nabla \times \mathbf{B})
+= -\mu \frac{\partial}{\partial t}(\nabla \times \mathbf{H})
+$$
+
+Using the vector identity $\nabla \times (\nabla \times \mathbf{E}) =
+\nabla(\nabla \cdot \mathbf{E}) - \nabla^2 \mathbf{E}$ and assuming no
+free charges ($\nabla \cdot \mathbf{E} = 0$):
+$$
+-\nabla^2 \mathbf{E} = -\mu \frac{\partial}{\partial t}\left(\mathbf{J} + \varepsilon\frac{\partial \mathbf{E}}{\partial t}\right)
+$$
+
+For source-free regions ($\mathbf{J} = 0$):
+$$
+\nabla^2 \mathbf{E} = \mu \varepsilon \frac{\partial^2 \mathbf{E}}{\partial t^2}
+$$ {#eq-em-wave-eq-E}
+
+This is the vector wave equation with wave speed $c = 1/\sqrt{\mu\varepsilon}$.
+Similarly for $\mathbf{H}$:
+$$
+\nabla^2 \mathbf{H} = \mu \varepsilon \frac{\partial^2 \mathbf{H}}{\partial t^2}
+$$ {#eq-em-wave-eq-H}
+
+::: {.callout-note}
+## First-Order vs Second-Order Formulations
+
+While the wave equations @eq-em-wave-eq-E and @eq-em-wave-eq-H are
+mathematically equivalent to Maxwell's equations (for linear, homogeneous
+media), the FDTD method works directly with the first-order system
+@eq-em-faraday and @eq-em-ampere. This preserves both $\mathbf{E}$ and
+$\mathbf{H}$, which is essential for:
+
+- Computing power flow (Poynting vector $\mathbf{S} = \mathbf{E} \times \mathbf{H}$)
+- Handling material interfaces correctly
+- Applying boundary conditions on either field
+:::
+
+### Dimensional Reduction: 1D TM Mode
+
+For our first implementation, we consider the simplest case: fields varying
+only in the $x$-direction with electric field polarized in the $z$-direction.
+This is the **transverse magnetic (TM)** mode with:
+
+- $E_z(x, t)$: electric field (z-component only)
+- $H_y(x, t)$: magnetic field (y-component only)
+
+Maxwell's equations reduce to:
+$$
+\frac{\partial E_z}{\partial t} = \frac{1}{\varepsilon}\frac{\partial H_y}{\partial x}
+$$ {#eq-em-1d-Ez}
+$$
+\frac{\partial H_y}{\partial t} = \frac{1}{\mu}\frac{\partial E_z}{\partial x}
+$$ {#eq-em-1d-Hy}
+
+These are two coupled first-order PDEs. Compare with the scalar wave equation:
+$$
+\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
+$$
+
+which is a single second-order PDE. The first-order system @eq-em-1d-Ez and
+@eq-em-1d-Hy can be converted to this form by differentiating and
+substituting, confirming that $c = 1/\sqrt{\varepsilon\mu}$.
+
+### Lossy Media
+
+In conductive media, Ohm's law adds a current density term:
+$$
+\mathbf{J} = \sigma \mathbf{E}
+$$
+
+where $\sigma$ is the electrical conductivity [S/m]. The 1D equations become:
+$$
+\frac{\partial E_z}{\partial t} = \frac{1}{\varepsilon}\frac{\partial H_y}{\partial x} - \frac{\sigma}{\varepsilon} E_z
+$$ {#eq-em-1d-Ez-lossy}
+
+The additional term $-(\sigma/\varepsilon) E_z$ causes exponential decay
+of the electric field amplitude, representing absorption of electromagnetic
+energy as heat in the medium.
+
+### Wave Impedance
+
+The ratio of electric to magnetic field amplitudes in a plane wave defines
+the **wave impedance**:
+$$
+\eta = \frac{|E|}{|H|} = \sqrt{\frac{\mu}{\varepsilon}}
+$$ {#eq-em-impedance}
+
+In free space, $\eta_0 = \sqrt{\mu_0/\varepsilon_0} \approx 377\ \Omega$.
+The impedance is crucial for:
+
+- Computing reflection and transmission at interfaces
+- Verifying simulation results (E and H must be related by $\eta$)
+- Designing matched absorbing boundaries
+
+### Boundary Conditions
+
+**Perfect Electric Conductor (PEC)**: The tangential electric field vanishes:
+$$
+\mathbf{n} \times \mathbf{E} = 0 \quad \text{(PEC)}
+$$ {#eq-em-pec}
+
+For our 1D case with $E_z$, this means $E_z = 0$ at the boundary.
+
+**Perfect Magnetic Conductor (PMC)**: The tangential magnetic field vanishes:
+$$
+\mathbf{n} \times \mathbf{H} = 0 \quad \text{(PMC)}
+$$ {#eq-em-pmc}
+
+**Absorbing Boundary Conditions**: For open-domain problems, we need
+boundaries that absorb outgoing waves without reflection. The simplest
+approach is Mur's first-order ABC [@mur1981], based on the one-way
+wave equation:
+$$
+\frac{\partial E_z}{\partial t} + c \frac{\partial E_z}{\partial x} = 0
+$$
+
+for a wave traveling in the $+x$ direction. More sophisticated approaches
+include the Perfectly Matched Layer (PML) [@berenger1994], covered in
+@sec-em-2d-devito.

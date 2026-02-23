@@ -48,11 +48,11 @@ The solution $u$ of this equation is the *numerical solution*.
 To distinguish the
 numerical solution from the exact solution of the differential
 equation problem,
-we denote the latter by $\uex$ and write the
+we denote the latter by $u_{\text{e}}$ and write the
 differential equation and its discrete counterpart as
 
 \begin{align*}
-\mathcal{L}(\uex)&=0,\\
+\mathcal{L}(u_{\text{e}})&=0,\\
 \mathcal{L}_\Delta (u)&=0\tp
 \end{align*}
 Initial and/or boundary conditions can usually be left out of the truncation
@@ -68,19 +68,19 @@ neighboring mesh points.
 
 A key issue is how accurate the numerical solution is.
 The ultimate way of addressing this issue would be to compute
-the error $\uex - u$ at the mesh points. This is usually extremely demanding.
+the error $u_{\text{e}} - u$ at the mesh points. This is usually extremely demanding.
 In very simplified problem settings we may, however, manage to
 derive formulas for the numerical solution $u$, and
 therefore closed form expressions
-for the error $\uex - u$. Such special cases can provide
+for the error $u_{\text{e}} - u$. Such special cases can provide
 considerable insight regarding accuracy and stability, but
 the results are established for special problems.
 
-The error $\uex -u$ can be computed empirically in special cases where
-we know $\uex$. Such cases can be constructed by the method of
-manufactured solutions, where we choose some exact solution $\uex = v$
+The error $u_{\text{e}} -u$ can be computed empirically in special cases where
+we know $u_{\text{e}}$. Such cases can be constructed by the method of
+manufactured solutions, where we choose some exact solution $u_{\text{e}} = v$
 and fit a source term $f$ in the governing differential equation
-$\mathcal{L}(\uex)=f$ such that $\uex=v$ is a solution (i.e.,
+$\mathcal{L}(u_{\text{e}})=f$ such that $u_{\text{e}}=v$ is a solution (i.e.,
 $f=\mathcal{L}(v)$).  Assuming an error model of the form $Ch^r$,
 where $h$ is the discretization parameter, such as $\Delta t$ or
 $\Delta x$, one can estimate the convergence rate $r$. This is a
@@ -88,16 +88,16 @@ widely applicable procedure, but the validity of the results is,
 strictly speaking, tied to the chosen test problems.
 
 Another error measure arises by asking to what extent the exact solution
-$\uex$ fits the discrete equations. Clearly, $\uex$ is in general
+$u_{\text{e}}$ fits the discrete equations. Clearly, $u_{\text{e}}$ is in general
 not a solution of $\mathcal{L}_\Delta(u)=0$, but we can define
 the residual
 $$
-R = \mathcal{L}_\Delta(\uex),
+R = \mathcal{L}_\Delta(u_{\text{e}}),
 $$
 and investigate how close $R$ is to zero. A small $R$ means
 intuitively that the discrete equations are close to the
 differential equation, and then we are tempted to think that
-$u^n$ must also be close to $\uex(t_n)$.
+$u^n$ must also be close to $u_{\text{e}}(t_n)$.
 
 The residual $R$ is known as the truncation error of the finite
 difference scheme $\mathcal{L}_\Delta(u)=0$.  It appears that the
@@ -439,29 +439,29 @@ $$
 \lbrack D_t^+ u = -au \rbrack^n \tp
 $$ {#eq-trunc-decay-FE-scheme}
 The idea behind the truncation error computation is to insert
-the exact solution $\uex$ of the differential equation problem
+the exact solution $u_{\text{e}}$ of the differential equation problem
 (@eq-trunc-decay-ode)
 in the discrete equations (@eq-trunc-decay-FE-scheme) and find the residual
-that arises because $\uex$ does not solve the discrete equations.
-Instead, $\uex$ solves the discrete equations with a residual $R^n$:
+that arises because $u_{\text{e}}$ does not solve the discrete equations.
+Instead, $u_{\text{e}}$ solves the discrete equations with a residual $R^n$:
 $$
-[D_t^+ \uex + a\uex = R]^n \tp
+[D_t^+ u_{\text{e}} + au_{\text{e}} = R]^n \tp
 $$ {#eq-trunc-decay-FE-uex}
 From @eq-trunc-table-fd1-fw-eq it follows that
 $$
-[D_t^+ \uex]^n = \uex'(t_n) +
-\half\uex''(t_n)\Delta t + \Oof{\Delta t^2},
+[D_t^+ u_{\text{e}}]^n = u_{\text{e}}'(t_n) +
+\half u_{\text{e}}''(t_n)\Delta t + \Oof{\Delta t^2},
 $$
 which inserted in (@eq-trunc-decay-FE-uex) results in
 $$
-\uex'(t_n) +
-\half\uex''(t_n)\Delta t + \Oof{\Delta t^2}
-+ a\uex(t_n) = R^n \tp
+u_{\text{e}}'(t_n) +
+\half u_{\text{e}}''(t_n)\Delta t + \Oof{\Delta t^2}
++ au_{\text{e}}(t_n) = R^n \tp
 $$
-Now, $\uex'(t_n) + a\uex^n = 0$ since $\uex$ solves the differential equation.
+Now, $u_{\text{e}}'(t_n) + au_{\text{e}}^n = 0$ since $u_{\text{e}}$ solves the differential equation.
 The remaining terms constitute the residual:
 $$
-R^n = \half\uex''(t_n)\Delta t + \Oof{\Delta t^2} \tp
+R^n = \half u_{\text{e}}''(t_n)\Delta t + \Oof{\Delta t^2} \tp
 $$ {#eq-trunc-decay-FE-R}
 This is the truncation error $R^n$ of the Forward Euler scheme.
 
@@ -469,9 +469,9 @@ Because $R^n$ is proportional to $\Delta t$, we say that
 the Forward Euler scheme is of first order in $\Delta t$.
 However, the truncation error
 is just one error measure, and it is not equal to the true error
-$\uex^n - u^n$. For this simple model problem we can compute
+$u_{\text{e}}^n - u^n$. For this simple model problem we can compute
 a range of different error measures for the Forward Euler scheme,
-including the true error $\uex^n - u^n$, and all of them
+including the true error $u_{\text{e}}^n - u^n$, and all of them
 have dominating terms proportional to $\Delta t$.
 
 ## Crank-Nicolson scheme {#sec-trunc-decay-CN}
@@ -483,30 +483,30 @@ $$ {#eq-trunc-decay-CN-scheme}
 we compute the truncation error by inserting the exact solution of
 the ODE and adding a residual $R$,
 $$
-[D_t \uex + a\overline{\uex}^{t} = R]^{n+\half} \tp
+[D_t u_{\text{e}} + a\overline{u_{\text{e}}}^{t} = R]^{n+\half} \tp
 $$ {#eq-trunc-decay-CN-scheme-R}
-The term $[D_t\uex]^{n+\half}$ is easily computed
+The term $[D_tu_{\text{e}}]^{n+\half}$ is easily computed
 from @eq-trunc-table-fd1-center-eq
 by replacing $n$
 with $n+{\half}$ in the formula,
 $$
-\lbrack D_t\uex\rbrack^{n+\half} = \uex'(t_{n+\half}) +
-\frac{1}{24}\uex'''(t_{n+\half})\Delta t^2 + \Oof{\Delta t^4}\tp
+\lbrack D_tu_{\text{e}}\rbrack^{n+\half} = u_{\text{e}}'(t_{n+\half}) +
+\frac{1}{24}u_{\text{e}}'''(t_{n+\half})\Delta t^2 + \Oof{\Delta t^4}\tp
 $$
 The arithmetic mean is related to $u(t_{n+\half})$ by
 @eq-trunc-table-avg-arith-eq so
 $$
-[a\overline{\uex}^{t}]^{n+\half}
-= \uex(t_{n+\half}) + \frac{1}{8}\uex''(t_{n})\Delta t^2 +
+[a\overline{u_{\text{e}}}^{t}]^{n+\half}
+= u_{\text{e}}(t_{n+\half}) + \frac{1}{8}u_{\text{e}}''(t_{n})\Delta t^2 +
 + \Oof{\Delta t^4}\tp
 $$
 Inserting these expressions in (@eq-trunc-decay-CN-scheme-R) and
-observing that $\uex'(t_{n+\half}) +a\uex^{n+\half} = 0$, because
-$\uex(t)$ solves the ODE $u'(t)=-au(t)$ at any point $t$,
+observing that $u_{\text{e}}'(t_{n+\half}) +au_{\text{e}}^{n+\half} = 0$, because
+$u_{\text{e}}(t)$ solves the ODE $u'(t)=-au(t)$ at any point $t$,
 we find that
 $$
 R^{n+\half} = \left(
-\frac{1}{24}\uex'''(t_{n+\half}) + \frac{1}{8}\uex''(t_{n})
+\frac{1}{24}u_{\text{e}}'''(t_{n+\half}) + \frac{1}{8}u_{\text{e}}''(t_{n})
 \right)\Delta t^2 + \Oof{\Delta t^4}
 $$
 Here, the truncation error is of second order because the leading
@@ -524,20 +524,20 @@ $$
 $$
 Our computational task is to find $R^{n+\theta}$ in
 $$
-[\bar D_t \uex  + a\overline{\uex}^{t,\theta} = R]^{n+\theta} \tp
+[\bar D_t u_{\text{e}}  + a\overline{u_{\text{e}}}^{t,\theta} = R]^{n+\theta} \tp
 $$
 From @eq-trunc-table-fd1-theta-eq and
 @eq-trunc-table-avg-theta-eq we get
-expressions for the terms with $\uex$.
-Using that $\uex'(t_{n+\theta}) + a\uex(t_{n+\theta})=0$,
+expressions for the terms with $u_{\text{e}}$.
+Using that $u_{\text{e}}'(t_{n+\theta}) + au_{\text{e}}(t_{n+\theta})=0$,
 we end up with
 
 \begin{align}
 R^{n+\theta}
 =
-&({\half}-\theta)\uex''(t_{n+\theta})\Delta t +
-\half\theta (1-\theta)\uex''(t_{n+\theta})\Delta t^2 + \nonumber\\
-& \half(\theta^2 -\theta + 3)\uex'''(t_{n+\theta})\Delta t^2
+&({\half}-\theta)u_{\text{e}}''(t_{n+\theta})\Delta t +
+\half\theta (1-\theta)u_{\text{e}}''(t_{n+\theta})\Delta t^2 + \nonumber\\
+& \half(\theta^2 -\theta + 3)u_{\text{e}}'''(t_{n+\theta})\Delta t^2
 + \Oof{\Delta t^3}
 \end{align}
 For $\theta =\half$ the first-order term vanishes and the scheme is of
@@ -591,9 +591,9 @@ the truncation error $R$ numerically. For example, the truncation
 error of the Forward Euler scheme applied to the decay ODE $u'=-ua$
 is
 $$
-R^n = [D_t^+\uex + a\uex]^n \tp
+R^n = [D_t^+u_{\text{e}} + au_{\text{e}}]^n \tp
 $$ {#eq-trunc-decay-FE-R-comp}
-If we happen to know the exact solution $\uex(t)$, we can easily evaluate
+If we happen to know the exact solution $u_{\text{e}}(t)$, we can easily evaluate
 $R^n$ from the above formula.
 
 To estimate how $R$ varies with the discretization parameter $\Delta
@@ -739,7 +739,7 @@ in parallel, using `plt.figure(i)` to create and switch to figure number
 `i.` Figure numbers start at 1. A logarithmic scale is used on the
 $y$ axis since we expect that $R$ as a function of time (or mesh points)
 is exponential. The reason is that the theoretical estimate
-(@eq-trunc-decay-FE-R) contains $\uex''$, which for the present model
+(@eq-trunc-decay-FE-R) contains $u_{\text{e}}''$, which for the present model
 goes like $e^{-at}$. Taking the logarithm makes a straight line.
 
 The code follows closely the previously
@@ -827,26 +827,26 @@ test other schemes (see also Exercise @sec-trunc-exer-decay-estimate).
 Now we ask the question: can we add terms in the differential equation
 that can help increase the order of the truncation error? To be precise,
 let us revisit the Forward Euler scheme for $u'=-au$, insert the
-exact solution $\uex$, include a residual $R$, but also include
+exact solution $u_{\text{e}}$, include a residual $R$, but also include
 new terms $C$:
 $$
-\lbrack D_t^+ \uex + a\uex = C + R \rbrack^n\tp
+\lbrack D_t^+ u_{\text{e}} + au_{\text{e}} = C + R \rbrack^n\tp
 $$ {#eq-trunc-decay-FE-corr}
-Inserting the Taylor expansions for $[D_t^+\uex]^n$ and keeping
+Inserting the Taylor expansions for $[D_t^+u_{\text{e}}]^n$ and keeping
 terms up to 3rd order in $\Delta t$ gives the equation
 $$
-\half\uex''(t_n)\Delta t - \frac{1}{6}\uex'''(t_n)\Delta t^2
-+ \frac{1}{24}\uex''''(t_n)\Delta t^3
+\half u_{\text{e}}''(t_n)\Delta t - \frac{1}{6}u_{\text{e}}'''(t_n)\Delta t^2
++ \frac{1}{24}u_{\text{e}}''''(t_n)\Delta t^3
 + \Oof{\Delta t^4}  = C^n + R^n\tp
 $$
 Can we find $C^n$ such that $R^n$ is $\Oof{\Delta t^2}$?
 Yes, by setting
 $$
-C^n = \half\uex''(t_n)\Delta t,
+C^n = \half u_{\text{e}}''(t_n)\Delta t,
 $$
 we manage to cancel the first-order term and
 $$
-R^n = \frac{1}{6}\uex'''(t_n)\Delta t^2 + \Oof{\Delta t^3}\tp
+R^n = \frac{1}{6}u_{\text{e}}'''(t_n)\Delta t^2 + \Oof{\Delta t^3}\tp
 $$
 The correction term $C^n$ introduces $\half\Delta t u''$
 in the discrete equation, and we have to get rid of the derivative
@@ -921,7 +921,7 @@ $$
 $$
 and the truncation error is defined through
 $$
-[D_t \uex + a\overline{\uex}^{t} = C + R]^{n+\half},
+[D_t u_{\text{e}} + a\overline{u_{\text{e}}}^{t} = C + R]^{n+\half},
 $$
 where we have added a correction term.  We need to Taylor expand both
 the discrete derivative and the arithmetic mean with aid of
@@ -929,14 +929,14 @@ the discrete derivative and the arithmetic mean with aid of
 @eq-trunc-table-avg-arith-eq, respectively.
 The result is
 $$
-\frac{1}{24}\uex'''(t_{n+\half})\Delta t^2 + \Oof{\Delta t^4}
-+ \frac{a}{8}\uex''(t_{n+\half})\Delta t^2 + \Oof{\Delta t^4} = C^{n+\half} + R^{n+\half}\tp
+\frac{1}{24}u_{\text{e}}'''(t_{n+\half})\Delta t^2 + \Oof{\Delta t^4}
++ \frac{a}{8}u_{\text{e}}''(t_{n+\half})\Delta t^2 + \Oof{\Delta t^4} = C^{n+\half} + R^{n+\half}\tp
 $$
 The goal now is to make $C^{n+\half}$ cancel the $\Delta t^2$ terms:
 $$
 C^{n+\half} =
-\frac{1}{24}\uex'''(t_{n+\half})\Delta t^2
-+ \frac{a}{8}\uex''(t_{n})\Delta t^2\tp
+\frac{1}{24}u_{\text{e}}'''(t_{n+\half})\Delta t^2
++ \frac{a}{8}u_{\text{e}}''(t_{n})\Delta t^2\tp
 $$
 Using $u'=-au$, we have that $u''=a^2u$, and we find that $u'''=-a^3u$.
 We can therefore solve the perturbed ODE problem
@@ -959,22 +959,22 @@ $$
 [D_t^+ u = -au + b]^n \tp
 $$
 The truncation error $R$ is as always found by inserting the exact
-solution $\uex(t)$ in the discrete scheme:
+solution $u_{\text{e}}(t)$ in the discrete scheme:
 $$
-[D_t^+ \uex + a\uex - b = R]^n \tp
+[D_t^+ u_{\text{e}} + au_{\text{e}} - b = R]^n \tp
 $$
 Using @eq-trunc-table-fd1-fw-eq,
 $$
-\uex'(t_n) - \half\uex''(t_n)\Delta t + \Oof{\Delta t^2}
-+ a(t_n)\uex(t_n) - b(t_n) = R^n \tp
+u_{\text{e}}'(t_n) - \half u_{\text{e}}''(t_n)\Delta t + \Oof{\Delta t^2}
++ a(t_n)u_{\text{e}}(t_n) - b(t_n) = R^n \tp
 $$
 Because of the ODE,
 $$
-\uex'(t_n) + a(t_n)\uex(t_n) - b(t_n) =0,
+u_{\text{e}}'(t_n) + a(t_n)u_{\text{e}}(t_n) - b(t_n) =0,
 $$
 we are left with the result
 $$
-R^n = -\half\uex''(t_n)\Delta t + \Oof{\Delta t^2} \tp
+R^n = -\half u_{\text{e}}''(t_n)\Delta t + \Oof{\Delta t^2} \tp
 $$ {#eq-trunc-decay-vc-R}
 We see that the variable coefficients do not pose any additional difficulties
 in this case. Exercise @sec-trunc-exer-decay-varcoeff-CN takes the
@@ -990,38 +990,38 @@ formulas for the truncation errors in
 @eq-trunc-table-avg-harm-eq in
 Section @sec-trunc-table, we see that all but two of
 the $R$ expressions contain a second or higher order derivative
-of $\uex$. The exceptions are the geometric and harmonic
+of $u_{\text{e}}$. The exceptions are the geometric and harmonic
 means where the truncation
-error involves $\uex'$ and even $\uex$ in case of the harmonic mean.
+error involves $u_{\text{e}}'$ and even $u_{\text{e}}$ in case of the harmonic mean.
 So, apart from these two means,
-choosing $\uex$ to be a linear function of
-$t$, $\uex = ct+d$ for constants $c$ and $d$, will make
-the truncation error vanish since $\uex''=0$. Consequently,
+choosing $u_{\text{e}}$ to be a linear function of
+$t$, $u_{\text{e}} = ct+d$ for constants $c$ and $d$, will make
+the truncation error vanish since $u_{\text{e}}''=0$. Consequently,
 the truncation error of a finite difference scheme will be zero
 since the various
 approximations used will all be exact. This means that the linear solution
 is an exact solution of the discrete equations.
 
 In a particular differential equation problem, the reasoning above can
-be used to determine if we expect a linear $\uex$ to fulfill the
+be used to determine if we expect a linear $u_{\text{e}}$ to fulfill the
 discrete equations. To actually prove that this is true, we can either
 compute the truncation error and see that it vanishes, or we can
-simply insert $\uex(t)=ct+d$ in the scheme and see that it fulfills
+simply insert $u_{\text{e}}(t)=ct+d$ in the scheme and see that it fulfills
 the equations. The latter method is usually the simplest. It will
 often be necessary to add some source term to the ODE in order to
 allow a linear solution.
 
 Many ODEs are discretized by centered differences.
 From Section @sec-trunc-table we see that all the centered
-difference formulas have truncation errors involving $\uex'''$ or
+difference formulas have truncation errors involving $u_{\text{e}}'''$ or
 higher-order derivatives.
-A quadratic solution, e.g., $\uex(t) =t^2 + ct + d$,
+A quadratic solution, e.g., $u_{\text{e}}(t) =t^2 + ct + d$,
 will then make the truncation errors vanish. This observation
 can be used to test if a quadratic solution will fulfill the
 discrete equations. Note that a quadratic solution will not
 obey the equations for a Crank-Nicolson scheme for $u'=-au+b$
 because the approximation applies an arithmetic mean, which
-involves a truncation error with $\uex''$.
+involves a truncation error with $u_{\text{e}}''$.
 
 ## Computing truncation errors in nonlinear problems {#sec-trunc-decay-gen}
 
@@ -1035,34 +1035,34 @@ $$
 $$ {#eq-trunc-decay-gen-ode-fdm}
 The truncation error is as always defined as the residual arising
 when inserting the
-exact solution $\uex$ in the scheme:
+exact solution $u_{\text{e}}$ in the scheme:
 $$
-[D_t \uex - \overline{f}^{t}= R]^{n+\half}\tp
+[D_t u_{\text{e}} - \overline{f}^{t}= R]^{n+\half}\tp
 $$ {#eq-trunc-decay-gen-ode-CN}
 Using @eq-trunc-table-avg-arith-eq for
 $\overline{f}^{t}$ results in
 
 \begin{align*}
 [\overline{f}^{t}]^{n+\half} &=
-\half(f(\uex^n,t_n) + f(\uex^{n+1},t_{n+1}))\\
-&= f(\uex^{n+\half},t_{n+\half}) +
-\frac{1}{8}\uex''(t_{n+\half})\Delta t^2
+\half(f(u_{\text{e}}^n,t_n) + f(u_{\text{e}}^{n+1},t_{n+1}))\\
+&= f(u_{\text{e}}^{n+\half},t_{n+\half}) +
+\frac{1}{8}u_{\text{e}}''(t_{n+\half})\Delta t^2
 + \Oof{\Delta t^4}\tp
 \end{align*}
 With @eq-trunc-table-fd1-center-eq the discrete
 equations (@eq-trunc-decay-gen-ode-CN) lead to
 $$
-\uex'(t_{n+\half}) +
-\frac{1}{24}\uex'''(t_{n+\half})\Delta t^2
-+ f(\uex^{n+\half},t_{n+\half}) -
-\frac{1}{8}\uex''(t_{n+\half})\Delta t^2
+u_{\text{e}}'(t_{n+\half}) +
+\frac{1}{24}u_{\text{e}}'''(t_{n+\half})\Delta t^2
++ f(u_{\text{e}}^{n+\half},t_{n+\half}) -
+\frac{1}{8}u_{\text{e}}''(t_{n+\half})\Delta t^2
 + \Oof{\Delta t^4} = R^{n+\half}\tp
 $$
-Since $\uex'(t_{n+\half}) - f(\uex^{n+\half},t_{n+\half})=0$,
+Since $u_{\text{e}}'(t_{n+\half}) - f(u_{\text{e}}^{n+\half},t_{n+\half})=0$,
 the truncation error becomes
 $$
-R^{n+\half} = (\frac{1}{24}\uex'''(t_{n+\half})
-+ \frac{1}{8}\uex''(t_{n+\half})) \Delta t^2\tp
+R^{n+\half} = (\frac{1}{24}u_{\text{e}}'''(t_{n+\half})
++ \frac{1}{8}u_{\text{e}}''(t_{n+\half})) \Delta t^2\tp
 $$
 The computational techniques worked well
 even for this nonlinear ODE.
@@ -1083,20 +1083,20 @@ $$
 [D_tD_t u + \omega^2u=0]^n \tp
 $$ {#eq-trunc-vib-undamped-scheme}
 
-Inserting the exact solution $\uex$ in this equation and adding
-a residual $R$ so that $\uex$ can fulfill the equation results in
+Inserting the exact solution $u_{\text{e}}$ in this equation and adding
+a residual $R$ so that $u_{\text{e}}$ can fulfill the equation results in
 $$
-[D_tD_t \uex + \omega^2\uex =R]^n \tp
+[D_tD_t u_{\text{e}} + \omega^2u_{\text{e}} =R]^n \tp
 $$
 To calculate the truncation error $R^n$, we use
 @eq-trunc-table-fd2-center-eq, i.e.,
 $$
-[D_tD_t \uex]^n = \uex''(t_n) + \frac{1}{12}\uex''''(t_n)\Delta t^2
+[D_tD_t u_{\text{e}}]^n = u_{\text{e}}''(t_n) + \frac{1}{12}u_{\text{e}}''''(t_n)\Delta t^2
 + \Oof{\Delta t^4},
 $$
-and the fact that $\uex''(t) + \omega^2\uex(t)=0$. The result is
+and the fact that $u_{\text{e}}''(t) + \omega^2u_{\text{e}}(t)=0$. The result is
 $$
-R^n =  \frac{1}{12}\uex''''(t_n)\Delta t^2 + \Oof{\Delta t^4} \tp
+R^n =  \frac{1}{12}u_{\text{e}}''''(t_n)\Delta t^2 + \Oof{\Delta t^4} \tp
 $$
 ### The truncation error of approximating $u'(0)$
 The initial conditions for (@eq-trunc-vib-undamped-ode) are
@@ -1145,18 +1145,18 @@ $$
 $$
 The truncation error is defined as
 $$
-[D_t^+ \uex + \half\omega^2\Delta t \uex - V = R]^0\tp
+[D_t^+ u_{\text{e}} + \half\omega^2\Delta t u_{\text{e}} - V = R]^0\tp
 $$
 Using @eq-trunc-table-fd1-fw-eq with
 one more term in the Taylor series, we get that
 $$
-\uex'(0) + \half\uex''(0)\Delta t + \frac{1}{6}\uex'''(0)\Delta t^2
+u_{\text{e}}'(0) + \half u_{\text{e}}''(0)\Delta t + \frac{1}{6}u_{\text{e}}'''(0)\Delta t^2
 + \Oof{\Delta t^3}
-+ \half\omega^2\Delta t \uex(0) - V = R^n\tp
++ \half\omega^2\Delta t u_{\text{e}}(0) - V = R^n\tp
 $$
-Now, $\uex'(0)=V$ and $\uex''(0)=-\omega^2 \uex(0)$ so we get
+Now, $u_{\text{e}}'(0)=V$ and $u_{\text{e}}''(0)=-\omega^2 u_{\text{e}}(0)$ so we get
 $$
-R^n = \frac{1}{6}\uex'''(0)\Delta t^2 + \Oof{\Delta t^3}\tp
+R^n = \frac{1}{6}u_{\text{e}}'''(0)\Delta t^2 + \Oof{\Delta t^3}\tp
 $$
 There is another way of analyzing the discrete initial
 condition, because eliminating $u^{-1}$ via the discretized ODE
@@ -1168,26 +1168,26 @@ Writing out (@eq-trunc-vib-undamped-ic-d3) shows that the equation is
 equivalent to (@eq-trunc-vib-undamped-ic-d2).
 The truncation error is defined by
 $$
-[ D_{2t} \uex + \Delta t(D_tD_t \uex - \omega^2 \uex) = V + R]^0\tp
+[ D_{2t} u_{\text{e}} + \Delta t(D_tD_t u_{\text{e}} - \omega^2 u_{\text{e}}) = V + R]^0\tp
 $$
 Replacing the difference via
 @eq-trunc-table-fd1-center2-eq and
 @eq-trunc-table-fd2-center-eq, as
-well as using $\uex'(0)=V$ and $\uex''(0) = -\omega^2\uex(0)$,
+well as using $u_{\text{e}}'(0)=V$ and $u_{\text{e}}''(0) = -\omega^2u_{\text{e}}(0)$,
 gives
 $$
-R^n = \frac{1}{6}\uex'''(0)\Delta t^2 + \Oof{\Delta t^3}\tp
+R^n = \frac{1}{6}u_{\text{e}}'''(0)\Delta t^2 + \Oof{\Delta t^3}\tp
 $$
 ### Computing correction terms
 The idea of using correction terms to increase the order of $R^n$ can
 be applied as described in Section @sec-trunc-decay-corr. We look at
 $$
-[D_tD_t \uex + \omega^2\uex =C + R]^n,
+[D_tD_t u_{\text{e}} + \omega^2u_{\text{e}} =C + R]^n,
 $$
 and observe that $C^n$ must be chosen to cancel
 the $\Delta t^2$ term in $R^n$. That is,
 $$
-C^n = \frac{1}{12}\uex''''(t_n)\Delta t^2\tp
+C^n = \frac{1}{12}u_{\text{e}}''''(t_n)\Delta t^2\tp
 $$
 To get rid of the 4th-order derivative we can use the differential
 equation: $u''=-\omega^2u$, which implies $u'''' = \omega^4 u$.
@@ -1240,37 +1240,37 @@ This governing equation can be discretized by centered differences:
 $$
 [mD_tD_t u + \beta D_{2t} u + s(u)=F]^n \tp
 $$
-The exact solution $\uex$ fulfills the discrete equations with a residual term:
+The exact solution $u_{\text{e}}$ fulfills the discrete equations with a residual term:
 $$
-[mD_tD_t \uex + \beta D_{2t} \uex + s(\uex)=F + R]^n \tp
+[mD_tD_t u_{\text{e}} + \beta D_{2t} u_{\text{e}} + s(u_{\text{e}})=F + R]^n \tp
 $$
 Using @eq-trunc-table-fd2-center-eq and
 @eq-trunc-table-fd1-center2-eq we
 get
 
 \begin{align*}
-\lbrack mD_tD_t \uex + \beta D_{2t} \uex\rbrack^n &=
-m\uex''(t_n) + \beta\uex'(t_n) + \\
-&\quad \left(\frac{m}{12}\uex''''(t_n) +
-  \frac{\beta}{6}\uex'''(t_n)\right)\Delta t^2 + \Oof{\Delta t^4}
+\lbrack mD_tD_t u_{\text{e}} + \beta D_{2t} u_{\text{e}}\rbrack^n &=
+mu_{\text{e}}''(t_n) + \beta u_{\text{e}}'(t_n) + \\
+&\quad \left(\frac{m}{12}u_{\text{e}}''''(t_n) +
+  \frac{\beta}{6}u_{\text{e}}'''(t_n)\right)\Delta t^2 + \Oof{\Delta t^4}
 \end{align*}
 Combining this with the previous equation, we can collect the terms
 $$
-m\uex''(t_n) + \beta\uex'(t_n) + \omega^2\uex(t_n) + s(\uex(t_n)) - F^n,
+mu_{\text{e}}''(t_n) + \beta u_{\text{e}}'(t_n) + \omega^2u_{\text{e}}(t_n) + s(u_{\text{e}}(t_n)) - F^n,
 $$
-and set this sum to zero because $\uex$ solves
+and set this sum to zero because $u_{\text{e}}$ solves
 the differential equation. We are left with
 the truncation error
 $$
-R^n = \left(\frac{m}{12}\uex''''(t_n) +
-  \frac{\beta}{6}\uex'''(t_n)\right)\Delta t^2 + \Oof{\Delta t^4},
+R^n = \left(\frac{m}{12}u_{\text{e}}''''(t_n) +
+  \frac{\beta}{6}u_{\text{e}}'''(t_n)\right)\Delta t^2 + \Oof{\Delta t^4},
 $$ {#eq-trunc-vib-gen-R}
 so the scheme is of second order.
 
 According to (@eq-trunc-vib-gen-R), we can add correction terms
 $$
-C^n = \left(\frac{m}{12}\uex''''(t_n) +
-  \frac{\beta}{6}\uex'''(t_n)\right)\Delta t^2,
+C^n = \left(\frac{m}{12}u_{\text{e}}''''(t_n) +
+  \frac{\beta}{6}u_{\text{e}}'''(t_n)\right)\Delta t^2,
 $$
 to the right-hand side of the ODE to obtain a fourth-order scheme.
 However, expressing $u''''$ and $u'''$ in terms
@@ -1304,44 +1304,44 @@ $$
 $$
 The truncation error is defined through
 $$
-[mD_t D_t \uex]^n +
-\beta |[D_{t} \uex]^{n-\half}|[D_t \uex]^{n+\half}
-+ s(\uex^n)-F^n = R^n\tp
+[mD_t D_t u_{\text{e}}]^n +
+\beta |[D_{t} u_{\text{e}}]^{n-\half}|[D_t u_{\text{e}}]^{n+\half}
++ s(u_{\text{e}}^n)-F^n = R^n\tp
 $$
 We start with expressing the truncation error of the geometric mean.
 According to @eq-trunc-table-avg-geom-eq,
 
 \begin{align*}
-|[D_{t} \uex]^{n-\half}|[D_t \uex]^{n+\half}
-&= [|D_t\uex|D_t\uex]^n
-- \frac{1}{4}\uex'(t_n)^2\Delta t^2  +\\
-&\quad \frac{1}{4}\uex(t_n)\uex''(t_n)\Delta t^2
+|[D_{t} u_{\text{e}}]^{n-\half}|[D_t u_{\text{e}}]^{n+\half}
+&= [|D_tu_{\text{e}}|D_tu_{\text{e}}]^n
+- \frac{1}{4}u_{\text{e}}'(t_n)^2\Delta t^2  +\\
+&\quad \frac{1}{4}u_{\text{e}}(t_n)u_{\text{e}}''(t_n)\Delta t^2
 + \Oof{\Delta t^4}\tp
 \end{align*}
 Using @eq-trunc-table-fd1-center-eq
-for the $D_t\uex$ factors results in
+for the $D_tu_{\text{e}}$ factors results in
 $$
-[|D_t\uex|D_t\uex]^n = |\uex' + \frac{1}{24}\uex'''(t_n)\Delta t^2 +
-\Oof{\Delta t^4}|(\uex' + \frac{1}{24}\uex'''(t_n)\Delta t^2 +
+[|D_tu_{\text{e}}|D_tu_{\text{e}}]^n = |u_{\text{e}}' + \frac{1}{24}u_{\text{e}}'''(t_n)\Delta t^2 +
+\Oof{\Delta t^4}|(u_{\text{e}}' + \frac{1}{24}u_{\text{e}}'''(t_n)\Delta t^2 +
 \Oof{\Delta t^4})
 $$
 We can remove the absolute value since it essentially gives a factor 1 or -1
 only. Calculating the product, we have the leading-order terms
 $$
-[D_t\uex D_t\uex]^n = (\uex'(t_n))^2 +
-\frac{1}{12}\uex(t_n)\uex'''(t_n)\Delta t^2 +
+[D_tu_{\text{e}} D_tu_{\text{e}}]^n = (u_{\text{e}}'(t_n))^2 +
+\frac{1}{12}u_{\text{e}}(t_n)u_{\text{e}}'''(t_n)\Delta t^2 +
 \Oof{\Delta t^4}\tp
 $$
 With
 $$
-m[D_t D_t\uex]^n = m\uex''(t_n) + \frac{m}{12}\uex''''(t_n)\Delta t^2
+m[D_t D_tu_{\text{e}}]^n = mu_{\text{e}}''(t_n) + \frac{m}{12}u_{\text{e}}''''(t_n)\Delta t^2
 +\Oof{\Delta t^4},
 $$
 and using the differential equation on the
 form $mu'' + \beta (u')^2 + s(u)=F$, we end up with
 $$
-R^n = (\frac{m}{12}\uex''''(t_n) +
-\frac{\beta}{12}\uex(t_n)\uex'''(t_n))
+R^n = (\frac{m}{12}u_{\text{e}}''''(t_n) +
+\frac{\beta}{12}u_{\text{e}}(t_n)u_{\text{e}}'''(t_n))
 \Delta t^2 + \Oof{\Delta t^4}\tp
 $$
 This result demonstrates that we have
@@ -1390,9 +1390,9 @@ Aw^{n+1} = Bw^n,
 1 & -\Delta t\omega^2\\
 0 & 1\end{array}\right\rbrack\tp
 $$
-The exact solution $\wex$ satisfies
+The exact solution $w_{\text{e}}$ satisfies
 $$
-A\wex^{n+1} = Bw^n + \Delta t R^n,
+Aw_{\text{e}}^{n+1} = Bw^n + \Delta t R^n,
 $$
 where $R^n$ is the residual, which has to be multiplied by $\Delta t$ since
 we have already done that in the discrete equation.
@@ -1403,15 +1403,15 @@ $$
 $$
 We realize that $d^2w = C^2 w$, and in general $d^mw=C^w$.
 Using these formulas to get rid of the derivatives in a Taylor
-expansion of $\wex^{n+1}$ around $t_n$ gives
+expansion of $w_{\text{e}}^{n+1}$ around $t_n$ gives
 $$
-A(\wex^n + \Delta t C\wex^n + \half \Delta t^2 C^2 \wex^n + \cdots)
-= B\wex^n + \Delta t R^n\tp
+A(w_{\text{e}}^n + \Delta t Cw_{\text{e}}^n + \half \Delta t^2 C^2 w_{\text{e}}^n + \cdots)
+= Bw_{\text{e}}^n + \Delta t R^n\tp
 $$
 From this we get
 
 \begin{align*}
-R^n &= \frac{1}{\Delta t}(A - B + \Delta t AC + \half\Delta t^2 AC^2 +\cdots)\wex^n\\
+R^n &= \frac{1}{\Delta t}(A - B + \Delta t AC + \half\Delta t^2 AC^2 +\cdots)w_{\text{e}}^n\\
 &\sim \mathcal(1)
 \end{align*}
 This does not work out...
@@ -1419,14 +1419,14 @@ This does not work out...
 -------------
 
 Each ODE will have a truncation error when inserting the exact
-solutions $\uex$ and $\vex$ in
+solutions $u_{\text{e}}$ and $v_{\text{e}}$ in
 (@eq-trunc-vib-gen-2x2model-ode-v-fw)-(@eq-trunc-vib-gen-2x2model-ode-u-bw):
 
 $$
-\lbrack D_t^+ \uex = \vex + R_u \rbrack^n,
+\lbrack D_t^+ u_{\text{e}} = v_{\text{e}} + R_u \rbrack^n,
 $$ {#eq-trunc-vib-gen-2x2model-ode-u-fw-R}
 $$
-\lbrack D_t^-\vex \rbrack^{n+1} = \frac{1}{m}( F(t_{n+1}) - \beta |\vex(t_n)|\vex(t_{n+1}) - s(\uex(t_{n+1}))) + R_v^{n+1}\tp
+\lbrack D_t^-v_{\text{e}} \rbrack^{n+1} = \frac{1}{m}( F(t_{n+1}) - \beta |v_{\text{e}}(t_n)|v_{\text{e}}(t_{n+1}) - s(u_{\text{e}}(t_{n+1}))) + R_v^{n+1}\tp
 $$ {#eq-trunc-vib-gen-2x2model-ode-v-bw-R}
 Application of @eq-trunc-table-fd1-fw-eq
 and @eq-trunc-table-fd1-bw-eq in
@@ -1434,20 +1434,20 @@ and @eq-trunc-table-fd1-bw-eq in
 (@eq-trunc-vib-gen-2x2model-ode-v-bw-R), respectively, gives
 
 $$
-\uex'(t_n) + \half\uex''(t_n)\Delta t + \Oof{\Delta t^2}
-= \vex(t_n) + R_u^n,
+u_{\text{e}}'(t_n) + \half u_{\text{e}}''(t_n)\Delta t + \Oof{\Delta t^2}
+= v_{\text{e}}(t_n) + R_u^n,
 $$ {#eq-trunc-vib-gen-2x2model-ode-u-fw-R2}
 $$
 \begin{split}
-\vex'(t_{n+1}) - \half\vex''(t_{n+1})\Delta t + \Oof{\Delta t^2}
-&= \frac{1}{m}(F(t_{n+1}) - \beta|\vex(t_n)|\vex(t_{n+1}) +\\
-&\quad s(\uex(t_{n+1}))+ R_v^n\tp
+v_{\text{e}}'(t_{n+1}) - \half v_{\text{e}}''(t_{n+1})\Delta t + \Oof{\Delta t^2}
+&= \frac{1}{m}(F(t_{n+1}) - \beta|v_{\text{e}}(t_n)|v_{\text{e}}(t_{n+1}) +\\
+&\quad s(u_{\text{e}}(t_{n+1}))+ R_v^n\tp
 \end{split}
 $$ {#eq-trunc-vib-gen-2x2model-ode-v-bw-R2}
-Since $\uex ' = \vex$, (@eq-trunc-vib-gen-2x2model-ode-u-fw-R2)
+Since $u_{\text{e}} ' = v_{\text{e}}$, (@eq-trunc-vib-gen-2x2model-ode-u-fw-R2)
 gives
 $$
-R_u^n = \half\uex''(t_n)\Delta t + \Oof{\Delta t^2}\tp
+R_u^n = \half u_{\text{e}}''(t_n)\Delta t + \Oof{\Delta t^2}\tp
 $$
 In (@eq-trunc-vib-gen-2x2model-ode-v-bw-R2) we can collect the
 terms that constitute the ODE, but the damping term has the wrong
@@ -1456,18 +1456,18 @@ Let us drop the absolute value in the damping term for simplicity.
 Adding a subtracting the right form $v^{n+1}v^{n+1}$ helps:
 
 \begin{align*}
-\vex'(t_{n+1}) &-
-\frac{1}{m}(F(t_{n+1}) - \beta \vex(t_{n+1})\vex(t_{n+1}) +
-s(\uex(t_{n+1})) + \\
-& (\beta \vex(t_n)\vex(t_{n+1}) - \beta \vex(t_{n+1})\vex(t_{n+1}))),
+v_{\text{e}}'(t_{n+1}) &-
+\frac{1}{m}(F(t_{n+1}) - \beta v_{\text{e}}(t_{n+1})v_{\text{e}}(t_{n+1}) +
+s(u_{\text{e}}(t_{n+1})) + \\
+& (\beta v_{\text{e}}(t_n)v_{\text{e}}(t_{n+1}) - \beta v_{\text{e}}(t_{n+1})v_{\text{e}}(t_{n+1}))),
 \end{align*}
 which reduces to
 
 \begin{align*}
-\frac{\beta}{m}\vex(t_{n+1}(\vex(t_n) - \vex(t_{n+1}))
-&= \frac{\beta}{m}\vex(t_{n+1}[D_t^-\vex]^{n+1}\Delta t\\
-&= \frac{\beta}{m}\vex(t_{n+1}(\vex'(t_{n+1})\Delta t +
--\half\vex'''(t_{n+1})\Delta t^ + \Oof{\Delta t^3})\tp
+\frac{\beta}{m}v_{\text{e}}(t_{n+1}(v_{\text{e}}(t_n) - v_{\text{e}}(t_{n+1}))
+&= \frac{\beta}{m}v_{\text{e}}(t_{n+1}[D_t^-v_{\text{e}}]^{n+1}\Delta t\\
+&= \frac{\beta}{m}v_{\text{e}}(t_{n+1}(v_{\text{e}}'(t_{n+1})\Delta t +
+-\half v_{\text{e}}'''(t_{n+1})\Delta t^ + \Oof{\Delta t^3})\tp
 \end{align*}
 We end with $R_u^n$ and $R_v^{n+1}$ as $\Oof{\Delta t}$, simply because
 all the building blocks in the schemes (the forward and backward
@@ -1506,9 +1506,9 @@ $$ {#eq-trunc-vib-gen-2x2model-ode-u-staggered2}
 The truncation error in each equation fulfills
 
 \begin{align*}
-\lbrack D_t \uex \rbrack^{n-\half} &= \vex(t_{n-\half}) + R_u^{n-\half},\\
-\lbrack D_t \vex \rbrack^n &= \frac{1}{m}( F(t_n) -
-\beta |\vex(t_{n-\half})|\vex(t_{n+\half}) - s(u^n)) + R_v^n\tp
+\lbrack D_t u_{\text{e}} \rbrack^{n-\half} &= v_{\text{e}}(t_{n-\half}) + R_u^{n-\half},\\
+\lbrack D_t v_{\text{e}} \rbrack^n &= \frac{1}{m}( F(t_n) -
+\beta |v_{\text{e}}(t_{n-\half})|v_{\text{e}}(t_{n+\half}) - s(u^n)) + R_v^n\tp
 \end{align*}
 The truncation error of the centered differences is given
 by @eq-trunc-table-fd1-center-eq,
@@ -1516,17 +1516,17 @@ and the geometric mean approximation
 analysis can be taken from @eq-trunc-table-avg-geom-eq.
 These results lead to
 $$
-\uex'(t_{n-\half}) +
-\frac{1}{24}\uex'''(t_{n-\half})\Delta t^2 + \Oof{\Delta t^4}
-= \vex(t_{n-\half}) + R_u^{n-\half},
+u_{\text{e}}'(t_{n-\half}) +
+\frac{1}{24}u_{\text{e}}'''(t_{n-\half})\Delta t^2 + \Oof{\Delta t^4}
+= v_{\text{e}}(t_{n-\half}) + R_u^{n-\half},
 $$
 and
 $$
-\vex'(t_n) =
+v_{\text{e}}'(t_n) =
 \frac{1}{m}( F(t_n) -
-\beta |\vex(t_n)|\vex(t_n) + \Oof{\Delta t^2} - s(u^n)) + R_v^n\tp
+\beta |v_{\text{e}}(t_n)|v_{\text{e}}(t_n) + \Oof{\Delta t^2} - s(u^n)) + R_v^n\tp
 $$
-The ODEs fulfilled by $\uex$ and $\vex$ are evident in these equations,
+The ODEs fulfilled by $u_{\text{e}}$ and $v_{\text{e}}$ are evident in these equations,
 and we achieve second-order accuracy for the truncation error
 in both equations:
 $$
@@ -1550,43 +1550,43 @@ $$
 [D_t D_t u = c^2 D_xD_x u + f]^n_i \tp
 $$ {#eq-trunc-wave-pde1D-fd}
 
-Inserting the exact solution $\uex(x,t)$ in (@eq-trunc-wave-pde1D-fd)
+Inserting the exact solution $u_{\text{e}}(x,t)$ in (@eq-trunc-wave-pde1D-fd)
 makes this function fulfill the equation if we add the
 term $R$:
 $$
-[D_t D_t \uex = c^2 D_xD_x \uex + f + R]^n_i
+[D_t D_t u_{\text{e}} = c^2 D_xD_x u_{\text{e}} + f + R]^n_i
 $$ {#eq-trunc-wave-pde1D-fd-R}
 
 Our purpose is to calculate the truncation error $R$.
 From @eq-trunc-table-fd2-center-eq we have that
 $$
-[D_t D_t\uex]_i^n = \uexd{tt}(x_i,t_n) +
-\frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2 + \Oof{\Delta t^4},
+[D_t D_tu_{\text{e}}]_i^n = u_{\text{e},tt}(x_i,t_n) +
+\frac{1}{12}u_{\text{e},tttt}(x_i,t_n)\Delta t^2 + \Oof{\Delta t^4},
 $$
-when we use a notation taking into account that $\uex$ is a function
+when we use a notation taking into account that $u_{\text{e}}$ is a function
 of two variables and that derivatives must be partial derivatives.
-The notation $\uexd{tt}$ means $\partial^2\uex /\partial t^2$.
+The notation $u_{\text{e},tt}$ means $\partial^2u_{\text{e}} /\partial t^2$.
 
 The same formula may also be applied to the $x$-derivative term:
 $$
-[D_xD_x\uex]_i^n = \uexd{xx}(x_i,t_n) +
-\frac{1}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 + \Oof{\Delta x^4},
+[D_xD_xu_{\text{e}}]_i^n = u_{\text{e},xx}(x_i,t_n) +
+\frac{1}{12}u_{\text{e},xxxx}(x_i,t_n)\Delta x^2 + \Oof{\Delta x^4},
 $$
 Equation (@eq-trunc-wave-pde1D-fd-R) now becomes
 
 \begin{align*}
-\uexd{tt}
-+ \frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2  &=
-c^2\uexd{xx} +
-c^2\frac{1}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 + f(x_i,t_n) + \\
+u_{\text{e},tt}
++ \frac{1}{12}u_{\text{e},tttt}(x_i,t_n)\Delta t^2  &=
+c^2u_{\text{e},xx} +
+c^2\frac{1}{12}u_{\text{e},xxxx}(x_i,t_n)\Delta x^2 + f(x_i,t_n) + \\
 & \quad  \Oof{\Delta t^4,\Delta x^4} + R^n_i
 \end{align*} \tp
-Because $\uex$ fulfills the partial differential equation (PDE)
+Because $u_{\text{e}}$ fulfills the partial differential equation (PDE)
 (@eq-trunc-wave-pde1D-v2), the first, third, and fifth term cancel out,
 and we are left with
 $$
-R^n_i = \frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2 -
-c^2\frac{1}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 +
+R^n_i = \frac{1}{12}u_{\text{e},tttt}(x_i,t_n)\Delta t^2 -
+c^2\frac{1}{12}u_{\text{e},xxxx}(x_i,t_n)\Delta x^2 +
 \Oof{\Delta t^4,\Delta x^4},
 $$ {#eq-trunc-wave-1D-R}
 showing that the scheme (@eq-trunc-wave-pde1D-fd) is of second order
@@ -1597,21 +1597,21 @@ in the time and space mesh spacing.
 Can we add correction terms to the PDE and increase the order of
 $R^n_i$ in (@eq-trunc-wave-1D-R)? The starting point is
 $$
-[D_t D_t \uex = c^2 D_xD_x \uex + f + C + R]^n_i
+[D_t D_t u_{\text{e}} = c^2 D_xD_x u_{\text{e}} + f + C + R]^n_i
 $$ {#eq-trunc-wave-pde1D-fd-R2}
 From the previous analysis we simply get (@eq-trunc-wave-1D-R)
 again, but now with $C$:
 $$
-R^n_i + C_i^n = \frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2 -
-c^2\frac{1}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 +
+R^n_i + C_i^n = \frac{1}{12}u_{\text{e},tttt}(x_i,t_n)\Delta t^2 -
+c^2\frac{1}{12}u_{\text{e},xxxx}(x_i,t_n)\Delta x^2 +
 \Oof{\Delta t^4,\Delta x^4}\tp
 $$ {#eq-trunc-wave-1D-R-C}
 The idea is to let $C_i^n$ cancel the $\Delta t^2$ and $\Delta x^2$
 terms to make $R^n_i = \Oof{\Delta t^4,\Delta x^4}$:
 $$
 C_i^n =
-\frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2 -
-c^2\frac{1}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2\tp
+\frac{1}{12}u_{\text{e},tttt}(x_i,t_n)\Delta t^2 -
+c^2\frac{1}{12}u_{\text{e},xxxx}(x_i,t_n)\Delta x^2\tp
 $$
 Essentially, it means that we add a new term
 $$
@@ -1644,12 +1644,12 @@ $[D_xD_x (D_tD_t u)]^n_i$ gives
 
 \begin{align*}
 \frac{1}{\Delta t^2}\biggl(
-&\frac{u^{n+1}**{i+1} - 2u^{n}**{i+1} + u^{n-1}_{i+1}}{\Delta x^2} -2\\
-&\frac{u^{n+1}**{i} - 2u^{n}**{i} + u^{n-1}_{i}}{\Delta x^2} +
-&\frac{u^{n+1}**{i-1} - 2u^{n}**{i-1} + u^{n-1}_{i-1}}{\Delta x^2}
+&\frac{u^{n+1}_{i+1} - 2u^{n}_{i+1} + u^{n-1}_{i+1}}{\Delta x^2} -2\\
+&\frac{u^{n+1}_{i} - 2u^{n}_{i} + u^{n-1}_{i}}{\Delta x^2} +
+&\frac{u^{n+1}_{i-1} - 2u^{n}_{i-1} + u^{n-1}_{i-1}}{\Delta x^2}
 \biggr)
 \end{align*}
-Now the unknown values $u^{n+1}**{i+1}$, $u^{n+1}**{i}$,
+Now the unknown values $u^{n+1}_{i+1}$, $u^{n+1}_{i}$,
 and $u^{n+1}_{i-1}$ are *coupled*, and we must solve a tridiagonal
 system to find them. This is in principle straightforward, but it
 results in an implicit finite difference scheme, while we had
@@ -1674,77 +1674,77 @@ $$
 $$ {#eq-trunc-wave-1D-varcoeff-fd}
 The truncation error is the residual $R$ in the equation
 $$
-[D_t D_t \uex = D_x \overline{\lambda}^{x}D_x \uex + R]^n_i\tp
+[D_t D_t u_{\text{e}} = D_x \overline{\lambda}^{x}D_x u_{\text{e}} + R]^n_i\tp
 $$ {#eq-trunc-wave-1D-varcoef-fd-R}
 The difficulty with (@eq-trunc-wave-1D-varcoef-fd-R)
 is how to compute the truncation error of
-the term $[D_x \overline{\lambda}^{x}D_x \uex]^n_i$.
+the term $[D_x \overline{\lambda}^{x}D_x u_{\text{e}}]^n_i$.
 
 We start by writing out the outer operator:
 $$
-[D_x \overline{\lambda}^{x}D_x \uex]^n_i =
+[D_x \overline{\lambda}^{x}D_x u_{\text{e}}]^n_i =
 \frac{1}{\Delta x}\left(
-[\overline{\lambda}^{x}D_x \uex]^n_{i+\half} -
-[\overline{\lambda}^{x}D_x \uex]^n_{i-\half}
+[\overline{\lambda}^{x}D_x u_{\text{e}}]^n_{i+\half} -
+[\overline{\lambda}^{x}D_x u_{\text{e}}]^n_{i-\half}
 \right).
 $$ {#eq-trunc-wave-1D-varcoeff-outer}
 With the aid of @eq-trunc-table-fd1-center-eq
 and @eq-trunc-table-avg-arith-eq we have
 
 \begin{align*}
-\lbrack D_x \uex \rbrack^n_{i+\half} & = \uexd{x}(x_{i+\half},t_n) +
-\frac{1}{24}\uexd{xxx}(x_{i+\half},t_n)\Delta x^2 +
+\lbrack D_x u_{\text{e}} \rbrack^n_{i+\half} & = u_{\text{e},x}(x_{i+\half},t_n) +
+\frac{1}{24}u_{\text{e},xxx}(x_{i+\half},t_n)\Delta x^2 +
 \Oof{\Delta x^4},\\
 \lbrack\overline{\lambda}^{x}\rbrack_{i+\half}
 &= \lambda(x_{i+\half}) +
 \frac{1}{8}\lambda''(x_{i+\half})\Delta x^2
 + \Oof{\Delta x^4},\\
-[\overline{\lambda}^{x}D_x \uex]^n_{i+\half} &=
+[\overline{\lambda}^{x}D_x u_{\text{e}}]^n_{i+\half} &=
 (\lambda(x_{i+\half}) +
 \frac{1}{8}\lambda''(x_{i+\half})\Delta x^2
 + \Oof{\Delta x^4})\times\\
-&\quad (\uexd{x}(x_{i+\half},t_n) +
-\frac{1}{24}\uexd{xxx}(x_{i+\half},t_n)\Delta x^2 +
+&\quad (u_{\text{e},x}(x_{i+\half},t_n) +
+\frac{1}{24}u_{\text{e},xxx}(x_{i+\half},t_n)\Delta x^2 +
 \Oof{\Delta x^4})\\
-&= \lambda(x_{i+\half})\uexd{x}(x_{i+\half},t_n)
+&= \lambda(x_{i+\half})u_{\text{e},x}(x_{i+\half},t_n)
 + \lambda(x_{i+\half})
-\frac{1}{24}\uexd{xxx}(x_{i+\half},t_n)\Delta x^2 + \\
-&\quad \uexd{x}(x_{i+\half},t_n)
+\frac{1}{24}u_{\text{e},xxx}(x_{i+\half},t_n)\Delta x^2 + \\
+&\quad u_{\text{e},x}(x_{i+\half},t_n)
 \frac{1}{8}\lambda''(x_{i+\half})\Delta x^2
 +\Oof{\Delta x^4}\\
-&= [\lambda \uexd{x}]^n_{i+\half} + G^n_{i+\half}\Delta x^2
+&= [\lambda u_{\text{e},x}]^n_{i+\half} + G^n_{i+\half}\Delta x^2
 +\Oof{\Delta x^4},
 \end{align*}
 where we have introduced the short form
 $$
 G^n_{i+\half} =
-\frac{1}{24}\uexd{xxx}(x_{i+\half},t_n)\lambda(x_{i+\half})
-+ \uexd{x}(x_{i+\half},t_n)
+\frac{1}{24}u_{\text{e},xxx}(x_{i+\half},t_n)\lambda(x_{i+\half})
++ u_{\text{e},x}(x_{i+\half},t_n)
 \frac{1}{8}\lambda''(x_{i+\half})\tp
 $$
 Similarly, we find that
 $$
-\lbrack\overline{\lambda}^{x}D_x \uex\rbrack^n_{i-\half} =
-[\lambda \uexd{x}]^n_{i-\half} + G^n_{i-\half}\Delta x^2
+\lbrack\overline{\lambda}^{x}D_x u_{\text{e}}\rbrack^n_{i-\half} =
+[\lambda u_{\text{e},x}]^n_{i-\half} + G^n_{i-\half}\Delta x^2
 +\Oof{\Delta x^4}\tp
 $$
 Inserting these expressions in the outer operator (@eq-trunc-wave-1D-varcoeff-outer)
 results in
 
 \begin{align*}
-\lbrack D_x \overline{\lambda}^{x}D_x \uex \rbrack^n_i &=
+\lbrack D_x \overline{\lambda}^{x}D_x u_{\text{e}} \rbrack^n_i &=
 \frac{1}{\Delta x}(
-[\overline{\lambda}^{x}D_x \uex]^n_{i+\half} -
-[\overline{\lambda}^{x}D_x \uex]^n_{i-\half}
+[\overline{\lambda}^{x}D_x u_{\text{e}}]^n_{i+\half} -
+[\overline{\lambda}^{x}D_x u_{\text{e}}]^n_{i-\half}
 )\\
 &= \frac{1}{\Delta x}(
-[\lambda \uexd{x}]^n_{i+\half} +
+[\lambda u_{\text{e},x}]^n_{i+\half} +
 G^n_{i+\half}\Delta x^2 -
-[\lambda \uexd{x}]^n_{i-\half} -
+[\lambda u_{\text{e},x}]^n_{i-\half} -
 G^n_{i-\half}\Delta x^2 +
 \Oof{\Delta x^4}
 )\\
-&= [D_x \lambda \uexd{x}]^n_i + [D_x G]^n_i\Delta x^2 + \Oof{\Delta x^4}\tp
+&= [D_x \lambda u_{\text{e},x}]^n_i + [D_x G]^n_i\Delta x^2 + \Oof{\Delta x^4}\tp
 \end{align*}
 The reason for $\Oof{\Delta x^4}$ in the remainder is that there
 are coefficients in front of this term, say $H\Delta x^4$, and the
@@ -1752,12 +1752,12 @@ subtraction and division by $\Delta x$ results in $[D_x H]^n_i\Delta x^4$.
 
 We can now use @eq-trunc-table-fd1-center-eq
 to express the $D_x$ operator
-in $[D_x \lambda \uexd{x}]^n_i$
+in $[D_x \lambda u_{\text{e},x}]^n_i$
 as a derivative and a truncation error:
 $$
-[D_x \lambda \uexd{x}]^n_i =
-\frac{\partial}{\partial x}\lambda(x_i)\uexd{x}(x_i,t_n)
-+ \frac{1}{24}(\lambda\uexd{x})_{xxx}(x_i,t_n)\Delta x^2
+[D_x \lambda u_{\text{e},x}]^n_i =
+\frac{\partial}{\partial x}\lambda(x_i)u_{\text{e},x}(x_i,t_n)
++ \frac{1}{24}(\lambda u_{\text{e},x})_{xxx}(x_i,t_n)\Delta x^2
 + \Oof{\Delta x^4}\tp
 $$
 Expressions like $[D_x G]^n_i\Delta x^2$ can be treated in an identical
@@ -1771,15 +1771,15 @@ lump these now into $\Oof{\Delta x^2}$.
 The result of the truncation error analysis of the spatial derivative
 is therefore summarized as
 $$
-[D_x \overline{\lambda}^{x}D_x \uex]^n_i =
+[D_x \overline{\lambda}^{x}D_x u_{\text{e}}]^n_i =
 \frac{\partial}{\partial x}
-\lambda(x_i)\uexd{x}(x_i,t_n) +
+\lambda(x_i)u_{\text{e},x}(x_i,t_n) +
 \Oof{\Delta x^2}\tp
 $$
-After having treated the $[D_tD_t\uex]^n_i$ term as well, we achieve
+After having treated the $[D_tD_tu_{\text{e}}]^n_i$ term as well, we achieve
 $$
 R^n_i = \Oof{\Delta x^2} +
-\frac{1}{12}\uexd{tttt}(x_i,t_n)\Delta t^2 \tp
+\frac{1}{12}u_{\text{e},tttt}(x_i,t_n)\Delta t^2 \tp
 $$
 The main conclusion is that the scheme is of second-order in time
 and space also in this variable coefficient case. The key ingredients
@@ -1817,17 +1817,17 @@ $$
 $$
 The truncation error is found from
 $$
-[D_t D_t \uex = c^2(D_xD_x \uex + D_yD_y \uex + D_zD_z \uex) + f + R]^n_{i,j,k} \tp
+[D_t D_t u_{\text{e}} = c^2(D_xD_x u_{\text{e}} + D_yD_y u_{\text{e}} + D_zD_z u_{\text{e}}) + f + R]^n_{i,j,k} \tp
 $$
 The calculations from the 1D case can be repeated with the
 terms in the $y$ and $z$ directions. Collecting terms that
 fulfill the PDE, we end up with
 
 \begin{align}
-R^n_{i,j,k} & = [\frac{1}{12}\uexd{tttt}\Delta t^2 -
-c^2\frac{1}{12}\left( \uexd{xxxx}\Delta x^2
-+ \uexd{yyyy}\Delta x^2
-+ \uexd{zzzz}\Delta z^2\right)]^n_{i,j,k} +\\
+R^n_{i,j,k} & = [\frac{1}{12}u_{\text{e},tttt}\Delta t^2 -
+c^2\frac{1}{12}\left( u_{\text{e},xxxx}\Delta x^2
++ u_{\text{e},yyyy}\Delta x^2
++ u_{\text{e},zzzz}\Delta z^2\right)]^n_{i,j,k} +\\
 &\quad \Oof{\Delta t^4,\Delta x^4,\Delta y^4,\Delta z^4}\nonumber
 \end{align} \tp
 
@@ -1852,26 +1852,26 @@ $$
 $$
 The truncation error arises as the residual $R$ when
 inserting the exact solution
-$\uex$ in the discrete equations:
+$u_{\text{e}}$ in the discrete equations:
 $$
-[D_t^+ \uex = \dfc D_xD_x \uex + f + R]^n_i\tp
+[D_t^+ u_{\text{e}} = \dfc D_xD_x u_{\text{e}} + f + R]^n_i\tp
 $$
 Now, using @eq-trunc-table-fd1-fw-eq
 and @eq-trunc-table-fd2-center-eq,
 we can transform the difference operators to derivatives:
 
 \begin{align*}
-\uexd{t}(x_i,t_n) &+ \half\uexd{tt}(t_n)\Delta t + \Oof{\Delta t^2}
-= \dfc\uexd{xx}(x_i,t_n) + \\
-&\frac{\dfc}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 + \Oof{\Delta x^4}
+u_{\text{e},t}(x_i,t_n) &+ \half u_{\text{e},tt}(t_n)\Delta t + \Oof{\Delta t^2}
+= \dfc u_{\text{e},xx}(x_i,t_n) + \\
+&\frac{\dfc}{12}u_{\text{e},xxxx}(x_i,t_n)\Delta x^2 + \Oof{\Delta x^4}
 + f(x_i,t_n) + R^n_i\tp
 \end{align*}
-The terms $\uexd{t}(x_i,t_n) - \dfc\uexd{xx}(x_i,t_n) - f(x_i,t_n)$
-vanish because $\uex$ solves the PDE. The truncation error then becomes
+The terms $u_{\text{e},t}(x_i,t_n) - \dfc u_{\text{e},xx}(x_i,t_n) - f(x_i,t_n)$
+vanish because $u_{\text{e}}$ solves the PDE. The truncation error then becomes
 $$
 R^n_i =
-\half\uexd{tt}(t_n)\Delta t + \Oof{\Delta t^2}
-+ \frac{\dfc}{12}\uexd{xxxx}(x_i,t_n)\Delta x^2 + \Oof{\Delta x^4}\tp
+\half u_{\text{e},tt}(t_n)\Delta t + \Oof{\Delta t^2}
++ \frac{\dfc}{12}u_{\text{e},xxxx}(x_i,t_n)\Delta x^2 + \Oof{\Delta x^4}\tp
 $$
 ### The Crank-Nicolson scheme in time
 The Crank-Nicolson method consists of
@@ -1883,46 +1883,46 @@ $$
 $$
 The equation for the truncation error is
 $$
-[D_t \uex]^{n+\half}_i = \dfc\half([D_xD_x \uex]^n_i +
-[D_xD_x \uex]^{n+1}_i) + f^{n+\half}_i + R^{n+\half}_i\tp
+[D_t u_{\text{e}}]^{n+\half}_i = \dfc\half([D_xD_x u_{\text{e}}]^n_i +
+[D_xD_x u_{\text{e}}]^{n+1}_i) + f^{n+\half}_i + R^{n+\half}_i\tp
 $$
 To find the truncation error, we start by expressing the arithmetic
 average in terms of values at time $t_{n+\half}$. According to
 @eq-trunc-table-avg-arith-eq,
 $$
-\half([D_xD_x \uex]^n_i + [D_xD_x \uex]^{n+1}_i)
+\half([D_xD_x u_{\text{e}}]^n_i + [D_xD_x u_{\text{e}}]^{n+1}_i)
 =
-[D_xD_x\uex]^{n+\half}_i +
-\frac{1}{8}[D_xD_x\uexd{tt}]_i^{n+\half}\Delta t^2
+[D_xD_xu_{\text{e}}]^{n+\half}_i +
+\frac{1}{8}[D_xD_xu_{\text{e},tt}]_i^{n+\half}\Delta t^2
 + \Oof{\Delta t^4}\tp
 $$
 With @eq-trunc-table-fd2-center-eq
 we can express the difference operator
 $D_xD_xu$ in terms of a derivative:
 $$
-[D_xD_x\uex]^{n+\half}_i =
-\uexd{xx}(x_i, t_{n+\half})
-+ \frac{1}{12}\uexd{xxxx}(x_i, t_{n+\half})\Delta x^2 +
+[D_xD_xu_{\text{e}}]^{n+\half}_i =
+u_{\text{e},xx}(x_i, t_{n+\half})
++ \frac{1}{12}u_{\text{e},xxxx}(x_i, t_{n+\half})\Delta x^2 +
 \Oof{\Delta x^4}\tp
 $$
 The error term from the arithmetic mean is similarly expanded,
 $$
-\frac{1}{8}[D_xD_x\uexd{tt}]_i^{n+\half}\Delta t^2
-= \frac{1}{8}\uexd{ttxx}(x_i, t_{n+\half})\Delta t^2
+\frac{1}{8}[D_xD_xu_{\text{e},tt}]_i^{n+\half}\Delta t^2
+= \frac{1}{8}u_{\text{e},ttxx}(x_i, t_{n+\half})\Delta t^2
 + \Oof{\Delta t^2\Delta x^2}
 $$
 The time derivative is analyzed using
 @eq-trunc-table-fd1-center-eq:
 $$
 [D_t u]^{n+\half}_i
-= \uexd{t}(x_i,t_{n+\half}) +
-\frac{1}{24}\uexd{ttt}(x_i,t_{n+\half})\Delta t^2 +
+= u_{\text{e},t}(x_i,t_{n+\half}) +
+\frac{1}{24}u_{\text{e},ttt}(x_i,t_{n+\half})\Delta t^2 +
 \Oof{\Delta t^4}\tp
 $$
 Summing up all the contributions and notifying that
 $$
-\uexd{t}(x_i,t_{n+\half}) =
-\dfc\uexd{xx}(x_i, t_{n+\half})
+u_{\text{e},t}(x_i,t_{n+\half}) =
+\dfc u_{\text{e},xx}(x_i, t_{n+\half})
 + f(x_i,t_{n+\half}),
 $$
 the truncation error is given by
@@ -1930,9 +1930,9 @@ the truncation error is given by
 \begin{align*}
 R^{n+\half}_i
 & =
-\frac{1}{8}\uexd{xx}(x_i,t_{n+\half})\Delta t^2 +
-\frac{1}{12}\uexd{xxxx}(x_i, t_{n+\half})\Delta x^2 +\\
-&\quad \frac{1}{24}\uexd{ttt}(x_i,t_{n+\half})\Delta t^2 +
+\frac{1}{8}u_{\text{e},xx}(x_i,t_{n+\half})\Delta t^2 +
+\frac{1}{12}u_{\text{e},xxxx}(x_i, t_{n+\half})\Delta x^2 +\\
+&\quad \frac{1}{24}u_{\text{e},ttt}(x_i,t_{n+\half})\Delta t^2 +
 + \Oof{\Delta x^4} + \Oof{\Delta t^4} + \Oof{\Delta t^2\Delta x^2}
 \end{align*}
 
@@ -1947,18 +1947,18 @@ We use a Backward Euler scheme with arithmetic mean for $\dfc(u)$,
 $$
 [D^-u = D_x\overline{\dfc(u)}^{x}D_x u + f(u)]_i^n\tp
 $$
-Inserting $\uex$ defines the truncation error $R$:
+Inserting $u_{\text{e}}$ defines the truncation error $R$:
 $$
-[D^-\uex = D_x\overline{\dfc(\uex)}^{x}D_x \uex + f(\uex) + R]_i^n\tp
+[D^-u_{\text{e}} = D_x\overline{\dfc(u_{\text{e}})}^{x}D_x u_{\text{e}} + f(u_{\text{e}}) + R]_i^n\tp
 $$
 The most computationally challenging part is the variable coefficient with
 $\dfc(u)$, but we can use the same setup as in Section
 @sec-trunc-wave-1D-varcoeff and arrive at a truncation error $\Oof{\Delta x^2}$
-for the $x$-derivative term. The nonlinear term $[f(\uex)]^n_{i} =
-f(\uex(x_i, t_n))$ matches $x$ and $t$ derivatives of $\uex$ in the PDE.
+for the $x$-derivative term. The nonlinear term $[f(u_{\text{e}})]^n_{i} =
+f(u_{\text{e}}(x_i, t_n))$ matches $x$ and $t$ derivatives of $u_{\text{e}}$ in the PDE.
 We end up with
 $$
-R^n_i = -{\half}\frac{\partial^2}{\partial t^2}\uex(x_i,t_n)\Delta t + \Oof{\Delta x^2}\tp
+R^n_i = -{\half}\frac{\partial^2}{\partial t^2}u_{\text{e}}(x_i,t_n)\Delta t + \Oof{\Delta x^2}\tp
 $$
 
 ## Devito and Truncation Errors {#sec-trunc-devito}
@@ -2115,7 +2115,7 @@ implementation are correct.
 Derive the truncation error of the weighted mean in
 @eq-trunc-table-avg-theta-eq.
 
-:::{.callout-tip title="Expand $\uex^{n+1}$ and $\uex^n$ around $t_{n+\theta}$."}
+:::{.callout-tip title="Expand $u_{\text{e}}^{n+1}$ and $u_{\text{e}}^n$ around $t_{n+\theta}$."}
 :::
 
 
@@ -2123,9 +2123,9 @@ Derive the truncation error of the weighted mean in
 
 We consider the weighted mean
 $$
-\uex(t_n) \approx \theta \uex^{n+1} + (1-\theta)\uex^n\tp
+u_{\text{e}}(t_n) \approx \theta u_{\text{e}}^{n+1} + (1-\theta)u_{\text{e}}^n\tp
 $$
-Choose some specific function for $\uex(t)$ and compute the error in
+Choose some specific function for $u_{\text{e}}(t)$ and compute the error in
 this approximation for a sequence of decreasing $\Delta t =
 t_{n+1}-t_n$ and for $\theta = 0, 0.25, 0.5, 0.75, 1$.  Assuming that
 the error equals $C\Delta t^r$, for some constants $C$ and $r$,
@@ -2214,8 +2214,8 @@ Showing the order of the truncation error in the Crank-Nicolson scheme,
 $$
 [D_t u = f(u,t)]^{n+\half},
 $$
-is somewhat more involved: Taylor expand $\uex^n$, $\uex^{n+1}$,
-$f(\uex^n, t_n)$, and $f(\uex^{n+1}, t_{n+1})$ around $t_{n+\half}$,
+is somewhat more involved: Taylor expand $u_{\text{e}}^n$, $u_{\text{e}}^{n+1}$,
+$f(u_{\text{e}}^n, t_n)$, and $f(u_{\text{e}}^{n+1}, t_{n+1})$ around $t_{n+\half}$,
 and use that
 $$
 \frac{df}{dt} = \frac{\partial f}{\partial u}u' + \frac{\partial f}{\partial t} \tp
